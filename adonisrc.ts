@@ -130,7 +130,7 @@ export default defineConfig({
       indexEntities({
         transformers: { enabled: true, withSharedProps: true },
       }),
-      indexPages({ framework: 'vue3' }),
+      indexPages({ framework: 'react' }),
       generateRegistry(),
     ],
     buildStarting: [() => import('@adonisjs/vite/build_hook')],

@@ -4,5 +4,5 @@
     "rootDir": "./inertia",
     "composite": true
   },
-  "include": ["./inertia/**/*.ts", "./inertia/**/*.vue"]
+  "include": ["./inertia/**/*.ts", "./inertia/**/*.tsx"]
 }
