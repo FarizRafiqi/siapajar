@@ -6,6 +6,12 @@ import { defineConfig } from '@adonisjs/core/http'
  */
 export const http = defineConfig({
   /**
+   * When enabled, the app trusts X-Forwarded-* headers from
+   * upstream proxies (Cloudflare / Traefik).
+   */
+  trustProxy: true,
+
+  /**
    * Generate a unique request id for each incoming request.
    * Useful to correlate logs and debug a request flow.
    */
