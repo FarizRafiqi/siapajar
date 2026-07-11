@@ -3,28 +3,28 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: pajar-postgres
+    container_name: siapajar-postgres
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: ${DB_USER:-pajar}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-pajar_secret}
-      POSTGRES_DB: ${DB_DATABASE:-pajar}
+      POSTGRES_USER: ${DB_USER:-siapajar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-siapajar_secret}
+      POSTGRES_DB: ${DB_DATABASE:-siapajar}
     volumes:
-      - pajar-pgdata:/var/lib/postgresql/data
+      - siapajar-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-pajar} -d ${DB_DATABASE:-pajar}']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-siapajar} -d ${DB_DATABASE:-siapajar}']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: pajar-redis
+    container_name: siapajar-redis
     ports:
       - '6379:6379'
     volumes:
-      - pajar-redisdata:/data
+      - siapajar-redisdata:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -32,5 +32,5 @@ services:
       retries: 5
 
 volumes:
-  pajar-pgdata:
-  pajar-redisdata:
+  siapajar-pgdata:
+  siapajar-redisdata:

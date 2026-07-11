@@ -1,6 +1,6 @@
-# PAJAR — Perangkat Ajar
+# SiapAjar — Siap Ajar
 
-All-in-one administrasi guru Kurikulum Merdeka.
+All-in-one administrasi guru Kurikulum Merdeka. Siap mengajar, siap administrasi.
 
 ## Tech Stack
 
@@ -52,7 +52,7 @@ Open http://localhost:3333
 ## Project Structure
 
 ```
-pajar/
+siapajar/
 ├── app/                  # Controllers, models, services, middleware
 ├── config/               # Database, auth, etc.
 ├── database/migrations/  # Lucid migrations
