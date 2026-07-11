@@ -11,7 +11,9 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
-router.on('/').renderInertia('landing', {}).as('landing')
+router.get('/', ({ inertia }) => {
+  return inertia.render('landing', {})
+}).as('landing')
 
 router
   .group(() => {
