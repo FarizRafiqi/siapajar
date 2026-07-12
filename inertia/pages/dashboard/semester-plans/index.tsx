@@ -27,13 +27,19 @@ interface Promes {
   semester: Semester
 }
 
+interface Subject {
+  id: number
+  name: string
+}
+
 interface PromesIndexProps {
   readonly promes: Promes[]
   readonly kelas: Kelas[]
   readonly semester: Semester[]
+  readonly subjects: Subject[]
 }
 
-export default function PromesIndex({ promes, kelas, semester }: PromesIndexProps) {
+export default function PromesIndex({ promes, kelas, semester, subjects }: PromesIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingPromes, setDeletingPromes] = useState<Promes | null>(null)
 
@@ -58,16 +64,6 @@ export default function PromesIndex({ promes, kelas, semester }: PromesIndexProp
       onSuccess: () => setDeletingPromes(null),
     })
   }
-
-  const subjects = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-  ]
 
   return (
     <DashboardWrapper title="Dashboard">
@@ -213,8 +209,8 @@ export default function PromesIndex({ promes, kelas, semester }: PromesIndexProp
                 >
                   <option value="">Pilih mata pelajaran</option>
                   {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.id} value={s.name}>
+                      {s.name}
                     </option>
                   ))}
                 </select>

@@ -58,6 +58,12 @@ export interface ApiDefinition {
     destroy: typeof routes['semester-plans.destroy']
     generate: typeof routes['semester-plans.generate']
   }
+  subjects: {
+    index: typeof routes['subjects.index']
+    store: typeof routes['subjects.store']
+    update: typeof routes['subjects.update']
+    destroy: typeof routes['subjects.destroy']
+  }
   settings: {
     index: typeof routes['settings.index']
     update: typeof routes['settings.update']

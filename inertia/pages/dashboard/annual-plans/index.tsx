@@ -17,12 +17,18 @@ interface Prota {
   tahunAjaran: TahunAjaran
 }
 
+interface Subject {
+  id: number
+  name: string
+}
+
 interface ProtaIndexProps {
   readonly prota: Prota[]
   readonly tahunAjaran: TahunAjaran[]
+  readonly subjects: Subject[]
 }
 
-export default function ProtaIndex({ prota, tahunAjaran }: ProtaIndexProps) {
+export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingProta, setDeletingProta] = useState<Prota | null>(null)
 
@@ -46,16 +52,6 @@ export default function ProtaIndex({ prota, tahunAjaran }: ProtaIndexProps) {
       onSuccess: () => setDeletingProta(null),
     })
   }
-
-  const subjects = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-  ]
 
   return (
     <DashboardWrapper title="Dashboard">
@@ -184,8 +180,8 @@ export default function ProtaIndex({ prota, tahunAjaran }: ProtaIndexProps) {
                 >
                   <option value="">Pilih mata pelajaran</option>
                   {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.id} value={s.name}>
+                      {s.name}
                     </option>
                   ))}
                 </select>

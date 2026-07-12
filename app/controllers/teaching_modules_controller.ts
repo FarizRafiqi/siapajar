@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import TeachingModule from '#models/teaching_module'
 import SchoolClass from '#models/school_class'
+import Subject from '#models/subject'
 import { createTeachingModuleValidator, updateTeachingModuleValidator } from '#validators/teaching_module'
 
 export default class TeachingModulesController {
@@ -15,9 +16,16 @@ export default class TeachingModulesController {
       .where('user_id', user.id)
       .orderBy('name')
 
+    const subjects = await Subject.query()
+      .where('user_id', user.id)
+      .where('education_level', user.educationLevel || 'sd')
+      .where('is_active', true)
+      .orderBy('name')
+
     return inertia.render('dashboard/teaching-modules/index', {
       modulAjar: teachingModules,
       kelas: classes,
+      subjects,
     })
   }
 

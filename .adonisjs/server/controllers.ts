@@ -13,5 +13,6 @@ export const controllers = {
   SemesterPlans: () => import('#controllers/semester_plans_controller'),
   Session: () => import('#controllers/session_controller'),
   Settings: () => import('#controllers/settings_controller'),
+  Subjects: () => import('#controllers/subjects_controller'),
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
 }

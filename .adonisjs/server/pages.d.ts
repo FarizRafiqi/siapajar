@@ -24,6 +24,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/semester-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/semester-plans/index.tsx'))['default']>
     'dashboard/semester-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/semester-plans/show.tsx'))['default']>
     'dashboard/settings': ExtractProps<(typeof import('../../inertia/pages/dashboard/settings.tsx'))['default']>
+    'dashboard/subjects/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/subjects/index.tsx'))['default']>
     'dashboard/teaching-modules/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/teaching-modules/index.tsx'))['default']>
     'dashboard/teaching-modules/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/teaching-modules/show.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>

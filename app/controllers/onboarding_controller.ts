@@ -8,10 +8,10 @@ export default class OnboardingController {
 
   async store({ request, response, auth }: HttpContext) {
     const user = auth.user!
-    const { schoolName, jenjang } = await request.validateUsing(onboardingValidator)
+    const { schoolName, educationLevel } = await request.validateUsing(onboardingValidator)
 
     user.schoolName = schoolName
-    user.jenjang = jenjang
+    user.educationLevel = educationLevel
     await user.save()
 
     return response.redirect().toRoute('dashboard')

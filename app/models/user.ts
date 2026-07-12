@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Package from '#models/package'
@@ -13,7 +13,8 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
 })
 
 export default class User extends compose(BaseModel, AuthFinder) {
-  static readonly accessTokens = DbAccessTokensProvider.forModel(User)
+  static table = 'users'
+  static readonly rememberMeTokens = DbRememberMeTokensProvider.forModel(User)
 
   @column({ isPrimary: true })
   declare id: number
@@ -36,8 +37,8 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'school_name' })
   declare schoolName: string | null
 
-  @column()
-  declare jenjang: string | null
+  @column({ columnName: 'education_level' })
+  declare educationLevel: string | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -45,7 +46,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => Package, { foreignKey: 'packageId' })
+  @belongsTo(() => Package, { foreignKey: 'package_id' })
   declare package: BelongsTo<typeof Package>
 
   get initials() {
@@ -69,10 +70,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   }
 
   get isTk() {
-    return this.jenjang === 'tk'
+    return this.educationLevel === 'tk'
   }
 
   get isSd() {
-    return this.jenjang === 'sd'
+    return this.educationLevel === 'sd'
   }
 }

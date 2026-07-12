@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import AnnualPlan from '#models/annual_plan'
 import AcademicYear from '#models/academic_year'
+import Subject from '#models/subject'
 import { createAnnualPlanValidator, updateAnnualPlanValidator } from '#validators/annual_plan'
 
 export default class AnnualPlansController {
@@ -13,9 +14,16 @@ export default class AnnualPlansController {
 
     const academicYears = await AcademicYear.query().orderBy('name', 'desc')
 
+    const subjects = await Subject.query()
+      .where('user_id', user.id)
+      .where('education_level', user.educationLevel || 'sd')
+      .where('is_active', true)
+      .orderBy('name')
+
     return inertia.render('dashboard/annual-plans/index', {
       prota: annualPlans,
       tahunAjaran: academicYears,
+      subjects,
     })
   }
 

@@ -82,6 +82,12 @@ router
     router.delete('/semester-plans/:id', '#controllers/semester_plans_controller.destroy').as('semester-plans.destroy')
     router.post('/semester-plans/generate', '#controllers/semester_plans_controller.generate').as('semester-plans.generate')
 
+    // Subjects (Mata Pelajaran)
+    router.get('/subjects', '#controllers/subjects_controller.index').as('subjects.index')
+    router.post('/subjects', '#controllers/subjects_controller.store').as('subjects.store')
+    router.put('/subjects/:id', '#controllers/subjects_controller.update').as('subjects.update')
+    router.delete('/subjects/:id', '#controllers/subjects_controller.destroy').as('subjects.destroy')
+
     // Settings (Pengaturan)
     router.get('/settings', '#controllers/settings_controller.index').as('settings.index')
     router.put('/settings', '#controllers/settings_controller.update').as('settings.update')

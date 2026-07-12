@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import SemesterPlan from '#models/semester_plan'
 import SchoolClass from '#models/school_class'
 import Semester from '#models/semester'
+import Subject from '#models/subject'
 import { createSemesterPlanValidator, updateSemesterPlanValidator } from '#validators/semester_plan'
 
 export default class SemesterPlansController {
@@ -21,10 +22,17 @@ export default class SemesterPlansController {
       .where('isActive', true)
       .preload('academicYear')
 
+    const subjects = await Subject.query()
+      .where('user_id', user.id)
+      .where('education_level', user.educationLevel || 'sd')
+      .where('is_active', true)
+      .orderBy('name')
+
     return inertia.render('dashboard/semester-plans/index', {
       promes: semesterPlans,
       kelas: classes,
       semester: semesters,
+      subjects,
     })
   }
 

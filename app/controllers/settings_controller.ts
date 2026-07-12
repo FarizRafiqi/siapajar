@@ -10,7 +10,7 @@ export default class SettingsController {
         fullName: user.fullName,
         email: user.email,
         schoolName: user.schoolName,
-        jenjang: user.jenjang as 'tk' | 'sd',
+        educationLevel: user.educationLevel as 'tk' | 'sd',
       },
     })
   }
@@ -23,7 +23,7 @@ export default class SettingsController {
     user.fullName = data.fullName
     user.email = data.email
     user.schoolName = data.schoolName
-    user.jenjang = data.jenjang
+    user.educationLevel = data.educationLevel
     await user.save()
 
     session.flash('success', 'Pengaturan berhasil diperbarui')

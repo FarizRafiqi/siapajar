@@ -9,6 +9,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  Library,
+  Shield,
+  Package,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -26,9 +29,10 @@ interface SidebarProps {
   onToggle?: () => void
 }
 
-const navigation = [
+const guruNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Kelas', href: '/classes', icon: Users },
+  { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
   { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
   { name: 'Bank Soal', href: '/exams', icon: FileQuestion },
   { name: 'Protah', href: '/annual-plans', icon: Calendar },
@@ -36,9 +40,19 @@ const navigation = [
   { name: 'Pengaturan', href: '/settings', icon: Settings },
 ]
 
+const adminNavigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Manage Users', href: '/admin/users', icon: Shield },
+  { name: 'Manage Packages', href: '/admin/packages', icon: Package },
+  { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
+  { name: 'Pengaturan', href: '/settings', icon: Settings },
+]
+
 export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<SidebarProps>) {
   const page = usePage()
   const currentUrl = page.url
+  const isAdmin = user.role === 'admin'
+  const navigation = isAdmin ? adminNavigation : guruNavigation
 
   const roleLabels: Record<string, string> = {
     admin: 'Administrator',

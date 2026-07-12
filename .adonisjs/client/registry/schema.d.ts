@@ -487,6 +487,54 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'subjects.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subjects.store': {
+    methods: ["POST"]
+    pattern: '/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subjects.update': {
+    methods: ["PUT"]
+    pattern: '/subjects/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subjects.destroy': {
+    methods: ["DELETE"]
+    pattern: '/subjects/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'settings.index': {
     methods: ["GET","HEAD"]
     pattern: '/settings'

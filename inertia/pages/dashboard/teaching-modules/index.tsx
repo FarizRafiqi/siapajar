@@ -21,12 +21,18 @@ interface ModulAjar {
   kelas: Kelas
 }
 
+interface Subject {
+  id: number
+  name: string
+}
+
 interface ModulAjarIndexProps {
   readonly modulAjar: ModulAjar[]
   readonly kelas: Kelas[]
+  readonly subjects: Subject[]
 }
 
-export default function ModulAjarIndex({ modulAjar, kelas }: ModulAjarIndexProps) {
+export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjarIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingModul, setDeletingModul] = useState<ModulAjar | null>(null)
 
@@ -52,17 +58,6 @@ export default function ModulAjarIndex({ modulAjar, kelas }: ModulAjarIndexProps
       onSuccess: () => setDeletingModul(null),
     })
   }
-
-  const subjects = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-    'Muatan Lokal',
-  ]
 
   return (
     <DashboardWrapper title="Dashboard">
@@ -205,8 +200,8 @@ export default function ModulAjarIndex({ modulAjar, kelas }: ModulAjarIndexProps
                 >
                   <option value="">Pilih mata pelajaran</option>
                   {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.id} value={s.name}>
+                      {s.name}
                     </option>
                   ))}
                 </select>

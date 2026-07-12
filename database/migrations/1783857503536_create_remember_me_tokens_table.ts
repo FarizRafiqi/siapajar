@@ -6,10 +6,9 @@ export default class CreateRememberMeTokensTable extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').notNullable()
-      table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
-      table.string('token').notNullable().unique()
+      table.integer('tokenable_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
+      table.string('hash').notNullable()
       table.timestamp('expires_at').nullable()
-
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })

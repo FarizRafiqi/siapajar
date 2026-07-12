@@ -6,7 +6,10 @@ export default class OnboardingMiddleware {
     const user = ctx.auth.user
 
     if (user) {
-      const hasCompletedOnboarding = user.jenjang !== null && user.schoolName !== null
+      // Admin skips onboarding
+      if (user.role === 'admin') return next()
+
+      const hasCompletedOnboarding = user.educationLevel !== null && user.schoolName !== null
       const isOnboardingPage = ctx.request.url().startsWith('/onboarding')
 
       if (!hasCompletedOnboarding && !isOnboardingPage) {

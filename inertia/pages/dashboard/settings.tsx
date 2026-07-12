@@ -10,7 +10,7 @@ interface UserProps {
   fullName: string
   email: string
   schoolName: string
-  jenjang: 'tk' | 'sd'
+  educationLevel: 'tk' | 'sd'
 }
 
 interface SettingsProps {
@@ -23,7 +23,7 @@ export default function Settings({ user }: SettingsProps) {
     fullName: user.fullName || '',
     email: user.email || '',
     schoolName: user.schoolName || '',
-    jenjang: user.jenjang || 'sd',
+    educationLevel: user.educationLevel || 'sd',
   })
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -128,17 +128,17 @@ export default function Settings({ user }: SettingsProps) {
                     {/* TK Card */}
                     <button
                       type="button"
-                      onClick={() => setData('jenjang', 'tk')}
+                      onClick={() => setData('educationLevel', 'tk')}
                       className={cn(
                         "relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300",
-                        data.jenjang === 'tk'
+                        data.educationLevel === 'tk'
                           ? "border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20"
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
-                      <Compass className={cn("h-5 w-5 mb-2", data.jenjang === 'tk' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
+                      <Compass className={cn("h-5 w-5 mb-2", data.educationLevel === 'tk' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
                       <span className="text-sm font-medium text-neutral-950 dark:text-white">TK / PAUD</span>
-                      {data.jenjang === 'tk' && (
+                      {data.educationLevel === 'tk' && (
                         <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3 w-3" />
                         </div>
@@ -148,17 +148,17 @@ export default function Settings({ user }: SettingsProps) {
                     {/* SD Card */}
                     <button
                       type="button"
-                      onClick={() => setData('jenjang', 'sd')}
+                      onClick={() => setData('educationLevel', 'sd')}
                       className={cn(
                         "relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300",
-                        data.jenjang === 'sd'
+                        data.educationLevel === 'sd'
                           ? "border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20"
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
-                      <GraduationCap className={cn("h-5 w-5 mb-2", data.jenjang === 'sd' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
+                      <GraduationCap className={cn("h-5 w-5 mb-2", data.educationLevel === 'sd' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
                       <span className="text-sm font-medium text-neutral-950 dark:text-white">SD</span>
-                      {data.jenjang === 'sd' && (
+                      {data.educationLevel === 'sd' && (
                         <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3 w-3" />
                         </div>

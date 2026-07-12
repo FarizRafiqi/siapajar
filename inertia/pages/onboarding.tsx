@@ -8,12 +8,12 @@ import { cn } from '~/lib/utils'
 export default function Onboarding() {
   const [step, setStep] = useState(1)
   const { data, setData, post, processing, errors } = useForm({
-    jenjang: '' as 'tk' | 'sd' | '',
+    educationLevel: '' as 'tk' | 'sd' | '',
     schoolName: '',
   })
 
   const handleNext = () => {
-    if (step === 1 && !data.jenjang) return
+    if (step === 1 && !data.educationLevel) return
     if (step === 2 && data.schoolName.trim().length < 2) return
     setStep(step + 1)
   }
@@ -89,7 +89,7 @@ export default function Onboarding() {
                       Pilih Jenjang Instansi Anda
                     </h2>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
-                      Kami akan menyesuaikan format modul ajar, rencana tahunan (protah/promes), dan penilaian sesuai kurikulum jenjang Anda.
+                      Kami akan menyesuaikan format modul ajar, rencana tahunan (protah/promes), dan penilaian sesuai kurikulum educationLevel Anda.
                     </p>
                   </div>
 
@@ -97,17 +97,17 @@ export default function Onboarding() {
                     {/* TK Option */}
                     <button
                       type="button"
-                      onClick={() => setData('jenjang', 'tk')}
+                      onClick={() => setData('educationLevel', 'tk')}
                       className={cn(
                         "group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300",
-                        data.jenjang === 'tk'
+                        data.educationLevel === 'tk'
                           ? "border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20"
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
                       <div className={cn(
                         "rounded-lg p-3 mb-4 transition-colors",
-                        data.jenjang === 'tk'
+                        data.educationLevel === 'tk'
                           ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
                           : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700"
                       )}>
@@ -119,7 +119,7 @@ export default function Onboarding() {
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
                         Modul ajar RPPH bermain, pencapaian aspek perkembangan, dan rapor predikat narasi.
                       </p>
-                      {data.jenjang === 'tk' && (
+                      {data.educationLevel === 'tk' && (
                         <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3.5 w-3.5" />
                         </div>
@@ -129,17 +129,17 @@ export default function Onboarding() {
                     {/* SD Option */}
                     <button
                       type="button"
-                      onClick={() => setData('jenjang', 'sd')}
+                      onClick={() => setData('educationLevel', 'sd')}
                       className={cn(
                         "group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300",
-                        data.jenjang === 'sd'
+                        data.educationLevel === 'sd'
                           ? "border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20"
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
                       <div className={cn(
                         "rounded-lg p-3 mb-4 transition-colors",
-                        data.jenjang === 'sd'
+                        data.educationLevel === 'sd'
                           ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
                           : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700"
                       )}>
@@ -151,7 +151,7 @@ export default function Onboarding() {
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
                         Mata pelajaran Kurikulum Merdeka terstruktur, bank soal/kuis, dan rapor penilaian akademik.
                       </p>
-                      {data.jenjang === 'sd' && (
+                      {data.educationLevel === 'sd' && (
                         <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3.5 w-3.5" />
                         </div>
@@ -163,7 +163,7 @@ export default function Onboarding() {
                     <button
                       type="button"
                       onClick={handleNext}
-                      disabled={!data.jenjang}
+                      disabled={!data.educationLevel}
                       className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                     >
                       Lanjut
@@ -254,7 +254,7 @@ export default function Onboarding() {
                       Semua Sudah Siap!
                     </h2>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm max-w-sm mx-auto">
-                      Akun Anda telah dikonfigurasi untuk level <strong className="text-emerald-600 dark:text-emerald-400">{data.jenjang === 'tk' ? 'TK / PAUD' : 'Sekolah Dasar (SD)'}</strong> di <strong>{data.schoolName}</strong>.
+                      Akun Anda telah dikonfigurasi untuk level <strong className="text-emerald-600 dark:text-emerald-400">{data.educationLevel === 'tk' ? 'TK / PAUD' : 'Sekolah Dasar (SD)'}</strong> di <strong>{data.schoolName}</strong>.
                     </p>
                   </div>
 

@@ -21,12 +21,18 @@ interface Soal {
   kelas: Kelas
 }
 
+interface Subject {
+  id: number
+  name: string
+}
+
 interface SoalIndexProps {
   readonly soal: Soal[]
   readonly kelas: Kelas[]
+  readonly subjects: Subject[]
 }
 
-export default function SoalIndex({ soal, kelas }: SoalIndexProps) {
+export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingSoal, setDeletingSoal] = useState<Soal | null>(null)
 
@@ -53,16 +59,6 @@ export default function SoalIndex({ soal, kelas }: SoalIndexProps) {
       onSuccess: () => setDeletingSoal(null),
     })
   }
-
-  const subjects = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-  ]
 
   const soalTypes = [
     { value: 'harian', label: 'Soal Harian' },
@@ -218,8 +214,8 @@ export default function SoalIndex({ soal, kelas }: SoalIndexProps) {
                 >
                   <option value="">Pilih mata pelajaran</option>
                   {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.id} value={s.name}>
+                      {s.name}
                     </option>
                   ))}
                 </select>

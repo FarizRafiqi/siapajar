@@ -44,6 +44,10 @@ export type ScannedRoutes = {
     'semester-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
+    'subjects.index': { paramsTuple?: []; params?: {} }
+    'subjects.store': { paramsTuple?: []; params?: {} }
+    'subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'settings.update': { paramsTuple?: []; params?: {} }
   }
@@ -63,6 +67,7 @@ export type ScannedRoutes = {
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -81,6 +86,7 @@ export type ScannedRoutes = {
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -98,6 +104,7 @@ export type ScannedRoutes = {
     'annual-plans.generate': { paramsTuple?: []; params?: {} }
     'semester-plans.store': { paramsTuple?: []; params?: {} }
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
+    'subjects.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -105,6 +112,7 @@ export type ScannedRoutes = {
     'exams.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.update': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
@@ -114,6 +122,7 @@ export type ScannedRoutes = {
     'exams.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

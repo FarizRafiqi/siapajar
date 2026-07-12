@@ -246,6 +246,30 @@ const routes = {
     tokens: [{"old":"/semester-plans/generate","type":0,"val":"semester-plans","end":""},{"old":"/semester-plans/generate","type":0,"val":"generate","end":""}],
     types: placeholder as Registry['semester-plans.generate']['types'],
   },
+  'subjects.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/subjects',
+    tokens: [{"old":"/subjects","type":0,"val":"subjects","end":""}],
+    types: placeholder as Registry['subjects.index']['types'],
+  },
+  'subjects.store': {
+    methods: ["POST"],
+    pattern: '/subjects',
+    tokens: [{"old":"/subjects","type":0,"val":"subjects","end":""}],
+    types: placeholder as Registry['subjects.store']['types'],
+  },
+  'subjects.update': {
+    methods: ["PUT"],
+    pattern: '/subjects/:id',
+    tokens: [{"old":"/subjects/:id","type":0,"val":"subjects","end":""},{"old":"/subjects/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['subjects.update']['types'],
+  },
+  'subjects.destroy': {
+    methods: ["DELETE"],
+    pattern: '/subjects/:id',
+    tokens: [{"old":"/subjects/:id","type":0,"val":"subjects","end":""},{"old":"/subjects/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['subjects.destroy']['types'],
+  },
   'settings.index': {
     methods: ["GET","HEAD"],
     pattern: '/settings',

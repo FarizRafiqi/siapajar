@@ -27,17 +27,33 @@ interface Kelas {
 interface KelasIndexProps {
   readonly kelas: Kelas[]
   readonly tahunAjaran: TahunAjaran[]
+  readonly educationLevel: string
 }
 
-export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
+export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: KelasIndexProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingKelas, setEditingKelas] = useState<Kelas | null>(null)
   const [deletingKelas, setDeletingKelas] = useState<Kelas | null>(null)
 
+  const isTk = educationLevel === 'tk'
+  const gradeOptions = isTk
+    ? [
+        { value: 0, label: 'Kelompok A (4-5 tahun)' },
+        { value: 1, label: 'Kelompok B (5-6 tahun)' },
+      ]
+    : [
+        { value: 1, label: 'Kelas 1' },
+        { value: 2, label: 'Kelas 2' },
+        { value: 3, label: 'Kelas 3' },
+        { value: 4, label: 'Kelas 4' },
+        { value: 5, label: 'Kelas 5' },
+        { value: 6, label: 'Kelas 6' },
+      ]
+
   const { data, setData, post, put, processing, errors, reset } = useForm({
     name: '',
     tahunAjaranId: tahunAjaran[0]?.id || 0,
-    gradeLevel: 1,
+    gradeLevel: isTk ? 0 : 1,
   })
 
   const handleCreate = () => {
@@ -130,7 +146,9 @@ export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
                       Kelas {item.name}
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      Kelas {item.gradeLevel} • {item.tahunAjaran.name}
+                      {isTk
+                        ? `Kelompok ${item.gradeLevel === 0 ? 'A' : 'B'}`
+                        : `Kelas ${item.gradeLevel}`} • {item.tahunAjaran.name}
                     </p>
                   </div>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
@@ -212,7 +230,7 @@ export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
               </div>
               <div>
                 <label htmlFor="create_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  Tingkat Kelas
+                  {isTk ? 'Kelompok' : 'Tingkat Kelas'}
                 </label>
                 <select
                   id="create_gradeLevel"
@@ -220,9 +238,9 @@ export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
                   onChange={(e) => setData('gradeLevel', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {[1, 2, 3, 4, 5, 6].map((level) => (
-                    <option key={level} value={level}>
-                      Kelas {level}
+                  {gradeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
                 </select>
@@ -296,7 +314,7 @@ export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
               </div>
               <div>
                 <label htmlFor="edit_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  Tingkat Kelas
+                  {isTk ? 'Kelompok' : 'Tingkat Kelas'}
                 </label>
                 <select
                   id="edit_gradeLevel"
@@ -304,9 +322,9 @@ export default function KelasIndex({ kelas, tahunAjaran }: KelasIndexProps) {
                   onChange={(e) => setData('gradeLevel', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {[1, 2, 3, 4, 5, 6].map((level) => (
-                    <option key={level} value={level}>
-                      Kelas {level}
+                  {gradeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
                 </select>

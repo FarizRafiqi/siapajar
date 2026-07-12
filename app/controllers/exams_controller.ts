@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Exam from '#models/exam'
 import SchoolClass from '#models/school_class'
+import Subject from '#models/subject'
 import { createExamValidator, updateExamValidator } from '#validators/exam'
 
 export default class ExamsController {
@@ -15,9 +16,16 @@ export default class ExamsController {
       .where('user_id', user.id)
       .orderBy('name')
 
+    const subjects = await Subject.query()
+      .where('user_id', user.id)
+      .where('education_level', user.educationLevel || 'sd')
+      .where('is_active', true)
+      .orderBy('name')
+
     return inertia.render('dashboard/exams/index', {
       soal: exams,
       kelas: classes,
+      subjects,
     })
   }
 

@@ -19,6 +19,7 @@ export default class ClassesController {
     return inertia.render('dashboard/classes/index', {
       kelas: classes,
       tahunAjaran: academicYears,
+      educationLevel: user.educationLevel,
     })
   }
 

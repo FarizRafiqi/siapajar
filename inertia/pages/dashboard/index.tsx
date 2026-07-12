@@ -30,8 +30,16 @@ interface RecentItem {
   created_at: string
 }
 
+interface AdminStats {
+  users: number
+  guru: number
+  admin: number
+}
+
 interface DashboardProps {
+  readonly role: string
   readonly stats: Stats
+  readonly adminStats: AdminStats | null
   readonly recentTeachingModules: RecentItem[]
   readonly recentExams: RecentItem[]
 }
@@ -54,7 +62,9 @@ const colorMap: Record<string, { bg: string; icon: string; text: string }> = {
   cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', icon: 'text-cyan-600 dark:text-cyan-400', text: 'text-cyan-600 dark:text-cyan-400' },
 }
 
-export default function Dashboard({ stats, recentTeachingModules, recentExams }: DashboardProps) {
+export default function Dashboard({ role, stats, adminStats, recentTeachingModules, recentExams }: DashboardProps) {
+  const isAdmin = role === 'admin'
+
   return (
     <DashboardWrapper title="Dashboard">
       <Head title="Dashboard" />
@@ -62,13 +72,61 @@ export default function Dashboard({ stats, recentTeachingModules, recentExams }:
       <div className="space-y-6">
         {/* Welcome */}
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Selamat Datang!</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            {isAdmin ? 'Admin Dashboard' : 'Selamat Datang!'}
+          </h2>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Kelola administrasi sekolah Anda dengan mudah
+            {isAdmin ? 'Kelola sistem SiapAjar' : 'Kelola administrasi sekolah Anda dengan mudah'}
           </p>
         </div>
 
-        {/* Stat Cards */}
+        {/* Admin Stats */}
+        {isAdmin && adminStats && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Total Users</p>
+                    <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{adminStats.users}</p>
+                  </div>
+                  <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/30">
+                    <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Total Guru</p>
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{adminStats.guru}</p>
+                  </div>
+                  <div className="rounded-xl bg-blue-100 p-3 dark:bg-blue-900/30">
+                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Admin</p>
+                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{adminStats.admin}</p>
+                  </div>
+                  <div className="rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
+                    <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Stat Cards - Guru only */}
+        {!isAdmin && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {statCards.map((card, index) => {
             const colors = colorMap[card.color]
@@ -102,8 +160,10 @@ export default function Dashboard({ stats, recentTeachingModules, recentExams }:
             )
           })}
         </div>
+        )}
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Guru only */}
+        {!isAdmin && (
         <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
             Aksi Cepat
@@ -162,8 +222,10 @@ export default function Dashboard({ stats, recentTeachingModules, recentExams }:
             </Link>
           </div>
         </div>
+        )}
 
-        {/* Recent Items */}
+        {/* Recent Items - Guru only */}
+        {!isAdmin && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Recent Teaching Modules */}
           <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
@@ -261,6 +323,7 @@ export default function Dashboard({ stats, recentTeachingModules, recentExams }:
             )}
           </div>
         </div>
+        )}
       </div>
     </DashboardWrapper>
   )
