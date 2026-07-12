@@ -42,7 +42,7 @@ export default class extends BaseSeeder {
         await Subject.create({
           userId: user.id,
           name,
-          educationLevel: user.educationLevel!,
+          educationLevel: user.educationLevel as 'tk' | 'sd',
           gradeLevel: null,
           isActive: true,
         })
