@@ -7,7 +7,7 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
-  'landing': {
+  'home': {
     methods: ["GET","HEAD"]
     pattern: '/'
     types: {

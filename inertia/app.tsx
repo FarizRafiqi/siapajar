@@ -13,10 +13,11 @@ createInertiaApp({
   title: (title) => (title ? `${title} - ${appName}` : appName),
   resolve: (name) => {
     const pages = import.meta.glob('./pages/**/*.tsx')
+    const noLayout = ['home', 'auth/login', 'auth/signup']
     return resolvePageComponent(
       `./pages/${name}.tsx`,
       pages,
-      name === 'home' ? undefined : DefaultLayout
+      noLayout.includes(name) ? undefined : DefaultLayout
     )
   },
   setup({ el, App, props }) {

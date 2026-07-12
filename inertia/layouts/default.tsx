@@ -1,5 +1,7 @@
 import { useEffect, type PropsWithChildren } from 'react'
-import { Link, useForm, usePage } from '@inertiajs/react'
+import { useForm, usePage } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
+import { urlFor } from '~/client'
 import { toast, Toaster } from 'sonner'
 import type { Data } from '@generated/data'
 
@@ -23,7 +25,7 @@ export default function DefaultLayout({ children }: PropsWithChildren) {
       <header>
         <div>
           <div>
-            <Link href={route('home')}>
+            <Link route="home">
               <svg
                 width="66"
                 height="24"
@@ -43,14 +45,14 @@ export default function DefaultLayout({ children }: PropsWithChildren) {
               {page.props.user ? (
                 <>
                   <span>{page.props.user.initials}</span>
-                  <form onSubmit={(e) => { e.preventDefault(); post(route('session.destroy')) }}>
+                  <form onSubmit={(e) => { e.preventDefault(); post(urlFor('session.destroy')) }}>
                     <button type="submit">Logout</button>
                   </form>
                 </>
               ) : (
                 <>
-                  <Link href={route('new_account.create')}>Signup</Link>
-                  <Link href={route('session.create')}>Login</Link>
+                  <Link route="new_account.create">Signup</Link>
+                  <Link route="session.create">Login</Link>
                 </>
               )}
             </nav>

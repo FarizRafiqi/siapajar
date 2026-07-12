@@ -6,11 +6,11 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
-  'landing': {
+  'home': {
     methods: ["GET","HEAD"],
     pattern: '/',
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
-    types: placeholder as Registry['landing']['types'],
+    types: placeholder as Registry['home']['types'],
   },
   'new_account.create': {
     methods: ["GET","HEAD"],
