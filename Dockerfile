@@ -22,7 +22,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/public ./public
+# Copy built frontend assets (Vite manifest + bundles) over the source public/
+COPY --from=builder /app/build/public ./public
 COPY --from=builder /app/resources ./resources
 COPY --from=builder /app/.adonisjs ./.adonisjs
 
