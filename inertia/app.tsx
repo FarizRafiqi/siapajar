@@ -16,7 +16,7 @@ createInertiaApp({
     return resolvePageComponent(
       `./pages/${name}.tsx`,
       pages,
-      name === 'landing' ? undefined : DefaultLayout
+      name === 'home' ? undefined : DefaultLayout
     )
   },
   setup({ el, App, props }) {

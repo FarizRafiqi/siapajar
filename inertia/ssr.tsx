@@ -14,7 +14,7 @@ export default function render(page: any) {
       return resolvePageComponent(
         `./pages/${name}.tsx`,
         pages,
-        name === 'landing' ? undefined : DefaultLayout
+        name === 'home' ? undefined : DefaultLayout
       )
     },
     setup: ({ App, props }) => {

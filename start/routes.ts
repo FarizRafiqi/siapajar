@@ -12,8 +12,8 @@ import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
 router.get('/', ({ inertia }) => {
-  return inertia.render('landing', {})
-}).as('landing')
+  return inertia.render('home', {})
+}).as('home')
 
 router
   .group(() => {
