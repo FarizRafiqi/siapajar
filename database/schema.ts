@@ -7,6 +7,82 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AcademicYearSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'isActive', 'name', 'updatedAt'] as const
+  $columns = AcademicYearSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean | null
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class AnnualPlanSchema extends BaseModel {
+  static $columns = ['academicYearId', 'content', 'createdAt', 'id', 'subject', 'updatedAt', 'userId'] as const
+  $columns = AnnualPlanSchema.$columns
+  @column()
+  declare academicYearId: number | null
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare subject: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class ClassSchema extends BaseModel {
+  static $columns = ['academicYearId', 'createdAt', 'gradeLevel', 'id', 'name', 'updatedAt', 'userId'] as const
+  $columns = ClassSchema.$columns
+  @column()
+  declare academicYearId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare gradeLevel: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class ExamSchema extends BaseModel {
+  static $columns = ['classId', 'createdAt', 'id', 'questions', 'status', 'title', 'type', 'updatedAt', 'userId'] as const
+  $columns = ExamSchema.$columns
+  @column()
+  declare classId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare questions: any
+  @column()
+  declare status: string | null
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
 export class PackageSchema extends BaseModel {
   static $columns = ['createdAt', 'description', 'displayName', 'features', 'id', 'isActive', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
   $columns = PackageSchema.$columns
@@ -34,8 +110,105 @@ export class PackageSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class RememberMeTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'updatedAt', 'userId'] as const
+  $columns = RememberMeTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare token: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class SemesterPlanSchema extends BaseModel {
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'semesterId', 'subject', 'updatedAt', 'userId'] as const
+  $columns = SemesterPlanSchema.$columns
+  @column()
+  declare classId: number | null
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare semesterId: number | null
+  @column()
+  declare subject: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class SemesterSchema extends BaseModel {
+  static $columns = ['academicYearId', 'createdAt', 'id', 'isActive', 'name', 'updatedAt'] as const
+  $columns = SemesterSchema.$columns
+  @column()
+  declare academicYearId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean | null
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class StudentSchema extends BaseModel {
+  static $columns = ['classId', 'createdAt', 'fullName', 'id', 'nis', 'updatedAt'] as const
+  $columns = StudentSchema.$columns
+  @column()
+  declare classId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare fullName: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare nis: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class TeachingModuleSchema extends BaseModel {
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'phase', 'status', 'subject', 'title', 'updatedAt', 'userId'] as const
+  $columns = TeachingModuleSchema.$columns
+  @column()
+  declare classId: number | null
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare phase: string
+  @column()
+  declare status: string | null
+  @column()
+  declare subject: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'packageId', 'password', 'role', 'updatedAt'] as const
+  static $columns = ['createdAt', 'email', 'fullName', 'id', 'jenjang', 'packageId', 'password', 'role', 'schoolName', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -46,11 +219,15 @@ export class UserSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
+  declare jenjang: string | null
+  @column()
   declare packageId: number | null
   @column({ serializeAs: null })
   declare password: string
   @column()
   declare role: string
+  @column()
+  declare schoolName: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

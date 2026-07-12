@@ -1,7 +1,6 @@
 import './css/app.css'
 import 'sonner/dist/styles.css'
 import { client } from '~/client'
-import DefaultLayout from '~/layouts/default'
 import { createInertiaApp } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { createRoot } from 'react-dom/client'
@@ -13,12 +12,7 @@ createInertiaApp({
   title: (title) => (title ? `${title} - ${appName}` : appName),
   resolve: (name) => {
     const pages = import.meta.glob('./pages/**/*.tsx')
-    const noLayout = ['home', 'auth/login', 'auth/signup']
-    return resolvePageComponent(
-      `./pages/${name}.tsx`,
-      pages,
-      noLayout.includes(name) ? undefined : DefaultLayout
-    )
+    return resolvePageComponent(`./pages/${name}.tsx`, pages)
   },
   setup({ el, App, props }) {
     createRoot(el).render(

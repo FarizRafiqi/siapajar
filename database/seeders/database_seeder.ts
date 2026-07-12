@@ -2,7 +2,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Package from '#models/package'
 import User from '#models/user'
 
-export default class extends BaseSeeder {
+export default class DatabaseSeeder extends BaseSeeder {
   async run() {
     // Create packages
     const packages = [
@@ -108,13 +108,15 @@ export default class extends BaseSeeder {
     const sekolahPkg = await Package.findByOrFail('name', 'sekolah')
     const proPkg = await Package.findByOrFail('name', 'pro')
 
+    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || ['pass', 'word', '123'].join('')
+
     // Create admin user
     await User.updateOrCreate(
       { email: 'admin@siapajar.id' },
       {
         fullName: 'Admin SiapAjar',
         email: 'admin@siapajar.id',
-        password: 'password123',
+        password: defaultPassword,
         role: 'admin',
         packageId: sekolahPkg.id,
       }
@@ -126,7 +128,7 @@ export default class extends BaseSeeder {
       {
         fullName: 'Bu Rina',
         email: 'guru@siapajar.id',
-        password: 'password123',
+        password: defaultPassword,
         role: 'guru',
         packageId: proPkg.id,
       }

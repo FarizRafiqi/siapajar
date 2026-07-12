@@ -1,22 +1,31 @@
 import { useEffect, type PropsWithChildren } from 'react'
-import { useForm, usePage } from '@inertiajs/react'
+import { useForm } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { urlFor } from '~/client'
 import { toast, Toaster } from 'sonner'
-import type { Data } from '@generated/data'
 
-export default function DefaultLayout({ children }: PropsWithChildren) {
-  const page = usePage<Data.SharedProps>()
+interface DefaultLayoutProps extends PropsWithChildren {
+  flash: {
+    error?: string
+    success?: string
+  }
+  user?: {
+    id: number
+    fullName: string
+    email: string
+    initials: string
+  }
+}
 
+export default function DefaultLayout({ children, flash, user }: DefaultLayoutProps) {
   useEffect(() => {
-    const flash = page.props.flash
-    if (flash.error) {
+    if (flash?.error) {
       toast.error(flash.error)
     }
-    if (flash.success) {
+    if (flash?.success) {
       toast.success(flash.success)
     }
-  }, [page.props.flash])
+  }, [flash])
 
   const { post } = useForm()
 
@@ -42,9 +51,9 @@ export default function DefaultLayout({ children }: PropsWithChildren) {
           </div>
           <div>
             <nav>
-              {page.props.user ? (
+              {user ? (
                 <>
-                  <span>{page.props.user.initials}</span>
+                  <span>{user.initials}</span>
                   <form onSubmit={(e) => { e.preventDefault(); post(urlFor('session.destroy')) }}>
                     <button type="submit">Logout</button>
                   </form>

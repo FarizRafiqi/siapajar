@@ -4,6 +4,14 @@
  */
 
 export const controllers = {
+  AnnualPlans: () => import('#controllers/annual_plans_controller'),
+  Classes: () => import('#controllers/classes_controller'),
+  Dashboard: () => import('#controllers/dashboard_controller'),
+  Exams: () => import('#controllers/exams_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
+  Onboarding: () => import('#controllers/onboarding_controller'),
+  SemesterPlans: () => import('#controllers/semester_plans_controller'),
   Session: () => import('#controllers/session_controller'),
+  Settings: () => import('#controllers/settings_controller'),
+  TeachingModules: () => import('#controllers/teaching_modules_controller'),
 }

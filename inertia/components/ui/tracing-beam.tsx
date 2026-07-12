@@ -6,7 +6,7 @@ interface TracingBeamProps {
   className?: string
 }
 
-export function TracingBeam({ children, className = '' }: TracingBeamProps) {
+export function TracingBeam({ children, className = '' }: Readonly<TracingBeamProps>) {
   const { scrollYProgress } = useScroll()
   const y1 = useTransform(scrollYProgress, [0, 0.8], ['0%', '100%'])
   const y2 = useTransform(scrollYProgress, [0, 0.8], ['0%', '80%'])

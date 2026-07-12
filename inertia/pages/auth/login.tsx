@@ -79,6 +79,21 @@ export default function Login() {
                     )}
                   </div>
 
+                  {/* Remember Me */}
+                  <div className="flex items-center justify-between py-1">
+                    <label
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 'normal' }}
+                      className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none"
+                    >
+                      <input
+                        type="checkbox"
+                        name="remember"
+                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <span>Ingat saya</span>
+                    </label>
+                  </div>
+
                   {/* Submit */}
                   <button
                     type="submit"

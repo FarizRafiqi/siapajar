@@ -7,11 +7,11 @@ export default class SessionController {
   }
 
   async store({ request, auth, response }: HttpContext) {
-    const { email, password } = request.all()
+    const { email, password, remember } = request.all()
     const user = await User.verifyCredentials(email, password)
 
-    await auth.use('web').login(user)
-    response.redirect().toRoute('home')
+    await auth.use('web').login(user, !!remember)
+    response.redirect().toRoute('dashboard')
   }
 
   async destroy({ auth, response }: HttpContext) {

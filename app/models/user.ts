@@ -1,14 +1,31 @@
-import { UserSchema } from '#database/schema'
+import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
-import { column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Package from '#models/package'
 
-export default class User extends compose(UserSchema, withAuthFinder(hash)) {
+const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
+  uids: ['email'],
+  passwordColumnName: 'password',
+})
+
+export default class User extends compose(BaseModel, AuthFinder) {
   static readonly accessTokens = DbAccessTokensProvider.forModel(User)
+
+  @column({ isPrimary: true })
+  declare id: number
+
+  @column()
+  declare fullName: string | null
+
+  @column()
+  declare email: string
+
+  @column({ serializeAs: null })
+  declare password: string
 
   @column()
   declare role: string
@@ -16,7 +33,19 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
   @column()
   declare packageId: number | null
 
-  @belongsTo(() => Package)
+  @column({ columnName: 'school_name' })
+  declare schoolName: string | null
+
+  @column()
+  declare jenjang: string | null
+
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+
+  @belongsTo(() => Package, { foreignKey: 'packageId' })
   declare package: BelongsTo<typeof Package>
 
   get initials() {
@@ -24,7 +53,6 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
     if (first && last) {
       return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
     }
-
     return `${first.slice(0, 2)}`.toUpperCase()
   }
 
@@ -38,5 +66,13 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
 
   get isKepalaSekolah() {
     return this.role === 'kepala_sekolah'
+  }
+
+  get isTk() {
+    return this.jenjang === 'tk'
+  }
+
+  get isSd() {
+    return this.jenjang === 'sd'
   }
 }

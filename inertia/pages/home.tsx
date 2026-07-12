@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import { Button } from '@heroui/react/button'
 import { Chip } from '@heroui/react/chip'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
@@ -31,7 +31,7 @@ const features = [
   {
     icon: ClipboardList,
     title: 'Perencanaan',
-    description: 'Prota, Promes, ATP otomatis sesuai Kurikulum Merdeka. Semua saling sinkron dari satu data kelas.',
+    description: 'Protah, Promes, ATP otomatis sesuai Kurikulum Merdeka. Semua saling sinkron dari satu data kelas.',
     gradient: 'from-emerald-500 to-teal-500',
     lightBg: 'from-emerald-50 to-teal-50',
     darkBg: 'from-emerald-900/30 to-teal-900/30',
@@ -171,7 +171,7 @@ const testimonials = [
   {
     name: 'Pak Budi',
     role: 'Wali Kelas 3 SD',
-    quote: 'Semua dokumen admin dari Prota sampai rapor ada di satu tempat. Sangat membantu!',
+    quote: 'Semua dokumen admin dari Protah sampai rapor ada di satu tempat. Sangat membantu!',
     avatarGradient: 'from-blue-400 to-indigo-500',
     rating: 5,
   },
@@ -305,6 +305,7 @@ function FloatingNav() {
   const [visible, setVisible] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { user } = usePage().props as any
 
   useMotionValueEvent(scrollY, 'change', (current) => {
     const diff = current - (scrollY.getPrevious() ?? 0)
@@ -365,12 +366,20 @@ function FloatingNav() {
               </a>
             ))}
             <ThemeToggle />
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button variant="primary" className="bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
-            </Link>
+            {user ? (
+              <Link href="/dashboard">
+                <Button variant="primary" className="bg-emerald-600 text-white hover:bg-emerald-700">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Login</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button variant="primary" className="bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
+                </Link>
+              </>
+            )}
           </motion.div>
 
           {/* Mobile: Theme + Hamburger */}
@@ -434,12 +443,20 @@ function FloatingNav() {
                 </motion.a>
               ))}
               <div className="border-t border-gray-100 dark:border-gray-800 mt-2 pt-3 flex flex-col gap-2">
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full">Login</Button>
-                </Link>
-                <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                  <Button variant="primary" className="w-full bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
-                </Link>
+                {user ? (
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                    <Button variant="primary" className="w-full bg-emerald-600 text-white hover:bg-emerald-700">Dashboard</Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      <Button variant="ghost" className="w-full">Login</Button>
+                    </Link>
+                    <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                      <Button variant="primary" className="w-full bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
@@ -455,7 +472,7 @@ export default function Home() {
       <Head title="SiapAjar — Siap Mengajar, Siap Administrasi">
         <meta
           name="description"
-          content="Platform all-in-one administrasi guru Kurikulum Merdeka. Buat Prota, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat."
+          content="Platform all-in-one administrasi guru Kurikulum Merdeka. Buat Protah, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat."
         />
       </Head>
 
@@ -508,7 +525,7 @@ export default function Home() {
               transition={{ delay: 1.2, duration: 0.5 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl"
             >
-              Buat Prota, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat.
+              Buat Protah, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat.
               Hemat waktu hingga 80%.
             </motion.p>
 
@@ -674,7 +691,7 @@ export default function Home() {
                 {[
                   { icon: Shuffle, title: 'Fragmentasi Tools', desc: 'Modul ajar di platform A, soal di platform B, rapor di aplikasi desktop C. Tidak saling terintegrasi.' },
                   { icon: BookOpen, title: 'Kurva Belajar KM yang Tinggi', desc: 'Istilah CP, ATP, TP, KKTP masih baru dan membingungkan bagi banyak guru.' },
-                  { icon: Settings, title: 'Tidak Ada Otomatisasi', desc: 'Prota, Promes, ATP disusun manual dari nol dengan copy-paste berulang kali setiap tahun.' },
+                  { icon: Settings, title: 'Tidak Ada Otomatisasi', desc: 'Protah, Promes, ATP disusun manual dari nol dengan copy-paste berulang kali setiap tahun.' },
                 ].map((problem, idx) => (
                   <motion.div
                     key={problem.title}
