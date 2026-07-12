@@ -27,9 +27,11 @@ COPY --from=builder /app/build/public ./public
 COPY --from=builder /app/resources ./resources
 COPY --from=builder /app/.adonisjs ./.adonisjs
 
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 USER app
 
 EXPOSE 3333
 
-ENTRYPOINT ["tini", "--"]
-CMD ["node", "build/bin/server.js"]
+ENTRYPOINT ["tini", "--", "docker-entrypoint.sh"]
