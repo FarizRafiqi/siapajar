@@ -4,6 +4,7 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import SchoolClass from '#models/school_class'
 import Score from '#models/score'
+import Semester from '#models/semester'
 
 export default class Assessment extends BaseModel {
   static readonly table = 'assessments'
@@ -16,6 +17,9 @@ export default class Assessment extends BaseModel {
 
   @column({ columnName: 'class_id' })
   declare classId: number
+
+  @column({ columnName: 'semester_id' })
+  declare semesterId: number | null
 
   @column()
   declare subject: string
@@ -37,6 +41,9 @@ export default class Assessment extends BaseModel {
 
   @belongsTo(() => SchoolClass, { foreignKey: 'classId' })
   declare schoolClass: BelongsTo<typeof SchoolClass>
+
+  @belongsTo(() => Semester, { foreignKey: 'semesterId' })
+  declare semester: BelongsTo<typeof Semester>
 
   @hasMany(() => Score, { foreignKey: 'assessmentId' })
   declare scores: HasMany<typeof Score>

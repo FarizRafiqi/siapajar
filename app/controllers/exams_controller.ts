@@ -5,6 +5,7 @@ import Subject from '#models/subject'
 import { createExamValidator, updateExamValidator } from '#validators/exam'
 import { generateExamValidator } from '#validators/generate'
 import { exportExam } from '#services/export_service'
+import { exportExamPdf } from '#services/pdf_export_service'
 import { callAiJson, AiServiceError } from '#services/ai_service'
 import { examPrompt } from '#services/ai_prompts'
 
@@ -72,6 +73,23 @@ export default class ExamsController {
     const buffer = await exportExam(exam, user)
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response.header('Content-Disposition', `attachment; filename="${exam.title}.docx"`)
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const exam = await Exam.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!exam) {
+      return response.redirect('/exams')
+    }
+
+    const buffer = await exportExamPdf(exam, user)
+    response.header('Content-Type', 'application/pdf')
+    response.header('Content-Disposition', `attachment; filename="${exam.title}.pdf"`)
     return response.send(buffer)
   }
 

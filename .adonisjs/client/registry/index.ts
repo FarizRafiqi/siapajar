@@ -42,6 +42,18 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['session.store']['types'],
   },
+  'auth.google.redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/auth/google/redirect',
+    tokens: [{"old":"/auth/google/redirect","type":0,"val":"auth","end":""},{"old":"/auth/google/redirect","type":0,"val":"google","end":""},{"old":"/auth/google/redirect","type":0,"val":"redirect","end":""}],
+    types: placeholder as Registry['auth.google.redirect']['types'],
+  },
+  'auth.google.callback': {
+    methods: ["GET","HEAD"],
+    pattern: '/auth/google/callback',
+    tokens: [{"old":"/auth/google/callback","type":0,"val":"auth","end":""},{"old":"/auth/google/callback","type":0,"val":"google","end":""},{"old":"/auth/google/callback","type":0,"val":"callback","end":""}],
+    types: placeholder as Registry['auth.google.callback']['types'],
+  },
   'session.destroy': {
     methods: ["POST"],
     pattern: '/logout',
@@ -102,6 +114,12 @@ const routes = {
     tokens: [{"old":"/classes/:id/students","type":0,"val":"classes","end":""},{"old":"/classes/:id/students","type":1,"val":"id","end":""},{"old":"/classes/:id/students","type":0,"val":"students","end":""}],
     types: placeholder as Registry['classes.addStudent']['types'],
   },
+  'classes.importStudents': {
+    methods: ["POST"],
+    pattern: '/classes/:id/students/import',
+    tokens: [{"old":"/classes/:id/students/import","type":0,"val":"classes","end":""},{"old":"/classes/:id/students/import","type":1,"val":"id","end":""},{"old":"/classes/:id/students/import","type":0,"val":"students","end":""},{"old":"/classes/:id/students/import","type":0,"val":"import","end":""}],
+    types: placeholder as Registry['classes.importStudents']['types'],
+  },
   'classes.updateStudent': {
     methods: ["PUT"],
     pattern: '/classes/:id/students/:studentId',
@@ -156,6 +174,12 @@ const routes = {
     tokens: [{"old":"/teaching-modules/:id/export","type":0,"val":"teaching-modules","end":""},{"old":"/teaching-modules/:id/export","type":1,"val":"id","end":""},{"old":"/teaching-modules/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['teaching-modules.export']['types'],
   },
+  'teaching-modules.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/teaching-modules/:id/export/pdf',
+    tokens: [{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"teaching-modules","end":""},{"old":"/teaching-modules/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['teaching-modules.exportPdf']['types'],
+  },
   'exams.index': {
     methods: ["GET","HEAD"],
     pattern: '/exams',
@@ -197,6 +221,12 @@ const routes = {
     pattern: '/exams/:id/export',
     tokens: [{"old":"/exams/:id/export","type":0,"val":"exams","end":""},{"old":"/exams/:id/export","type":1,"val":"id","end":""},{"old":"/exams/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['exams.export']['types'],
+  },
+  'exams.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/exams/:id/export/pdf',
+    tokens: [{"old":"/exams/:id/export/pdf","type":0,"val":"exams","end":""},{"old":"/exams/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['exams.exportPdf']['types'],
   },
   'annual-plans.index': {
     methods: ["GET","HEAD"],
@@ -240,6 +270,12 @@ const routes = {
     tokens: [{"old":"/annual-plans/:id/export","type":0,"val":"annual-plans","end":""},{"old":"/annual-plans/:id/export","type":1,"val":"id","end":""},{"old":"/annual-plans/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['annual-plans.export']['types'],
   },
+  'annual-plans.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/annual-plans/:id/export/pdf',
+    tokens: [{"old":"/annual-plans/:id/export/pdf","type":0,"val":"annual-plans","end":""},{"old":"/annual-plans/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/annual-plans/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/annual-plans/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['annual-plans.exportPdf']['types'],
+  },
   'semester-plans.index': {
     methods: ["GET","HEAD"],
     pattern: '/semester-plans',
@@ -281,6 +317,12 @@ const routes = {
     pattern: '/semester-plans/:id/export',
     tokens: [{"old":"/semester-plans/:id/export","type":0,"val":"semester-plans","end":""},{"old":"/semester-plans/:id/export","type":1,"val":"id","end":""},{"old":"/semester-plans/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['semester-plans.export']['types'],
+  },
+  'semester-plans.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/semester-plans/:id/export/pdf',
+    tokens: [{"old":"/semester-plans/:id/export/pdf","type":0,"val":"semester-plans","end":""},{"old":"/semester-plans/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/semester-plans/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/semester-plans/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['semester-plans.exportPdf']['types'],
   },
   'rppm.index': {
     methods: ["GET","HEAD"],
@@ -402,6 +444,36 @@ const routes = {
     tokens: [{"old":"/assessments/:id/export","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export","type":1,"val":"id","end":""},{"old":"/assessments/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['assessments.export']['types'],
   },
+  'principal.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/principal',
+    tokens: [{"old":"/principal","type":0,"val":"principal","end":""}],
+    types: placeholder as Registry['principal.index']['types'],
+  },
+  'principal.teacher': {
+    methods: ["GET","HEAD"],
+    pattern: '/principal/teachers/:userId',
+    tokens: [{"old":"/principal/teachers/:userId","type":0,"val":"principal","end":""},{"old":"/principal/teachers/:userId","type":0,"val":"teachers","end":""},{"old":"/principal/teachers/:userId","type":1,"val":"userId","end":""}],
+    types: placeholder as Registry['principal.teacher']['types'],
+  },
+  'report-cards.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards',
+    tokens: [{"old":"/report-cards","type":0,"val":"report-cards","end":""}],
+    types: placeholder as Registry['report-cards.index']['types'],
+  },
+  'report-cards.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards/:classId/:semesterId',
+    tokens: [{"old":"/report-cards/:classId/:semesterId","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId","type":1,"val":"semesterId","end":""}],
+    types: placeholder as Registry['report-cards.show']['types'],
+  },
+  'report-cards.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export',
+    tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['report-cards.exportPdf']['types'],
+  },
   'subjects.index': {
     methods: ["GET","HEAD"],
     pattern: '/subjects',
@@ -509,6 +581,30 @@ const routes = {
     pattern: '/admin/academic-years/:id',
     tokens: [{"old":"/admin/academic-years/:id","type":0,"val":"admin","end":""},{"old":"/admin/academic-years/:id","type":0,"val":"academic-years","end":""},{"old":"/admin/academic-years/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.academic-years.destroy']['types'],
+  },
+  'admin.schools.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/schools',
+    tokens: [{"old":"/admin/schools","type":0,"val":"admin","end":""},{"old":"/admin/schools","type":0,"val":"schools","end":""}],
+    types: placeholder as Registry['admin.schools.index']['types'],
+  },
+  'admin.schools.store': {
+    methods: ["POST"],
+    pattern: '/admin/schools',
+    tokens: [{"old":"/admin/schools","type":0,"val":"admin","end":""},{"old":"/admin/schools","type":0,"val":"schools","end":""}],
+    types: placeholder as Registry['admin.schools.store']['types'],
+  },
+  'admin.schools.update': {
+    methods: ["PUT"],
+    pattern: '/admin/schools/:id',
+    tokens: [{"old":"/admin/schools/:id","type":0,"val":"admin","end":""},{"old":"/admin/schools/:id","type":0,"val":"schools","end":""},{"old":"/admin/schools/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.schools.update']['types'],
+  },
+  'admin.schools.destroy': {
+    methods: ["DELETE"],
+    pattern: '/admin/schools/:id',
+    tokens: [{"old":"/admin/schools/:id","type":0,"val":"admin","end":""},{"old":"/admin/schools/:id","type":0,"val":"schools","end":""},{"old":"/admin/schools/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.schools.destroy']['types'],
   },
   'admin.ai-settings.index': {
     methods: ["GET","HEAD"],

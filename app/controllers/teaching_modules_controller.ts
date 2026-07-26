@@ -5,6 +5,7 @@ import Subject from '#models/subject'
 import { createTeachingModuleValidator, updateTeachingModuleValidator } from '#validators/teaching_module'
 import { generateTeachingModuleValidator } from '#validators/generate'
 import { exportTeachingModule } from '#services/export_service'
+import { exportTeachingModulePdf } from '#services/pdf_export_service'
 import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { teachingModulePrompt } from '#services/ai_prompts'
 
@@ -64,6 +65,23 @@ export default class TeachingModulesController {
     const buffer = await exportTeachingModule(teachingModule, user)
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.docx"`)
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const teachingModule = await TeachingModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!teachingModule) {
+      return response.redirect('/teaching-modules')
+    }
+
+    const buffer = await exportTeachingModulePdf(teachingModule, user)
+    response.header('Content-Type', 'application/pdf')
+    response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.pdf"`)
     return response.send(buffer)
   }
 

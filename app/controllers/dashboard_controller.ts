@@ -11,8 +11,13 @@ import Student from '#models/student'
 import User from '#models/user'
 
 export default class DashboardController {
-  async index({ inertia, auth }: HttpContext) {
+  async index({ inertia, auth, response }: HttpContext) {
     const user = auth.user!
+
+    if (user.isKepalaSekolah) {
+      return response.redirect().toRoute('principal.index')
+    }
+
     const isAdmin = user.isAdmin
     const isTk = user.educationLevel === 'tk'
 
@@ -27,15 +32,35 @@ export default class DashboardController {
       totalDailyLessonPlans,
       totalPaudAssessments,
     ] = await Promise.all([
-      isAdmin ? SchoolClass.query().count('* as total') : SchoolClass.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? Student.query().count('* as total') : Student.query().whereHas('schoolClass', (q) => q.where('user_id', user.id)).count('* as total'),
-      isAdmin ? TeachingModule.query().count('* as total') : TeachingModule.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? Exam.query().count('* as total') : Exam.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? AnnualPlan.query().count('* as total') : AnnualPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? SemesterPlan.query().count('* as total') : SemesterPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? WeeklyLessonPlan.query().count('* as total') : WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? DailyLessonPlan.query().count('* as total') : DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin ? PaudAssessment.query().count('* as total') : PaudAssessment.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? SchoolClass.query().count('* as total')
+        : SchoolClass.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? Student.query().count('* as total')
+        : Student.query()
+            .whereHas('schoolClass', (q) => q.where('user_id', user.id))
+            .count('* as total'),
+      isAdmin
+        ? TeachingModule.query().count('* as total')
+        : TeachingModule.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? Exam.query().count('* as total')
+        : Exam.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? AnnualPlan.query().count('* as total')
+        : AnnualPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? SemesterPlan.query().count('* as total')
+        : SemesterPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? WeeklyLessonPlan.query().count('* as total')
+        : WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? DailyLessonPlan.query().count('* as total')
+        : DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? PaudAssessment.query().count('* as total')
+        : PaudAssessment.query().where('user_id', user.id).count('* as total'),
     ])
 
     let adminStats = null

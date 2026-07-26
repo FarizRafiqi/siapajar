@@ -47,4 +47,9 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Storage
   STORAGE_PATH: Env.schema.string.optional(),
+
+  // Google OAuth
+  GOOGLE_CLIENT_ID: Env.schema.string.optional(),
+  GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
+  GOOGLE_CALLBACK_URL: Env.schema.string.optional(),
 })

@@ -79,6 +79,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
     }
   }
+  'auth.google.redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/auth/google/redirect'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'auth.google.callback': {
+    methods: ["GET","HEAD"]
+    pattern: '/auth/google/callback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'session.destroy': {
     methods: ["POST"]
     pattern: '/logout'
@@ -199,6 +223,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'classes.importStudents': {
+    methods: ["POST"]
+    pattern: '/classes/:id/students/import'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'classes.updateStudent': {
     methods: ["PUT"]
     pattern: '/classes/:id/students/:studentId'
@@ -307,6 +343,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'teaching-modules.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/teaching-modules/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'exams.index': {
     methods: ["GET","HEAD"]
     pattern: '/exams'
@@ -382,6 +430,18 @@ export interface Registry {
   'exams.export': {
     methods: ["GET","HEAD"]
     pattern: '/exams/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/export/pdf'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -475,6 +535,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'annual-plans.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/annual-plans/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'semester-plans.index': {
     methods: ["GET","HEAD"]
     pattern: '/semester-plans'
@@ -550,6 +622,18 @@ export interface Registry {
   'semester-plans.export': {
     methods: ["GET","HEAD"]
     pattern: '/semester-plans/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'semester-plans.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/semester-plans/:id/export/pdf'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -799,6 +883,66 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'principal.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/principal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'principal.teacher': {
+    methods: ["GET","HEAD"]
+    pattern: '/principal/teachers/:userId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { userId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards/:classId/:semesterId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'subjects.index': {
     methods: ["GET","HEAD"]
     pattern: '/subjects'
@@ -1006,6 +1150,54 @@ export interface Registry {
   'admin.academic-years.destroy': {
     methods: ["DELETE"]
     pattern: '/admin/academic-years/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.store': {
+    methods: ["POST"]
+    pattern: '/admin/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.update': {
+    methods: ["PUT"]
+    pattern: '/admin/schools/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/schools/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]
