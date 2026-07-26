@@ -29,6 +29,7 @@ export type ScannedRoutes = {
     'teaching-modules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.generate': { paramsTuple?: []; params?: {} }
     'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.store': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -36,6 +37,7 @@ export type ScannedRoutes = {
     'exams.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.generate': { paramsTuple?: []; params?: {} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.store': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -43,6 +45,7 @@ export type ScannedRoutes = {
     'annual-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.generate': { paramsTuple?: []; params?: {} }
     'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'annual-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.store': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -50,6 +53,7 @@ export type ScannedRoutes = {
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
     'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'semester-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rppm.index': { paramsTuple?: []; params?: {} }
     'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rppm.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -105,15 +109,19 @@ export type ScannedRoutes = {
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
     'teaching-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'annual-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'semester-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rppm.index': { paramsTuple?: []; params?: {} }
     'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.index': { paramsTuple?: []; params?: {} }
@@ -141,15 +149,19 @@ export type ScannedRoutes = {
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
     'teaching-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'annual-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'semester-plans.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rppm.index': { paramsTuple?: []; params?: {} }
     'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.index': { paramsTuple?: []; params?: {} }

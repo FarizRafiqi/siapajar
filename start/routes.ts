@@ -63,6 +63,7 @@ router
     router.delete('/teaching-modules/:id', '#controllers/teaching_modules_controller.destroy').as('teaching-modules.destroy')
     router.post('/teaching-modules/generate', '#controllers/teaching_modules_controller.generate').as('teaching-modules.generate')
     router.get('/teaching-modules/:id/export', '#controllers/teaching_modules_controller.export').as('teaching-modules.export')
+    router.get('/teaching-modules/:id/export/pdf', '#controllers/teaching_modules_controller.exportPdf').as('teaching-modules.exportPdf')
 
     // Exams (Soal)
     router.get('/exams', '#controllers/exams_controller.index').as('exams.index')
@@ -72,6 +73,7 @@ router
     router.delete('/exams/:id', '#controllers/exams_controller.destroy').as('exams.destroy')
     router.post('/exams/generate', '#controllers/exams_controller.generate').as('exams.generate')
     router.get('/exams/:id/export', '#controllers/exams_controller.export').as('exams.export')
+    router.get('/exams/:id/export/pdf', '#controllers/exams_controller.exportPdf').as('exams.exportPdf')
 
     // Annual Plans (Protah)
     router.get('/annual-plans', '#controllers/annual_plans_controller.index').as('annual-plans.index')
@@ -81,6 +83,7 @@ router
     router.delete('/annual-plans/:id', '#controllers/annual_plans_controller.destroy').as('annual-plans.destroy')
     router.post('/annual-plans/generate', '#controllers/annual_plans_controller.generate').as('annual-plans.generate')
     router.get('/annual-plans/:id/export', '#controllers/annual_plans_controller.export').as('annual-plans.export')
+    router.get('/annual-plans/:id/export/pdf', '#controllers/annual_plans_controller.exportPdf').as('annual-plans.exportPdf')
 
     // Semester Plans (Promes)
     router.get('/semester-plans', '#controllers/semester_plans_controller.index').as('semester-plans.index')
@@ -90,6 +93,7 @@ router
     router.delete('/semester-plans/:id', '#controllers/semester_plans_controller.destroy').as('semester-plans.destroy')
     router.post('/semester-plans/generate', '#controllers/semester_plans_controller.generate').as('semester-plans.generate')
     router.get('/semester-plans/:id/export', '#controllers/semester_plans_controller.export').as('semester-plans.export')
+    router.get('/semester-plans/:id/export/pdf', '#controllers/semester_plans_controller.exportPdf').as('semester-plans.exportPdf')
 
     // RPPM (rencana mingguan TK/PAUD)
     router.get('/rppm', '#controllers/weekly_lesson_plans_controller.index').as('rppm.index')

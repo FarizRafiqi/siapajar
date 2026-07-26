@@ -6,6 +6,7 @@ import Subject from '#models/subject'
 import { createSemesterPlanValidator, updateSemesterPlanValidator } from '#validators/semester_plan'
 import { generateSemesterPlanValidator } from '#validators/generate'
 import { exportSemesterPlan } from '#services/export_service'
+import { exportSemesterPlanPdf } from '#services/pdf_export_service'
 import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { semesterPlanPrompt } from '#services/ai_prompts'
 
@@ -72,6 +73,23 @@ export default class SemesterPlansController {
     const buffer = await exportSemesterPlan(semesterPlan, user)
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response.header('Content-Disposition', `attachment; filename="Promes ${semesterPlan.subject}.docx"`)
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const semesterPlan = await SemesterPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!semesterPlan) {
+      return response.redirect('/semester-plans')
+    }
+
+    const buffer = await exportSemesterPlanPdf(semesterPlan, user)
+    response.header('Content-Type', 'application/pdf')
+    response.header('Content-Disposition', `attachment; filename="Promes ${semesterPlan.subject}.pdf"`)
     return response.send(buffer)
   }
 

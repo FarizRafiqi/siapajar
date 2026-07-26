@@ -36,6 +36,7 @@ export interface ApiDefinition {
     destroy: typeof routes['teaching-modules.destroy']
     generate: typeof routes['teaching-modules.generate']
     export: typeof routes['teaching-modules.export']
+    exportPdf: typeof routes['teaching-modules.exportPdf']
   }
   exams: {
     index: typeof routes['exams.index']
@@ -45,6 +46,7 @@ export interface ApiDefinition {
     destroy: typeof routes['exams.destroy']
     generate: typeof routes['exams.generate']
     export: typeof routes['exams.export']
+    exportPdf: typeof routes['exams.exportPdf']
   }
   annualPlans: {
     index: typeof routes['annual-plans.index']
@@ -54,6 +56,7 @@ export interface ApiDefinition {
     destroy: typeof routes['annual-plans.destroy']
     generate: typeof routes['annual-plans.generate']
     export: typeof routes['annual-plans.export']
+    exportPdf: typeof routes['annual-plans.exportPdf']
   }
   semesterPlans: {
     index: typeof routes['semester-plans.index']
@@ -63,6 +66,7 @@ export interface ApiDefinition {
     destroy: typeof routes['semester-plans.destroy']
     generate: typeof routes['semester-plans.generate']
     export: typeof routes['semester-plans.export']
+    exportPdf: typeof routes['semester-plans.exportPdf']
   }
   rppm: {
     index: typeof routes['rppm.index']

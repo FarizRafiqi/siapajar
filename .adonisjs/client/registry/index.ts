@@ -156,6 +156,12 @@ const routes = {
     tokens: [{"old":"/teaching-modules/:id/export","type":0,"val":"teaching-modules","end":""},{"old":"/teaching-modules/:id/export","type":1,"val":"id","end":""},{"old":"/teaching-modules/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['teaching-modules.export']['types'],
   },
+  'teaching-modules.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/teaching-modules/:id/export/pdf',
+    tokens: [{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"teaching-modules","end":""},{"old":"/teaching-modules/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/teaching-modules/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['teaching-modules.exportPdf']['types'],
+  },
   'exams.index': {
     methods: ["GET","HEAD"],
     pattern: '/exams',
@@ -197,6 +203,12 @@ const routes = {
     pattern: '/exams/:id/export',
     tokens: [{"old":"/exams/:id/export","type":0,"val":"exams","end":""},{"old":"/exams/:id/export","type":1,"val":"id","end":""},{"old":"/exams/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['exams.export']['types'],
+  },
+  'exams.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/exams/:id/export/pdf',
+    tokens: [{"old":"/exams/:id/export/pdf","type":0,"val":"exams","end":""},{"old":"/exams/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['exams.exportPdf']['types'],
   },
   'annual-plans.index': {
     methods: ["GET","HEAD"],
@@ -240,6 +252,12 @@ const routes = {
     tokens: [{"old":"/annual-plans/:id/export","type":0,"val":"annual-plans","end":""},{"old":"/annual-plans/:id/export","type":1,"val":"id","end":""},{"old":"/annual-plans/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['annual-plans.export']['types'],
   },
+  'annual-plans.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/annual-plans/:id/export/pdf',
+    tokens: [{"old":"/annual-plans/:id/export/pdf","type":0,"val":"annual-plans","end":""},{"old":"/annual-plans/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/annual-plans/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/annual-plans/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['annual-plans.exportPdf']['types'],
+  },
   'semester-plans.index': {
     methods: ["GET","HEAD"],
     pattern: '/semester-plans',
@@ -281,6 +299,12 @@ const routes = {
     pattern: '/semester-plans/:id/export',
     tokens: [{"old":"/semester-plans/:id/export","type":0,"val":"semester-plans","end":""},{"old":"/semester-plans/:id/export","type":1,"val":"id","end":""},{"old":"/semester-plans/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['semester-plans.export']['types'],
+  },
+  'semester-plans.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/semester-plans/:id/export/pdf',
+    tokens: [{"old":"/semester-plans/:id/export/pdf","type":0,"val":"semester-plans","end":""},{"old":"/semester-plans/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/semester-plans/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/semester-plans/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['semester-plans.exportPdf']['types'],
   },
   'rppm.index': {
     methods: ["GET","HEAD"],
