@@ -307,6 +307,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'teaching-modules.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/teaching-modules/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'exams.index': {
     methods: ["GET","HEAD"]
     pattern: '/exams'
@@ -382,6 +394,18 @@ export interface Registry {
   'exams.export': {
     methods: ["GET","HEAD"]
     pattern: '/exams/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/export/pdf'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -475,6 +499,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'annual-plans.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/annual-plans/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'semester-plans.index': {
     methods: ["GET","HEAD"]
     pattern: '/semester-plans'
@@ -550,6 +586,18 @@ export interface Registry {
   'semester-plans.export': {
     methods: ["GET","HEAD"]
     pattern: '/semester-plans/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'semester-plans.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/semester-plans/:id/export/pdf'
     types: {
       body: {}
       paramsTuple: [ParamValue]

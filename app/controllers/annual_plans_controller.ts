@@ -5,6 +5,7 @@ import Subject from '#models/subject'
 import { createAnnualPlanValidator, updateAnnualPlanValidator } from '#validators/annual_plan'
 import { generateAnnualPlanValidator } from '#validators/generate'
 import { exportAnnualPlan } from '#services/export_service'
+import { exportAnnualPlanPdf } from '#services/pdf_export_service'
 import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { annualPlanPrompt } from '#services/ai_prompts'
 
@@ -62,6 +63,23 @@ export default class AnnualPlansController {
     const buffer = await exportAnnualPlan(annualPlan, user)
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response.header('Content-Disposition', `attachment; filename="Protah ${annualPlan.subject}.docx"`)
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const annualPlan = await AnnualPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!annualPlan) {
+      return response.redirect('/annual-plans')
+    }
+
+    const buffer = await exportAnnualPlanPdf(annualPlan, user)
+    response.header('Content-Type', 'application/pdf')
+    response.header('Content-Disposition', `attachment; filename="Protah ${annualPlan.subject}.pdf"`)
     return response.send(buffer)
   }
 
