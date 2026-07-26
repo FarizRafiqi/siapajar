@@ -503,9 +503,11 @@ export default function Home({ packages }: HomeProps) {
               <Link href="/signup">
                 <MagicButton>Mulai Gratis &rarr;</MagicButton>
               </Link>
-              <Button variant="outline" size="lg" className="text-lg px-8 min-h-12 bg-white/80 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-200 backdrop-blur-sm">
-                Lihat Demo
-              </Button>
+              <a href="#features">
+                <Button variant="outline" size="lg" className="text-lg px-8 min-h-12 bg-white/80 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-200 backdrop-blur-sm">
+                  Lihat Demo
+                </Button>
+              </a>
             </motion.div>
 
             <motion.p
