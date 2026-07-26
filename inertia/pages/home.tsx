@@ -102,63 +102,24 @@ const steps = [
   },
 ]
 
-const pricing = [
-  {
-    name: 'Free',
-    price: 'Gratis',
-    period: '',
-    features: ['1 kelas', '5 dokumen/bulan', 'Modul Ajar dasar', 'Export PDF'],
-    cta: 'Mulai Gratis',
-    highlighted: false,
-  },
-  {
-    name: 'Basic',
-    price: 'Rp25.000',
-    period: '/bulan',
-    features: [
-      '3 kelas',
-      '30 dokumen/bulan',
-      'Semua fitur AI',
-      'Export PDF & DOCX',
-      'Rapor narasi',
-    ],
-    cta: 'Pilih Basic',
-    highlighted: false,
-  },
-  {
-    name: 'Pro',
-    price: 'Rp45.000',
-    period: '/bulan',
-    features: [
-      '10 kelas',
-      'Unlimited dokumen',
-      'Semua fitur AI',
-      'Export PDF & DOCX',
-      'Rapor narasi',
-      'Peringkat & sertifikat',
-      'Integrasi RPT Digital',
-      'Priority support',
-    ],
-    cta: 'Pilih Pro',
-    highlighted: true,
-  },
-  {
-    name: 'Sekolah',
-    price: 'Rp300.000',
-    period: '/bulan',
-    features: [
-      'Unlimited kelas',
-      'Unlimited dokumen',
-      'Semua fitur Pro',
-      'Dashboard Kepala Sekolah',
-      'Multi-guru (10 akun)',
-      'Laporan administrasi',
-      'Dedicated support',
-    ],
-    cta: 'Hubungi Kami',
-    highlighted: false,
-  },
-]
+interface PricingPackage {
+  id: number
+  name: string
+  displayName: string
+  description: string | null
+  priceMonthly: number
+  priceYearly: number | null
+  features: string[]
+  isHighlighted: boolean
+  ctaLabel: string | null
+}
+
+function formatPackagePrice(pkg: PricingPackage) {
+  if (pkg.priceMonthly === 0) {
+    return { price: 'Gratis', period: '' }
+  }
+  return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '/bulan' }
+}
 
 const testimonials = [
   {
@@ -466,7 +427,11 @@ function FloatingNav() {
   )
 }
 
-export default function Home() {
+interface HomeProps {
+  readonly packages: PricingPackage[]
+}
+
+export default function Home({ packages }: HomeProps) {
   return (
     <>
       <Head title="SiapAjar — Siap Mengajar, Siap Administrasi">
@@ -904,73 +869,76 @@ export default function Home() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pricing.map((plan, idx) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                whileHover={{ y: -8 }}
-              >
-                <div
-                  className={`relative rounded-2xl overflow-hidden h-full flex flex-col ${
-                    plan.highlighted
-                      ? 'bg-gradient-to-br from-emerald-600 to-teal-700 shadow-2xl shadow-emerald-500/25 ring-2 ring-emerald-400/50'
-                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md'
-                  }`}
+            {packages.map((plan, idx) => {
+              const { price, period } = formatPackagePrice(plan)
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -8 }}
                 >
-                  {plan.highlighted && (
-                    <div className="flex items-center justify-center gap-1.5 py-2.5 text-emerald-100 text-sm font-semibold bg-emerald-700/50">
-                      <span>🔥</span>
-                      <span>Terpopuler</span>
-                    </div>
-                  )}
-                  <div className="p-6 text-center flex flex-col flex-1">
-                    <h3 className={`text-xl font-bold mb-2 ${
-                      plan.highlighted ? 'text-white' : 'text-gray-900 dark:text-white'
-                    }`}>{plan.name}</h3>
-                    <div className="mb-5">
-                      <span className={`text-4xl font-black ${
-                        plan.highlighted ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'
-                      }`}>{plan.price}</span>
-                      {plan.period && (
-                        <span className={plan.highlighted ? 'text-emerald-200' : 'text-gray-500 dark:text-gray-400'}>
-                          {plan.period}
-                        </span>
-                      )}
-                    </div>
-                    <ul className="text-left space-y-2.5 mb-6 flex-1">
-                      {plan.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className={`flex items-center gap-2 text-sm ${
-                            plan.highlighted ? 'text-emerald-100' : 'text-gray-600 dark:text-gray-400'
+                  <div
+                    className={`relative rounded-2xl overflow-hidden h-full flex flex-col ${
+                      plan.isHighlighted
+                        ? 'bg-gradient-to-br from-emerald-600 to-teal-700 shadow-2xl shadow-emerald-500/25 ring-2 ring-emerald-400/50'
+                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md'
+                    }`}
+                  >
+                    {plan.isHighlighted && (
+                      <div className="flex items-center justify-center gap-1.5 py-2.5 text-emerald-100 text-sm font-semibold bg-emerald-700/50">
+                        <span>🔥</span>
+                        <span>Terpopuler</span>
+                      </div>
+                    )}
+                    <div className="p-6 text-center flex flex-col flex-1">
+                      <h3 className={`text-xl font-bold mb-2 ${
+                        plan.isHighlighted ? 'text-white' : 'text-gray-900 dark:text-white'
+                      }`}>{plan.displayName}</h3>
+                      <div className="mb-5">
+                        <span className={`text-4xl font-black ${
+                          plan.isHighlighted ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>{price}</span>
+                        {period && (
+                          <span className={plan.isHighlighted ? 'text-emerald-200' : 'text-gray-500 dark:text-gray-400'}>
+                            {period}
+                          </span>
+                        )}
+                      </div>
+                      <ul className="text-left space-y-2.5 mb-6 flex-1">
+                        {plan.features.map((feature) => (
+                          <li
+                            key={feature}
+                            className={`flex items-center gap-2 text-sm ${
+                              plan.isHighlighted ? 'text-emerald-100' : 'text-gray-600 dark:text-gray-400'
+                            }`}
+                          >
+                            <span className={`font-bold text-base flex-shrink-0 ${
+                              plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
+                            }`}>✓</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                      <Link href="/signup">
+                        <Button
+                          variant={plan.isHighlighted ? 'primary' : 'outline'}
+                          className={`w-full font-bold ${
+                            plan.isHighlighted
+                              ? 'bg-white text-emerald-700 hover:bg-emerald-50 border-0'
+                              : ''
                           }`}
                         >
-                          <span className={`font-bold text-base flex-shrink-0 ${
-                            plan.highlighted ? 'text-emerald-300' : 'text-emerald-500'
-                          }`}>✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href="/signup">
-                      <Button
-                        variant={plan.highlighted ? 'primary' : 'outline'}
-                        className={`w-full font-bold ${
-                          plan.highlighted
-                            ? 'bg-white text-emerald-700 hover:bg-emerald-50 border-0'
-                            : ''
-                        }`}
-                      >
-                        {plan.cta}
-                      </Button>
-                    </Link>
+                          {plan.ctaLabel || `Pilih ${plan.displayName}`}
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
