@@ -25,11 +25,20 @@ export default class Package extends BaseModel {
   @column()
   declare priceYearly: number | null
 
-  @column({ serialize: (value: Record<string, unknown>) => value })
-  declare features: Record<string, unknown>
+  @column({
+    prepare: (value: string[]) => JSON.stringify(value ?? []),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? [])),
+  })
+  declare features: string[]
 
   @column()
   declare isActive: boolean
+
+  @column({ columnName: 'is_highlighted' })
+  declare isHighlighted: boolean
+
+  @column({ columnName: 'cta_label' })
+  declare ctaLabel: string | null
 
   @column()
   declare sortOrder: number

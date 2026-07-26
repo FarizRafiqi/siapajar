@@ -153,10 +153,12 @@ export class ExamSchema extends BaseModel {
 }
 
 export class PackageSchema extends BaseModel {
-  static $columns = ['createdAt', 'description', 'displayName', 'features', 'id', 'isActive', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
+  static $columns = ['createdAt', 'ctaLabel', 'description', 'displayName', 'features', 'id', 'isActive', 'isHighlighted', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
   $columns = PackageSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare ctaLabel: string | null
   @column()
   declare description: string | null
   @column()
@@ -167,6 +169,8 @@ export class PackageSchema extends BaseModel {
   declare id: number
   @column()
   declare isActive: boolean
+  @column()
+  declare isHighlighted: boolean
   @column()
   declare name: string
   @column()
