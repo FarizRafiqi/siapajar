@@ -847,6 +847,42 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'report-cards.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards/:classId/:semesterId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'subjects.index': {
     methods: ["GET","HEAD"]
     pattern: '/subjects'

@@ -17,6 +17,7 @@ export const controllers = {
   NewAccount: () => import('#controllers/new_account_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   PaudAssessments: () => import('#controllers/paud_assessments_controller'),
+  ReportCards: () => import('#controllers/report_cards_controller'),
   SemesterPlans: () => import('#controllers/semester_plans_controller'),
   Session: () => import('#controllers/session_controller'),
   Settings: () => import('#controllers/settings_controller'),

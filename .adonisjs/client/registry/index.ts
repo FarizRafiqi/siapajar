@@ -426,6 +426,24 @@ const routes = {
     tokens: [{"old":"/assessments/:id/export","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export","type":1,"val":"id","end":""},{"old":"/assessments/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['assessments.export']['types'],
   },
+  'report-cards.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards',
+    tokens: [{"old":"/report-cards","type":0,"val":"report-cards","end":""}],
+    types: placeholder as Registry['report-cards.index']['types'],
+  },
+  'report-cards.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards/:classId/:semesterId',
+    tokens: [{"old":"/report-cards/:classId/:semesterId","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId","type":1,"val":"semesterId","end":""}],
+    types: placeholder as Registry['report-cards.show']['types'],
+  },
+  'report-cards.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export',
+    tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['report-cards.exportPdf']['types'],
+  },
   'subjects.index': {
     methods: ["GET","HEAD"],
     pattern: '/subjects',
