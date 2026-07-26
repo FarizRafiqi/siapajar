@@ -61,7 +61,7 @@ export class AnnualPlanSchema extends BaseModel {
 }
 
 export class AssessmentSchema extends BaseModel {
-  static $columns = ['classId', 'createdAt', 'date', 'id', 'learningObjective', 'subject', 'title', 'type', 'updatedAt', 'userId'] as const
+  static $columns = ['classId', 'createdAt', 'date', 'id', 'learningObjective', 'semesterId', 'subject', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = AssessmentSchema.$columns
   @column()
   declare classId: number
@@ -73,6 +73,8 @@ export class AssessmentSchema extends BaseModel {
   declare id: number
   @column()
   declare learningObjective: string | null
+  @column()
+  declare semesterId: number | null
   @column()
   declare subject: string
   @column()
@@ -178,7 +180,7 @@ export class PackageSchema extends BaseModel {
 }
 
 export class PaudAssessmentSchema extends BaseModel {
-  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'studentId', 'type', 'updatedAt', 'userId'] as const
+  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'semesterId', 'studentId', 'type', 'updatedAt', 'userId'] as const
   $columns = PaudAssessmentSchema.$columns
   @column()
   declare classId: number
@@ -190,6 +192,8 @@ export class PaudAssessmentSchema extends BaseModel {
   declare date: DateTime
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare semesterId: number | null
   @column()
   declare studentId: number
   @column()
@@ -213,6 +217,21 @@ export class RememberMeTokenSchema extends BaseModel {
   declare id: number
   @column()
   declare tokenableId: number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class SchoolSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'name', 'npsn', 'updatedAt'] as const
+  $columns = SchoolSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string
+  @column()
+  declare npsn: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -275,7 +294,7 @@ export class SemesterSchema extends BaseModel {
 }
 
 export class StudentSchema extends BaseModel {
-  static $columns = ['classId', 'createdAt', 'fullName', 'id', 'nis', 'updatedAt'] as const
+  static $columns = ['classId', 'createdAt', 'fullName', 'id', 'nis', 'nisn', 'updatedAt'] as const
   $columns = StudentSchema.$columns
   @column()
   declare classId: number
@@ -287,6 +306,8 @@ export class StudentSchema extends BaseModel {
   declare id: number
   @column()
   declare nis: string
+  @column()
+  declare nisn: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -338,8 +359,10 @@ export class TeachingModuleSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'educationLevel', 'email', 'fullName', 'id', 'packageId', 'password', 'role', 'schoolName', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'educationLevel', 'email', 'fullName', 'googleId', 'id', 'packageId', 'password', 'role', 'schoolId', 'schoolName', 'updatedAt'] as const
   $columns = UserSchema.$columns
+  @column()
+  declare avatarUrl: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
@@ -348,14 +371,18 @@ export class UserSchema extends BaseModel {
   declare email: string
   @column()
   declare fullName: string | null
+  @column()
+  declare googleId: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
   declare packageId: number | null
   @column({ serializeAs: null })
-  declare password: string
+  declare password: string | null
   @column()
   declare role: string
+  @column()
+  declare schoolId: number | null
   @column()
   declare schoolName: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
