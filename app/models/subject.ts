@@ -24,7 +24,7 @@ export default class Subject extends BaseModel {
   @column({ columnName: 'is_active' })
   declare isActive: boolean
 
-  @belongsTo(() => User, { foreignKey: 'user_id' })
+  @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })

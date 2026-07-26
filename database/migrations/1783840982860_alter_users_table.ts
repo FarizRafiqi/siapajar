@@ -6,7 +6,14 @@ export default class extends BaseSchema {
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
       table.string('role').notNullable().defaultTo('guru')
-      table.integer('package_id').unsigned().references('id').inTable('packages').nullable()
+      // SET NULL, bukan RESTRICT — menghapus paket tidak boleh terkunci oleh user yang memakainya
+      table
+        .integer('package_id')
+        .unsigned()
+        .references('id')
+        .inTable('packages')
+        .onDelete('SET NULL')
+        .nullable()
     })
   }
 

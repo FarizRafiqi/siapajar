@@ -3,6 +3,7 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   home: typeof routes['home']
+  comingSoon: typeof routes['coming-soon']
   newAccount: {
     create: typeof routes['new_account.create']
     store: typeof routes['new_account.store']
@@ -24,6 +25,7 @@ export interface ApiDefinition {
     update: typeof routes['classes.update']
     destroy: typeof routes['classes.destroy']
     addStudent: typeof routes['classes.addStudent']
+    updateStudent: typeof routes['classes.updateStudent']
     removeStudent: typeof routes['classes.removeStudent']
   }
   teachingModules: {
@@ -33,6 +35,7 @@ export interface ApiDefinition {
     update: typeof routes['teaching-modules.update']
     destroy: typeof routes['teaching-modules.destroy']
     generate: typeof routes['teaching-modules.generate']
+    export: typeof routes['teaching-modules.export']
   }
   exams: {
     index: typeof routes['exams.index']
@@ -41,6 +44,7 @@ export interface ApiDefinition {
     update: typeof routes['exams.update']
     destroy: typeof routes['exams.destroy']
     generate: typeof routes['exams.generate']
+    export: typeof routes['exams.export']
   }
   annualPlans: {
     index: typeof routes['annual-plans.index']
@@ -49,6 +53,7 @@ export interface ApiDefinition {
     update: typeof routes['annual-plans.update']
     destroy: typeof routes['annual-plans.destroy']
     generate: typeof routes['annual-plans.generate']
+    export: typeof routes['annual-plans.export']
   }
   semesterPlans: {
     index: typeof routes['semester-plans.index']
@@ -57,15 +62,64 @@ export interface ApiDefinition {
     update: typeof routes['semester-plans.update']
     destroy: typeof routes['semester-plans.destroy']
     generate: typeof routes['semester-plans.generate']
+    export: typeof routes['semester-plans.export']
+  }
+  rppm: {
+    index: typeof routes['rppm.index']
+    show: typeof routes['rppm.show']
+    update: typeof routes['rppm.update']
+    destroy: typeof routes['rppm.destroy']
+    generate: typeof routes['rppm.generate']
+  }
+  rpph: {
+    index: typeof routes['rpph.index']
+    show: typeof routes['rpph.show']
+    update: typeof routes['rpph.update']
+    destroy: typeof routes['rpph.destroy']
+    generate: typeof routes['rpph.generate']
+  }
+  paudAssessments: {
+    index: typeof routes['paud-assessments.index']
+    store: typeof routes['paud-assessments.store']
+    update: typeof routes['paud-assessments.update']
+    destroy: typeof routes['paud-assessments.destroy']
+  }
+  assessments: {
+    index: typeof routes['assessments.index']
+    store: typeof routes['assessments.store']
+    show: typeof routes['assessments.show']
+    updateScores: typeof routes['assessments.updateScores']
+    destroy: typeof routes['assessments.destroy']
+    export: typeof routes['assessments.export']
   }
   subjects: {
     index: typeof routes['subjects.index']
     store: typeof routes['subjects.store']
+    storeDefaults: typeof routes['subjects.storeDefaults']
     update: typeof routes['subjects.update']
     destroy: typeof routes['subjects.destroy']
   }
   settings: {
     index: typeof routes['settings.index']
     update: typeof routes['settings.update']
+  }
+  admin: {
+    users: {
+      index: typeof routes['admin.users.index']
+      update: typeof routes['admin.users.update']
+      destroy: typeof routes['admin.users.destroy']
+    }
+    packages: {
+      index: typeof routes['admin.packages.index']
+      store: typeof routes['admin.packages.store']
+      update: typeof routes['admin.packages.update']
+      destroy: typeof routes['admin.packages.destroy']
+    }
+    academicYears: {
+      index: typeof routes['admin.academic-years.index']
+      store: typeof routes['admin.academic-years.store']
+      update: typeof routes['admin.academic-years.update']
+      destroy: typeof routes['admin.academic-years.destroy']
+    }
   }
 }

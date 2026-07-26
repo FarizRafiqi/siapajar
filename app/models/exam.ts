@@ -22,7 +22,16 @@ export default class Exam extends BaseModel {
   @column()
   declare type: 'midterm' | 'final' | 'daily' | 'summative'
 
-  @column({ columnName: 'questions', serializeAs: null })
+  /**
+   * Array JSONB. Lucid tidak otomatis meng-encode array (beda dengan objek),
+   * jadi prepare/consume ditulis eksplisit — tanpa ini insert gagal dengan
+   * "invalid input syntax for type json".
+   */
+  @column({
+    columnName: 'questions',
+    prepare: (value: Record<string, any>[]) => JSON.stringify(value ?? []),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? [])),
+  })
   declare questions: Record<string, any>[]
 
   @column()

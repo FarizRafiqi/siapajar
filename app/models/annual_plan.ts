@@ -19,7 +19,11 @@ export default class AnnualPlan extends BaseModel {
   @column()
   declare subject: string
 
-  @column({ columnName: 'content', serializeAs: null })
+  @column({
+    columnName: 'content',
+    prepare: (value: Record<string, any>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
   declare content: Record<string, any>
 
   @belongsTo(() => User, { foreignKey: 'userId' })

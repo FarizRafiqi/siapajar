@@ -9,8 +9,9 @@ interface UserProps {
   id: number
   fullName: string
   email: string
-  schoolName: string
-  educationLevel: 'tk' | 'sd'
+  schoolName: string | null
+  educationLevel: 'tk' | 'sd' | null
+  role: string
 }
 
 interface SettingsProps {
@@ -18,7 +19,9 @@ interface SettingsProps {
 }
 
 export default function Settings({ user }: SettingsProps) {
-  const { flash } = usePage().props as any
+  const { flash } = usePage().props as { flash?: { success?: string } }
+  const isAdmin = user.role === 'admin'
+
   const { data, setData, put, processing, errors } = useForm({
     fullName: user.fullName || '',
     email: user.email || '',
@@ -49,7 +52,7 @@ export default function Settings({ user }: SettingsProps) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className={cn('grid gap-6', !isAdmin && 'md:grid-cols-2')}>
             {/* User Profile Card */}
             <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
@@ -94,7 +97,8 @@ export default function Settings({ user }: SettingsProps) {
               </div>
             </div>
 
-            {/* School details & level Card */}
+            {/* Kartu Sekolah & Jenjang — tidak relevan untuk admin */}
+            {!isAdmin && (
             <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <School className="h-5 w-5 text-neutral-500" />
@@ -168,6 +172,7 @@ export default function Settings({ user }: SettingsProps) {
                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {/* Action Footer */}

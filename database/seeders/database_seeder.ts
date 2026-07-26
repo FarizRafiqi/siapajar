@@ -122,7 +122,7 @@ export default class DatabaseSeeder extends BaseSeeder {
       }
     )
 
-    // Create test guru user
+    // Guru SD — onboarding sudah terisi supaya akun uji langsung bisa dipakai
     await User.updateOrCreate(
       { email: 'guru@siapajar.id' },
       {
@@ -131,6 +131,22 @@ export default class DatabaseSeeder extends BaseSeeder {
         password: defaultPassword,
         role: 'guru',
         packageId: proPkg.id,
+        schoolName: 'SD Negeri 1 Contoh',
+        educationLevel: 'sd',
+      }
+    )
+
+    // Guru TK — untuk menguji alur jenjang TK/PAUD
+    await User.updateOrCreate(
+      { email: 'gurutk@siapajar.id' },
+      {
+        fullName: 'Bu Sari',
+        email: 'gurutk@siapajar.id',
+        password: defaultPassword,
+        role: 'guru',
+        packageId: proPkg.id,
+        schoolName: 'TK Tunas Bangsa',
+        educationLevel: 'tk',
       }
     )
   }

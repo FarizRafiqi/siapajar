@@ -6,6 +6,9 @@ import {
   FileQuestion,
   Calendar,
   CalendarDays,
+  CalendarRange,
+  ClipboardList,
+  ClipboardCheck,
   ChevronLeft,
   ChevronRight,
   Settings,
@@ -21,6 +24,7 @@ interface User {
   email: string
   initials: string
   role: string
+  educationLevel: 'tk' | 'sd' | null
 }
 
 interface SidebarProps {
@@ -29,12 +33,25 @@ interface SidebarProps {
   onToggle?: () => void
 }
 
-const guruNavigation = [
+const guruSdNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Kelas', href: '/classes', icon: Users },
   { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
   { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
   { name: 'Bank Soal', href: '/exams', icon: FileQuestion },
+  { name: 'Penilaian', href: '/assessments', icon: ClipboardCheck },
+  { name: 'Protah', href: '/annual-plans', icon: Calendar },
+  { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
+  { name: 'Pengaturan', href: '/settings', icon: Settings },
+]
+
+const guruTkNavigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Kelompok', href: '/classes', icon: Users },
+  { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
+  { name: 'RPPM', href: '/rppm', icon: CalendarRange },
+  { name: 'RPPH', href: '/rpph', icon: CalendarDays },
+  { name: 'Asesmen PAUD', href: '/paud-assessments', icon: ClipboardList },
   { name: 'Protah', href: '/annual-plans', icon: Calendar },
   { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
   { name: 'Pengaturan', href: '/settings', icon: Settings },
@@ -52,7 +69,12 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
   const page = usePage()
   const currentUrl = page.url
   const isAdmin = user.role === 'admin'
-  const navigation = isAdmin ? adminNavigation : guruNavigation
+  let navigation = guruSdNavigation
+  if (isAdmin) {
+    navigation = adminNavigation
+  } else if (user.educationLevel === 'tk') {
+    navigation = guruTkNavigation
+  }
 
   const roleLabels: Record<string, string> = {
     admin: 'Administrator',

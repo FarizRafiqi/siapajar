@@ -4,36 +4,36 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Plus, Users, Pencil, Trash2, Eye } from 'lucide-react'
 
-interface TahunAjaran {
+interface AcademicYear {
   id: number
   name: string
 }
 
-interface Siswa {
+interface Student {
   id: number
   nis: string
   fullName: string
 }
 
-interface Kelas {
+interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
-  created_at: string
-  tahunAjaran: TahunAjaran
-  siswa: Siswa[]
+  createdAt: string
+  academicYear: AcademicYear
+  students: Student[]
 }
 
-interface KelasIndexProps {
-  readonly kelas: Kelas[]
-  readonly tahunAjaran: TahunAjaran[]
+interface ClassesIndexProps {
+  readonly classes: SchoolClass[]
+  readonly academicYears: AcademicYear[]
   readonly educationLevel: string
 }
 
-export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: KelasIndexProps) {
+export default function ClassesIndex({ classes, academicYears, educationLevel }: ClassesIndexProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingKelas, setEditingKelas] = useState<Kelas | null>(null)
-  const [deletingKelas, setDeletingKelas] = useState<Kelas | null>(null)
+  const [editingClass, setEditingClass] = useState<SchoolClass | null>(null)
+  const [deletingClass, setDeletingClass] = useState<SchoolClass | null>(null)
 
   const isTk = educationLevel === 'tk'
   const gradeOptions = isTk
@@ -50,9 +50,12 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
         { value: 6, label: 'Kelas 6' },
       ]
 
+  const gradeLabel = (level: number) =>
+    isTk ? `Kelompok ${level === 0 ? 'A' : 'B'}` : `Kelas ${level}`
+
   const { data, setData, post, put, processing, errors, reset } = useForm({
     name: '',
-    tahunAjaranId: tahunAjaran[0]?.id || 0,
+    academicYearId: academicYears[0]?.id || 0,
     gradeLevel: isTk ? 0 : 1,
   })
 
@@ -66,33 +69,38 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
   }
 
   const handleUpdate = () => {
-    if (!editingKelas) return
-    put(`/classes/${editingKelas.id}`, {
+    if (!editingClass) return
+    put(`/classes/${editingClass.id}`, {
       onSuccess: () => {
-        setEditingKelas(null)
+        setEditingClass(null)
         reset()
       },
     })
   }
 
   const handleDelete = () => {
-    if (!deletingKelas) return
-    router.delete(`/classes/${deletingKelas.id}`, {
-      onSuccess: () => setDeletingKelas(null),
+    if (!deletingClass) return
+    router.delete(`/classes/${deletingClass.id}`, {
+      onSuccess: () => setDeletingClass(null),
     })
   }
 
-  const openEditModal = (kelas: Kelas) => {
-    setEditingKelas(kelas)
+  const openEditModal = (schoolClass: SchoolClass) => {
+    setEditingClass(schoolClass)
     setData({
-      name: kelas.name,
-      tahunAjaranId: kelas.tahunAjaran.id,
-      gradeLevel: kelas.gradeLevel,
+      name: schoolClass.name,
+      academicYearId: schoolClass.academicYear.id,
+      gradeLevel: schoolClass.gradeLevel,
     })
   }
+
+  const hasAcademicYear = academicYears.length > 0
 
   return (
-    <DashboardWrapper title="Dashboard">
+    <DashboardWrapper
+      title="Manajemen Kelas"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Kelas' }]}
+    >
       <Head title="Manajemen Kelas" />
 
       <div className="space-y-6">
@@ -106,15 +114,22 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+            disabled={!hasAcademicYear}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             Tambah Kelas
           </button>
         </div>
 
-        {/* Kelas Grid */}
-        {kelas.length === 0 ? (
+        {!hasAcademicYear && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+            Belum ada tahun ajaran. Hubungi administrator untuk menambahkan tahun ajaran sebelum membuat kelas.
+          </div>
+        )}
+
+        {/* Daftar Kelas */}
+        {classes.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <Users className="mx-auto h-12 w-12 text-neutral-400" />
             <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
@@ -125,34 +140,27 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              disabled={!hasAcademicYear}
+              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Tambah Kelas
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {kelas.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+            {classes.map((item, index) => (
+              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="mb-4 flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       Kelas {item.name}
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {isTk
-                        ? `Kelompok ${item.gradeLevel === 0 ? 'A' : 'B'}`
-                        : `Kelas ${item.gradeLevel}`} • {item.tahunAjaran.name}
+                      {gradeLabel(item.gradeLevel)} • {item.academicYear.name}
                     </p>
                   </div>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    {item.siswa.length} siswa
+                    {item.students.length} siswa
                   </span>
                 </div>
 
@@ -171,19 +179,19 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => setDeletingKelas(item)}
+                    onClick={() => setDeletingClass(item)}
                     className="flex items-center justify-center rounded-lg border border-neutral-200 px-3 py-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Create Modal */}
+      {/* Modal Tambah */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
@@ -205,28 +213,31 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
                   value={data.name}
                   onChange={(e) => setData('name', e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                  placeholder="contoh: 1A"
+                  placeholder={isTk ? 'contoh: Mawar' : 'contoh: 1A'}
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-500">{errors.name}</p>
                 )}
               </div>
               <div>
-                <label htmlFor="create_tahunAjaranId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label htmlFor="create_academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tahun Ajaran
                 </label>
                 <select
-                  id="create_tahunAjaranId"
-                  value={data.tahunAjaranId}
-                  onChange={(e) => setData('tahunAjaranId', Number(e.target.value))}
+                  id="create_academicYearId"
+                  value={data.academicYearId}
+                  onChange={(e) => setData('academicYearId', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {tahunAjaran.map((ta) => (
-                    <option key={ta.id} value={ta.id}>
-                      {ta.name}
+                  {academicYears.map((year) => (
+                    <option key={year.id} value={year.id}>
+                      {year.name}
                     </option>
                   ))}
                 </select>
+                {errors.academicYearId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.academicYearId}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="create_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -244,6 +255,9 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
                     </option>
                   ))}
                 </select>
+                {errors.gradeLevel && (
+                  <p className="mt-1 text-sm text-red-500">{errors.gradeLevel}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -268,8 +282,8 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
         </div>
       )}
 
-      {/* Edit Modal */}
-      {editingKelas && (
+      {/* Modal Edit */}
+      {editingClass && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -296,21 +310,24 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
                 )}
               </div>
               <div>
-                <label htmlFor="edit_tahunAjaranId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label htmlFor="edit_academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tahun Ajaran
                 </label>
                 <select
-                  id="edit_tahunAjaranId"
-                  value={data.tahunAjaranId}
-                  onChange={(e) => setData('tahunAjaranId', Number(e.target.value))}
+                  id="edit_academicYearId"
+                  value={data.academicYearId}
+                  onChange={(e) => setData('academicYearId', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {tahunAjaran.map((ta) => (
-                    <option key={ta.id} value={ta.id}>
-                      {ta.name}
+                  {academicYears.map((year) => (
+                    <option key={year.id} value={year.id}>
+                      {year.name}
                     </option>
                   ))}
                 </select>
+                {errors.academicYearId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.academicYearId}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="edit_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -328,12 +345,15 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
                     </option>
                   ))}
                 </select>
+                {errors.gradeLevel && (
+                  <p className="mt-1 text-sm text-red-500">{errors.gradeLevel}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => {
-                  setEditingKelas(null)
+                  setEditingClass(null)
                   reset()
                 }}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -352,8 +372,8 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingKelas && (
+      {/* Modal Konfirmasi Hapus */}
+      {deletingClass && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -361,15 +381,24 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
             <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
-              Hapus Kelas?
+              Hapus Kelas {deletingClass.name}?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Semua siswa di kelas <strong>{deletingKelas.name}</strong> juga akan dihapus.
+              Menghapus kelas ini juga akan menghapus:
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
+              <li>• {deletingClass.students.length} data siswa</li>
+              <li>• Semua modul ajar / RPPM / RPPH kelas ini</li>
+              <li>• Semua soal kelas ini</li>
+              <li>• Semua program semester kelas ini</li>
+              <li>• Semua penilaian, nilai, dan asesmen PAUD kelas ini</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
               Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => setDeletingKelas(null)}
+                onClick={() => setDeletingClass(null)}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
@@ -384,7 +413,6 @@ export default function KelasIndex({ kelas, tahunAjaran, educationLevel }: Kelas
           </motion.div>
         </div>
       )}
-    
     </DashboardWrapper>
   )
 }

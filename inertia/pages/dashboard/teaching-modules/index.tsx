@@ -5,20 +5,10 @@ import { useState } from 'react'
 import { BookOpen, Trash2, Eye, Sparkles } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
-interface Kelas {
+interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
-}
-
-interface ModulAjar {
-  id: number
-  title: string
-  subject: string
-  phase: string
-  status: 'draft' | 'published'
-  created_at: string
-  kelas: Kelas
 }
 
 interface Subject {
@@ -26,18 +16,36 @@ interface Subject {
   name: string
 }
 
-interface ModulAjarIndexProps {
-  readonly modulAjar: ModulAjar[]
-  readonly kelas: Kelas[]
+interface TeachingModule {
+  id: number
+  title: string
+  subject: string
+  phase: string
+  status: 'draft' | 'published'
+  createdAt: string
+  schoolClass: SchoolClass
+}
+
+interface TeachingModulesIndexProps {
+  readonly teachingModules: TeachingModule[]
+  readonly classes: SchoolClass[]
   readonly subjects: Subject[]
 }
 
-export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjarIndexProps) {
+export default function TeachingModulesIndex({
+  teachingModules,
+  classes,
+  subjects,
+}: TeachingModulesIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
-  const [deletingModul, setDeletingModul] = useState<ModulAjar | null>(null)
+  const [deletingModule, setDeletingModule] = useState<TeachingModule | null>(null)
+
+  const hasClasses = classes.length > 0
+  const hasSubjects = subjects.length > 0
+  const canGenerate = hasClasses && hasSubjects
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    kelasId: kelas[0]?.id || 0,
+    classId: classes[0]?.id || 0,
     subject: '',
     topic: '',
     phase: 'B',
@@ -53,14 +61,17 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
   }
 
   const handleDelete = () => {
-    if (!deletingModul) return
-    router.delete(`/teaching-modules/${deletingModul.id}`, {
-      onSuccess: () => setDeletingModul(null),
+    if (!deletingModule) return
+    router.delete(`/teaching-modules/${deletingModule.id}`, {
+      onSuccess: () => setDeletingModule(null),
     })
   }
 
   return (
-    <DashboardWrapper title="Dashboard">
+    <DashboardWrapper
+      title="Modul Ajar"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Modul Ajar' }]}
+    >
       <Head title="Modul Ajar" />
 
       <div className="space-y-6">
@@ -74,15 +85,43 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
           </div>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+            disabled={!canGenerate}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4" />
             Generate Modul Ajar
           </button>
         </div>
 
-        {/* Modul Ajar List */}
-        {modulAjar.length === 0 ? (
+        {/* Prasyarat belum lengkap */}
+        {!canGenerate && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Lengkapi dulu sebelum bisa generate modul ajar:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {!hasClasses && (
+                <Link
+                  href="/classes"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
+                  Buat kelas dulu →
+                </Link>
+              )}
+              {!hasSubjects && (
+                <Link
+                  href="/subjects"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
+                  Tambah mata pelajaran dulu →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Daftar Modul Ajar */}
+        {teachingModules.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <BookOpen className="mx-auto h-12 w-12 text-neutral-400" />
             <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
@@ -93,21 +132,16 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
             </p>
             <button
               onClick={() => setShowGenerateModal(true)}
-              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              disabled={!canGenerate}
+              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Generate Modul Ajar
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {modulAjar.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+            {teachingModules.map((item, index) => (
+              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -122,13 +156,13 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                         )}
                       >
-                        {item.status === 'published' ? 'Published' : 'Draft'}
+                        {item.status === 'published' ? 'Terbit' : 'Draf'}
                       </span>
                     </div>
                     <div className="mt-1 flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                       <span>{item.subject}</span>
                       <span>•</span>
-                      <span>Kelas {item.kelas.name}</span>
+                      <span>Kelas {item.schoolClass.name}</span>
                       <span>•</span>
                       <span>Fase {item.phase}</span>
                     </div>
@@ -141,20 +175,20 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
                       <Eye className="h-4 w-4" />
                     </Link>
                     <button
-                      onClick={() => setDeletingModul(item)}
+                      onClick={() => setDeletingModule(item)}
                       className="rounded-lg border border-neutral-200 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Generate Modal */}
+      {/* Modal Generate */}
       {showGenerateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
@@ -172,21 +206,24 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="kelasId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Kelas
                 </label>
                 <select
-                  id="kelasId"
-                  value={data.kelasId}
-                  onChange={(e) => setData('kelasId', Number(e.target.value))}
+                  id="classId"
+                  value={data.classId}
+                  onChange={(e) => setData('classId', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {kelas.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      Kelas {k.name}
+                  {classes.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      Kelas {item.name}
                     </option>
                   ))}
                 </select>
+                {errors.classId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -241,6 +278,9 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
                     </option>
                   ))}
                 </select>
+                {errors.phase && (
+                  <p className="mt-1 text-sm text-red-500">{errors.phase}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -258,15 +298,15 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
                 disabled={processing}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                {processing ? 'Generating...' : 'Generate'}
+                {processing ? 'Sedang membuat...' : 'Generate'}
               </button>
             </div>
           </motion.div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingModul && (
+      {/* Modal Konfirmasi Hapus */}
+      {deletingModule && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -277,11 +317,11 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
               Hapus Modul Ajar?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Modul ajar <strong>{deletingModul.title}</strong> akan dihapus secara permanen.
+              Modul ajar <strong>{deletingModule.title}</strong> akan dihapus secara permanen.
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => setDeletingModul(null)}
+                onClick={() => setDeletingModule(null)}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
@@ -296,7 +336,6 @@ export default function ModulAjarIndex({ modulAjar, kelas, subjects }: ModulAjar
           </motion.div>
         </div>
       )}
-    
     </DashboardWrapper>
   )
 }

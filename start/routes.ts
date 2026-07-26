@@ -15,6 +15,10 @@ router.get('/', ({ inertia }) => {
   return inertia.render('home', {})
 }).as('home')
 
+router.get('/coming-soon', ({ inertia }) => {
+  return inertia.render('coming-soon', {})
+}).as('coming-soon')
+
 router
   .group(() => {
     router.get('signup', [controllers.NewAccount, 'create'])
@@ -48,6 +52,7 @@ router
     router.put('/classes/:id', '#controllers/classes_controller.update').as('classes.update')
     router.delete('/classes/:id', '#controllers/classes_controller.destroy').as('classes.destroy')
     router.post('/classes/:id/students', '#controllers/classes_controller.addStudent').as('classes.addStudent')
+    router.put('/classes/:id/students/:studentId', '#controllers/classes_controller.updateStudent').as('classes.updateStudent')
     router.delete('/classes/:id/students/:studentId', '#controllers/classes_controller.removeStudent').as('classes.removeStudent')
 
     // Teaching Modules (Modul Ajar)
@@ -57,6 +62,7 @@ router
     router.put('/teaching-modules/:id', '#controllers/teaching_modules_controller.update').as('teaching-modules.update')
     router.delete('/teaching-modules/:id', '#controllers/teaching_modules_controller.destroy').as('teaching-modules.destroy')
     router.post('/teaching-modules/generate', '#controllers/teaching_modules_controller.generate').as('teaching-modules.generate')
+    router.get('/teaching-modules/:id/export', '#controllers/teaching_modules_controller.export').as('teaching-modules.export')
 
     // Exams (Soal)
     router.get('/exams', '#controllers/exams_controller.index').as('exams.index')
@@ -65,6 +71,7 @@ router
     router.put('/exams/:id', '#controllers/exams_controller.update').as('exams.update')
     router.delete('/exams/:id', '#controllers/exams_controller.destroy').as('exams.destroy')
     router.post('/exams/generate', '#controllers/exams_controller.generate').as('exams.generate')
+    router.get('/exams/:id/export', '#controllers/exams_controller.export').as('exams.export')
 
     // Annual Plans (Prota)
     router.get('/annual-plans', '#controllers/annual_plans_controller.index').as('annual-plans.index')
@@ -73,6 +80,7 @@ router
     router.put('/annual-plans/:id', '#controllers/annual_plans_controller.update').as('annual-plans.update')
     router.delete('/annual-plans/:id', '#controllers/annual_plans_controller.destroy').as('annual-plans.destroy')
     router.post('/annual-plans/generate', '#controllers/annual_plans_controller.generate').as('annual-plans.generate')
+    router.get('/annual-plans/:id/export', '#controllers/annual_plans_controller.export').as('annual-plans.export')
 
     // Semester Plans (Promes)
     router.get('/semester-plans', '#controllers/semester_plans_controller.index').as('semester-plans.index')
@@ -81,15 +89,95 @@ router
     router.put('/semester-plans/:id', '#controllers/semester_plans_controller.update').as('semester-plans.update')
     router.delete('/semester-plans/:id', '#controllers/semester_plans_controller.destroy').as('semester-plans.destroy')
     router.post('/semester-plans/generate', '#controllers/semester_plans_controller.generate').as('semester-plans.generate')
+    router.get('/semester-plans/:id/export', '#controllers/semester_plans_controller.export').as('semester-plans.export')
+
+    // RPPM (rencana mingguan TK/PAUD)
+    router.get('/rppm', '#controllers/weekly_lesson_plans_controller.index').as('rppm.index')
+    router.get('/rppm/:id', '#controllers/weekly_lesson_plans_controller.show').as('rppm.show')
+    router.put('/rppm/:id', '#controllers/weekly_lesson_plans_controller.update').as('rppm.update')
+    router.delete('/rppm/:id', '#controllers/weekly_lesson_plans_controller.destroy').as('rppm.destroy')
+    router.post('/rppm/generate', '#controllers/weekly_lesson_plans_controller.generate').as('rppm.generate')
+
+    // RPPH (rencana harian TK/PAUD)
+    router.get('/rpph', '#controllers/daily_lesson_plans_controller.index').as('rpph.index')
+    router.get('/rpph/:id', '#controllers/daily_lesson_plans_controller.show').as('rpph.show')
+    router.put('/rpph/:id', '#controllers/daily_lesson_plans_controller.update').as('rpph.update')
+    router.delete('/rpph/:id', '#controllers/daily_lesson_plans_controller.destroy').as('rpph.destroy')
+    router.post('/rpph/generate', '#controllers/daily_lesson_plans_controller.generate').as('rpph.generate')
+
+    // Asesmen PAUD (ceklis, catatan anekdot, hasil karya, foto berseri)
+    router.get('/paud-assessments', '#controllers/paud_assessments_controller.index').as('paud-assessments.index')
+    router.post('/paud-assessments', '#controllers/paud_assessments_controller.store').as('paud-assessments.store')
+    router.put('/paud-assessments/:id', '#controllers/paud_assessments_controller.update').as('paud-assessments.update')
+    router.delete('/paud-assessments/:id', '#controllers/paud_assessments_controller.destroy').as('paud-assessments.destroy')
+
+    // Assessments (Penilaian & Nilai)
+    router.get('/assessments', '#controllers/assessments_controller.index').as('assessments.index')
+    router.post('/assessments', '#controllers/assessments_controller.store').as('assessments.store')
+    router.get('/assessments/:id', '#controllers/assessments_controller.show').as('assessments.show')
+    router.put('/assessments/:id/scores', '#controllers/assessments_controller.updateScores').as('assessments.updateScores')
+    router.delete('/assessments/:id', '#controllers/assessments_controller.destroy').as('assessments.destroy')
+    router.get('/assessments/:id/export', '#controllers/assessments_controller.export').as('assessments.export')
 
     // Subjects (Mata Pelajaran)
     router.get('/subjects', '#controllers/subjects_controller.index').as('subjects.index')
     router.post('/subjects', '#controllers/subjects_controller.store').as('subjects.store')
+    router.post('/subjects/defaults', '#controllers/subjects_controller.storeDefaults').as('subjects.storeDefaults')
     router.put('/subjects/:id', '#controllers/subjects_controller.update').as('subjects.update')
     router.delete('/subjects/:id', '#controllers/subjects_controller.destroy').as('subjects.destroy')
 
     // Settings (Pengaturan)
     router.get('/settings', '#controllers/settings_controller.index').as('settings.index')
     router.put('/settings', '#controllers/settings_controller.update').as('settings.update')
+
+    // Admin — Manage Users
+    router
+      .get('/admin/users', '#controllers/admin_users_controller.index')
+      .as('admin.users.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/users/:id', '#controllers/admin_users_controller.update')
+      .as('admin.users.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .delete('/admin/users/:id', '#controllers/admin_users_controller.destroy')
+      .as('admin.users.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    // Admin — Manage Packages
+    router
+      .get('/admin/packages', '#controllers/admin_packages_controller.index')
+      .as('admin.packages.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/packages', '#controllers/admin_packages_controller.store')
+      .as('admin.packages.store')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/packages/:id', '#controllers/admin_packages_controller.update')
+      .as('admin.packages.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .delete('/admin/packages/:id', '#controllers/admin_packages_controller.destroy')
+      .as('admin.packages.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    // Admin — Tahun Ajaran
+    router
+      .get('/admin/academic-years', '#controllers/admin_academic_years_controller.index')
+      .as('admin.academic-years.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/academic-years', '#controllers/admin_academic_years_controller.store')
+      .as('admin.academic-years.store')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/academic-years/:id', '#controllers/admin_academic_years_controller.update')
+      .as('admin.academic-years.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .delete('/admin/academic-years/:id', '#controllers/admin_academic_years_controller.destroy')
+      .as('admin.academic-years.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
   })
   .use([middleware.auth(), middleware.onboarding()])

@@ -26,7 +26,7 @@ export class AnnualPlanSchema extends BaseModel {
   static $columns = ['academicYearId', 'content', 'createdAt', 'id', 'subject', 'updatedAt', 'userId'] as const
   $columns = AnnualPlanSchema.$columns
   @column()
-  declare academicYearId: number | null
+  declare academicYearId: number
   @column()
   declare content: any
   @column.dateTime({ autoCreate: true })
@@ -38,14 +38,39 @@ export class AnnualPlanSchema extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
+}
+
+export class AssessmentSchema extends BaseModel {
+  static $columns = ['classId', 'createdAt', 'date', 'id', 'learningObjective', 'subject', 'title', 'type', 'updatedAt', 'userId'] as const
+  $columns = AssessmentSchema.$columns
+  @column()
+  declare classId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare date: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare learningObjective: string | null
+  @column()
+  declare subject: string
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
 }
 
 export class ClassSchema extends BaseModel {
   static $columns = ['academicYearId', 'createdAt', 'gradeLevel', 'id', 'name', 'updatedAt', 'userId'] as const
   $columns = ClassSchema.$columns
   @column()
-  declare academicYearId: number | null
+  declare academicYearId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -57,14 +82,37 @@ export class ClassSchema extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
+}
+
+export class DailyLessonPlanSchema extends BaseModel {
+  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'status', 'updatedAt', 'userId', 'weeklyLessonPlanId'] as const
+  $columns = DailyLessonPlanSchema.$columns
+  @column()
+  declare classId: number
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare date: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare status: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+  @column()
+  declare weeklyLessonPlanId: number | null
 }
 
 export class ExamSchema extends BaseModel {
   static $columns = ['classId', 'createdAt', 'id', 'questions', 'status', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = ExamSchema.$columns
   @column()
-  declare classId: number | null
+  declare classId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column({ isPrimary: true })
@@ -80,7 +128,7 @@ export class ExamSchema extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
 }
 
 export class PackageSchema extends BaseModel {
@@ -110,6 +158,29 @@ export class PackageSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class PaudAssessmentSchema extends BaseModel {
+  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'studentId', 'type', 'updatedAt', 'userId'] as const
+  $columns = PaudAssessmentSchema.$columns
+  @column()
+  declare classId: number
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare date: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare studentId: number
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class RememberMeTokenSchema extends BaseModel {
   static $columns = ['createdAt', 'expiresAt', 'hash', 'id', 'tokenableId', 'updatedAt'] as const
   $columns = RememberMeTokenSchema.$columns
@@ -127,11 +198,30 @@ export class RememberMeTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class ScoreSchema extends BaseModel {
+  static $columns = ['assessmentId', 'createdAt', 'id', 'note', 'studentId', 'updatedAt', 'value'] as const
+  $columns = ScoreSchema.$columns
+  @column()
+  declare assessmentId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare note: string | null
+  @column()
+  declare studentId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare value: string | null
+}
+
 export class SemesterPlanSchema extends BaseModel {
   static $columns = ['classId', 'content', 'createdAt', 'id', 'semesterId', 'subject', 'updatedAt', 'userId'] as const
   $columns = SemesterPlanSchema.$columns
   @column()
-  declare classId: number | null
+  declare classId: number
   @column()
   declare content: any
   @column.dateTime({ autoCreate: true })
@@ -139,20 +229,20 @@ export class SemesterPlanSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare semesterId: number | null
+  declare semesterId: number
   @column()
   declare subject: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
 }
 
 export class SemesterSchema extends BaseModel {
   static $columns = ['academicYearId', 'createdAt', 'id', 'isActive', 'name', 'updatedAt'] as const
   $columns = SemesterSchema.$columns
   @column()
-  declare academicYearId: number | null
+  declare academicYearId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column({ isPrimary: true })
@@ -169,7 +259,7 @@ export class StudentSchema extends BaseModel {
   static $columns = ['classId', 'createdAt', 'fullName', 'id', 'nis', 'updatedAt'] as const
   $columns = StudentSchema.$columns
   @column()
-  declare classId: number | null
+  declare classId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -200,14 +290,14 @@ export class SubjectSchema extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
 }
 
 export class TeachingModuleSchema extends BaseModel {
   static $columns = ['classId', 'content', 'createdAt', 'id', 'phase', 'status', 'subject', 'title', 'updatedAt', 'userId'] as const
   $columns = TeachingModuleSchema.$columns
   @column()
-  declare classId: number | null
+  declare classId: number
   @column()
   declare content: any
   @column.dateTime({ autoCreate: true })
@@ -225,7 +315,7 @@ export class TeachingModuleSchema extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: number | null
+  declare userId: number
 }
 
 export class UserSchema extends BaseModel {
@@ -251,4 +341,27 @@ export class UserSchema extends BaseModel {
   declare schoolName: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class WeeklyLessonPlanSchema extends BaseModel {
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'status', 'theme', 'updatedAt', 'userId', 'weekStartDate'] as const
+  $columns = WeeklyLessonPlanSchema.$columns
+  @column()
+  declare classId: number
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare status: string | null
+  @column()
+  declare theme: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+  @column.date()
+  declare weekStartDate: DateTime
 }

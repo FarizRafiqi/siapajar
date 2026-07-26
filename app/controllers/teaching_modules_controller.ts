@@ -3,6 +3,8 @@ import TeachingModule from '#models/teaching_module'
 import SchoolClass from '#models/school_class'
 import Subject from '#models/subject'
 import { createTeachingModuleValidator, updateTeachingModuleValidator } from '#validators/teaching_module'
+import { generateTeachingModuleValidator } from '#validators/generate'
+import { exportTeachingModule } from '#services/export_service'
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -23,9 +25,9 @@ export default class TeachingModulesController {
       .orderBy('name')
 
     return inertia.render('dashboard/teaching-modules/index', {
-      modulAjar: teachingModules,
-      kelas: classes,
-      subjects,
+      teachingModules: teachingModules.map((m) => m.toJSON()),
+      classes: classes.map((c) => c.toJSON()),
+      subjects: subjects.map((s) => s.toJSON()),
     })
   }
 
@@ -42,8 +44,25 @@ export default class TeachingModulesController {
     }
 
     return inertia.render('dashboard/teaching-modules/show', {
-      modulAjar: teachingModule,
+      teachingModule: teachingModule.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const teachingModule = await TeachingModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!teachingModule) {
+      return response.redirect('/teaching-modules')
+    }
+
+    const buffer = await exportTeachingModule(teachingModule, user)
+    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.docx"`)
+    return response.send(buffer)
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -97,9 +116,21 @@ export default class TeachingModulesController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, topic, phase } = request.only(['classId', 'subject', 'topic', 'phase'])
+    const { classId, subject, topic, phase } =
+      await request.validateUsing(generateTeachingModuleValidator)
 
-    // Future implementation: Integrate with AI service (OpenAI)
+    // Pastikan kelas milik user yang login
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      session.flash('error', 'Kelas tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    // Future implementation: Integrate with AI service (9router)
     const content = {
       kompetensiDasar: [],
       tujuanPembelajaran: [],
@@ -113,7 +144,7 @@ export default class TeachingModulesController {
       classId,
       title: `${subject} - ${topic}`,
       subject,
-      phase: phase || 'B',
+      phase,
       content,
       status: 'draft',
     })

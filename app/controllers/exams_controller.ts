@@ -3,6 +3,16 @@ import Exam from '#models/exam'
 import SchoolClass from '#models/school_class'
 import Subject from '#models/subject'
 import { createExamValidator, updateExamValidator } from '#validators/exam'
+import { generateExamValidator } from '#validators/generate'
+import { exportExam } from '#services/export_service'
+
+/** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
+const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
+  midterm: 'PTS',
+  final: 'PAS',
+  daily: 'Ulangan Harian',
+  summative: 'Sumatif',
+}
 
 export default class ExamsController {
   async index({ inertia, auth }: HttpContext) {
@@ -23,9 +33,9 @@ export default class ExamsController {
       .orderBy('name')
 
     return inertia.render('dashboard/exams/index', {
-      soal: exams,
-      kelas: classes,
-      subjects,
+      exams: exams.map((e) => e.toJSON()),
+      classes: classes.map((c) => c.toJSON()),
+      subjects: subjects.map((s) => s.toJSON()),
     })
   }
 
@@ -42,8 +52,25 @@ export default class ExamsController {
     }
 
     return inertia.render('dashboard/exams/show', {
-      soal: exam,
+      exam: exam.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const exam = await Exam.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!exam) {
+      return response.redirect('/exams')
+    }
+
+    const buffer = await exportExam(exam, user)
+    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header('Content-Disposition', `attachment; filename="${exam.title}.docx"`)
+    return response.send(buffer)
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -97,16 +124,22 @@ export default class ExamsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, type, topic, questionCount } = request.only([
-      'classId',
-      'subject',
-      'type',
-      'topic',
-      'questionCount',
-    ])
+    const { classId, subject, type, topic, questionCount } =
+      await request.validateUsing(generateExamValidator)
 
-    // Future implementation: Integrate with AI service (OpenAI)
-    const questions = Array.from({ length: questionCount || 10 }, (_, i) => ({
+    // Pastikan kelas milik user yang login
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      session.flash('error', 'Kelas tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    // Future implementation: Integrate with AI service (9router)
+    const questions = Array.from({ length: questionCount }, (_, i) => ({
       id: i + 1,
       type: 'multiple_choice',
       question: `Soal ${i + 1} tentang ${topic}`,
@@ -118,7 +151,7 @@ export default class ExamsController {
     const exam = await Exam.create({
       userId: user.id,
       classId,
-      title: `${type} ${subject} - ${topic}`,
+      title: `${EXAM_TYPE_LABELS[type]} ${subject} - ${topic}`,
       type,
       questions,
       status: 'draft',

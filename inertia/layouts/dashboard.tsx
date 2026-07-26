@@ -9,6 +9,7 @@ interface User {
   email: string
   initials: string
   role: string
+  educationLevel: 'tk' | 'sd' | null
 }
 
 interface DashboardLayoutProps {

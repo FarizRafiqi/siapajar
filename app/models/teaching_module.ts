@@ -25,7 +25,11 @@ export default class TeachingModule extends BaseModel {
   @column()
   declare phase: string
 
-  @column({ columnName: 'content', serializeAs: null })
+  @column({
+    columnName: 'content',
+    prepare: (value: Record<string, any>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
   declare content: Record<string, any>
 
   @column()

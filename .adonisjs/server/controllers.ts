@@ -15,4 +15,11 @@ export const controllers = {
   Settings: () => import('#controllers/settings_controller'),
   Subjects: () => import('#controllers/subjects_controller'),
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
+  WeeklyLessonPlans: () => import('#controllers/weekly_lesson_plans_controller'),
+  DailyLessonPlans: () => import('#controllers/daily_lesson_plans_controller'),
+  PaudAssessments: () => import('#controllers/paud_assessments_controller'),
+  Assessments: () => import('#controllers/assessments_controller'),
+  AdminUsers: () => import('#controllers/admin_users_controller'),
+  AdminPackages: () => import('#controllers/admin_packages_controller'),
+  AdminAcademicYears: () => import('#controllers/admin_academic_years_controller'),
 }

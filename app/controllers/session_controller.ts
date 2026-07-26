@@ -6,9 +6,16 @@ export default class SessionController {
     return inertia.render('auth/login', {})
   }
 
-  async store({ request, auth, response }: HttpContext) {
+  async store({ request, auth, response, session }: HttpContext) {
     const { email, password, remember } = request.all()
-    const user = await User.verifyCredentials(email, password)
+
+    let user: User
+    try {
+      user = await User.verifyCredentials(email, password)
+    } catch {
+      session.flash('error', 'Email atau kata sandi salah')
+      return response.redirect().back()
+    }
 
     await auth.use('web').login(user, !!remember)
     response.redirect().toRoute('dashboard')

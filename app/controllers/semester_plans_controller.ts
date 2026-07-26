@@ -4,6 +4,8 @@ import SchoolClass from '#models/school_class'
 import Semester from '#models/semester'
 import Subject from '#models/subject'
 import { createSemesterPlanValidator, updateSemesterPlanValidator } from '#validators/semester_plan'
+import { generateSemesterPlanValidator } from '#validators/generate'
+import { exportSemesterPlan } from '#services/export_service'
 
 export default class SemesterPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -29,10 +31,10 @@ export default class SemesterPlansController {
       .orderBy('name')
 
     return inertia.render('dashboard/semester-plans/index', {
-      promes: semesterPlans,
-      kelas: classes,
-      semester: semesters,
-      subjects,
+      semesterPlans: semesterPlans.map((p) => p.toJSON()),
+      classes: classes.map((c) => c.toJSON()),
+      semesters: semesters.map((s) => s.toJSON()),
+      subjects: subjects.map((s) => s.toJSON()),
     })
   }
 
@@ -50,8 +52,25 @@ export default class SemesterPlansController {
     }
 
     return inertia.render('dashboard/semester-plans/show', {
-      promes: semesterPlan,
+      semesterPlan: semesterPlan.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const semesterPlan = await SemesterPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!semesterPlan) {
+      return response.redirect('/semester-plans')
+    }
+
+    const buffer = await exportSemesterPlan(semesterPlan, user)
+    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header('Content-Disposition', `attachment; filename="Promes ${semesterPlan.subject}.docx"`)
+    return response.send(buffer)
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -104,9 +123,27 @@ export default class SemesterPlansController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, semesterId, subject } = request.only(['classId', 'semesterId', 'subject'])
+    const { classId, semesterId, subject } =
+      await request.validateUsing(generateSemesterPlanValidator)
 
-    // Future implementation: Integrate with AI service (OpenAI)
+    // Pastikan kelas milik user yang login
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      session.flash('error', 'Kelas tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    const semester = await Semester.find(semesterId)
+    if (!semester) {
+      session.flash('error', 'Semester tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    // Future implementation: Integrate with AI service (9router)
     const content = {
       minggu: [],
       kegiatan: [],

@@ -5,20 +5,22 @@ import { useState } from 'react'
 import { FileQuestion, Trash2, Eye, Sparkles } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
-interface Kelas {
+export type ExamType = 'midterm' | 'final' | 'daily' | 'summative'
+
+export const EXAM_TYPES: { value: ExamType; label: string; short: string }[] = [
+  { value: 'daily', label: 'Ulangan Harian', short: 'Harian' },
+  { value: 'midterm', label: 'PTS (Penilaian Tengah Semester)', short: 'PTS' },
+  { value: 'final', label: 'PAS (Penilaian Akhir Semester)', short: 'PAS' },
+  { value: 'summative', label: 'Sumatif', short: 'Sumatif' },
+]
+
+export const examTypeLabel = (type: ExamType) =>
+  EXAM_TYPES.find((t) => t.value === type)?.short ?? type
+
+interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
-}
-
-interface Soal {
-  id: number
-  title: string
-  type: 'PTS' | 'PAS' | 'harian' | 'sumatif'
-  status: 'draft' | 'published'
-  questions: any[]
-  created_at: string
-  kelas: Kelas
 }
 
 interface Subject {
@@ -26,20 +28,34 @@ interface Subject {
   name: string
 }
 
-interface SoalIndexProps {
-  readonly soal: Soal[]
-  readonly kelas: Kelas[]
+interface Exam {
+  id: number
+  title: string
+  type: ExamType
+  status: 'draft' | 'published'
+  questions: unknown[]
+  createdAt: string
+  schoolClass: SchoolClass
+}
+
+interface ExamsIndexProps {
+  readonly exams: Exam[]
+  readonly classes: SchoolClass[]
   readonly subjects: Subject[]
 }
 
-export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
+export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
-  const [deletingSoal, setDeletingSoal] = useState<Soal | null>(null)
+  const [deletingExam, setDeletingExam] = useState<Exam | null>(null)
+
+  const hasClasses = classes.length > 0
+  const hasSubjects = subjects.length > 0
+  const canGenerate = hasClasses && hasSubjects
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    kelasId: kelas[0]?.id || 0,
+    classId: classes[0]?.id || 0,
     subject: '',
-    type: 'harian' as const,
+    type: 'daily' as ExamType,
     topic: '',
     questionCount: 10,
   })
@@ -54,21 +70,19 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
   }
 
   const handleDelete = () => {
-    if (!deletingSoal) return
-    router.delete(`/exams/${deletingSoal.id}`, {
-      onSuccess: () => setDeletingSoal(null),
+    if (!deletingExam) return
+    router.delete(`/exams/${deletingExam.id}`, {
+      onSuccess: () => setDeletingExam(null),
     })
   }
 
-  const soalTypes = [
-    { value: 'harian', label: 'Soal Harian' },
-    { value: 'PTS', label: 'PTS (Penilaian Tengah Semester)' },
-    { value: 'PAS', label: 'PAS (Penilaian Akhir Semester)' },
-    { value: 'sumatif', label: 'Sumatif' },
-  ]
+  const isMajorExam = (type: ExamType) => type === 'midterm' || type === 'final'
 
   return (
-    <DashboardWrapper title="Dashboard">
+    <DashboardWrapper
+      title="Bank Soal"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Bank Soal' }]}
+    >
       <Head title="Bank Soal" />
 
       <div className="space-y-6">
@@ -82,15 +96,43 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
           </div>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+            disabled={!canGenerate}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4" />
             Generate Soal
           </button>
         </div>
 
-        {/* Soal List */}
-        {soal.length === 0 ? (
+        {/* Prasyarat belum lengkap */}
+        {!canGenerate && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Lengkapi dulu sebelum bisa generate soal:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {!hasClasses && (
+                <Link
+                  href="/classes"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
+                  Buat kelas dulu →
+                </Link>
+              )}
+              {!hasSubjects && (
+                <Link
+                  href="/subjects"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
+                  Tambah mata pelajaran dulu →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Daftar Soal */}
+        {exams.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <FileQuestion className="mx-auto h-12 w-12 text-neutral-400" />
             <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
@@ -101,21 +143,16 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
             </p>
             <button
               onClick={() => setShowGenerateModal(true)}
-              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              disabled={!canGenerate}
+              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Generate Soal
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {soal.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+            {exams.map((item, index) => (
+              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -125,12 +162,12 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
-                          item.type === 'PTS' || item.type === 'PAS'
+                          isMajorExam(item.type)
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                         )}
                       >
-                        {item.type}
+                        {examTypeLabel(item.type)}
                       </span>
                       <span
                         className={cn(
@@ -140,11 +177,11 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                         )}
                       >
-                        {item.status === 'published' ? 'Published' : 'Draft'}
+                        {item.status === 'published' ? 'Terbit' : 'Draf'}
                       </span>
                     </div>
                     <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      Kelas {item.kelas.name} • {item.questions.length} soal
+                      Kelas {item.schoolClass.name} • {(item.questions ?? []).length} soal
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -155,20 +192,20 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                       <Eye className="h-4 w-4" />
                     </Link>
                     <button
-                      onClick={() => setDeletingSoal(item)}
+                      onClick={() => setDeletingExam(item)}
                       className="rounded-lg border border-neutral-200 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Generate Modal */}
+      {/* Modal Generate */}
       {showGenerateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
@@ -186,21 +223,24 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="kelasId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Kelas
                 </label>
                 <select
-                  id="kelasId"
-                  value={data.kelasId}
-                  onChange={(e) => setData('kelasId', Number(e.target.value))}
+                  id="classId"
+                  value={data.classId}
+                  onChange={(e) => setData('classId', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {kelas.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      Kelas {k.name}
+                  {classes.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      Kelas {item.name}
                     </option>
                   ))}
                 </select>
+                {errors.classId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -230,15 +270,16 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                 <select
                   id="type"
                   value={data.type}
-                  onChange={(e) => setData('type', e.target.value as any)}
+                  onChange={(e) => setData('type', e.target.value as ExamType)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {soalTypes.map((t) => (
+                  {EXAM_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
                       {t.label}
                     </option>
                   ))}
                 </select>
+                {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
               </div>
               <div>
                 <label htmlFor="topic" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -252,9 +293,7 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: Bilangan Bulat"
                 />
-                {errors.topic && (
-                  <p className="mt-1 text-sm text-red-500">{errors.topic}</p>
-                )}
+                {errors.topic && <p className="mt-1 text-sm text-red-500">{errors.topic}</p>}
               </div>
               <div>
                 <label htmlFor="questionCount" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -269,6 +308,9 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                   max={50}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
+                {errors.questionCount && (
+                  <p className="mt-1 text-sm text-red-500">{errors.questionCount}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -286,15 +328,15 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
                 disabled={processing}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                {processing ? 'Generating...' : 'Generate'}
+                {processing ? 'Sedang membuat...' : 'Generate'}
               </button>
             </div>
           </motion.div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingSoal && (
+      {/* Modal Konfirmasi Hapus */}
+      {deletingExam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -305,11 +347,11 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
               Hapus Soal?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Soal <strong>{deletingSoal.title}</strong> akan dihapus secara permanen.
+              Soal <strong>{deletingExam.title}</strong> akan dihapus secara permanen.
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => setDeletingSoal(null)}
+                onClick={() => setDeletingExam(null)}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
@@ -324,7 +366,6 @@ export default function SoalIndex({ soal, kelas, subjects }: SoalIndexProps) {
           </motion.div>
         </div>
       )}
-    
     </DashboardWrapper>
   )
 }

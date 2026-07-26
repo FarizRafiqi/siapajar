@@ -1,47 +1,73 @@
 import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, Link } from '@inertiajs/react'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Download } from 'lucide-react'
+import { Head, useForm, Link } from '@inertiajs/react'
+import { useState } from 'react'
+import { ArrowLeft, Download, Pencil, Save, X } from 'lucide-react'
 
-interface TahunAjaran {
+interface AcademicYear {
   id: number
   name: string
 }
 
-interface Prota {
+interface AnnualPlanContent {
+  kompetensi?: string[]
+  alokasiWaktu?: string[]
+  kegiatan?: string[]
+  minggu?: string[]
+  [key: string]: string[] | undefined
+}
+
+interface AnnualPlan {
   id: number
   subject: string
-  content: {
-    kompetensi?: string[]
-    alokasiWaktu?: string[]
-    kegiatan?: string[]
-    minggu?: string[]
-    [key: string]: any
+  content: AnnualPlanContent
+  createdAt: string
+  academicYear: AcademicYear
+}
+
+interface AnnualPlanShowProps {
+  readonly annualPlan: AnnualPlan
+}
+
+const SECTIONS = [
+  { key: 'kompetensi', title: 'Kompetensi', icon: '📚' },
+  { key: 'alokasiWaktu', title: 'Alokasi Waktu', icon: '⏰' },
+  { key: 'kegiatan', title: 'Kegiatan Pembelajaran', icon: '📝' },
+  { key: 'minggu', title: 'Pembagian Minggu', icon: '📅' },
+]
+
+export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
+  const [editing, setEditing] = useState(false)
+
+  const { data, setData, put, processing, reset } = useForm({
+    subject: annualPlan.subject,
+    content: annualPlan.content ?? {},
+  })
+
+  const handleSave = () => {
+    put(`/annual-plans/${annualPlan.id}`, {
+      onSuccess: () => setEditing(false),
+    })
   }
-  created_at: string
-  tahunAjaran: TahunAjaran
-}
 
-interface ProtaShowProps {
-  readonly prota: Prota
-}
+  const handleCancelEdit = () => {
+    reset()
+    setEditing(false)
+  }
 
-export default function ProtaShow({ prota }: ProtaShowProps) {
   const handleExport = () => {
-    // Future implementation: Implement DOCX export
-    alert('Export DOCX akan segera tersedia')
+    window.location.href = `/annual-plans/${annualPlan.id}/export`
   }
-
-  const sections = [
-    { key: 'kompetensi', title: 'Kompetensi', icon: '📚' },
-    { key: 'alokasiWaktu', title: 'Alokasi Waktu', icon: '⏰' },
-    { key: 'kegiatan', title: 'Kegiatan Pembelajaran', icon: '📝' },
-    { key: 'minggu', title: 'Pembagian Minggu', icon: '📅' },
-  ]
 
   return (
-    <DashboardWrapper title="Dashboard">
-      <Head title={`Protah - ${prota.subject}`} />
+    <DashboardWrapper
+      title={`Prota — ${annualPlan.subject}`}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Prota', href: '/annual-plans' },
+        { label: annualPlan.subject },
+      ]}
+    >
+      <Head title={`Prota — ${annualPlan.subject}`} />
 
       <div className="space-y-6">
         {/* Header */}
@@ -54,54 +80,97 @@ export default function ProtaShow({ prota }: ProtaShowProps) {
           </Link>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Program Tahunan - {prota.subject}
+              Program Tahunan — {annualPlan.subject}
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400">
-              {prota.tahunAjaran.name}
+              {annualPlan.academicYear.name}
             </p>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            <Download className="h-4 w-4" />
-            Export DOCX
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4" />
+              Export DOCX
+            </button>
+            {editing ? (
+              <>
+                <button
+                  onClick={handleCancelEdit}
+                  className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                >
+                  <X className="h-4 w-4" />
+                  Batal
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={processing}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
+                  {processing ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Content Sections */}
+        {/* Isi Prota */}
         <div className="space-y-4">
-          {sections.map((section, index) => (
-            <motion.div
-              key={section.key}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
-                <span>{section.icon}</span>
-                {section.title}
-              </h3>
-              <ul className="space-y-2">
-                {(prota.content[section.key] || []).length === 0 ? (
-                  <li className="text-neutral-500 dark:text-neutral-400">
-                    Belum ada konten
-                  </li>
+          {SECTIONS.map((section, index) => {
+            const items = annualPlan.content?.[section.key] ?? []
+            const draftItems = data.content?.[section.key] ?? []
+
+            return (
+              <div key={section.key} className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
+                  <span>{section.icon}</span>
+                  {section.title}
+                </h3>
+                {editing ? (
+                  <textarea
+                    value={draftItems.join('\n')}
+                    onChange={(e) =>
+                      setData('content', {
+                        ...data.content,
+                        [section.key]: e.target.value.split('\n').filter((line) => line.trim()),
+                      })
+                    }
+                    rows={6}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    placeholder={`Masukkan ${section.title.toLowerCase()} (satu item per baris)`}
+                  />
                 ) : (
-                  (prota.content[section.key] || []).map((item: string) => (
-                    <li key={item} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300">
-                      <span className="mt-1 text-emerald-500">•</span>
-                      {item}
-                    </li>
-                  ))
+                  <ul className="space-y-2">
+                    {items.length === 0 ? (
+                      <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li>
+                    ) : (
+                      items.map((item: string, i: number) => (
+                        <li
+                          key={`${section.key}-${i}`}
+                          className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"
+                        >
+                          <span className="mt-1 text-emerald-500">•</span>
+                          {item}
+                        </li>
+                      ))
+                    )}
+                  </ul>
                 )}
-              </ul>
-            </motion.div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       </div>
-    
     </DashboardWrapper>
   )
 }

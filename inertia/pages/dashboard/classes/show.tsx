@@ -2,60 +2,90 @@ import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { ArrowLeft, Trash2, UserPlus } from 'lucide-react'
+import { ArrowLeft, Trash2, UserPlus, Pencil } from 'lucide-react'
 
-interface Siswa {
+interface Student {
   id: number
   nis: string
   fullName: string
 }
 
-interface TahunAjaran {
+interface AcademicYear {
   id: number
   name: string
 }
 
-interface Kelas {
+interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
-  created_at: string
-  tahunAjaran: TahunAjaran
-  siswa: Siswa[]
+  createdAt: string
+  academicYear: AcademicYear
+  students: Student[]
 }
 
-interface KelasShowProps {
-  kelas: Kelas
+interface ClassShowProps {
+  schoolClass: SchoolClass
+  educationLevel: string
 }
 
-export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
-  const [showAddSiswa, setShowAddSiswa] = useState(false)
-  const [deletingSiswa, setDeletingSiswa] = useState<Siswa | null>(null)
+export default function ClassShow({ schoolClass, educationLevel }: Readonly<ClassShowProps>) {
+  const [showAddStudent, setShowAddStudent] = useState(false)
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+
+  const isTk = educationLevel === 'tk'
+  const tkGroup = schoolClass.gradeLevel === 0 ? 'A' : 'B'
+  const gradeLabel = isTk ? `Kelompok ${tkGroup}` : `Kelas ${schoolClass.gradeLevel}`
 
   const { data, setData, post, processing, errors, reset } = useForm({
     nis: '',
     fullName: '',
   })
 
-  const handleAddSiswa = () => {
-    post(`/classes/${kelas.id}/students`, {
+  const editForm = useForm({
+    nis: '',
+    fullName: '',
+  })
+
+  const handleAddStudent = () => {
+    post(`/classes/${schoolClass.id}/students`, {
       onSuccess: () => {
-        setShowAddSiswa(false)
+        setShowAddStudent(false)
         reset()
       },
     })
   }
 
-  const handleDeleteSiswa = () => {
-    if (!deletingSiswa) return
-    router.delete(`/classes/${kelas.id}/students/${deletingSiswa.id}`, {
-      onSuccess: () => setDeletingSiswa(null),
+  const handleOpenEdit = (student: Student) => {
+    editForm.setData({ nis: student.nis, fullName: student.fullName })
+    setEditingStudent(student)
+  }
+
+  const handleUpdateStudent = () => {
+    if (!editingStudent) return
+    editForm.put(`/classes/${schoolClass.id}/students/${editingStudent.id}`, {
+      onSuccess: () => setEditingStudent(null),
+    })
+  }
+
+  const handleDeleteStudent = () => {
+    if (!deletingStudent) return
+    router.delete(`/classes/${schoolClass.id}/students/${deletingStudent.id}`, {
+      onSuccess: () => setDeletingStudent(null),
     })
   }
 
   return (
-    <DashboardWrapper title="Dashboard">
-      <Head title={`Kelas ${kelas.name}`} />
+    <DashboardWrapper
+      title={`Kelas ${schoolClass.name}`}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Kelas', href: '/classes' },
+        { label: schoolClass.name },
+      ]}
+    >
+      <Head title={`Kelas ${schoolClass.name}`} />
 
       <div className="space-y-6">
         {/* Header */}
@@ -68,14 +98,14 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
           </Link>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Kelas {kelas.name}
+              Kelas {schoolClass.name}
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Kelas {kelas.gradeLevel} • {kelas.tahunAjaran.name} • {kelas.siswa.length} siswa
+              {gradeLabel} • {schoolClass.academicYear.name} • {schoolClass.students.length} siswa
             </p>
           </div>
           <button
-            onClick={() => setShowAddSiswa(true)}
+            onClick={() => setShowAddStudent(true)}
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
           >
             <UserPlus className="h-4 w-4" />
@@ -83,8 +113,8 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
           </button>
         </div>
 
-        {/* Siswa Table */}
-        {kelas.siswa.length === 0 ? (
+        {/* Tabel Siswa */}
+        {schoolClass.students.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <UserPlus className="mx-auto h-12 w-12 text-neutral-400" />
             <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
@@ -94,7 +124,7 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
               Tambahkan siswa ke kelas ini
             </p>
             <button
-              onClick={() => setShowAddSiswa(true)}
+              onClick={() => setShowAddStudent(true)}
               className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
               Tambah Siswa
@@ -121,27 +151,35 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
                   </tr>
                 </thead>
                 <tbody>
-                  {kelas.siswa.map((siswa, index) => (
+                  {schoolClass.students.map((student, index) => (
                     <tr
-                      key={siswa.id}
+                      key={student.id}
                       className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
                     >
                       <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
                         {index + 1}
                       </td>
                       <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                        {siswa.nis}
+                        {student.nis}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                        {siswa.fullName}
+                        {student.fullName}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => setDeletingSiswa(siswa)}
-                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(student)}
+                            className="rounded-lg p-1.5 text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingStudent(student)}
+                            className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -152,8 +190,8 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
         )}
       </div>
 
-      {/* Add Siswa Modal */}
-      {showAddSiswa && (
+      {/* Modal Tambah Siswa */}
+      {showAddStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -200,7 +238,7 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => {
-                  setShowAddSiswa(false)
+                  setShowAddStudent(false)
                   reset()
                 }}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -208,7 +246,7 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
                 Batal
               </button>
               <button
-                onClick={handleAddSiswa}
+                onClick={handleAddStudent}
                 disabled={processing}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
@@ -219,8 +257,70 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
         </div>
       )}
 
-      {/* Delete Siswa Confirmation Modal */}
-      {deletingSiswa && (
+      {/* Modal Edit Siswa */}
+      {editingStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
+          >
+            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
+              Edit Siswa
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="editNis" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  NIS (Nomor Induk Siswa)
+                </label>
+                <input
+                  id="editNis"
+                  type="text"
+                  value={editForm.data.nis}
+                  onChange={(e) => editForm.setData('nis', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                />
+                {editForm.errors.nis && (
+                  <p className="mt-1 text-sm text-red-500">{editForm.errors.nis}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="editFullName" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  Nama Lengkap
+                </label>
+                <input
+                  id="editFullName"
+                  type="text"
+                  value={editForm.data.fullName}
+                  onChange={(e) => editForm.setData('fullName', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                />
+                {editForm.errors.fullName && (
+                  <p className="mt-1 text-sm text-red-500">{editForm.errors.fullName}</p>
+                )}
+              </div>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setEditingStudent(null)}
+                className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleUpdateStudent}
+                disabled={editForm.processing}
+                className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {editForm.processing ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Siswa */}
+      {deletingStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -231,18 +331,18 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
               Hapus Siswa?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Siswa <strong>{deletingSiswa.fullName}</strong> akan dihapus dari kelas ini.
+              Siswa <strong>{deletingStudent.fullName}</strong> akan dihapus dari kelas ini.
               Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => setDeletingSiswa(null)}
+                onClick={() => setDeletingStudent(null)}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
               </button>
               <button
-                onClick={handleDeleteSiswa}
+                onClick={handleDeleteStudent}
                 className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700"
               >
                 Hapus
@@ -251,7 +351,6 @@ export default function KelasShow({ kelas }: Readonly<KelasShowProps>) {
           </motion.div>
         </div>
       )}
-    
     </DashboardWrapper>
   )
 }

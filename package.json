@@ -78,6 +78,7 @@
     "@vinejs/vine": "^4.4.0",
     "better-sqlite3": "^12.10.0",
     "clsx": "^2.1.1",
+    "docx": "^9.7.1",
     "edge.js": "^6.5.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
@@ -88,7 +89,8 @@
     "reflect-metadata": "^0.2.2",
     "sonner": "^2.0.0",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^4.3.2"
+    "tailwindcss": "^4.3.2",
+    "xlsx": "^0.18.5"
   },
   "hotHook": {
     "boundaries": [

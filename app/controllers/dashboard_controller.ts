@@ -4,6 +4,9 @@ import TeachingModule from '#models/teaching_module'
 import Exam from '#models/exam'
 import AnnualPlan from '#models/annual_plan'
 import SemesterPlan from '#models/semester_plan'
+import WeeklyLessonPlan from '#models/weekly_lesson_plan'
+import DailyLessonPlan from '#models/daily_lesson_plan'
+import PaudAssessment from '#models/paud_assessment'
 import Student from '#models/student'
 import User from '#models/user'
 
@@ -11,19 +14,30 @@ export default class DashboardController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
     const isAdmin = user.isAdmin
+    const isTk = user.educationLevel === 'tk'
 
-    // Get stats
-    const [totalClasses, totalStudents, totalTeachingModules, totalExams, totalAnnualPlans, totalSemesterPlans] =
-      await Promise.all([
-        isAdmin ? SchoolClass.query().count('* as total') : SchoolClass.query().where('user_id', user.id).count('* as total'),
-        isAdmin ? Student.query().count('* as total') : Student.query().whereHas('schoolClass', (q) => q.where('user_id', user.id)).count('* as total'),
-        isAdmin ? TeachingModule.query().count('* as total') : TeachingModule.query().where('user_id', user.id).count('* as total'),
-        isAdmin ? Exam.query().count('* as total') : Exam.query().where('user_id', user.id).count('* as total'),
-        isAdmin ? AnnualPlan.query().count('* as total') : AnnualPlan.query().where('user_id', user.id).count('* as total'),
-        isAdmin ? SemesterPlan.query().count('* as total') : SemesterPlan.query().where('user_id', user.id).count('* as total'),
-      ])
+    const [
+      totalClasses,
+      totalStudents,
+      totalTeachingModules,
+      totalExams,
+      totalAnnualPlans,
+      totalSemesterPlans,
+      totalWeeklyLessonPlans,
+      totalDailyLessonPlans,
+      totalPaudAssessments,
+    ] = await Promise.all([
+      isAdmin ? SchoolClass.query().count('* as total') : SchoolClass.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? Student.query().count('* as total') : Student.query().whereHas('schoolClass', (q) => q.where('user_id', user.id)).count('* as total'),
+      isAdmin ? TeachingModule.query().count('* as total') : TeachingModule.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? Exam.query().count('* as total') : Exam.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? AnnualPlan.query().count('* as total') : AnnualPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? SemesterPlan.query().count('* as total') : SemesterPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? WeeklyLessonPlan.query().count('* as total') : WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? DailyLessonPlan.query().count('* as total') : DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      isAdmin ? PaudAssessment.query().count('* as total') : PaudAssessment.query().where('user_id', user.id).count('* as total'),
+    ])
 
-    // Admin-specific stats
     let adminStats = null
     if (isAdmin) {
       const [totalUsers, totalGuru, totalAdmin] = await Promise.all([
@@ -38,7 +52,6 @@ export default class DashboardController {
       }
     }
 
-    // Get recent items
     const recentTeachingModules = await TeachingModule.query()
       .where('user_id', user.id)
       .orderBy('created_at', 'desc')
@@ -51,6 +64,7 @@ export default class DashboardController {
 
     return inertia.render('dashboard/index', {
       role: user.role,
+      educationLevel: user.educationLevel,
       stats: {
         classes: Number(totalClasses[0].$extras.total),
         students: Number(totalStudents[0].$extras.total),
@@ -58,10 +72,13 @@ export default class DashboardController {
         exams: Number(totalExams[0].$extras.total),
         annualPlans: Number(totalAnnualPlans[0].$extras.total),
         semesterPlans: Number(totalSemesterPlans[0].$extras.total),
+        weeklyLessonPlans: Number(totalWeeklyLessonPlans[0].$extras.total),
+        dailyLessonPlans: Number(totalDailyLessonPlans[0].$extras.total),
+        paudAssessments: Number(totalPaudAssessments[0].$extras.total),
       },
       adminStats,
-      recentTeachingModules,
-      recentExams,
+      recentTeachingModules: isTk ? [] : recentTeachingModules.map((m) => m.toJSON()),
+      recentExams: isTk ? [] : recentExams.map((e) => e.toJSON()),
     })
   }
 }

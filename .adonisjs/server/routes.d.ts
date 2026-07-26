@@ -5,6 +5,7 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'home': { paramsTuple?: []; params?: {} }
+    'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
@@ -19,6 +20,7 @@ export type ScannedRoutes = {
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'classes.updateStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'classes.removeStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
     'teaching-modules.store': { paramsTuple?: []; params?: {} }
@@ -26,33 +28,70 @@ export type ScannedRoutes = {
     'teaching-modules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.generate': { paramsTuple?: []; params?: {} }
+    'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.store': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.generate': { paramsTuple?: []; params?: {} }
+    'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.store': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.generate': { paramsTuple?: []; params?: {} }
+    'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.store': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
+    'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.index': { paramsTuple?: []; params?: {} }
+    'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.generate': { paramsTuple?: []; params?: {} }
+    'rpph.index': { paramsTuple?: []; params?: {} }
+    'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.generate': { paramsTuple?: []; params?: {} }
+    'paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'paud-assessments.store': { paramsTuple?: []; params?: {} }
+    'paud-assessments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'paud-assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.index': { paramsTuple?: []; params?: {} }
+    'assessments.store': { paramsTuple?: []; params?: {} }
+    'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.updateScores': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'subjects.store': { paramsTuple?: []; params?: {} }
+    'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
     'subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'settings.update': { paramsTuple?: []; params?: {} }
+    'admin.users.index': { paramsTuple?: []; params?: {} }
+    'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.packages.index': { paramsTuple?: []; params?: {} }
+    'admin.packages.store': { paramsTuple?: []; params?: {} }
+    'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.packages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.academic-years.index': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.store': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
+    'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
@@ -61,17 +100,33 @@ export type ScannedRoutes = {
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
     'teaching-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.index': { paramsTuple?: []; params?: {} }
+    'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.index': { paramsTuple?: []; params?: {} }
+    'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'assessments.index': { paramsTuple?: []; params?: {} }
+    'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
+    'admin.users.index': { paramsTuple?: []; params?: {} }
+    'admin.packages.index': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
+    'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
@@ -80,14 +135,29 @@ export type ScannedRoutes = {
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
     'teaching-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.index': { paramsTuple?: []; params?: {} }
     'semester-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'semester-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.index': { paramsTuple?: []; params?: {} }
+    'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.index': { paramsTuple?: []; params?: {} }
+    'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'assessments.index': { paramsTuple?: []; params?: {} }
+    'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
+    'admin.users.index': { paramsTuple?: []; params?: {} }
+    'admin.packages.index': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -104,16 +174,31 @@ export type ScannedRoutes = {
     'annual-plans.generate': { paramsTuple?: []; params?: {} }
     'semester-plans.store': { paramsTuple?: []; params?: {} }
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
+    'rppm.generate': { paramsTuple?: []; params?: {} }
+    'rpph.generate': { paramsTuple?: []; params?: {} }
+    'paud-assessments.store': { paramsTuple?: []; params?: {} }
+    'assessments.store': { paramsTuple?: []; params?: {} }
     'subjects.store': { paramsTuple?: []; params?: {} }
+    'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
+    'admin.packages.store': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'classes.updateStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'teaching-modules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'paud-assessments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.updateScores': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.update': { paramsTuple?: []; params?: {} }
+    'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -122,7 +207,14 @@ export type ScannedRoutes = {
     'exams.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rppm.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'rpph.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'paud-assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.packages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

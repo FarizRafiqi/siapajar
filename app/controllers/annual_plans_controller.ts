@@ -3,6 +3,8 @@ import AnnualPlan from '#models/annual_plan'
 import AcademicYear from '#models/academic_year'
 import Subject from '#models/subject'
 import { createAnnualPlanValidator, updateAnnualPlanValidator } from '#validators/annual_plan'
+import { generateAnnualPlanValidator } from '#validators/generate'
+import { exportAnnualPlan } from '#services/export_service'
 
 export default class AnnualPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -21,9 +23,9 @@ export default class AnnualPlansController {
       .orderBy('name')
 
     return inertia.render('dashboard/annual-plans/index', {
-      prota: annualPlans,
-      tahunAjaran: academicYears,
-      subjects,
+      annualPlans: annualPlans.map((p) => p.toJSON()),
+      academicYears: academicYears.map((y) => y.toJSON()),
+      subjects: subjects.map((s) => s.toJSON()),
     })
   }
 
@@ -40,8 +42,25 @@ export default class AnnualPlansController {
     }
 
     return inertia.render('dashboard/annual-plans/show', {
-      prota: annualPlan,
+      annualPlan: annualPlan.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const annualPlan = await AnnualPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!annualPlan) {
+      return response.redirect('/annual-plans')
+    }
+
+    const buffer = await exportAnnualPlan(annualPlan, user)
+    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header('Content-Disposition', `attachment; filename="Prota ${annualPlan.subject}.docx"`)
+    return response.send(buffer)
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -94,9 +113,15 @@ export default class AnnualPlansController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { academicYearId, subject } = request.only(['academicYearId', 'subject'])
+    const { academicYearId, subject } = await request.validateUsing(generateAnnualPlanValidator)
 
-    // Future implementation: Integrate with AI service (OpenAI)
+    const academicYear = await AcademicYear.find(academicYearId)
+    if (!academicYear) {
+      session.flash('error', 'Tahun ajaran tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    // Future implementation: Integrate with AI service (9router)
     const content = {
       kompetensi: [],
       alokasiWaktu: [],

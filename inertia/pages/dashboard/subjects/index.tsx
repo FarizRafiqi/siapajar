@@ -30,7 +30,7 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
   })
 
   const handleCreate = () => {
-    post('/dashboard/subjects', {
+    post('/subjects', {
       onSuccess: () => {
         setShowCreateModal(false)
         reset()
@@ -40,7 +40,7 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
 
   const handleUpdate = () => {
     if (!editingSubject) return
-    put(`/dashboard/subjects/${editingSubject.id}`, {
+    put(`/subjects/${editingSubject.id}`, {
       onSuccess: () => {
         setEditingSubject(null)
         reset()
@@ -50,13 +50,13 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
 
   const handleDelete = () => {
     if (!deletingSubject) return
-    router.delete(`/dashboard/subjects/${deletingSubject.id}`, {
+    router.delete(`/subjects/${deletingSubject.id}`, {
       onSuccess: () => setDeletingSubject(null),
     })
   }
 
   const handleToggleActive = (subject: Subject) => {
-    router.put(`/dashboard/subjects/${subject.id}`, {
+    router.put(`/subjects/${subject.id}`, {
       isActive: !subject.isActive,
     })
   }
@@ -87,39 +87,8 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
         { value: 6, label: 'Kelas 6' },
       ]
 
-  const tkSubjects = [
-    'Motorik Kasar',
-    'Motorik Halus',
-    'Kognitif',
-    'Bahasa & Literasi',
-    'Seni & Kreativitas',
-    'Sosial-Emosional',
-    'Agama & Moral',
-    'Bermain di Luar',
-    'Musik & Gerak',
-  ]
-
-  const sdSubjects = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-    'Muatan Lokal',
-  ]
-
-  const defaultSubjects = isTk ? tkSubjects : sdSubjects
-
   const handleAddDefaults = () => {
-    defaultSubjects.forEach((name) => {
-      router.post('/dashboard/subjects', {
-        name,
-        educationLevel,
-        gradeLevel: null,
-      })
-    })
+    router.post('/subjects/defaults')
   }
 
   return (
@@ -132,7 +101,7 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Mata Pelajaran</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Kelola mata pelajaran untuk educationLevel {isTk ? 'TK/PAUD' : 'SD'}
+              Kelola mata pelajaran untuk jenjang {isTk ? 'TK/PAUD' : 'SD'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -204,11 +173,8 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
                 </thead>
                 <tbody>
                   {subjects.map((subject, index) => (
-                    <motion.tr
+                    <tr
                       key={subject.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.03 }}
                       className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
                     >
                       <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
@@ -253,7 +219,7 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
                           </button>
                         </div>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>

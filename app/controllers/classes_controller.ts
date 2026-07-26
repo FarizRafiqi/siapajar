@@ -3,7 +3,7 @@ import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import AcademicYear from '#models/academic_year'
 import { createClassValidator, updateClassValidator } from '#validators/class'
-import { createStudentValidator } from '#validators/student'
+import { createStudentValidator, updateStudentValidator } from '#validators/student'
 
 export default class ClassesController {
   async index({ inertia, auth }: HttpContext) {
@@ -17,8 +17,8 @@ export default class ClassesController {
     const academicYears = await AcademicYear.query().orderBy('name', 'desc')
 
     return inertia.render('dashboard/classes/index', {
-      kelas: classes,
-      tahunAjaran: academicYears,
+      classes: classes.map((c) => c.toJSON()),
+      academicYears: academicYears.map((y) => y.toJSON()),
       educationLevel: user.educationLevel,
     })
   }
@@ -26,6 +26,17 @@ export default class ClassesController {
   async store({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
     const data = await request.validateUsing(createClassValidator)
+
+    const duplicate = await SchoolClass.query()
+      .where('user_id', user.id)
+      .where('academic_year_id', data.academicYearId)
+      .where('name', data.name)
+      .first()
+
+    if (duplicate) {
+      session.flash('error', `Kelas "${data.name}" sudah ada di tahun ajaran ini`)
+      return response.redirect().back()
+    }
 
     await SchoolClass.create({
       ...data,
@@ -50,7 +61,8 @@ export default class ClassesController {
     }
 
     return inertia.render('dashboard/classes/show', {
-      kelas: schoolClass,
+      schoolClass: schoolClass.toJSON(),
+      educationLevel: user.educationLevel,
     })
   }
 
@@ -103,12 +115,54 @@ export default class ClassesController {
 
     const data = await request.validateUsing(createStudentValidator)
 
+    const duplicate = await Student.query()
+      .where('class_id', schoolClass.id)
+      .where('nis', data.nis)
+      .first()
+
+    if (duplicate) {
+      session.flash('error', `NIS ${data.nis} sudah terdaftar di kelas ini`)
+      return response.redirect().back()
+    }
+
     await Student.create({
       ...data,
       classId: schoolClass.id,
     })
 
     session.flash('success', 'Siswa berhasil ditambahkan')
+    return response.redirect().back()
+  }
+
+  async updateStudent({ params, request, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const student = await Student.query()
+      .where('id', params.studentId)
+      .whereHas('schoolClass', (q) => q.where('user_id', user.id))
+      .first()
+
+    if (!student) {
+      return response.redirect('/classes')
+    }
+
+    const data = await request.validateUsing(updateStudentValidator)
+
+    if (data.nis) {
+      const duplicate = await Student.query()
+        .where('class_id', student.classId)
+        .where('nis', data.nis)
+        .whereNot('id', student.id)
+        .first()
+
+      if (duplicate) {
+        session.flash('error', `NIS ${data.nis} sudah terdaftar di kelas ini`)
+        return response.redirect().back()
+      }
+    }
+
+    await student.merge(data).save()
+
+    session.flash('success', 'Data siswa berhasil diupdate')
     return response.redirect().back()
   }
 

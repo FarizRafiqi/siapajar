@@ -4,17 +4,9 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Calendar, Trash2, Eye, Sparkles } from 'lucide-react'
 
-interface TahunAjaran {
+interface AcademicYear {
   id: number
   name: string
-}
-
-interface Prota {
-  id: number
-  subject: string
-  content: any
-  created_at: string
-  tahunAjaran: TahunAjaran
 }
 
 interface Subject {
@@ -22,18 +14,33 @@ interface Subject {
   name: string
 }
 
-interface ProtaIndexProps {
-  readonly prota: Prota[]
-  readonly tahunAjaran: TahunAjaran[]
+interface AnnualPlan {
+  id: number
+  subject: string
+  createdAt: string
+  academicYear: AcademicYear
+}
+
+interface AnnualPlansIndexProps {
+  readonly annualPlans: AnnualPlan[]
+  readonly academicYears: AcademicYear[]
   readonly subjects: Subject[]
 }
 
-export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexProps) {
+export default function AnnualPlansIndex({
+  annualPlans,
+  academicYears,
+  subjects,
+}: AnnualPlansIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
-  const [deletingProta, setDeletingProta] = useState<Prota | null>(null)
+  const [deletingPlan, setDeletingPlan] = useState<AnnualPlan | null>(null)
+
+  const hasAcademicYear = academicYears.length > 0
+  const hasSubjects = subjects.length > 0
+  const canGenerate = hasAcademicYear && hasSubjects
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    tahunAjaranId: tahunAjaran[0]?.id || 0,
+    academicYearId: academicYears[0]?.id || 0,
     subject: '',
   })
 
@@ -47,14 +54,17 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
   }
 
   const handleDelete = () => {
-    if (!deletingProta) return
-    router.delete(`/annual-plans/${deletingProta.id}`, {
-      onSuccess: () => setDeletingProta(null),
+    if (!deletingPlan) return
+    router.delete(`/annual-plans/${deletingPlan.id}`, {
+      onSuccess: () => setDeletingPlan(null),
     })
   }
 
   return (
-    <DashboardWrapper title="Dashboard">
+    <DashboardWrapper
+      title="Program Tahunan"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Prota' }]}
+    >
       <Head title="Program Tahunan" />
 
       <div className="space-y-6">
@@ -62,7 +72,7 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Program Tahunan (Protah)
+              Program Tahunan (Prota)
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400">
               Rencana pembelajaran setahun dengan AI
@@ -70,47 +80,67 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
           </div>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+            disabled={!canGenerate}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4" />
-            Generate Protah
+            Generate Prota
           </button>
         </div>
 
-        {/* Prota List */}
-        {prota.length === 0 ? (
+        {/* Prasyarat belum lengkap */}
+        {!canGenerate && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Lengkapi dulu sebelum bisa generate Prota:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {!hasAcademicYear && (
+                <span className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+                  Belum ada tahun ajaran — hubungi administrator
+                </span>
+              )}
+              {!hasSubjects && (
+                <Link
+                  href="/subjects"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
+                  Tambah mata pelajaran dulu →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Daftar Prota */}
+        {annualPlans.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
             <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
               Belum ada program tahunan
             </h3>
             <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-              Generate protah pertama Anda dengan AI
+              Generate Prota pertama Anda dengan AI
             </p>
             <button
               onClick={() => setShowGenerateModal(true)}
-              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              disabled={!canGenerate}
+              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Generate Protah
+              Generate Prota
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {prota.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+            {annualPlans.map((item, index) => (
+              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-neutral-900 dark:text-white">
                       {item.subject}
                     </h3>
                     <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      {item.tahunAjaran.name}
+                      {item.academicYear.name}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -121,20 +151,20 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
                       <Eye className="h-4 w-4" />
                     </Link>
                     <button
-                      onClick={() => setDeletingProta(item)}
+                      onClick={() => setDeletingPlan(item)}
                       className="rounded-lg border border-neutral-200 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Generate Modal */}
+      {/* Modal Generate */}
       {showGenerateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
@@ -147,26 +177,29 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                Generate Protah dengan AI
+                Generate Prota dengan AI
               </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="tahunAjaranId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label htmlFor="academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tahun Ajaran
                 </label>
                 <select
-                  id="tahunAjaranId"
-                  value={data.tahunAjaranId}
-                  onChange={(e) => setData('tahunAjaranId', Number(e.target.value))}
+                  id="academicYearId"
+                  value={data.academicYearId}
+                  onChange={(e) => setData('academicYearId', Number(e.target.value))}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  {tahunAjaran.map((ta) => (
-                    <option key={ta.id} value={ta.id}>
-                      {ta.name}
+                  {academicYears.map((year) => (
+                    <option key={year.id} value={year.id}>
+                      {year.name}
                     </option>
                   ))}
                 </select>
+                {errors.academicYearId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.academicYearId}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -205,15 +238,15 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
                 disabled={processing}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                {processing ? 'Generating...' : 'Generate'}
+                {processing ? 'Sedang membuat...' : 'Generate'}
               </button>
             </div>
           </motion.div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingProta && (
+      {/* Modal Konfirmasi Hapus */}
+      {deletingPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -221,14 +254,14 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
             <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
-              Hapus Protah?
+              Hapus Prota?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Program tahunan <strong>{deletingProta.subject}</strong> akan dihapus secara permanen.
+              Program tahunan <strong>{deletingPlan.subject}</strong> akan dihapus secara permanen.
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => setDeletingProta(null)}
+                onClick={() => setDeletingPlan(null)}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
@@ -243,7 +276,6 @@ export default function ProtaIndex({ prota, tahunAjaran, subjects }: ProtaIndexP
           </motion.div>
         </div>
       )}
-    
     </DashboardWrapper>
   )
 }

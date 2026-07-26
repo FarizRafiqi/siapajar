@@ -19,6 +19,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'coming-soon': {
+    methods: ["GET","HEAD"]
+    pattern: '/coming-soon'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'new_account.create': {
     methods: ["GET","HEAD"]
     pattern: '/signup'
@@ -187,6 +199,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'classes.updateStudent': {
+    methods: ["PUT"]
+    pattern: '/classes/:id/students/:studentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; studentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'classes.removeStudent': {
     methods: ["DELETE"]
     pattern: '/classes/:id/students/:studentId'
@@ -271,6 +295,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'teaching-modules.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/teaching-modules/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'exams.index': {
     methods: ["GET","HEAD"]
     pattern: '/exams'
@@ -338,6 +374,18 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
       query: {}
       response: unknown
       errorResponse: unknown
@@ -415,6 +463,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'annual-plans.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/annual-plans/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'semester-plans.index': {
     methods: ["GET","HEAD"]
     pattern: '/semester-plans'
@@ -487,6 +547,258 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'semester-plans.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/semester-plans/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/rppm'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/rppm/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.update': {
+    methods: ["PUT"]
+    pattern: '/rppm/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.destroy': {
+    methods: ["DELETE"]
+    pattern: '/rppm/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.generate': {
+    methods: ["POST"]
+    pattern: '/rppm/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/rpph'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/rpph/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.update': {
+    methods: ["PUT"]
+    pattern: '/rpph/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.destroy': {
+    methods: ["DELETE"]
+    pattern: '/rpph/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.generate': {
+    methods: ["POST"]
+    pattern: '/rpph/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.store': {
+    methods: ["POST"]
+    pattern: '/paud-assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.update': {
+    methods: ["PUT"]
+    pattern: '/paud-assessments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/paud-assessments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.store': {
+    methods: ["POST"]
+    pattern: '/assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/assessments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.updateScores': {
+    methods: ["PUT"]
+    pattern: '/assessments/:id/scores'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/assessments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/assessments/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'subjects.index': {
     methods: ["GET","HEAD"]
     pattern: '/subjects'
@@ -502,6 +814,18 @@ export interface Registry {
   'subjects.store': {
     methods: ["POST"]
     pattern: '/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subjects.storeDefaults': {
+    methods: ["POST"]
+    pattern: '/subjects/defaults'
     types: {
       body: {}
       paramsTuple: []
@@ -554,6 +878,138 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.users.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.users.update': {
+    methods: ["PUT"]
+    pattern: '/admin/users/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.users.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/users/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.packages.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/packages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.packages.store': {
+    methods: ["POST"]
+    pattern: '/admin/packages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.packages.update': {
+    methods: ["PUT"]
+    pattern: '/admin/packages/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.packages.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/packages/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.academic-years.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/academic-years'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.academic-years.store': {
+    methods: ["POST"]
+    pattern: '/admin/academic-years'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.academic-years.update': {
+    methods: ["PUT"]
+    pattern: '/admin/academic-years/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.academic-years.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/academic-years/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
       query: {}
       response: unknown
       errorResponse: unknown
