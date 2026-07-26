@@ -1,4 +1,5 @@
-import { ReactNode, useState } from 'react'
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 import Sidebar from '~/components/dashboard/sidebar'
 import Header from '~/components/dashboard/header'
 import { cn } from '~/lib/utils'
@@ -19,8 +20,14 @@ interface DashboardLayoutProps {
   breadcrumbs?: { label: string; href?: string }[]
 }
 
-export default function DashboardLayout({ children, user, title, breadcrumbs }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  user,
+  title,
+  breadcrumbs,
+}: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
@@ -29,12 +36,23 @@ export default function DashboardLayout({ children, user, title, breadcrumbs }: 
         user={user}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
 
       {/* Main content */}
-      <div className={cn('transition-all duration-300', sidebarCollapsed ? 'ml-[68px]' : 'ml-64')}>
-        <Header title={title} breadcrumbs={breadcrumbs} />
-        <main className="p-6">{children}</main>
+      <div
+        className={cn(
+          'transition-all duration-300',
+          sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-64'
+        )}
+      >
+        <Header
+          title={title}
+          breadcrumbs={breadcrumbs}
+          onMenuClick={() => setMobileMenuOpen(true)}
+        />
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   )
