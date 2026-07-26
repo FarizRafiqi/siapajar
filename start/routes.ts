@@ -123,6 +123,16 @@ router
     router.delete('/assessments/:id', '#controllers/assessments_controller.destroy').as('assessments.destroy')
     router.get('/assessments/:id/export', '#controllers/assessments_controller.export').as('assessments.export')
 
+    // Kepala Sekolah — dashboard read-only
+    router
+      .get('/principal', '#controllers/principal_dashboard_controller.index')
+      .as('principal.index')
+      .use(middleware.role({ roles: ['kepala_sekolah'] }))
+    router
+      .get('/principal/teachers/:userId', '#controllers/principal_dashboard_controller.teacher')
+      .as('principal.teacher')
+      .use(middleware.role({ roles: ['kepala_sekolah'] }))
+
     // Rapor & Peringkat
     router.get('/report-cards', '#controllers/report_cards_controller.index').as('report-cards.index')
     router.get('/report-cards/:classId/:semesterId', '#controllers/report_cards_controller.show').as('report-cards.show')
@@ -187,6 +197,24 @@ router
     router
       .delete('/admin/academic-years/:id', '#controllers/admin_academic_years_controller.destroy')
       .as('admin.academic-years.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    // Admin — Sekolah
+    router
+      .get('/admin/schools', '#controllers/admin_schools_controller.index')
+      .as('admin.schools.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/schools', '#controllers/admin_schools_controller.store')
+      .as('admin.schools.store')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/schools/:id', '#controllers/admin_schools_controller.update')
+      .as('admin.schools.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .delete('/admin/schools/:id', '#controllers/admin_schools_controller.destroy')
+      .as('admin.schools.destroy')
       .use(middleware.role({ roles: ['admin'] }))
 
     // Admin — Konfigurasi AI

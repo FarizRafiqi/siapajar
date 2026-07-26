@@ -74,6 +74,8 @@ export type ScannedRoutes = {
     'assessments.updateScores': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'principal.index': { paramsTuple?: []; params?: {} }
+    'principal.teacher': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'report-cards.index': { paramsTuple?: []; params?: {} }
     'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
     'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
@@ -95,6 +97,10 @@ export type ScannedRoutes = {
     'admin.academic-years.store': { paramsTuple?: []; params?: {} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.schools.index': { paramsTuple?: []; params?: {} }
+    'admin.schools.store': { paramsTuple?: []; params?: {} }
+    'admin.schools.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.schools.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
@@ -133,6 +139,8 @@ export type ScannedRoutes = {
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'principal.index': { paramsTuple?: []; params?: {} }
+    'principal.teacher': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'report-cards.index': { paramsTuple?: []; params?: {} }
     'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
     'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
@@ -141,6 +149,7 @@ export type ScannedRoutes = {
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
+    'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -176,6 +185,8 @@ export type ScannedRoutes = {
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'principal.index': { paramsTuple?: []; params?: {} }
+    'principal.teacher': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'report-cards.index': { paramsTuple?: []; params?: {} }
     'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
     'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
@@ -184,6 +195,7 @@ export type ScannedRoutes = {
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
+    'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -209,6 +221,7 @@ export type ScannedRoutes = {
     'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
     'admin.packages.store': { paramsTuple?: []; params?: {} }
     'admin.academic-years.store': { paramsTuple?: []; params?: {} }
+    'admin.schools.store': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
   }
@@ -228,6 +241,7 @@ export type ScannedRoutes = {
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.schools.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
@@ -245,6 +259,7 @@ export type ScannedRoutes = {
     'admin.users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.schools.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

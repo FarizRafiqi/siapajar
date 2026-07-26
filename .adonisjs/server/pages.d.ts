@@ -18,6 +18,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/academic-years/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/academic-years/index.tsx'))['default']>
     'dashboard/admin/ai-settings/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/ai-settings/index.tsx'))['default']>
     'dashboard/admin/packages/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/packages/index.tsx'))['default']>
+    'dashboard/admin/schools/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/schools/index.tsx'))['default']>
     'dashboard/admin/users/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/index.tsx'))['default']>
     'dashboard/annual-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/annual-plans/index.tsx'))['default']>
     'dashboard/annual-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/annual-plans/show.tsx'))['default']>
@@ -31,6 +32,8 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/exams/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/show.tsx'))['default']>
     'dashboard/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/index.tsx'))['default']>
     'dashboard/paud-assessments/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/paud-assessments/index.tsx'))['default']>
+    'dashboard/principal/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/principal/index.tsx'))['default']>
+    'dashboard/principal/teacher': ExtractProps<(typeof import('../../inertia/pages/dashboard/principal/teacher.tsx'))['default']>
     'dashboard/report-cards/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/report-cards/index.tsx'))['default']>
     'dashboard/report-cards/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/report-cards/show.tsx'))['default']>
     'dashboard/semester-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/semester-plans/index.tsx'))['default']>

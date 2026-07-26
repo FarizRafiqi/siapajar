@@ -96,6 +96,10 @@ export interface ApiDefinition {
     destroy: typeof routes['assessments.destroy']
     export: typeof routes['assessments.export']
   }
+  principal: {
+    index: typeof routes['principal.index']
+    teacher: typeof routes['principal.teacher']
+  }
   reportCards: {
     index: typeof routes['report-cards.index']
     show: typeof routes['report-cards.show']
@@ -129,6 +133,12 @@ export interface ApiDefinition {
       store: typeof routes['admin.academic-years.store']
       update: typeof routes['admin.academic-years.update']
       destroy: typeof routes['admin.academic-years.destroy']
+    }
+    schools: {
+      index: typeof routes['admin.schools.index']
+      store: typeof routes['admin.schools.store']
+      update: typeof routes['admin.schools.update']
+      destroy: typeof routes['admin.schools.destroy']
     }
     aiSettings: {
       index: typeof routes['admin.ai-settings.index']

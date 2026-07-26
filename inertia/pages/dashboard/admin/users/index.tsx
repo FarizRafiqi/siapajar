@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { Trash2, Shield } from 'lucide-react'
@@ -6,6 +6,11 @@ import { Trash2, Shield } from 'lucide-react'
 interface Package {
   id: number
   displayName: string
+}
+
+interface School {
+  id: number
+  name: string
 }
 
 interface User {
@@ -16,11 +21,13 @@ interface User {
   schoolName: string | null
   educationLevel: string | null
   package: Package | null
+  school: School | null
 }
 
 interface AdminUsersIndexProps {
   readonly users: User[]
   readonly packages: Package[]
+  readonly schools: School[]
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -29,17 +36,30 @@ const ROLE_LABELS: Record<string, string> = {
   kepala_sekolah: 'Kepala Sekolah',
 }
 
-export default function AdminUsersIndex({ users, packages }: AdminUsersIndexProps) {
+export default function AdminUsersIndex({ users, packages, schools }: AdminUsersIndexProps) {
   const [deletingUser, setDeletingUser] = useState<User | null>(null)
 
   const handleRoleChange = (user: User, role: string) => {
-    router.put(`/admin/users/${user.id}`, { role, packageId: user.package?.id ?? null })
+    router.put(`/admin/users/${user.id}`, {
+      role,
+      packageId: user.package?.id ?? null,
+      schoolId: user.school?.id ?? null,
+    })
   }
 
   const handlePackageChange = (user: User, packageId: string) => {
     router.put(`/admin/users/${user.id}`, {
       role: user.role,
       packageId: packageId ? Number(packageId) : null,
+      schoolId: user.school?.id ?? null,
+    })
+  }
+
+  const handleSchoolChange = (user: User, schoolId: string) => {
+    router.put(`/admin/users/${user.id}`, {
+      role: user.role,
+      packageId: user.package?.id ?? null,
+      schoolId: schoolId ? Number(schoolId) : null,
     })
   }
 
@@ -51,13 +71,18 @@ export default function AdminUsersIndex({ users, packages }: AdminUsersIndexProp
   }
 
   return (
-    <DashboardWrapper title="Manage Users" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Manage Users' }]}>
+    <DashboardWrapper
+      title="Manage Users"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Manage Users' }]}
+    >
       <Head title="Manage Users" />
 
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Manage Users</h2>
-          <p className="text-neutral-600 dark:text-neutral-400">Kelola role dan paket semua pengguna</p>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Kelola role dan paket semua pengguna
+          </p>
         </div>
 
         <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
@@ -65,21 +90,56 @@ export default function AdminUsersIndex({ users, packages }: AdminUsersIndexProp
             <table className="w-full">
               <thead>
                 <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Nama</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Email</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Sekolah</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Role</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Paket</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-neutral-400">Aksi</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Sekolah
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Paket
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">{user.fullName || '-'}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">{user.email}</td>
+                  <tr
+                    key={user.id}
+                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                      {user.fullName || '-'}
+                    </td>
                     <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {user.schoolName || '-'} {user.educationLevel && `(${user.educationLevel.toUpperCase()})`}
+                      {user.email}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={user.school?.id ?? ''}
+                        onChange={(e) => handleSchoolChange(user, e.target.value)}
+                        className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                      >
+                        <option value="">Belum ditautkan</option>
+                        {schools.map((school) => (
+                          <option key={school.id} value={school.id}>
+                            {school.name}
+                          </option>
+                        ))}
+                      </select>
+                      {user.educationLevel && (
+                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                          {user.educationLevel.toUpperCase()}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <select
@@ -129,10 +189,13 @@ export default function AdminUsersIndex({ users, packages }: AdminUsersIndexProp
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900">
             <div className="mb-2 flex items-center gap-2">
               <Shield className="h-5 w-5 text-red-600" />
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Hapus User?</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Hapus User?
+              </h3>
             </div>
             <p className="text-neutral-600 dark:text-neutral-400">
-              User <strong>{deletingUser.fullName || deletingUser.email}</strong> beserta semua data terkait akan dihapus permanen.
+              User <strong>{deletingUser.fullName || deletingUser.email}</strong> beserta semua data
+              terkait akan dihapus permanen.
             </p>
             <div className="mt-6 flex gap-3">
               <button
@@ -141,7 +204,10 @@ export default function AdminUsersIndex({ users, packages }: AdminUsersIndexProp
               >
                 Batal
               </button>
-              <button onClick={handleDelete} className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700">
+              <button
+                onClick={handleDelete}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
                 Hapus
               </button>
             </div>

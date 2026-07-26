@@ -17,6 +17,7 @@ import {
   Shield,
   Package,
   Sparkles,
+  School,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -65,8 +66,14 @@ const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Manage Users', href: '/admin/users', icon: Shield },
   { name: 'Manage Packages', href: '/admin/packages', icon: Package },
+  { name: 'Sekolah', href: '/admin/schools', icon: School },
   { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
   { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
+  { name: 'Pengaturan', href: '/settings', icon: Settings },
+]
+
+const principalNavigation = [
+  { name: 'Dashboard', href: '/principal', icon: LayoutDashboard },
   { name: 'Pengaturan', href: '/settings', icon: Settings },
 ]
 
@@ -77,6 +84,8 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
   let navigation = guruSdNavigation
   if (isAdmin) {
     navigation = adminNavigation
+  } else if (user.role === 'kepala_sekolah') {
+    navigation = principalNavigation
   } else if (user.educationLevel === 'tk') {
     navigation = guruTkNavigation
   }
@@ -101,9 +110,7 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
               <span className="text-sm font-bold text-white">S</span>
             </div>
-            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-              SiapAjar
-            </span>
+            <span className="text-lg font-semibold text-neutral-900 dark:text-white">SiapAjar</span>
           </Link>
         )}
         <button
@@ -117,7 +124,9 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
       {/* Navigation */}
       <nav className="space-y-1 px-3 py-4">
         {navigation.map((item) => {
-          const isActive = currentUrl.startsWith(item.href) && (item.href === '/dashboard' ? currentUrl === '/dashboard' : true)
+          const isActive =
+            currentUrl.startsWith(item.href) &&
+            (item.href === '/dashboard' ? currentUrl === '/dashboard' : true)
           return (
             <Link
               key={item.name}
@@ -130,7 +139,12 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
               )}
               title={collapsed ? item.name : undefined}
             >
-              <item.icon className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-emerald-600 dark:text-emerald-400' : '')} />
+              <item.icon
+                className={cn(
+                  'h-5 w-5 flex-shrink-0',
+                  isActive ? 'text-emerald-600 dark:text-emerald-400' : ''
+                )}
+              />
               {!collapsed && <span>{item.name}</span>}
             </Link>
           )

@@ -2,19 +2,36 @@ import { Head, useForm } from '@inertiajs/react'
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
-import { Sparkles, School, GraduationCap, ArrowRight, ArrowLeft, Check, Compass } from 'lucide-react'
+import {
+  Sparkles,
+  School,
+  GraduationCap,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Compass,
+} from 'lucide-react'
 import { cn } from '~/lib/utils'
 
-export default function Onboarding() {
+interface OnboardingProps {
+  readonly role: string
+}
+
+export default function Onboarding({ role }: OnboardingProps) {
+  const isKepalaSekolah = role === 'kepala_sekolah'
+  const totalSteps = isKepalaSekolah ? 2 : 3
+  const schoolStep = isKepalaSekolah ? 1 : 2
+  const confirmStep = isKepalaSekolah ? 2 : 3
+
   const [step, setStep] = useState(1)
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing, errors, transform } = useForm({
     educationLevel: '' as 'tk' | 'sd' | '',
     schoolName: '',
   })
 
   const handleNext = () => {
-    if (step === 1 && !data.educationLevel) return
-    if (step === 2 && data.schoolName.trim().length < 2) return
+    if (!isKepalaSekolah && step === 1 && !data.educationLevel) return
+    if (step === schoolStep && data.schoolName.trim().length < 2) return
     setStep(step + 1)
   }
 
@@ -24,13 +41,14 @@ export default function Onboarding() {
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
+    transform((formData) => (isKepalaSekolah ? { schoolName: formData.schoolName } : formData))
     post('/onboarding')
   }
 
   const getIndicatorWidth = (s: number, currentStep: number) => {
-    if (s === currentStep) return "w-8 bg-emerald-600 dark:bg-emerald-500"
-    if (s < currentStep) return "w-4 bg-emerald-300 dark:bg-emerald-800"
-    return "w-2 bg-neutral-200 dark:bg-neutral-800"
+    if (s === currentStep) return 'w-8 bg-emerald-600 dark:bg-emerald-500'
+    if (s < currentStep) return 'w-4 bg-emerald-300 dark:bg-emerald-800'
+    return 'w-2 bg-neutral-200 dark:bg-neutral-800'
   }
 
   return (
@@ -50,17 +68,19 @@ export default function Onboarding() {
               SiapAjar
             </span>
             <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500 font-medium uppercase tracking-wider">
-              <span>Langkah {step} dari 3</span>
+              <span>
+                Langkah {step} dari {totalSteps}
+              </span>
               <span>•</span>
               <span>Onboarding</span>
             </div>
             {/* Step Indicators */}
             <div className="mt-3 flex justify-center gap-2">
-              {[1, 2, 3].map((s) => (
+              {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
                 <div
                   key={s}
                   className={cn(
-                    "h-1.5 rounded-full transition-all duration-300",
+                    'h-1.5 rounded-full transition-all duration-300',
                     getIndicatorWidth(s, step)
                   )}
                 />
@@ -69,13 +89,16 @@ export default function Onboarding() {
           </div>
 
           {/* Form / Wizard Container */}
-          <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-800/80 p-8 md:p-10 relative overflow-hidden">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-800/80 p-8 md:p-10 relative overflow-hidden"
+          >
             {/* Glow Decorative Effect */}
             <div className="absolute -right-20 -top-20 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <AnimatePresence mode="wait">
-              {step === 1 && (
+              {!isKepalaSekolah && step === 1 && (
                 <motion.div
                   key="step1"
                   initial={{ opacity: 0, x: 20 }}
@@ -89,7 +112,8 @@ export default function Onboarding() {
                       Pilih Jenjang Instansi Anda
                     </h2>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
-                      Kami akan menyesuaikan format modul ajar, rencana tahunan (protah/promes), dan penilaian sesuai kurikulum educationLevel Anda.
+                      Kami akan menyesuaikan format modul ajar, rencana tahunan (protah/promes), dan
+                      penilaian sesuai kurikulum educationLevel Anda.
                     </p>
                   </div>
 
@@ -99,25 +123,28 @@ export default function Onboarding() {
                       type="button"
                       onClick={() => setData('educationLevel', 'tk')}
                       className={cn(
-                        "group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300",
+                        'group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300',
                         data.educationLevel === 'tk'
-                          ? "border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20"
-                          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
+                          ? 'border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20'
+                          : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
                       )}
                     >
-                      <div className={cn(
-                        "rounded-lg p-3 mb-4 transition-colors",
-                        data.educationLevel === 'tk'
-                          ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
-                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700"
-                      )}>
+                      <div
+                        className={cn(
+                          'rounded-lg p-3 mb-4 transition-colors',
+                          data.educationLevel === 'tk'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
+                        )}
+                      >
                         <Compass className="h-6 w-6" />
                       </div>
                       <h3 className="font-semibold text-neutral-950 dark:text-white text-base">
                         TK / PAUD
                       </h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-                        Modul ajar RPPH bermain, pencapaian aspek perkembangan, dan rapor predikat narasi.
+                        Modul ajar RPPH bermain, pencapaian aspek perkembangan, dan rapor predikat
+                        narasi.
                       </p>
                       {data.educationLevel === 'tk' && (
                         <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
@@ -131,25 +158,28 @@ export default function Onboarding() {
                       type="button"
                       onClick={() => setData('educationLevel', 'sd')}
                       className={cn(
-                        "group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300",
+                        'group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300',
                         data.educationLevel === 'sd'
-                          ? "border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20"
-                          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
+                          ? 'border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20'
+                          : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
                       )}
                     >
-                      <div className={cn(
-                        "rounded-lg p-3 mb-4 transition-colors",
-                        data.educationLevel === 'sd'
-                          ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
-                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700"
-                      )}>
+                      <div
+                        className={cn(
+                          'rounded-lg p-3 mb-4 transition-colors',
+                          data.educationLevel === 'sd'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
+                        )}
+                      >
                         <GraduationCap className="h-6 w-6" />
                       </div>
                       <h3 className="font-semibold text-neutral-950 dark:text-white text-base">
                         Sekolah Dasar (SD)
                       </h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-                        Mata pelajaran Kurikulum Merdeka terstruktur, bank soal/kuis, dan rapor penilaian akademik.
+                        Mata pelajaran Kurikulum Merdeka terstruktur, bank soal/kuis, dan rapor
+                        penilaian akademik.
                       </p>
                       {data.educationLevel === 'sd' && (
                         <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
@@ -173,9 +203,9 @@ export default function Onboarding() {
                 </motion.div>
               )}
 
-              {step === 2 && (
+              {step === schoolStep && (
                 <motion.div
-                  key="step2"
+                  key="step-school"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -187,12 +217,17 @@ export default function Onboarding() {
                       Nama Instansi / Sekolah Anda
                     </h2>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
-                      Tuliskan nama instansi tempat Anda mengajar untuk ditampilkan pada kop dokumen administrasi Anda.
+                      Tuliskan nama instansi tempat Anda {isKepalaSekolah ? 'bertugas' : 'mengajar'}
+                      . Jika nama sekolah sudah pernah didaftarkan guru lain, akun Anda akan
+                      otomatis terhubung ke sekolah yang sama.
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="schoolName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    <label
+                      htmlFor="schoolName"
+                      className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
                       Nama Sekolah
                     </label>
                     <div className="relative">
@@ -214,15 +249,22 @@ export default function Onboarding() {
                     )}
                   </div>
 
-                  <div className="pt-4 flex justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={handleBack}
-                      className="flex items-center gap-2 rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Kembali
-                    </button>
+                  <div
+                    className={cn(
+                      'pt-4 flex gap-3',
+                      isKepalaSekolah ? 'justify-end' : 'justify-between'
+                    )}
+                  >
+                    {!isKepalaSekolah && (
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="flex items-center gap-2 rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Kembali
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={handleNext}
@@ -236,7 +278,7 @@ export default function Onboarding() {
                 </motion.div>
               )}
 
-              {step === 3 && (
+              {step === confirmStep && (
                 <motion.div
                   key="step3"
                   initial={{ opacity: 0, x: 20 }}
@@ -254,7 +296,20 @@ export default function Onboarding() {
                       Semua Sudah Siap!
                     </h2>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm max-w-sm mx-auto">
-                      Akun Anda telah dikonfigurasi untuk level <strong className="text-emerald-600 dark:text-emerald-400">{data.educationLevel === 'tk' ? 'TK / PAUD' : 'Sekolah Dasar (SD)'}</strong> di <strong>{data.schoolName}</strong>.
+                      {isKepalaSekolah ? (
+                        <>
+                          Akun Anda telah terhubung sebagai Kepala Sekolah di{' '}
+                          <strong>{data.schoolName}</strong>.
+                        </>
+                      ) : (
+                        <>
+                          Akun Anda telah dikonfigurasi untuk level{' '}
+                          <strong className="text-emerald-600 dark:text-emerald-400">
+                            {data.educationLevel === 'tk' ? 'TK / PAUD' : 'Sekolah Dasar (SD)'}
+                          </strong>{' '}
+                          di <strong>{data.schoolName}</strong>.
+                        </>
+                      )}
                     </p>
                   </div>
 

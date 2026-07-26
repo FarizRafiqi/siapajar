@@ -426,6 +426,18 @@ const routes = {
     tokens: [{"old":"/assessments/:id/export","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export","type":1,"val":"id","end":""},{"old":"/assessments/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['assessments.export']['types'],
   },
+  'principal.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/principal',
+    tokens: [{"old":"/principal","type":0,"val":"principal","end":""}],
+    types: placeholder as Registry['principal.index']['types'],
+  },
+  'principal.teacher': {
+    methods: ["GET","HEAD"],
+    pattern: '/principal/teachers/:userId',
+    tokens: [{"old":"/principal/teachers/:userId","type":0,"val":"principal","end":""},{"old":"/principal/teachers/:userId","type":0,"val":"teachers","end":""},{"old":"/principal/teachers/:userId","type":1,"val":"userId","end":""}],
+    types: placeholder as Registry['principal.teacher']['types'],
+  },
   'report-cards.index': {
     methods: ["GET","HEAD"],
     pattern: '/report-cards',
@@ -551,6 +563,30 @@ const routes = {
     pattern: '/admin/academic-years/:id',
     tokens: [{"old":"/admin/academic-years/:id","type":0,"val":"admin","end":""},{"old":"/admin/academic-years/:id","type":0,"val":"academic-years","end":""},{"old":"/admin/academic-years/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.academic-years.destroy']['types'],
+  },
+  'admin.schools.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/schools',
+    tokens: [{"old":"/admin/schools","type":0,"val":"admin","end":""},{"old":"/admin/schools","type":0,"val":"schools","end":""}],
+    types: placeholder as Registry['admin.schools.index']['types'],
+  },
+  'admin.schools.store': {
+    methods: ["POST"],
+    pattern: '/admin/schools',
+    tokens: [{"old":"/admin/schools","type":0,"val":"admin","end":""},{"old":"/admin/schools","type":0,"val":"schools","end":""}],
+    types: placeholder as Registry['admin.schools.store']['types'],
+  },
+  'admin.schools.update': {
+    methods: ["PUT"],
+    pattern: '/admin/schools/:id',
+    tokens: [{"old":"/admin/schools/:id","type":0,"val":"admin","end":""},{"old":"/admin/schools/:id","type":0,"val":"schools","end":""},{"old":"/admin/schools/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.schools.update']['types'],
+  },
+  'admin.schools.destroy': {
+    methods: ["DELETE"],
+    pattern: '/admin/schools/:id',
+    tokens: [{"old":"/admin/schools/:id","type":0,"val":"admin","end":""},{"old":"/admin/schools/:id","type":0,"val":"schools","end":""},{"old":"/admin/schools/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.schools.destroy']['types'],
   },
   'admin.ai-settings.index': {
     methods: ["GET","HEAD"],

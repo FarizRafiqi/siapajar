@@ -4,6 +4,21 @@ export const updateUserRoleValidator = vine.create(
   vine.object({
     role: vine.enum(['admin', 'guru', 'kepala_sekolah']),
     packageId: vine.number().positive().nullable().optional(),
+    schoolId: vine.number().positive().nullable().optional(),
+  })
+)
+
+export const createSchoolValidator = vine.create(
+  vine.object({
+    name: vine.string().trim().minLength(2).maxLength(100),
+    npsn: vine.string().trim().maxLength(20).optional(),
+  })
+)
+
+export const updateSchoolValidator = vine.create(
+  vine.object({
+    name: vine.string().trim().minLength(2).maxLength(100).optional(),
+    npsn: vine.string().trim().maxLength(20).nullable().optional(),
   })
 )
 
