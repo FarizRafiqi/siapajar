@@ -13,6 +13,12 @@ export interface ApiDefinition {
     store: typeof routes['session.store']
     destroy: typeof routes['session.destroy']
   }
+  auth: {
+    google: {
+      redirect: typeof routes['auth.google.redirect']
+      callback: typeof routes['auth.google.callback']
+    }
+  }
   onboarding: {
     index: typeof routes['onboarding.index']
     store: typeof routes['onboarding.store']

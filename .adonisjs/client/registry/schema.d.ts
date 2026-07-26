@@ -79,6 +79,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
     }
   }
+  'auth.google.redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/auth/google/redirect'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'auth.google.callback': {
+    methods: ["GET","HEAD"]
+    pattern: '/auth/google/callback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'session.destroy': {
     methods: ["POST"]
     pattern: '/logout'
