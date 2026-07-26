@@ -123,6 +123,11 @@ router
     router.delete('/assessments/:id', '#controllers/assessments_controller.destroy').as('assessments.destroy')
     router.get('/assessments/:id/export', '#controllers/assessments_controller.export').as('assessments.export')
 
+    // Rapor & Peringkat
+    router.get('/report-cards', '#controllers/report_cards_controller.index').as('report-cards.index')
+    router.get('/report-cards/:classId/:semesterId', '#controllers/report_cards_controller.show').as('report-cards.show')
+    router.get('/report-cards/:classId/:semesterId/:studentId/export', '#controllers/report_cards_controller.exportPdf').as('report-cards.exportPdf')
+
     // Subjects (Mata Pelajaran)
     router.get('/subjects', '#controllers/subjects_controller.index').as('subjects.index')
     router.post('/subjects', '#controllers/subjects_controller.store').as('subjects.store')

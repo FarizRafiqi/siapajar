@@ -96,6 +96,11 @@ export interface ApiDefinition {
     destroy: typeof routes['assessments.destroy']
     export: typeof routes['assessments.export']
   }
+  reportCards: {
+    index: typeof routes['report-cards.index']
+    show: typeof routes['report-cards.show']
+    exportPdf: typeof routes['report-cards.exportPdf']
+  }
   subjects: {
     index: typeof routes['subjects.index']
     store: typeof routes['subjects.store']

@@ -4,6 +4,7 @@ import type Exam from '#models/exam'
 import type AnnualPlan from '#models/annual_plan'
 import type SemesterPlan from '#models/semester_plan'
 import type User from '#models/user'
+import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
   midterm: 'PTS (Penilaian Tengah Semester)',
@@ -128,6 +129,90 @@ export async function exportSemesterPlanPdf(semesterPlan: SemesterPlan, user: Us
   doc.moveDown(1)
   for (const s of sections) {
     writeSection(doc, s.title, semesterPlan.content[s.key] ?? [])
+  }
+
+  return toBuffer(doc)
+}
+
+interface ReportCardContext {
+  className: string
+  semesterLabel: string
+  totalStudents: number
+}
+
+export async function exportReportCardPdf(
+  report: StudentReport,
+  user: User,
+  ctx: ReportCardContext
+) {
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
+
+  doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
+  doc.font('Helvetica').fontSize(10).text(`NIS: ${report.nis} • Kelas: ${ctx.className}`)
+  doc.moveDown(1)
+
+  doc.font('Helvetica-Bold').fontSize(12).text('Nilai per Mata Pelajaran')
+  doc.font('Helvetica').fontSize(10)
+  for (const subject of report.subjects) {
+    const value = subject.average === null ? '-' : subject.average.toFixed(1)
+    doc.text(`${subject.subject}: ${value}`)
+  }
+  doc.moveDown(1)
+
+  doc.font('Helvetica-Bold').fontSize(12).text('Ringkasan')
+  doc.font('Helvetica').fontSize(10)
+  doc.text(
+    `Rata-rata keseluruhan: ${report.overallAverage === null ? '-' : report.overallAverage.toFixed(1)}`
+  )
+  doc.text(
+    report.rank === null
+      ? 'Peringkat: -'
+      : `Peringkat: ${report.rank} dari ${ctx.totalStudents} siswa`
+  )
+
+  return toBuffer(doc)
+}
+
+function formatPaudContent(entry: PaudStudentNarrative['entries'][number]) {
+  const content = entry.content as Record<string, unknown>
+  switch (entry.type) {
+    case 'checklist': {
+      const indicators = Array.isArray(content.indicators) ? (content.indicators as string[]) : []
+      const note = typeof content.note === 'string' ? content.note : ''
+      return [indicators.join(', '), note].filter(Boolean).join(' — ')
+    }
+    case 'anecdotal_note':
+      return `Latar: ${content.context ?? '-'} — Perilaku: ${content.behavior ?? '-'} — Analisis: ${content.analysis ?? '-'}`
+    case 'work_sample':
+      return `${content.photoDescription ?? '-'} — ${content.description ?? ''}${content.analysis ? ` (${content.analysis})` : ''}`
+    case 'photo_series':
+      return `${content.activity ?? '-'} — ${content.narrative ?? ''}`
+    default:
+      return ''
+  }
+}
+
+export async function exportNarrativeReportPdf(
+  narrative: PaudStudentNarrative,
+  user: User,
+  ctx: ReportCardContext
+) {
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
+
+  doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
+  doc.font('Helvetica').fontSize(10).text(`NIS: ${narrative.nis} • Kelompok: ${ctx.className}`)
+  doc.moveDown(1)
+
+  if (narrative.entries.length === 0) {
+    doc.font('Helvetica').fontSize(10).text('Belum ada asesmen yang tercatat pada semester ini.')
+  } else {
+    for (const entry of narrative.entries) {
+      doc.font('Helvetica-Bold').fontSize(11).text(`${entry.typeLabel} — ${entry.date}`)
+      doc.font('Helvetica').fontSize(10).text(formatPaudContent(entry))
+      doc.moveDown(0.5)
+    }
   }
 
   return toBuffer(doc)

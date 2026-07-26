@@ -74,6 +74,9 @@ export type ScannedRoutes = {
     'assessments.updateScores': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'report-cards.index': { paramsTuple?: []; params?: {} }
+    'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'subjects.store': { paramsTuple?: []; params?: {} }
     'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
@@ -130,6 +133,9 @@ export type ScannedRoutes = {
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'report-cards.index': { paramsTuple?: []; params?: {} }
+    'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
@@ -170,6 +176,9 @@ export type ScannedRoutes = {
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'report-cards.index': { paramsTuple?: []; params?: {} }
+    'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
