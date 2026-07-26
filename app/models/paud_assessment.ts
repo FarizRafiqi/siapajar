@@ -4,6 +4,7 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
+import Semester from '#models/semester'
 
 export default class PaudAssessment extends BaseModel {
   static readonly table = 'paud_assessments'
@@ -19,6 +20,9 @@ export default class PaudAssessment extends BaseModel {
 
   @column({ columnName: 'student_id' })
   declare studentId: number
+
+  @column({ columnName: 'semester_id' })
+  declare semesterId: number | null
 
   @column()
   declare type: 'checklist' | 'anecdotal_note' | 'work_sample' | 'photo_series'
@@ -41,6 +45,9 @@ export default class PaudAssessment extends BaseModel {
 
   @belongsTo(() => Student, { foreignKey: 'studentId' })
   declare student: BelongsTo<typeof Student>
+
+  @belongsTo(() => Semester, { foreignKey: 'semesterId' })
+  declare semester: BelongsTo<typeof Semester>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

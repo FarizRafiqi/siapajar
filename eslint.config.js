@@ -1,10 +1,4 @@
 import { configApp } from '@adonisjs/eslint-config'
-import { vue } from '@adonisjs/eslint-config/vue'
+import { react } from '@adonisjs/eslint-config/react'
 
-export default configApp(...vue, {
-  name: 'inertia-vue ts overrides',
-  files: ['inertia/**/*.ts'],
-  rules: {
-    'vue/component-api-style': 'off',
-  },
-})
+export default configApp(...react)

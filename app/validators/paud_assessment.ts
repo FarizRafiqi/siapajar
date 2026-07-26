@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 export const createPaudAssessmentValidator = vine.create(
   vine.object({
     classId: vine.number().positive(),
+    semesterId: vine.number().positive().optional(),
     studentId: vine.number().positive(),
     type: vine.enum(['checklist', 'anecdotal_note', 'work_sample', 'photo_series']),
     date: vine.date(),
