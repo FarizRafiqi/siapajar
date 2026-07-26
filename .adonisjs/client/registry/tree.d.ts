@@ -13,6 +13,12 @@ export interface ApiDefinition {
     store: typeof routes['session.store']
     destroy: typeof routes['session.destroy']
   }
+  auth: {
+    google: {
+      redirect: typeof routes['auth.google.redirect']
+      callback: typeof routes['auth.google.callback']
+    }
+  }
   onboarding: {
     index: typeof routes['onboarding.index']
     store: typeof routes['onboarding.store']
@@ -25,6 +31,7 @@ export interface ApiDefinition {
     update: typeof routes['classes.update']
     destroy: typeof routes['classes.destroy']
     addStudent: typeof routes['classes.addStudent']
+    importStudents: typeof routes['classes.importStudents']
     updateStudent: typeof routes['classes.updateStudent']
     removeStudent: typeof routes['classes.removeStudent']
   }
@@ -36,6 +43,7 @@ export interface ApiDefinition {
     destroy: typeof routes['teaching-modules.destroy']
     generate: typeof routes['teaching-modules.generate']
     export: typeof routes['teaching-modules.export']
+    exportPdf: typeof routes['teaching-modules.exportPdf']
   }
   exams: {
     index: typeof routes['exams.index']
@@ -45,6 +53,7 @@ export interface ApiDefinition {
     destroy: typeof routes['exams.destroy']
     generate: typeof routes['exams.generate']
     export: typeof routes['exams.export']
+    exportPdf: typeof routes['exams.exportPdf']
   }
   annualPlans: {
     index: typeof routes['annual-plans.index']
@@ -54,6 +63,7 @@ export interface ApiDefinition {
     destroy: typeof routes['annual-plans.destroy']
     generate: typeof routes['annual-plans.generate']
     export: typeof routes['annual-plans.export']
+    exportPdf: typeof routes['annual-plans.exportPdf']
   }
   semesterPlans: {
     index: typeof routes['semester-plans.index']
@@ -63,6 +73,7 @@ export interface ApiDefinition {
     destroy: typeof routes['semester-plans.destroy']
     generate: typeof routes['semester-plans.generate']
     export: typeof routes['semester-plans.export']
+    exportPdf: typeof routes['semester-plans.exportPdf']
   }
   rppm: {
     index: typeof routes['rppm.index']
@@ -92,6 +103,15 @@ export interface ApiDefinition {
     destroy: typeof routes['assessments.destroy']
     export: typeof routes['assessments.export']
   }
+  principal: {
+    index: typeof routes['principal.index']
+    teacher: typeof routes['principal.teacher']
+  }
+  reportCards: {
+    index: typeof routes['report-cards.index']
+    show: typeof routes['report-cards.show']
+    exportPdf: typeof routes['report-cards.exportPdf']
+  }
   subjects: {
     index: typeof routes['subjects.index']
     store: typeof routes['subjects.store']
@@ -120,6 +140,12 @@ export interface ApiDefinition {
       store: typeof routes['admin.academic-years.store']
       update: typeof routes['admin.academic-years.update']
       destroy: typeof routes['admin.academic-years.destroy']
+    }
+    schools: {
+      index: typeof routes['admin.schools.index']
+      store: typeof routes['admin.schools.store']
+      update: typeof routes['admin.schools.update']
+      destroy: typeof routes['admin.schools.destroy']
     }
     aiSettings: {
       index: typeof routes['admin.ai-settings.index']

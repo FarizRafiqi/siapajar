@@ -6,6 +6,7 @@ import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Package from '#models/package'
+import School from '#models/school'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -26,7 +27,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare email: string
 
   @column({ serializeAs: null })
-  declare password: string
+  declare password: string | null
 
   @column()
   declare role: string
@@ -40,6 +41,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'education_level' })
   declare educationLevel: string | null
 
+  @column({ columnName: 'school_id' })
+  declare schoolId: number | null
+
+  @column({ columnName: 'google_id', serializeAs: null })
+  declare googleId: string | null
+
+  @column({ columnName: 'avatar_url' })
+  declare avatarUrl: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -48,6 +58,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @belongsTo(() => Package, { foreignKey: 'packageId' })
   declare package: BelongsTo<typeof Package>
+
+  @belongsTo(() => School, { foreignKey: 'schoolId' })
+  declare school: BelongsTo<typeof School>
 
   get initials() {
     const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@')

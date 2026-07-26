@@ -4,6 +4,7 @@ import Score from '#models/score'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import Subject from '#models/subject'
+import Semester from '#models/semester'
 import { createAssessmentValidator, updateScoresValidator } from '#validators/assessment'
 import { exportAssessmentScores } from '#services/xlsx_export_service'
 
@@ -46,9 +47,19 @@ export default class AssessmentsController {
       return response.redirect().back()
     }
 
+    let semesterId = data.semesterId ?? null
+    if (!semesterId) {
+      const activeSemester = await Semester.query()
+        .where('academic_year_id', schoolClass.academicYearId)
+        .where('is_active', true)
+        .first()
+      semesterId = activeSemester?.id ?? null
+    }
+
     const assessment = await Assessment.create({
       userId: user.id,
       classId: data.classId,
+      semesterId,
       subject: data.subject,
       type: data.type,
       title: data.title,

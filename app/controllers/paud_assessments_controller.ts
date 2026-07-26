@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import PaudAssessment from '#models/paud_assessment'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
+import Semester from '#models/semester'
 import { createPaudAssessmentValidator, updatePaudAssessmentValidator } from '#validators/paud_assessment'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -56,9 +57,19 @@ export default class PaudAssessmentsController {
       return response.redirect().back()
     }
 
+    let semesterId = data.semesterId ?? null
+    if (!semesterId) {
+      const activeSemester = await Semester.query()
+        .where('academic_year_id', schoolClass.academicYearId)
+        .where('is_active', true)
+        .first()
+      semesterId = activeSemester?.id ?? null
+    }
+
     await PaudAssessment.create({
       userId: user.id,
       classId: data.classId,
+      semesterId,
       studentId: data.studentId,
       type: data.type,
       date: data.date,

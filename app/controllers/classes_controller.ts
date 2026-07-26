@@ -4,6 +4,7 @@ import Student from '#models/student'
 import AcademicYear from '#models/academic_year'
 import { createClassValidator, updateClassValidator } from '#validators/class'
 import { createStudentValidator, updateStudentValidator } from '#validators/student'
+import { parseStudentImportFile } from '#services/student_import_service'
 
 export default class ClassesController {
   async index({ inertia, auth }: HttpContext) {
@@ -131,6 +132,81 @@ export default class ClassesController {
     })
 
     session.flash('success', 'Siswa berhasil ditambahkan')
+    return response.redirect().back()
+  }
+
+  async importStudents({ params, request, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const schoolClass = await SchoolClass.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      return response.redirect('/classes')
+    }
+
+    const file = request.file('file', { extnames: ['csv', 'xlsx'], size: '5mb' })
+
+    if (!file || !file.tmpPath) {
+      session.flash('error', 'Pilih file CSV atau Excel (.xlsx) untuk diimpor')
+      return response.redirect().back()
+    }
+
+    if (!file.isValid) {
+      session.flash('error', file.errors.map((e) => e.message).join(', ') || 'File tidak valid')
+      return response.redirect().back()
+    }
+
+    const { rows, errors: parseErrors } = await parseStudentImportFile(
+      file.tmpPath,
+      file.extname ?? 'xlsx'
+    )
+
+    if (rows.length === 0) {
+      session.flash(
+        'error',
+        parseErrors[0] ?? 'Tidak ada data siswa yang valid ditemukan dalam file'
+      )
+      return response.redirect().back()
+    }
+
+    // Satu query di awal (bukan satu query per baris) — existingByNis diperbarui
+    // di setiap iterasi supaya NIS duplikat di dalam file yang sama diperlakukan
+    // sebagai update berurutan, bukan dua insert yang melanggar unique constraint.
+    const existingStudents = await Student.query().where('class_id', schoolClass.id)
+    const existingByNis = new Map(existingStudents.map((s) => [s.nis, s]))
+
+    let created = 0
+    let updated = 0
+
+    for (const row of rows) {
+      const existing = existingByNis.get(row.nis)
+
+      if (existing) {
+        existing.fullName = row.fullName
+        if (row.nisn) {
+          existing.nisn = row.nisn
+        }
+        await existing.save()
+        updated++
+      } else {
+        const student = await Student.create({
+          classId: schoolClass.id,
+          nis: row.nis,
+          fullName: row.fullName,
+          nisn: row.nisn,
+        })
+        existingByNis.set(row.nis, student)
+        created++
+      }
+    }
+
+    const summary = [`${created} siswa baru`, `${updated} siswa diupdate`]
+    if (parseErrors.length > 0) {
+      summary.push(`${parseErrors.length} baris dilewati`)
+    }
+    session.flash('success', `Import selesai: ${summary.join(', ')}`)
     return response.redirect().back()
   }
 
