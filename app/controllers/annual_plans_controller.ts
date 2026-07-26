@@ -5,6 +5,8 @@ import Subject from '#models/subject'
 import { createAnnualPlanValidator, updateAnnualPlanValidator } from '#validators/annual_plan'
 import { generateAnnualPlanValidator } from '#validators/generate'
 import { exportAnnualPlan } from '#services/export_service'
+import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { annualPlanPrompt } from '#services/ai_prompts'
 
 export default class AnnualPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -59,7 +61,7 @@ export default class AnnualPlansController {
 
     const buffer = await exportAnnualPlan(annualPlan, user)
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response.header('Content-Disposition', `attachment; filename="Prota ${annualPlan.subject}.docx"`)
+    response.header('Content-Disposition', `attachment; filename="Protah ${annualPlan.subject}.docx"`)
     return response.send(buffer)
   }
 
@@ -121,12 +123,18 @@ export default class AnnualPlansController {
       return response.redirect().back()
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const content = {
-      kompetensi: [],
-      alokasiWaktu: [],
-      kegiatan: [],
-      minggu: [],
+    let content: Record<string, string[]>
+    try {
+      const prompt = annualPlanPrompt({ subject })
+      const raw = await callAiJson<Record<string, unknown>>({
+        combo: 'siapajar-docgen',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      content = normalizeStringArraySections(raw, ['kompetensi', 'alokasiWaktu', 'kegiatan', 'minggu'])
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate Protah. Coba lagi.')
+      return response.redirect().back()
     }
 
     const annualPlan = await AnnualPlan.create({

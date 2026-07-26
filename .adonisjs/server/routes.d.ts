@@ -88,6 +88,10 @@ export type ScannedRoutes = {
     'admin.academic-years.store': { paramsTuple?: []; params?: {} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -123,6 +127,7 @@ export type ScannedRoutes = {
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -158,6 +163,7 @@ export type ScannedRoutes = {
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -182,6 +188,8 @@ export type ScannedRoutes = {
     'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
     'admin.packages.store': { paramsTuple?: []; params?: {} }
     'admin.academic-years.store': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -199,6 +207,7 @@ export type ScannedRoutes = {
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

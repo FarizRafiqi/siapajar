@@ -3,6 +3,8 @@ import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import SchoolClass from '#models/school_class'
 import { updateWeeklyLessonPlanValidator } from '#validators/weekly_lesson_plan'
 import { generateWeeklyLessonPlanValidator } from '#validators/generate'
+import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { weeklyLessonPlanPrompt } from '#services/ai_prompts'
 
 export default class WeeklyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -88,12 +90,23 @@ export default class WeeklyLessonPlansController {
       return response.redirect().back()
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const content = {
-      nilaiAgamaBudiPekerti: [],
-      jatiDiri: [],
-      literasiSainsTeknologi: [],
-      rencanaKegiatan: [],
+    let content: Record<string, string[]>
+    try {
+      const prompt = weeklyLessonPlanPrompt({ theme })
+      const raw = await callAiJson<Record<string, unknown>>({
+        combo: 'siapajar-docgen',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      content = normalizeStringArraySections(raw, [
+        'nilaiAgamaBudiPekerti',
+        'jatiDiri',
+        'literasiSainsTeknologi',
+        'rencanaKegiatan',
+      ])
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate RPPM. Coba lagi.')
+      return response.redirect().back()
     }
 
     const weeklyLessonPlan = await WeeklyLessonPlan.create({

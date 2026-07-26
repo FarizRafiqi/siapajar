@@ -5,6 +5,8 @@ import Subject from '#models/subject'
 import { createTeachingModuleValidator, updateTeachingModuleValidator } from '#validators/teaching_module'
 import { generateTeachingModuleValidator } from '#validators/generate'
 import { exportTeachingModule } from '#services/export_service'
+import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { teachingModulePrompt } from '#services/ai_prompts'
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -130,13 +132,24 @@ export default class TeachingModulesController {
       return response.redirect().back()
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const content = {
-      kompetensiDasar: [],
-      tujuanPembelajaran: [],
-      kegiatan: [],
-      penilaian: [],
-      sumberBelajar: [],
+    let content: Record<string, string[]>
+    try {
+      const prompt = teachingModulePrompt({ subject, topic, phase })
+      const raw = await callAiJson<Record<string, unknown>>({
+        combo: 'siapajar-docgen',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      content = normalizeStringArraySections(raw, [
+        'kompetensiDasar',
+        'tujuanPembelajaran',
+        'kegiatan',
+        'penilaian',
+        'sumberBelajar',
+      ])
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate modul ajar. Coba lagi.')
+      return response.redirect().back()
     }
 
     const teachingModule = await TeachingModule.create({

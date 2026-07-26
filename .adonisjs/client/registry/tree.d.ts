@@ -121,5 +121,11 @@ export interface ApiDefinition {
       update: typeof routes['admin.academic-years.update']
       destroy: typeof routes['admin.academic-years.destroy']
     }
+    aiSettings: {
+      index: typeof routes['admin.ai-settings.index']
+      update: typeof routes['admin.ai-settings.update']
+      test: typeof routes['admin.ai-settings.test']
+      models: typeof routes['admin.ai-settings.models']
+    }
   }
 }

@@ -22,4 +22,5 @@ export const controllers = {
   AdminUsers: () => import('#controllers/admin_users_controller'),
   AdminPackages: () => import('#controllers/admin_packages_controller'),
   AdminAcademicYears: () => import('#controllers/admin_academic_years_controller'),
+  AdminAiSettings: () => import('#controllers/admin_ai_settings_controller'),
 }

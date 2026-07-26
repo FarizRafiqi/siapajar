@@ -60,14 +60,14 @@ export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
 
   return (
     <DashboardWrapper
-      title={`Prota — ${annualPlan.subject}`}
+      title={`Protah — ${annualPlan.subject}`}
       breadcrumbs={[
         { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Prota', href: '/annual-plans' },
+        { label: 'Protah', href: '/annual-plans' },
         { label: annualPlan.subject },
       ]}
     >
-      <Head title={`Prota — ${annualPlan.subject}`} />
+      <Head title={`Protah — ${annualPlan.subject}`} />
 
       <div className="space-y-6">
         {/* Header */}
@@ -124,7 +124,7 @@ export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
           </div>
         </div>
 
-        {/* Isi Prota */}
+        {/* Isi Protah */}
         <div className="space-y-4">
           {SECTIONS.map((section, index) => {
             const items = annualPlan.content?.[section.key] ?? []

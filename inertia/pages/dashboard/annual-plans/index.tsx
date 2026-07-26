@@ -63,7 +63,7 @@ export default function AnnualPlansIndex({
   return (
     <DashboardWrapper
       title="Program Tahunan"
-      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Prota' }]}
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Protah' }]}
     >
       <Head title="Program Tahunan" />
 
@@ -72,7 +72,7 @@ export default function AnnualPlansIndex({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Program Tahunan (Prota)
+              Program Tahunan (Protah)
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400">
               Rencana pembelajaran setahun dengan AI
@@ -84,7 +84,7 @@ export default function AnnualPlansIndex({
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4" />
-            Generate Prota
+            Generate Protah
           </button>
         </div>
 
@@ -92,7 +92,7 @@ export default function AnnualPlansIndex({
         {!canGenerate && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-              Lengkapi dulu sebelum bisa generate Prota:
+              Lengkapi dulu sebelum bisa generate Protah:
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {!hasAcademicYear && (
@@ -112,7 +112,7 @@ export default function AnnualPlansIndex({
           </div>
         )}
 
-        {/* Daftar Prota */}
+        {/* Daftar Protah */}
         {annualPlans.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
@@ -120,14 +120,14 @@ export default function AnnualPlansIndex({
               Belum ada program tahunan
             </h3>
             <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-              Generate Prota pertama Anda dengan AI
+              Generate Protah pertama Anda dengan AI
             </p>
             <button
               onClick={() => setShowGenerateModal(true)}
               disabled={!canGenerate}
               className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Generate Prota
+              Generate Protah
             </button>
           </div>
         ) : (
@@ -177,7 +177,7 @@ export default function AnnualPlansIndex({
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                Generate Prota dengan AI
+                Generate Protah dengan AI
               </h3>
             </div>
             <div className="space-y-4">
@@ -254,7 +254,7 @@ export default function AnnualPlansIndex({
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
             <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
-              Hapus Prota?
+              Hapus Protah?
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
               Program tahunan <strong>{deletingPlan.subject}</strong> akan dihapus secara permanen.

@@ -15,6 +15,7 @@ import {
   Library,
   Shield,
   Package,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -62,6 +63,7 @@ const adminNavigation = [
   { name: 'Manage Users', href: '/admin/users', icon: Shield },
   { name: 'Manage Packages', href: '/admin/packages', icon: Package },
   { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
+  { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
   { name: 'Pengaturan', href: '/settings', icon: Settings },
 ]
 
@@ -134,7 +136,14 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
 
       {/* User section */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
-        <div className={cn('flex items-center gap-3', collapsed && 'justify-center')}>
+        <Link
+          href="/settings"
+          className={cn(
+            'flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800',
+            collapsed && 'justify-center'
+          )}
+          title="Pengaturan"
+        >
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
             {user.initials}
           </div>
@@ -148,7 +157,7 @@ export default function Sidebar({ user, collapsed = false, onToggle }: Readonly<
               </p>
             </div>
           )}
-        </div>
+        </Link>
       </div>
     </aside>
   )

@@ -6,6 +6,8 @@ import Subject from '#models/subject'
 import { createSemesterPlanValidator, updateSemesterPlanValidator } from '#validators/semester_plan'
 import { generateSemesterPlanValidator } from '#validators/generate'
 import { exportSemesterPlan } from '#services/export_service'
+import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { semesterPlanPrompt } from '#services/ai_prompts'
 
 export default class SemesterPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -143,12 +145,18 @@ export default class SemesterPlansController {
       return response.redirect().back()
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const content = {
-      minggu: [],
-      kegiatan: [],
-      target: [],
-      materi: [],
+    let content: Record<string, string[]>
+    try {
+      const prompt = semesterPlanPrompt({ subject })
+      const raw = await callAiJson<Record<string, unknown>>({
+        combo: 'siapajar-docgen',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      content = normalizeStringArraySections(raw, ['minggu', 'kegiatan', 'target', 'materi'])
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate Promes. Coba lagi.')
+      return response.redirect().back()
     }
 
     const semesterPlan = await SemesterPlan.create({

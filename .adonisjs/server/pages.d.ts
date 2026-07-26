@@ -42,5 +42,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/packages/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/packages/index.tsx'))['default']>
     'dashboard/admin/academic-years/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/academic-years/index.tsx'))['default']>
     'coming-soon': ExtractProps<(typeof import('../../inertia/pages/coming-soon.tsx'))['default']>
+    'dashboard/admin/ai-settings/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/ai-settings/index.tsx'))['default']>
   }
 }

@@ -22,6 +22,25 @@ export class AcademicYearSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class AiSettingSchema extends BaseModel {
+  static $columns = ['apiKey', 'baseUrl', 'createdAt', 'id', 'model', 'provider', 'updatedAt'] as const
+  $columns = AiSettingSchema.$columns
+  @column()
+  declare apiKey: string | null
+  @column()
+  declare baseUrl: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare model: string | null
+  @column()
+  declare provider: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class AnnualPlanSchema extends BaseModel {
   static $columns = ['academicYearId', 'content', 'createdAt', 'id', 'subject', 'updatedAt', 'userId'] as const
   $columns = AnnualPlanSchema.$columns

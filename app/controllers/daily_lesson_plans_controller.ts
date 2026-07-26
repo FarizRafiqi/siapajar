@@ -4,6 +4,8 @@ import SchoolClass from '#models/school_class'
 import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import { updateDailyLessonPlanValidator } from '#validators/daily_lesson_plan'
 import { generateDailyLessonPlanValidator } from '#validators/generate'
+import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { dailyLessonPlanPrompt } from '#services/ai_prompts'
 
 export default class DailyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -108,14 +110,26 @@ export default class DailyLessonPlansController {
       }
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const content = {
-      tema: theme,
-      kegiatanPembuka: [],
-      kegiatanInti: [],
-      kegiatanPenutup: [],
-      alatBahan: [],
-      rencanaAsesmen: [],
+    let content: Record<string, string[] | string>
+    try {
+      const prompt = dailyLessonPlanPrompt({ theme, date: date.toFormat('dd/MM/yyyy') })
+      const raw = await callAiJson<Record<string, unknown>>({
+        combo: 'siapajar-docgen',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      const generated = normalizeStringArraySections(raw, [
+        'kegiatanPembuka',
+        'kegiatanInti',
+        'kegiatanPenutup',
+        'alatBahan',
+        'rencanaAsesmen',
+      ])
+      // tema taruh terakhir — hasil AI tidak boleh menimpa tema yang guru pilih
+      content = { ...generated, tema: theme }
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate RPPH. Coba lagi.')
+      return response.redirect().back()
     }
 
     const dailyLessonPlan = await DailyLessonPlan.create({

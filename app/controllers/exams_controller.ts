@@ -5,6 +5,8 @@ import Subject from '#models/subject'
 import { createExamValidator, updateExamValidator } from '#validators/exam'
 import { generateExamValidator } from '#validators/generate'
 import { exportExam } from '#services/export_service'
+import { callAiJson, AiServiceError } from '#services/ai_service'
+import { examPrompt } from '#services/ai_prompts'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
 const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
@@ -138,15 +140,28 @@ export default class ExamsController {
       return response.redirect().back()
     }
 
-    // Future implementation: Integrate with AI service (9router)
-    const questions = Array.from({ length: questionCount }, (_, i) => ({
-      id: i + 1,
-      type: 'multiple_choice',
-      question: `Soal ${i + 1} tentang ${topic}`,
-      options: ['A', 'B', 'C', 'D'].map((opt) => `${opt}. Pilihan ${opt}`),
-      answer: 'A',
-      explanation: '',
-    }))
+    let questions: Record<string, any>[]
+    try {
+      const prompt = examPrompt({ subject, topic, type, questionCount })
+      const result = await callAiJson<{ questions: Record<string, any>[] }>({
+        combo: 'siapajar-soal',
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+      })
+      const rawQuestions = Array.isArray(result.questions) ? result.questions : []
+      questions = rawQuestions.map((q, i) => ({
+        question: typeof q.question === 'string' ? q.question : '',
+        options: Array.isArray(q.options) ? q.options.filter((o: unknown) => typeof o === 'string') : [],
+        answer: typeof q.answer === 'string' ? q.answer : '',
+        explanation: typeof q.explanation === 'string' ? q.explanation : '',
+        // taruh terakhir — id/type harus milik kita, bukan hasil halusinasi AI
+        id: i + 1,
+        type: 'multiple_choice',
+      }))
+    } catch (error) {
+      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.')
+      return response.redirect().back()
+    }
 
     const exam = await Exam.create({
       userId: user.id,

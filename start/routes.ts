@@ -73,7 +73,7 @@ router
     router.post('/exams/generate', '#controllers/exams_controller.generate').as('exams.generate')
     router.get('/exams/:id/export', '#controllers/exams_controller.export').as('exams.export')
 
-    // Annual Plans (Prota)
+    // Annual Plans (Protah)
     router.get('/annual-plans', '#controllers/annual_plans_controller.index').as('annual-plans.index')
     router.post('/annual-plans', '#controllers/annual_plans_controller.store').as('annual-plans.store')
     router.get('/annual-plans/:id', '#controllers/annual_plans_controller.show').as('annual-plans.show')
@@ -178,6 +178,24 @@ router
     router
       .delete('/admin/academic-years/:id', '#controllers/admin_academic_years_controller.destroy')
       .as('admin.academic-years.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    // Admin — Konfigurasi AI
+    router
+      .get('/admin/ai-settings', '#controllers/admin_ai_settings_controller.index')
+      .as('admin.ai-settings.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/ai-settings', '#controllers/admin_ai_settings_controller.update')
+      .as('admin.ai-settings.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/ai-settings/test', '#controllers/admin_ai_settings_controller.test')
+      .as('admin.ai-settings.test')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/ai-settings/models', '#controllers/admin_ai_settings_controller.models')
+      .as('admin.ai-settings.models')
       .use(middleware.role({ roles: ['admin'] }))
   })
   .use([middleware.auth(), middleware.onboarding()])

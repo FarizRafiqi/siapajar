@@ -1015,4 +1015,52 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'admin.ai-settings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/ai-settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.update': {
+    methods: ["PUT"]
+    pattern: '/admin/ai-settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.test': {
+    methods: ["POST"]
+    pattern: '/admin/ai-settings/test'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.models': {
+    methods: ["POST"]
+    pattern: '/admin/ai-settings/models'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
 }

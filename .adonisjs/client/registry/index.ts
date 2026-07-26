@@ -510,6 +510,30 @@ const routes = {
     tokens: [{"old":"/admin/academic-years/:id","type":0,"val":"admin","end":""},{"old":"/admin/academic-years/:id","type":0,"val":"academic-years","end":""},{"old":"/admin/academic-years/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.academic-years.destroy']['types'],
   },
+  'admin.ai-settings.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/ai-settings',
+    tokens: [{"old":"/admin/ai-settings","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings","type":0,"val":"ai-settings","end":""}],
+    types: placeholder as Registry['admin.ai-settings.index']['types'],
+  },
+  'admin.ai-settings.update': {
+    methods: ["PUT"],
+    pattern: '/admin/ai-settings',
+    tokens: [{"old":"/admin/ai-settings","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings","type":0,"val":"ai-settings","end":""}],
+    types: placeholder as Registry['admin.ai-settings.update']['types'],
+  },
+  'admin.ai-settings.test': {
+    methods: ["POST"],
+    pattern: '/admin/ai-settings/test',
+    tokens: [{"old":"/admin/ai-settings/test","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/test","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/test","type":0,"val":"test","end":""}],
+    types: placeholder as Registry['admin.ai-settings.test']['types'],
+  },
+  'admin.ai-settings.models': {
+    methods: ["POST"],
+    pattern: '/admin/ai-settings/models',
+    tokens: [{"old":"/admin/ai-settings/models","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/models","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/models","type":0,"val":"models","end":""}],
+    types: placeholder as Registry['admin.ai-settings.models']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }
