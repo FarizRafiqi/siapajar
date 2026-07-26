@@ -847,6 +847,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'principal.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/principal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'principal.teacher': {
+    methods: ["GET","HEAD"]
+    pattern: '/principal/teachers/:userId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { userId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'report-cards.index': {
     methods: ["GET","HEAD"]
     pattern: '/report-cards'
@@ -1090,6 +1114,54 @@ export interface Registry {
   'admin.academic-years.destroy': {
     methods: ["DELETE"]
     pattern: '/admin/academic-years/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.store': {
+    methods: ["POST"]
+    pattern: '/admin/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.update': {
+    methods: ["PUT"]
+    pattern: '/admin/schools/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.schools.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/schools/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]
