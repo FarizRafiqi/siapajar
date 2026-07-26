@@ -29,7 +29,10 @@ export const createPackageValidator = vine.create(
     description: vine.string().trim().maxLength(300).optional(),
     priceMonthly: vine.number().min(0),
     priceYearly: vine.number().min(0).nullable().optional(),
+    features: vine.array(vine.string().trim().maxLength(150)).optional(),
     isActive: vine.boolean().optional(),
+    isHighlighted: vine.boolean().optional(),
+    ctaLabel: vine.string().trim().maxLength(50).nullable().optional(),
     sortOrder: vine.number().optional(),
   })
 )
@@ -40,7 +43,10 @@ export const updatePackageValidator = vine.create(
     description: vine.string().trim().maxLength(300).optional(),
     priceMonthly: vine.number().min(0).optional(),
     priceYearly: vine.number().min(0).nullable().optional(),
+    features: vine.array(vine.string().trim().maxLength(150)).optional(),
     isActive: vine.boolean().optional(),
+    isHighlighted: vine.boolean().optional(),
+    ctaLabel: vine.string().trim().maxLength(50).nullable().optional(),
     sortOrder: vine.number().optional(),
   })
 )
