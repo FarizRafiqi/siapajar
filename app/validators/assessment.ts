@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 export const createAssessmentValidator = vine.create(
   vine.object({
     classId: vine.number().positive(),
+    semesterId: vine.number().positive().optional(),
     subject: vine.string().trim().minLength(1).maxLength(100),
     type: vine.enum(['formative', 'summative']),
     title: vine.string().trim().minLength(1).maxLength(200),
