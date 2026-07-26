@@ -154,7 +154,7 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
           <input
             ref={importInputRef}
             type="file"
-            accept=".csv,.xlsx,.xls"
+            accept=".csv,.xlsx"
             className="hidden"
             onChange={handleImportFileChange}
           />

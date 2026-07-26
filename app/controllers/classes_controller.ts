@@ -1,5 +1,4 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { readFile } from 'node:fs/promises'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import AcademicYear from '#models/academic_year'
@@ -147,10 +146,10 @@ export default class ClassesController {
       return response.redirect('/classes')
     }
 
-    const file = request.file('file', { extnames: ['csv', 'xlsx', 'xls'], size: '5mb' })
+    const file = request.file('file', { extnames: ['csv', 'xlsx'], size: '5mb' })
 
     if (!file || !file.tmpPath) {
-      session.flash('error', 'Pilih file CSV atau Excel untuk diimpor')
+      session.flash('error', 'Pilih file CSV atau Excel (.xlsx) untuk diimpor')
       return response.redirect().back()
     }
 
@@ -159,8 +158,10 @@ export default class ClassesController {
       return response.redirect().back()
     }
 
-    const buffer = await readFile(file.tmpPath)
-    const { rows, errors: parseErrors } = parseStudentImportFile(buffer)
+    const { rows, errors: parseErrors } = await parseStudentImportFile(
+      file.tmpPath,
+      file.extname ?? 'xlsx'
+    )
 
     if (rows.length === 0) {
       session.flash(
@@ -170,14 +171,17 @@ export default class ClassesController {
       return response.redirect().back()
     }
 
+    // Satu query di awal (bukan satu query per baris) — existingByNis diperbarui
+    // di setiap iterasi supaya NIS duplikat di dalam file yang sama diperlakukan
+    // sebagai update berurutan, bukan dua insert yang melanggar unique constraint.
+    const existingStudents = await Student.query().where('class_id', schoolClass.id)
+    const existingByNis = new Map(existingStudents.map((s) => [s.nis, s]))
+
     let created = 0
     let updated = 0
 
     for (const row of rows) {
-      const existing = await Student.query()
-        .where('class_id', schoolClass.id)
-        .where('nis', row.nis)
-        .first()
+      const existing = existingByNis.get(row.nis)
 
       if (existing) {
         existing.fullName = row.fullName
@@ -187,12 +191,13 @@ export default class ClassesController {
         await existing.save()
         updated++
       } else {
-        await Student.create({
+        const student = await Student.create({
           classId: schoolClass.id,
           nis: row.nis,
           fullName: row.fullName,
           nisn: row.nisn,
         })
+        existingByNis.set(row.nis, student)
         created++
       }
     }

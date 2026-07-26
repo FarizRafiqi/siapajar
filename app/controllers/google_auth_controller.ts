@@ -32,6 +32,17 @@ export default class GoogleAuthController {
       return response.redirect().toRoute('session.create')
     }
 
+    // Wajib verified: mencegah account takeover — tanpa ini, siapa pun bisa
+    // mendaftarkan email address orang lain di provider OAuth-nya sendiri dan
+    // otomatis "masuk" ke akun yang sudah ada atas nama email tersebut.
+    if (googleUser.emailVerificationState !== 'verified') {
+      session.flash(
+        'error',
+        'Email Google Anda belum terverifikasi. Verifikasi email di akun Google Anda, lalu coba lagi.'
+      )
+      return response.redirect().toRoute('session.create')
+    }
+
     let user = await User.findBy('google_id', googleUser.id)
 
     if (!user) {
