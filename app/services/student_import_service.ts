@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 export interface ParsedStudentRow {
   nis: string
@@ -18,37 +18,65 @@ const HEADER_ALIASES: Record<'nis' | 'nisn' | 'fullName', string[]> = {
 }
 
 /**
+ * Cegah CSV/formula injection: nilai yang berasal dari file yang diunggah bisa saja
+ * berakhir di sheet Excel lain (mis. export penilaian) — netralkan awalan formula
+ * sebelum data ini pernah disimpan/ditampilkan lagi.
+ */
+function sanitizeCell(value: unknown): string {
+  const str = String(value ?? '').trim()
+  return /^[=+\-@]/.test(str) ? `'${str}` : str
+}
+
+/**
  * Parser fleksibel untuk file ekspor Dapodik (CSV/XLSX): mencocokkan header
  * kolom "NIS"/"NISN"/"Nama" tanpa peduli urutan atau kapitalisasi.
+ *
+ * Menggunakan exceljs (bukan paket `xlsx`) khusus untuk jalur ini karena `xlsx`
+ * punya CVE prototype-pollution/ReDoS yang dipicu saat membaca file yang tidak
+ * tepercaya — export DOCX/XLSX yang sudah ada tidak terpengaruh karena hanya
+ * menulis dari data internal, tidak pernah membaca file unggahan.
  */
-export function parseStudentImportFile(buffer: Buffer): StudentImportResult {
-  const workbook = XLSX.read(buffer, { type: 'buffer' })
-  const sheetName = workbook.SheetNames[0]
+export async function parseStudentImportFile(
+  filePath: string,
+  extname: string
+): Promise<StudentImportResult> {
+  const workbook = new ExcelJS.Workbook()
 
-  if (!sheetName) {
-    return { rows: [], errors: ['File kosong atau tidak memiliki sheet'] }
+  try {
+    if (extname === 'csv') {
+      await workbook.csv.readFile(filePath)
+    } else {
+      await workbook.xlsx.readFile(filePath)
+    }
+  } catch {
+    return {
+      rows: [],
+      errors: ['File tidak dapat dibaca. Pastikan formatnya CSV atau Excel (.xlsx) yang valid.'],
+    }
   }
 
-  const sheet = workbook.Sheets[sheetName]
-  const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' })
+  const worksheet = workbook.worksheets[0]
 
-  if (raw.length === 0) {
-    return { rows: [], errors: ['Tidak ada data ditemukan dalam file'] }
+  if (!worksheet || worksheet.rowCount === 0) {
+    return { rows: [], errors: ['File kosong atau tidak memiliki data'] }
   }
 
-  const sampleKeys = Object.keys(raw[0])
-  const findKey = (aliases: string[]) =>
-    sampleKeys.find((key) => aliases.includes(key.trim().toLowerCase()))
+  const headers: string[] = []
+  worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    headers[colNumber] = sanitizeCell(cell.value).toLowerCase()
+  })
 
-  const nisKey = findKey(HEADER_ALIASES.nis)
-  const nisnKey = findKey(HEADER_ALIASES.nisn)
-  const nameKey = findKey(HEADER_ALIASES.fullName)
+  const findColumn = (aliases: string[]) => headers.findIndex((h) => aliases.includes(h))
 
-  if (!nisKey || !nameKey) {
+  const nisCol = findColumn(HEADER_ALIASES.nis)
+  const nisnCol = findColumn(HEADER_ALIASES.nisn)
+  const nameCol = findColumn(HEADER_ALIASES.fullName)
+
+  if (nisCol === -1 || nameCol === -1) {
     return {
       rows: [],
       errors: [
-        `Kolom "NIS" dan "Nama" wajib ada di file. Kolom ditemukan: ${sampleKeys.join(', ')}`,
+        `Kolom "NIS" dan "Nama" wajib ada di file. Kolom ditemukan: ${headers.filter(Boolean).join(', ')}`,
       ],
     }
   }
@@ -56,18 +84,19 @@ export function parseStudentImportFile(buffer: Buffer): StudentImportResult {
   const rows: ParsedStudentRow[] = []
   const errors: string[] = []
 
-  raw.forEach((row, index) => {
-    const nis = String(row[nisKey] ?? '').trim()
-    const fullName = String(row[nameKey] ?? '').trim()
-    const nisn = nisnKey ? String(row[nisnKey] ?? '').trim() : ''
+  for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+    const row = worksheet.getRow(rowNumber)
+    const nis = sanitizeCell(row.getCell(nisCol).value)
+    const fullName = sanitizeCell(row.getCell(nameCol).value)
+    const nisn = nisnCol !== -1 ? sanitizeCell(row.getCell(nisnCol).value) : ''
 
     if (!nis || !fullName) {
-      errors.push(`Baris ${index + 2}: NIS atau Nama kosong, dilewati`)
-      return
+      errors.push(`Baris ${rowNumber}: NIS atau Nama kosong, dilewati`)
+      continue
     }
 
     rows.push({ nis, fullName, nisn: nisn || null })
-  })
+  }
 
   return { rows, errors }
 }

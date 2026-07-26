@@ -84,6 +84,7 @@
     "clsx": "^2.1.1",
     "docx": "^9.7.1",
     "edge.js": "^6.5.1",
+    "exceljs": "^4.4.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
     "luxon": "^3.7.2",
