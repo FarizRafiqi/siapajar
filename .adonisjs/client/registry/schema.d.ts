@@ -223,6 +223,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'classes.importStudents': {
+    methods: ["POST"]
+    pattern: '/classes/:id/students/import'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'classes.updateStudent': {
     methods: ["PUT"]
     pattern: '/classes/:id/students/:studentId'

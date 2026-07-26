@@ -1,9 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { readFile } from 'node:fs/promises'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import AcademicYear from '#models/academic_year'
 import { createClassValidator, updateClassValidator } from '#validators/class'
 import { createStudentValidator, updateStudentValidator } from '#validators/student'
+import { parseStudentImportFile } from '#services/student_import_service'
 
 export default class ClassesController {
   async index({ inertia, auth }: HttpContext) {
@@ -131,6 +133,75 @@ export default class ClassesController {
     })
 
     session.flash('success', 'Siswa berhasil ditambahkan')
+    return response.redirect().back()
+  }
+
+  async importStudents({ params, request, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const schoolClass = await SchoolClass.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      return response.redirect('/classes')
+    }
+
+    const file = request.file('file', { extnames: ['csv', 'xlsx', 'xls'], size: '5mb' })
+
+    if (!file || !file.tmpPath) {
+      session.flash('error', 'Pilih file CSV atau Excel untuk diimpor')
+      return response.redirect().back()
+    }
+
+    if (!file.isValid) {
+      session.flash('error', file.errors.map((e) => e.message).join(', ') || 'File tidak valid')
+      return response.redirect().back()
+    }
+
+    const buffer = await readFile(file.tmpPath)
+    const { rows, errors: parseErrors } = parseStudentImportFile(buffer)
+
+    if (rows.length === 0) {
+      session.flash(
+        'error',
+        parseErrors[0] ?? 'Tidak ada data siswa yang valid ditemukan dalam file'
+      )
+      return response.redirect().back()
+    }
+
+    let created = 0
+    let updated = 0
+
+    for (const row of rows) {
+      const existing = await Student.query()
+        .where('class_id', schoolClass.id)
+        .where('nis', row.nis)
+        .first()
+
+      if (existing) {
+        existing.fullName = row.fullName
+        if (row.nisn) {
+          existing.nisn = row.nisn
+        }
+        await existing.save()
+        updated++
+      } else {
+        await Student.create({
+          classId: schoolClass.id,
+          nis: row.nis,
+          fullName: row.fullName,
+          nisn: row.nisn,
+        })
+        created++
+      }
+    }
+
+    const summary = [`${created} siswa baru`, `${updated} siswa diupdate`]
+    if (parseErrors.length > 0) {
+      summary.push(`${parseErrors.length} baris dilewati`)
+    }
+    session.flash('success', `Import selesai: ${summary.join(', ')}`)
     return response.redirect().back()
   }
 

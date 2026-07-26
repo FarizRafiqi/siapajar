@@ -22,6 +22,7 @@ export type ScannedRoutes = {
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.updateStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'classes.removeStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
@@ -211,6 +212,7 @@ export type ScannedRoutes = {
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'classes.store': { paramsTuple?: []; params?: {} }
     'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.store': { paramsTuple?: []; params?: {} }
     'teaching-modules.generate': { paramsTuple?: []; params?: {} }
     'exams.store': { paramsTuple?: []; params?: {} }

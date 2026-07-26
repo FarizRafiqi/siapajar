@@ -31,6 +31,7 @@ export interface ApiDefinition {
     update: typeof routes['classes.update']
     destroy: typeof routes['classes.destroy']
     addStudent: typeof routes['classes.addStudent']
+    importStudents: typeof routes['classes.importStudents']
     updateStudent: typeof routes['classes.updateStudent']
     removeStudent: typeof routes['classes.removeStudent']
   }

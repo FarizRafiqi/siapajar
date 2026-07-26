@@ -1,8 +1,8 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm, usePage, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
-import { ArrowLeft, Trash2, UserPlus, Pencil } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ArrowLeft, Trash2, UserPlus, Pencil, Upload, Check, X as XIcon } from 'lucide-react'
 
 interface Student {
   id: number
@@ -30,9 +30,12 @@ interface ClassShowProps {
 }
 
 export default function ClassShow({ schoolClass, educationLevel }: Readonly<ClassShowProps>) {
+  const { flash } = usePage().props as { flash?: { success?: string; error?: string } }
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [importing, setImporting] = useState(false)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   const isTk = educationLevel === 'tk'
   const tkGroup = schoolClass.gradeLevel === 0 ? 'A' : 'B'
@@ -76,6 +79,29 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
     })
   }
 
+  const handleImportClick = () => {
+    importInputRef.current?.click()
+  }
+
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setImporting(true)
+    router.post(`/classes/${schoolClass.id}/students/import`, formData, {
+      forceFormData: true,
+      onFinish: () => {
+        setImporting(false)
+        if (importInputRef.current) {
+          importInputRef.current.value = ''
+        }
+      },
+    })
+  }
+
   return (
     <DashboardWrapper
       title={`Kelas ${schoolClass.name}`}
@@ -88,6 +114,27 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
       <Head title={`Kelas ${schoolClass.name}`} />
 
       <div className="space-y-6">
+        {flash?.success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/20 dark:text-emerald-400"
+          >
+            <Check className="h-5 w-5" />
+            {flash.success}
+          </motion.div>
+        )}
+        {flash?.error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 dark:border-red-800/60 dark:bg-red-950/20 dark:text-red-400"
+          >
+            <XIcon className="h-5 w-5" />
+            {flash.error}
+          </motion.div>
+        )}
+
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link
@@ -104,6 +151,21 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
               {gradeLabel} • {schoolClass.academicYear.name} • {schoolClass.students.length} siswa
             </p>
           </div>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFileChange}
+          />
+          <button
+            onClick={handleImportClick}
+            disabled={importing}
+            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            <Upload className="h-4 w-4" />
+            {importing ? 'Mengimpor...' : 'Import Dapodik'}
+          </button>
           <button
             onClick={() => setShowAddStudent(true)}
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
@@ -203,7 +265,10 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
             </h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="nis" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="nis"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   NIS (Nomor Induk Siswa)
                 </label>
                 <input
@@ -214,12 +279,13 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: 001234"
                 />
-                {errors.nis && (
-                  <p className="mt-1 text-sm text-red-500">{errors.nis}</p>
-                )}
+                {errors.nis && <p className="mt-1 text-sm text-red-500">{errors.nis}</p>}
               </div>
               <div>
-                <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="fullName"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Nama Lengkap
                 </label>
                 <input
@@ -230,9 +296,7 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: Ahmad Rizki"
                 />
-                {errors.fullName && (
-                  <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>
-                )}
+                {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -270,7 +334,10 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
             </h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="editNis" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="editNis"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   NIS (Nomor Induk Siswa)
                 </label>
                 <input
@@ -285,7 +352,10 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                 )}
               </div>
               <div>
-                <label htmlFor="editFullName" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="editFullName"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Nama Lengkap
                 </label>
                 <input
