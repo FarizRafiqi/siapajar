@@ -26,6 +26,9 @@ router
 
     router.get('login', [controllers.Session, 'create'])
     router.post('login', [controllers.Session, 'store'])
+
+    router.get('auth/google/redirect', '#controllers/google_auth_controller.redirect').as('auth.google.redirect')
+    router.get('auth/google/callback', '#controllers/google_auth_controller.callback').as('auth.google.callback')
   })
   .use(middleware.guest())
 

@@ -15,6 +15,7 @@ export const controllers = {
   DailyLessonPlans: () => import('#controllers/daily_lesson_plans_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Exams: () => import('#controllers/exams_controller'),
+  GoogleAuth: () => import('#controllers/google_auth_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   PaudAssessments: () => import('#controllers/paud_assessments_controller'),

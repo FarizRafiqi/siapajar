@@ -42,6 +42,18 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['session.store']['types'],
   },
+  'auth.google.redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/auth/google/redirect',
+    tokens: [{"old":"/auth/google/redirect","type":0,"val":"auth","end":""},{"old":"/auth/google/redirect","type":0,"val":"google","end":""},{"old":"/auth/google/redirect","type":0,"val":"redirect","end":""}],
+    types: placeholder as Registry['auth.google.redirect']['types'],
+  },
+  'auth.google.callback': {
+    methods: ["GET","HEAD"],
+    pattern: '/auth/google/callback',
+    tokens: [{"old":"/auth/google/callback","type":0,"val":"auth","end":""},{"old":"/auth/google/callback","type":0,"val":"google","end":""},{"old":"/auth/google/callback","type":0,"val":"callback","end":""}],
+    types: placeholder as Registry['auth.google.callback']['types'],
+  },
   'session.destroy': {
     methods: ["POST"],
     pattern: '/logout',
