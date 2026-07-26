@@ -13,7 +13,7 @@ export default class AdminPackagesController {
 
   async store({ request, response, session }: HttpContext) {
     const data = await request.validateUsing(createPackageValidator)
-    await Package.create({ ...data, features: {} })
+    await Package.create({ ...data, features: data.features ?? [] })
 
     session.flash('success', 'Paket berhasil dibuat')
     return response.redirect().back()
