@@ -55,6 +55,7 @@ router
     router.put('/classes/:id', '#controllers/classes_controller.update').as('classes.update')
     router.delete('/classes/:id', '#controllers/classes_controller.destroy').as('classes.destroy')
     router.post('/classes/:id/students', '#controllers/classes_controller.addStudent').as('classes.addStudent')
+    router.post('/classes/:id/students/import', '#controllers/classes_controller.importStudents').as('classes.importStudents')
     router.put('/classes/:id/students/:studentId', '#controllers/classes_controller.updateStudent').as('classes.updateStudent')
     router.delete('/classes/:id/students/:studentId', '#controllers/classes_controller.removeStudent').as('classes.removeStudent')
 

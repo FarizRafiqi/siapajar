@@ -114,6 +114,12 @@ const routes = {
     tokens: [{"old":"/classes/:id/students","type":0,"val":"classes","end":""},{"old":"/classes/:id/students","type":1,"val":"id","end":""},{"old":"/classes/:id/students","type":0,"val":"students","end":""}],
     types: placeholder as Registry['classes.addStudent']['types'],
   },
+  'classes.importStudents': {
+    methods: ["POST"],
+    pattern: '/classes/:id/students/import',
+    tokens: [{"old":"/classes/:id/students/import","type":0,"val":"classes","end":""},{"old":"/classes/:id/students/import","type":1,"val":"id","end":""},{"old":"/classes/:id/students/import","type":0,"val":"students","end":""},{"old":"/classes/:id/students/import","type":0,"val":"import","end":""}],
+    types: placeholder as Registry['classes.importStudents']['types'],
+  },
   'classes.updateStudent': {
     methods: ["PUT"],
     pattern: '/classes/:id/students/:studentId',
