@@ -9,6 +9,7 @@ interface User {
   initials: string
   role: string
   educationLevel: 'tk' | 'sd' | null
+  avatarUrl: string | null
 }
 
 interface PageProps {
@@ -22,7 +23,7 @@ interface DashboardWrapperProps {
 }
 
 export default function DashboardWrapper({ children, title, breadcrumbs }: Readonly<DashboardWrapperProps>) {
-  const { user } = usePage().props as PageProps
+  const { user } = usePage().props as unknown as PageProps
 
   return (
     <DashboardLayout user={user} title={title} breadcrumbs={breadcrumbs}>

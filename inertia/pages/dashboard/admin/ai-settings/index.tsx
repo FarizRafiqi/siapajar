@@ -1,7 +1,7 @@
 import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, usePage } from '@inertiajs/react'
+import { Head, router, useForm } from '@inertiajs/react'
 import { useState } from 'react'
-import { Sparkles, Check, Zap, RefreshCw } from 'lucide-react'
+import { Sparkles, Zap, RefreshCw } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 function getXsrfToken() {
@@ -9,7 +9,7 @@ function getXsrfToken() {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-type Provider = '9router' | 'anthropic' | 'openai'
+type Provider = '9router' | 'anthropic' | 'openai' | 'gemini'
 
 interface Setting {
   provider: Provider
@@ -26,8 +26,8 @@ const PROVIDERS: { value: Provider; label: string; description: string; modelPla
   {
     value: '9router',
     label: '9router',
-    description: 'Router combo siapajar-docgen / siapajar-soal — fallback otomatis diurus 9router.',
-    modelPlaceholder: 'tidak dipakai — combo diatur di kode',
+    description: 'Router combo — pilih combo (flash/pro/max) dari daftar model.',
+    modelPlaceholder: 'contoh: flash',
   },
   {
     value: 'anthropic',
@@ -41,11 +41,15 @@ const PROVIDERS: { value: Provider; label: string; description: string; modelPla
     description: 'Panggil API OpenAI langsung pakai API key sendiri.',
     modelPlaceholder: 'contoh: gpt-4o-mini',
   },
+  {
+    value: 'gemini',
+    label: 'Gemini (Google)',
+    description: 'Panggil API Gemini langsung pakai API key sendiri.',
+    modelPlaceholder: 'contoh: gemini-2.0-flash',
+  },
 ]
 
 export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexProps) {
-  const { flash } = usePage().props as { flash?: { success?: string; error?: string } }
-
   const { data, setData, put, processing, errors } = useForm({
     provider: setting.provider,
     apiKey: '',
@@ -57,19 +61,22 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
   const [loadingModels, setLoadingModels] = useState(false)
   const [modelsError, setModelsError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault()
     put('/admin/ai-settings')
   }
 
   const handleTest = () => {
-    router.post('/admin/ai-settings/test')
+    // Kirim model + apiKey yg ada di form (walau belum disimpan) ke backend
+    const payload: Record<string, string> = {}
+    if (data.model) payload.model = data.model
+    if (data.apiKey) payload.apiKey = data.apiKey
+    router.post('/admin/ai-settings/test', payload)
   }
 
   const handleLoadModels = async () => {
-    // Belum ganti key di form tapi sudah ada key tersimpan di server —
-    // tetap butuh key eksplisit karena endpoint /models tidak baca DB.
-    if (!data.apiKey) {
+    // Kalau apiKey form kosong tapi sudah ada key tersimpan di server, backend pakai yg di DB
+    if (!data.apiKey && !setting.hasApiKey) {
       setModelsError('Isi API key dulu sebelum muat daftar model.')
       return
     }
@@ -115,18 +122,6 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
           </p>
         </div>
 
-        {flash?.success && (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/20 dark:text-emerald-400">
-            <Check className="h-4 w-4" />
-            {flash.success}
-          </div>
-        )}
-        {flash?.error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800/60 dark:bg-red-950/20 dark:text-red-400">
-            {flash.error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
             <h3 className="mb-4 flex items-center gap-2 font-semibold text-neutral-900 dark:text-white">
@@ -150,6 +145,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                     value={p.value}
                     checked={data.provider === p.value}
                     onChange={() => setData('provider', p.value)}
+                    aria-label={p.label}
                     className="mt-1"
                   />
                   <div>
@@ -180,7 +176,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 {errors.apiKey && <p className="mt-1 text-sm text-red-500">{errors.apiKey}</p>}
               </div>
 
-              {data.provider === '9router' && (
+              {(data.provider === '9router' || data.provider === 'gemini') && (
                 <div>
                   <label htmlFor="baseUrl" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Base URL (opsional — kosongkan untuk pakai default dari .env)
@@ -197,8 +193,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 </div>
               )}
 
-              {data.provider !== '9router' && (
-                <div>
+              <div>
                   <label htmlFor="model" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Model
                   </label>
@@ -239,7 +234,6 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                   {modelsError && <p className="mt-1 text-sm text-red-500">{modelsError}</p>}
                   {errors.model && <p className="mt-1 text-sm text-red-500">{errors.model}</p>}
                 </div>
-              )}
             </div>
           </div>
 

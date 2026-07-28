@@ -1,7 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import AiSetting from '#models/ai_setting'
-import { updateAiSettingValidator, listModelsValidator } from '#validators/ai_setting'
-import { callAiJson, listModels, AiServiceError } from '#services/ai_service'
+import env from '#start/env'
+import { updateAiSettingValidator, listModelsValidator, testConnectionValidator } from '#validators/ai_setting'
+import { callAiJson, listModels, AiServiceError, test9routerConnection } from '#services/ai_service'
 
 export default class AdminAiSettingsController {
   async index({ inertia }: HttpContext) {
@@ -35,9 +36,17 @@ export default class AdminAiSettingsController {
 
   async models({ request, response }: HttpContext) {
     const data = await request.validateUsing(listModelsValidator)
+    let apiKey = data.apiKey
+    if (!apiKey) {
+      const setting = await AiSetting.current()
+      apiKey = setting.apiKey ?? undefined
+    }
+    if (!apiKey) {
+      return response.status(422).json({ message: 'API key belum diisi. Isi API key dulu.' })
+    }
 
     try {
-      const models = await listModels(data.provider, data.apiKey)
+      const models = await listModels(data.provider, apiKey)
       return response.json({ models })
     } catch (error) {
       return response.status(422).json({
@@ -46,17 +55,33 @@ export default class AdminAiSettingsController {
     }
   }
 
-  async test({ response, session }: HttpContext) {
+  async test({ request, response, session }: HttpContext) {
     try {
-      await callAiJson<{ ok: boolean }>({
-        combo: 'siapajar-docgen',
-        systemPrompt: 'Balas HANYA JSON valid: {"ok": true}',
-        userPrompt: 'Tes koneksi.',
-      })
-      session.flash('success', 'Koneksi ke layanan AI berhasil')
+      const body = await request.validateUsing(testConnectionValidator)
+      const setting = await AiSetting.current()
+
+      const apiKey: string | null | undefined = body.apiKey || setting.apiKey || env.get('ROUTER_API_KEY')
+      const model: string | undefined = body.model || setting.model || undefined
+
+      if (setting.provider === '9router') {
+        await this.test9router(model, apiKey)
+        session.flash('success', `Koneksi ke 9router berhasil — model "${model}" merespon.`)
+      } else {
+        await callAiJson<{ ok: boolean }>({
+          combo: model || 'gpt-4o-mini',
+          systemPrompt: 'Balas HANYA JSON valid: {"ok": true}',
+          userPrompt: 'Tes koneksi.',
+        })
+        session.flash('success', 'Koneksi ke layanan AI berhasil')
+      }
     } catch (error) {
       session.flash('error', error instanceof AiServiceError ? error.message : 'Tes koneksi gagal')
     }
     return response.redirect().back()
+  }
+
+  private async test9router(model: string | null | undefined, apiKey: string | null | undefined) {
+    if (!model) throw new AiServiceError('Pilih model/combo dulu sebelum tes koneksi.')
+    await test9routerConnection(model, apiKey ?? null)
   }
 }

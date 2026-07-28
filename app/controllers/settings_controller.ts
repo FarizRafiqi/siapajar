@@ -11,6 +11,7 @@ export default class SettingsController {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
+        initials: user.initials,
         schoolName: user.schoolName,
         educationLevel: user.educationLevel,
         role: user.role,

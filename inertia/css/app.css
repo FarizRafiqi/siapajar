@@ -142,3 +142,25 @@ textarea[data-invalid='true'] + div {
 .dark .glow-emerald {
   box-shadow: 0 0 40px rgba(16, 185, 129, 0.15), 0 0 80px rgba(16, 185, 129, 0.08);
 }
+
+/* ─── Sonner toast custom theme ───────────────────────── */
+[data-sonner-toaster] [data-type="error"] {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+.dark [data-sonner-toaster] [data-type="error"] {
+  background: #450a0a !important;
+  color: #fecaca !important;
+  border: 1px solid #7f1d1d !important;
+}
+[data-sonner-toaster] [data-type="success"] {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+.dark [data-sonner-toaster] [data-type="success"] {
+  background: #052e16 !important;
+  color: #bbf7d0 !important;
+  border: 1px solid #166534 !important;
+}

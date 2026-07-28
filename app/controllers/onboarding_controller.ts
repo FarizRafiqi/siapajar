@@ -22,9 +22,7 @@ export default class OnboardingController {
       .whereRaw('LOWER(name) = ?', [normalizedName.toLowerCase()])
       .first()
 
-    if (!school) {
-      school = await School.create({ name: normalizedName })
-    }
+    school ??= await School.create({ name: normalizedName });
 
     user.schoolName = normalizedName
     user.schoolId = school.id

@@ -1,12 +1,10 @@
-import { Head, Link, usePage } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import { Form } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { LogIn } from 'lucide-react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
 
 export default function Login() {
-  const { flash } = usePage().props as { flash?: { error?: string } }
-
   return (
     <>
       <Head title="Login — SiapAjar" />
@@ -40,11 +38,6 @@ export default function Login() {
 
           {/* Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            {flash?.error && (
-              <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800/60 dark:bg-red-950/20 dark:text-red-400">
-                {flash.error}
-              </div>
-            )}
             <Form route="session.store">
               {({ processing, errors }) => (
                 <div className="space-y-5">
