@@ -5,7 +5,7 @@ import AiSetting from '#models/ai_setting'
 export class AiServiceError extends Error {}
 
 interface CallAiJsonOptions {
-  /** Nama combo 9router (mis. "siapajar-docgen") — diabaikan untuk provider lain. */
+  /** Nama combo 9router — fallback kalau resolved.model belum diset. */
   combo: string
   systemPrompt: string
   userPrompt: string
@@ -13,7 +13,7 @@ interface CallAiJsonOptions {
 }
 
 interface ResolvedProvider {
-  provider: '9router' | 'anthropic' | 'openai'
+  provider: '9router' | 'anthropic' | 'openai' | 'gemini'
   apiKey: string | null
   baseUrl: string | null
   model: string | null
@@ -34,7 +34,7 @@ async function resolveProvider(): Promise<ResolvedProvider> {
   }
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -49,8 +49,25 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   }
 }
 
-async function call9router(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
-  const baseUrl = resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1/chat/completions'
+function trimTrailingSlashes(url: string): string {
+  let end = url.length
+  while (end > 0 && url[end - 1] === '/') {
+    end--
+  }
+  return url.slice(0, end)
+}
+
+async function call9router(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions
+): Promise<string> {
+  let baseUrl =
+    resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1/chat/completions'
+  // 9Router exposes OpenAI-compatible endpoint at /v1/chat/completions.
+  // Ensure the URL always points to that path regardless of user input.
+  if (!baseUrl.endsWith('/chat/completions')) {
+    baseUrl = `${trimTrailingSlashes(baseUrl)}/chat/completions`
+  }
 
   const response = await fetchWithTimeout(
     baseUrl,
@@ -61,7 +78,7 @@ async function call9router(resolved: ResolvedProvider, options: CallAiJsonOption
         ...(resolved.apiKey ? { Authorization: `Bearer ${resolved.apiKey}` } : {}),
       },
       body: JSON.stringify({
-        model: options.combo,
+        model: resolved.model || options.combo,
         messages: [
           { role: 'system', content: options.systemPrompt },
           { role: 'user', content: options.userPrompt },
@@ -75,7 +92,9 @@ async function call9router(resolved: ResolvedProvider, options: CallAiJsonOption
   )
 
   if (!response.ok) {
-    throw new AiServiceError(`Layanan AI (9router) membalas error (status ${response.status}). Coba lagi.`)
+    throw new AiServiceError(
+      `Layanan AI (9router) membalas error (status ${response.status}). Coba lagi.`
+    )
   }
 
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] }
@@ -85,7 +104,8 @@ async function call9router(resolved: ResolvedProvider, options: CallAiJsonOption
 }
 
 async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
-  if (!resolved.apiKey) throw new AiServiceError('API key OpenAI belum diisi. Atur di halaman Konfigurasi AI.')
+  if (!resolved.apiKey)
+    throw new AiServiceError('API key OpenAI belum diisi. Atur di halaman Konfigurasi AI.')
 
   const response = await fetchWithTimeout(
     'https://api.openai.com/v1/chat/completions',
@@ -93,7 +113,7 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${resolved.apiKey}`,
+        'Authorization': `Bearer ${resolved.apiKey}`,
       },
       body: JSON.stringify({
         model: resolved.model || 'gpt-4o-mini',
@@ -110,7 +130,9 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
   )
 
   if (!response.ok) {
-    throw new AiServiceError(`Layanan AI (OpenAI) membalas error (status ${response.status}). Coba lagi.`)
+    throw new AiServiceError(
+      `Layanan AI (OpenAI) membalas error (status ${response.status}). Coba lagi.`
+    )
   }
 
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] }
@@ -119,8 +141,55 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
   return text
 }
 
-async function callAnthropic(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
-  if (!resolved.apiKey) throw new AiServiceError('API key Anthropic belum diisi. Atur di halaman Konfigurasi AI.')
+async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
+  if (!resolved.apiKey)
+    throw new AiServiceError('API key Gemini belum diisi. Atur di halaman Konfigurasi AI.')
+  if (!resolved.model) throw new AiServiceError('Model Gemini belum dipilih.')
+
+  const baseUrl = resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'
+  const url = `${baseUrl}/models/${resolved.model}:generateContent?key=${resolved.apiKey}`
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: `${options.systemPrompt}\n\n${options.userPrompt}` }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2000,
+        },
+      }),
+    },
+    options.timeoutMs ?? 45_000
+  )
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new AiServiceError(
+      `Layanan AI (Gemini) membalas error (status ${response.status}). ${body ? body.slice(0, 200) : 'Coba lagi.'}`
+    )
+  }
+
+  const payload = (await response.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[]
+  }
+  const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
+  return text
+}
+
+async function callAnthropic(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions
+): Promise<string> {
+  if (!resolved.apiKey)
+    throw new AiServiceError('API key Anthropic belum diisi. Atur di halaman Konfigurasi AI.')
 
   const response = await fetchWithTimeout(
     'https://api.anthropic.com/v1/messages',
@@ -143,7 +212,9 @@ async function callAnthropic(resolved: ResolvedProvider, options: CallAiJsonOpti
   )
 
   if (!response.ok) {
-    throw new AiServiceError(`Layanan AI (Anthropic) membalas error (status ${response.status}). Coba lagi.`)
+    throw new AiServiceError(
+      `Layanan AI (Anthropic) membalas error (status ${response.status}). Coba lagi.`
+    )
   }
 
   const payload = (await response.json()) as { content?: { type: string; text?: string }[] }
@@ -153,8 +224,49 @@ async function callAnthropic(resolved: ResolvedProvider, options: CallAiJsonOpti
 }
 
 /** Daftar model live dari provider — dipakai form Konfigurasi AI, bukan alur generate. */
-export async function listModels(provider: 'anthropic' | 'openai', apiKey: string): Promise<string[]> {
+export async function listModels(
+  provider: '9router' | 'anthropic' | 'openai' | 'gemini',
+  apiKey: string
+): Promise<string[]> {
   if (!apiKey) throw new AiServiceError('API key belum diisi.')
+
+  if (provider === '9router') {
+    const resolved = await resolveProvider()
+    let baseUrl = resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1'
+    baseUrl = `${trimTrailingSlashes(baseUrl)}/models`
+    const response = await fetchWithTimeout(
+      baseUrl,
+      { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
+      15_000
+    )
+    if (!response.ok) {
+      throw new AiServiceError(
+        `Gagal ambil daftar model 9Router (status ${response.status}). Cek API key.`
+      )
+    }
+    const payload = (await response.json()) as { data?: { id: string }[] }
+    return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+  }
+
+  if (provider === 'gemini') {
+    const resolved = await resolveProvider()
+    const baseUrl = resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'
+    const response = await fetchWithTimeout(
+      `${baseUrl}/models?key=${apiKey}`,
+      { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+      15_000
+    )
+    if (!response.ok) {
+      throw new AiServiceError(
+        `Gagal ambil daftar model Gemini (status ${response.status}). Cek API key.`
+      )
+    }
+    const payload = (await response.json()) as { models?: { name: string }[] }
+    return (payload.models ?? [])
+      .map((m) => m.name.replace(/^models\//, ''))
+      .filter((id) => id.startsWith('gemini-'))
+      .sort((a, b) => a.localeCompare(b))
+  }
 
   if (provider === 'openai') {
     const response = await fetchWithTimeout(
@@ -163,7 +275,9 @@ export async function listModels(provider: 'anthropic' | 'openai', apiKey: strin
       15_000
     )
     if (!response.ok) {
-      throw new AiServiceError(`Gagal ambil daftar model OpenAI (status ${response.status}). Cek API key.`)
+      throw new AiServiceError(
+        `Gagal ambil daftar model OpenAI (status ${response.status}). Cek API key.`
+      )
     }
     const payload = (await response.json()) as { data?: { id: string }[] }
     return (payload.data ?? [])
@@ -178,10 +292,75 @@ export async function listModels(provider: 'anthropic' | 'openai', apiKey: strin
     15_000
   )
   if (!response.ok) {
-    throw new AiServiceError(`Gagal ambil daftar model Anthropic (status ${response.status}). Cek API key.`)
+    throw new AiServiceError(
+      `Gagal ambil daftar model Anthropic (status ${response.status}). Cek API key.`
+    )
   }
   const payload = (await response.json()) as { data?: { id: string }[] }
   return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+}
+
+/**
+ * Test koneksi ke 9Router dengan kirim chat ke model tertentu.
+ * Dipanggil dari controller — tidak perlu import fetchWithTimeout terpisah.
+ */
+export async function test9routerConnection(
+  model: string,
+  apiKey: string | null | undefined
+): Promise<void> {
+  const resolved = await resolveProvider()
+  let baseUrl = resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1'
+  if (!baseUrl.endsWith('/chat/completions')) {
+    baseUrl = `${trimTrailingSlashes(baseUrl)}/chat/completions`
+  }
+
+  const res = await fetchWithTimeout(
+    baseUrl,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'Balas HANYA dengan kata "ok"' }],
+        temperature: 0.3,
+        max_tokens: 50,
+      }),
+    },
+    30_000
+  )
+
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => '')
+    throw new AiServiceError(
+      `9router (${model}) membalas error (status ${res.status}). ${bodyText ? bodyText.slice(0, 300) : 'Cek apakah combo sudah benar dan 9router aktif.'}`
+    )
+  }
+
+  const rawBody = await res.text()
+
+  // Handle SSE format (9Router kadang balas data:{...} walau stream=false)
+  let rawJson = rawBody.trim()
+  if (rawJson.startsWith('data: ')) {
+    rawJson = rawJson.slice(6).trim()
+  }
+  // Skip trailing [DONE] marker
+  if (rawJson === '[DONE]') {
+    throw new AiServiceError(
+      `9router (${model}) balas SSE [DONE] tanpa data. Coba combo/model lain.`
+    )
+  }
+
+  try {
+    JSON.parse(rawJson)
+  } catch {
+    throw new AiServiceError(`9router (${model}) balas bukan JSON: ${rawBody.slice(0, 300)}`)
+  }
+
+  // Test koneksi: sufficient bahwa 9Router merespon (HTTP 200)
+  // Content tdk wajib — some models return empty delta with finish_reason
 }
 
 function stripJsonFence(text: string) {
@@ -205,6 +384,9 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
       break
     case 'anthropic':
       text = await callAnthropic(resolved, options)
+      break
+    case 'gemini':
+      text = await callGemini(resolved, options)
       break
     default:
       text = await call9router(resolved, options)

@@ -148,7 +148,7 @@ export default class ClassesController {
 
     const file = request.file('file', { extnames: ['csv', 'xlsx'], size: '5mb' })
 
-    if (!file || !file.tmpPath) {
+    if (!file?.tmpPath) {
       session.flash('error', 'Pilih file CSV atau Excel (.xlsx) untuk diimpor')
       return response.redirect().back()
     }

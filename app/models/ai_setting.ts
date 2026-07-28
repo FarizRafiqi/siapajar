@@ -9,7 +9,7 @@ export default class AiSetting extends BaseModel {
   declare id: number
 
   @column()
-  declare provider: '9router' | 'anthropic' | 'openai'
+  declare provider: '9router' | 'anthropic' | 'openai' | 'gemini'
 
   /**
    * Tidak pernah dikirim ke client (serializeAs: null) — dan dienkripsi

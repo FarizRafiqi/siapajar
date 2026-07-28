@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { usePage } from '@inertiajs/react'
+import { toast, Toaster } from 'sonner'
 import Sidebar from '~/components/dashboard/sidebar'
 import Header from '~/components/dashboard/header'
 import { cn } from '~/lib/utils'
@@ -11,6 +13,7 @@ interface User {
   initials: string
   role: string
   educationLevel: 'tk' | 'sd' | null
+  avatarUrl: string | null
 }
 
 interface DashboardLayoutProps {
@@ -25,9 +28,18 @@ export default function DashboardLayout({
   user,
   title,
   breadcrumbs,
-}: DashboardLayoutProps) {
+}: Readonly<DashboardLayoutProps>) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const { flash } = usePage().props as {
+    flash?: { success?: string; error?: string }
+  }
+
+  useEffect(() => {
+    if (flash?.success) toast.success(flash.success)
+    if (flash?.error) toast.error(flash.error)
+  }, [flash])
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
@@ -54,6 +66,8 @@ export default function DashboardLayout({
         />
         <main className="p-4 sm:p-6">{children}</main>
       </div>
+
+      <Toaster position="top-right" closeButton />
     </div>
   )
 }

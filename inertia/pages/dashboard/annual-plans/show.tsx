@@ -137,7 +137,7 @@ export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
 
         {/* Isi Protah */}
         <div className="space-y-4">
-          {SECTIONS.map((section, index) => {
+          {SECTIONS.map((section) => {
             const items = annualPlan.content?.[section.key] ?? []
             const draftItems = data.content?.[section.key] ?? []
 

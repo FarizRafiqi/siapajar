@@ -148,7 +148,7 @@ export default function ClassesIndex({ classes, academicYears, educationLevel }:
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {classes.map((item, index) => (
+            {classes.map((item) => (
               <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="mb-4 flex items-start justify-between">
                   <div>

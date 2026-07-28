@@ -132,7 +132,7 @@ export default function AnnualPlansIndex({
           </div>
         ) : (
           <div className="space-y-3">
-            {annualPlans.map((item, index) => (
+            {annualPlans.map((item) => (
               <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">

@@ -1,14 +1,21 @@
 import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, useForm, usePage } from '@inertiajs/react'
+import { Head, useForm } from '@inertiajs/react'
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Save, User, School, GraduationCap, Check, Compass, AlertTriangle, X, Camera } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
+function getLevelLabel(level: string | null): string {
+  if (level === 'tk') return 'TK / PAUD'
+  if (level === 'sd') return 'SD'
+  return '-'
+}
+
 interface UserProps {
   id: number
   fullName: string
   email: string
+  initials: string
   schoolName: string | null
   educationLevel: 'tk' | 'sd' | null
   role: string
@@ -20,7 +27,6 @@ interface SettingsProps {
 }
 
 export default function Settings({ user }: SettingsProps) {
-  const { flash } = usePage().props as { flash?: { success?: string } }
   const isAdmin = user.role === 'admin'
   const [showConfirmModal, setShowConfirmModal] = React.useState(false)
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null)
@@ -62,8 +68,8 @@ export default function Settings({ user }: SettingsProps) {
     })
   }
 
-  const targetLevelLabel = data.educationLevel === 'tk' ? 'TK / PAUD' : 'SD'
-  const currentLevelLabel = user.educationLevel === 'tk' ? 'TK / PAUD' : user.educationLevel === 'sd' ? 'SD' : '-'
+  const targetLevelLabel = getLevelLabel(data.educationLevel)
+  const currentLevelLabel = getLevelLabel(user.educationLevel)
   const displayAvatar = avatarPreview ?? user.avatarUrl
 
   return (
@@ -71,18 +77,6 @@ export default function Settings({ user }: SettingsProps) {
       <Head title="Pengaturan — SiapAjar" />
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Banner Alert */}
-        {flash?.success && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-400 text-sm font-medium flex items-center gap-2"
-          >
-            <Check className="h-5 w-5" />
-            {flash.success}
-          </motion.div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className={cn('grid gap-6', !isAdmin && 'md:grid-cols-2')}>
             {/* User Profile Card */}

@@ -1,8 +1,8 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Head, router, useForm, usePage, Link } from '@inertiajs/react'
+import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useRef, useState } from 'react'
-import { ArrowLeft, Trash2, UserPlus, Pencil, Upload, Check, X as XIcon } from 'lucide-react'
+import { ArrowLeft, Trash2, UserPlus, Pencil, Upload } from 'lucide-react'
 
 interface Student {
   id: number
@@ -30,7 +30,6 @@ interface ClassShowProps {
 }
 
 export default function ClassShow({ schoolClass, educationLevel }: Readonly<ClassShowProps>) {
-  const { flash } = usePage().props as { flash?: { success?: string; error?: string } }
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
@@ -114,27 +113,6 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
       <Head title={`Kelas ${schoolClass.name}`} />
 
       <div className="space-y-6">
-        {flash?.success && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/20 dark:text-emerald-400"
-          >
-            <Check className="h-5 w-5" />
-            {flash.success}
-          </motion.div>
-        )}
-        {flash?.error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 dark:border-red-800/60 dark:bg-red-950/20 dark:text-red-400"
-          >
-            <XIcon className="h-5 w-5" />
-            {flash.error}
-          </motion.div>
-        )}
-
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link
@@ -276,6 +254,8 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   type="text"
                   value={data.nis}
                   onChange={(e) => setData('nis', e.target.value)}
+                  pattern="[0-9]*"
+                  title="NIS hanya boleh berisi angka"
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: 001234"
                 />
@@ -293,6 +273,8 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   type="text"
                   value={data.fullName}
                   onChange={(e) => setData('fullName', e.target.value)}
+                  pattern="[a-zA-Z\s.'-]+"
+                  title="Nama lengkap hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung"
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: Ahmad Rizki"
                 />
@@ -345,6 +327,8 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   type="text"
                   value={editForm.data.nis}
                   onChange={(e) => editForm.setData('nis', e.target.value)}
+                  pattern="[0-9]*"
+                  title="NIS hanya boleh berisi angka"
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
                 {editForm.errors.nis && (
@@ -363,6 +347,8 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                   type="text"
                   value={editForm.data.fullName}
                   onChange={(e) => editForm.setData('fullName', e.target.value)}
+                  pattern="[a-zA-Z\s.'-]+"
+                  title="Nama lengkap hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung"
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
                 {editForm.errors.fullName && (
