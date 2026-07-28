@@ -1,8 +1,8 @@
 import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
 import { Head, useForm, usePage } from '@inertiajs/react'
 import React from 'react'
-import { motion } from 'framer-motion'
-import { Save, User, School, GraduationCap, Check, Compass } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Save, User, School, GraduationCap, Check, Compass, AlertTriangle, X, Camera } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 interface UserProps {
@@ -12,6 +12,7 @@ interface UserProps {
   schoolName: string | null
   educationLevel: 'tk' | 'sd' | null
   role: string
+  avatarUrl: string | null
 }
 
 interface SettingsProps {
@@ -21,18 +22,49 @@ interface SettingsProps {
 export default function Settings({ user }: SettingsProps) {
   const { flash } = usePage().props as { flash?: { success?: string } }
   const isAdmin = user.role === 'admin'
+  const [showConfirmModal, setShowConfirmModal] = React.useState(false)
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const { data, setData, put, processing, errors } = useForm({
     fullName: user.fullName || '',
     email: user.email || '',
     schoolName: user.schoolName || '',
     educationLevel: user.educationLevel || 'sd',
+    avatar: null as File | null,
   })
+
+  const educationLevelChanged = data.educationLevel !== user.educationLevel
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setData('avatar', file)
+    setAvatarPreview(URL.createObjectURL(file))
+  }
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
-    put('/settings')
+    if (educationLevelChanged) {
+      setShowConfirmModal(true)
+    } else {
+      put('/settings', {
+        forceFormData: true,
+      })
+    }
   }
+
+  const handleConfirmChange = () => {
+    setShowConfirmModal(false)
+    put('/settings', {
+      forceFormData: true,
+    })
+  }
+
+  const targetLevelLabel = data.educationLevel === 'tk' ? 'TK / PAUD' : 'SD'
+  const currentLevelLabel = user.educationLevel === 'tk' ? 'TK / PAUD' : user.educationLevel === 'sd' ? 'SD' : '-'
+  const displayAvatar = avatarPreview ?? user.avatarUrl
 
   return (
     <DashboardWrapper title="Pengaturan">
@@ -54,12 +86,53 @@ export default function Settings({ user }: SettingsProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className={cn('grid gap-6', !isAdmin && 'md:grid-cols-2')}>
             {/* User Profile Card */}
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 p-6 space-y-4">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <User className="h-5 w-5 text-neutral-500" />
                 <h3 className="font-semibold text-neutral-900 dark:text-white">
                   Profil Pengguna
                 </h3>
+              </div>
+
+              {/* Avatar */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="h-16 w-16 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                    {displayAvatar ? (
+                      <img
+                        src={displayAvatar}
+                        alt="Avatar"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-neutral-500">
+                        {user.initials}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 dark:border-neutral-900"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                    Foto Profil
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    PNG, JPG, WebP. Maks 2MB.
+                  </p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
               </div>
 
               <div className="space-y-4">
@@ -99,7 +172,7 @@ export default function Settings({ user }: SettingsProps) {
 
             {/* Kartu Sekolah & Jenjang — tidak relevan untuk admin */}
             {!isAdmin && (
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 p-6 space-y-4">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <School className="h-5 w-5 text-neutral-500" />
                 <h3 className="font-semibold text-neutral-900 dark:text-white">
@@ -187,6 +260,80 @@ export default function Settings({ user }: SettingsProps) {
             </button>
           </div>
         </form>
+
+        {/* Konfirmasi ganti jenjang */}
+        <AnimatePresence>
+          {showConfirmModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
+              >
+                <div className="mb-4 flex items-start gap-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                        Ubah Jenjang Sekolah?
+                      </h3>
+                      <button
+                        onClick={() => setShowConfirmModal(false)}
+                        className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                      Anda akan mengubah jenjang dari{' '}
+                      <span className="font-medium text-neutral-900 dark:text-white">
+                        {currentLevelLabel}
+                      </span>{' '}
+                      ke{' '}
+                      <span className="font-medium text-neutral-900 dark:text-white">
+                        {targetLevelLabel}
+                      </span>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-6 space-y-2 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800/50">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                    <span className="font-medium">Yang berubah:</span> Menu navigasi akan menyesuaikan dengan jenjang baru.
+                  </p>
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                    <span className="font-medium">Yang tetap:</span> Semua dokumen yang sudah dibuat (Protah, Promes, RPPM, RPPH, Modul Ajar, dll.) tetap tersimpan dan bisa diakses.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleConfirmChange}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                  >
+                    Ya, Ubah
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </DashboardWrapper>
   )
