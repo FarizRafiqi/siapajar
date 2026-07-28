@@ -1,5 +1,4 @@
-import { router } from '@inertiajs/react'
-import { LogOut, Menu, Moon, Sun } from 'lucide-react'
+import { Menu, Moon, Sun } from 'lucide-react'
 import { useState } from 'react'
 
 interface HeaderProps {
@@ -23,10 +22,6 @@ export default function Header({ title, breadcrumbs, onMenuClick }: Readonly<Hea
       document.documentElement.classList.remove('dark')
       localStorage.setItem('theme', 'light')
     }
-  }
-
-  const handleLogout = () => {
-    router.post('/logout')
   }
 
   return (
@@ -75,13 +70,7 @@ export default function Header({ title, breadcrumbs, onMenuClick }: Readonly<Hea
         >
           {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-red-600 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-red-400"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Logout</span>
-        </button>
+
       </div>
     </header>
   )
