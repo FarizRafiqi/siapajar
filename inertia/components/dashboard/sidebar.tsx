@@ -20,6 +20,8 @@ import {
   Sparkles,
   School,
   X,
+  FileSpreadsheet,
+  Presentation,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
@@ -57,9 +59,11 @@ const guruSdNavigation = [
 const guruTkNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Kelompok', href: '/classes', icon: Users },
-  { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
   { name: 'RPPM', href: '/rppm', icon: CalendarRange },
   { name: 'RPPH', href: '/rpph', icon: CalendarDays },
+  { name: 'LKPD Anak', href: '/lkpd', icon: FileSpreadsheet },
+  { name: 'Media Ajar', href: '/media-modules', icon: Presentation },
+  { name: 'Soal RA/TK', href: '/exams', icon: FileQuestion },
   { name: 'Asesmen PAUD', href: '/paud-assessments', icon: ClipboardList },
   { name: 'Rapor & Peringkat', href: '/report-cards', icon: Award },
   { name: 'Protah', href: '/annual-plans', icon: Calendar },

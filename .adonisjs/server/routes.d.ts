@@ -67,6 +67,14 @@ export type ScannedRoutes = {
     'rpph.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.generate': { paramsTuple?: []; params?: {} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lkpd.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lkpd.generate': { paramsTuple?: []; params?: {} }
+    'media-modules.index': { paramsTuple?: []; params?: {} }
+    'media-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'media-modules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'media-modules.generate': { paramsTuple?: []; params?: {} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
     'paud-assessments.store': { paramsTuple?: []; params?: {} }
     'paud-assessments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -140,6 +148,10 @@ export type ScannedRoutes = {
     'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.index': { paramsTuple?: []; params?: {} }
     'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'media-modules.index': { paramsTuple?: []; params?: {} }
+    'media-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -188,6 +200,10 @@ export type ScannedRoutes = {
     'rppm.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.index': { paramsTuple?: []; params?: {} }
     'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'media-modules.index': { paramsTuple?: []; params?: {} }
+    'media-modules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.index': { paramsTuple?: []; params?: {} }
     'assessments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -223,6 +239,8 @@ export type ScannedRoutes = {
     'semester-plans.generate': { paramsTuple?: []; params?: {} }
     'rppm.generate': { paramsTuple?: []; params?: {} }
     'rpph.generate': { paramsTuple?: []; params?: {} }
+    'lkpd.generate': { paramsTuple?: []; params?: {} }
+    'media-modules.generate': { paramsTuple?: []; params?: {} }
     'paud-assessments.store': { paramsTuple?: []; params?: {} }
     'assessments.store': { paramsTuple?: []; params?: {} }
     'subjects.store': { paramsTuple?: []; params?: {} }
@@ -261,6 +279,8 @@ export type ScannedRoutes = {
     'semester-plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rppm.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lkpd.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'media-modules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

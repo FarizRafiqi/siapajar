@@ -31,6 +31,10 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/exams/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/index.tsx'))['default']>
     'dashboard/exams/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/show.tsx'))['default']>
     'dashboard/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/index.tsx'))['default']>
+    'dashboard/lkpd/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/index.tsx'))['default']>
+    'dashboard/lkpd/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/show.tsx'))['default']>
+    'dashboard/media-modules/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/media-modules/index.tsx'))['default']>
+    'dashboard/media-modules/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/media-modules/show.tsx'))['default']>
     'dashboard/paud-assessments/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/paud-assessments/index.tsx'))['default']>
     'dashboard/principal/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/principal/index.tsx'))['default']>
     'dashboard/principal/teacher': ExtractProps<(typeof import('../../inertia/pages/dashboard/principal/teacher.tsx'))['default']>

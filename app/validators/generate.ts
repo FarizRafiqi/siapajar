@@ -20,7 +20,8 @@ export const generateExamValidator = vine.create(
     subject: vine.string().trim().minLength(1).maxLength(100),
     type: vine.enum(['midterm', 'final', 'daily', 'summative']),
     topic: vine.string().trim().minLength(1).maxLength(200),
-    questionCount: vine.number().min(5).max(50),
+    questionCount: vine.number().min(3).max(50),
+    examMode: vine.enum(['lisan', 'tertulis_visual', 'multiple_choice']).optional(),
   })
 )
 
@@ -53,5 +54,22 @@ export const generateDailyLessonPlanValidator = vine.create(
     weeklyLessonPlanId: vine.number().positive().optional(),
     theme: vine.string().trim().minLength(1).maxLength(200),
     date: vine.date(),
+  })
+)
+
+export const generateLkpdValidator = vine.create(
+  vine.object({
+    classId: vine.number().positive(),
+    theme: vine.string().trim().minLength(1).maxLength(200),
+    subtheme: vine.string().trim().maxLength(200).optional(),
+    ageGroup: vine.string().trim().maxLength(100).optional(),
+  })
+)
+
+export const generateMediaModuleValidator = vine.create(
+  vine.object({
+    classId: vine.number().positive(),
+    theme: vine.string().trim().minLength(1).maxLength(200),
+    subtheme: vine.string().trim().maxLength(200).optional(),
   })
 )

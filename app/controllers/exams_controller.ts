@@ -6,7 +6,8 @@ import { createExamValidator, updateExamValidator } from '#validators/exam'
 import { generateExamValidator } from '#validators/generate'
 import { exportExam } from '#services/export_service'
 import { exportExamPdf } from '#services/pdf_export_service'
-import { callAiJson, AiServiceError } from '#services/ai_service'
+import { AiServiceError } from '#services/ai_service'
+import { aiQueueService } from '#services/ai_queue_service'
 import { examPrompt } from '#services/ai_prompts'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
@@ -144,7 +145,7 @@ export default class ExamsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, type, topic, questionCount } =
+    const { classId, subject, type, topic, questionCount, examMode } =
       await request.validateUsing(generateExamValidator)
 
     // Pastikan kelas milik user yang login
@@ -160,8 +161,16 @@ export default class ExamsController {
 
     let questions: Record<string, any>[]
     try {
-      const prompt = examPrompt({ subject, topic, type, questionCount })
-      const result = await callAiJson<{ questions: Record<string, any>[] }>({
+      const isPaud = user.isTk
+      const prompt = examPrompt({
+        subject,
+        topic,
+        type,
+        questionCount,
+        examMode: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
+        isPaud,
+      })
+      const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
         combo: 'siapajar-soal',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -169,12 +178,14 @@ export default class ExamsController {
       const rawQuestions = Array.isArray(result.questions) ? result.questions : []
       questions = rawQuestions.map((q, i) => ({
         question: typeof q.question === 'string' ? q.question : '',
+        instruction: typeof q.instruction === 'string' ? q.instruction : '',
+        visualType: typeof q.visualType === 'string' ? q.visualType : '',
+        rubric: typeof q.rubric === 'string' ? q.rubric : '',
         options: Array.isArray(q.options) ? q.options.filter((o: unknown) => typeof o === 'string') : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
-        // taruh terakhir — id/type harus milik kita, bukan hasil halusinasi AI
         id: i + 1,
-        type: 'multiple_choice',
+        type: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
       }))
     } catch (error) {
       session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.')
