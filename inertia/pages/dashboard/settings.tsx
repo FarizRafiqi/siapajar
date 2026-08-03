@@ -196,7 +196,7 @@ export default function Settings({ user }: SettingsProps) {
                     Jenjang Sekolah
                   </span>
                   <div className="grid gap-3 grid-cols-2">
-                    {/* TK Card */}
+                    {/* TK/RA Card */}
                     <button
                       type="button"
                       onClick={() => setData('educationLevel', 'tk')}
@@ -207,8 +207,9 @@ export default function Settings({ user }: SettingsProps) {
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
-                      <Compass className={cn("h-5 w-5 mb-2", data.educationLevel === 'tk' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
-                      <span className="text-sm font-medium text-neutral-950 dark:text-white">TK / PAUD</span>
+                      <Compass className={cn("h-5 w-5 mb-1.5", data.educationLevel === 'tk' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
+                      <span className="text-sm font-medium text-neutral-950 dark:text-white">RA & TK / PAUD</span>
+                      <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">KMA 450/2024 & Kemendikdasmen</span>
                       {data.educationLevel === 'tk' && (
                         <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3 w-3" />
@@ -227,8 +228,9 @@ export default function Settings({ user }: SettingsProps) {
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
                       )}
                     >
-                      <GraduationCap className={cn("h-5 w-5 mb-2", data.educationLevel === 'sd' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
-                      <span className="text-sm font-medium text-neutral-950 dark:text-white">SD</span>
+                      <GraduationCap className={cn("h-5 w-5 mb-1.5", data.educationLevel === 'sd' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
+                      <span className="text-sm font-medium text-neutral-950 dark:text-white">SD / MI</span>
+                      <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Sekolah Dasar / Madrasah Ibtidaiyah</span>
                       {data.educationLevel === 'sd' && (
                         <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
                           <Check className="h-3 w-3" />
