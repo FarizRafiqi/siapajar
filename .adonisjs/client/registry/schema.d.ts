@@ -763,6 +763,102 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'lkpd.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lkpd.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lkpd.destroy': {
+    methods: ["DELETE"]
+    pattern: '/lkpd/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lkpd.generate': {
+    methods: ["POST"]
+    pattern: '/lkpd/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'media-modules.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/media-modules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'media-modules.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/media-modules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'media-modules.destroy': {
+    methods: ["DELETE"]
+    pattern: '/media-modules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'media-modules.generate': {
+    methods: ["POST"]
+    pattern: '/media-modules/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'paud-assessments.index': {
     methods: ["GET","HEAD"]
     pattern: '/paud-assessments'

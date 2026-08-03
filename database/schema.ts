@@ -152,6 +152,62 @@ export class ExamSchema extends BaseModel {
   declare userId: number
 }
 
+export class LkpdSchema extends BaseModel {
+  static $columns = ['ageGroup', 'classId', 'content', 'createdAt', 'id', 'institutionType', 'status', 'subtheme', 'theme', 'title', 'updatedAt', 'userId'] as const
+  $columns = LkpdSchema.$columns
+  @column()
+  declare ageGroup: string | null
+  @column()
+  declare classId: number
+  @column()
+  declare content: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare institutionType: string | null
+  @column()
+  declare status: string | null
+  @column()
+  declare subtheme: string | null
+  @column()
+  declare theme: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class MediaModuleSchema extends BaseModel {
+  static $columns = ['classId', 'createdAt', 'id', 'loosePartsGuide', 'slides', 'status', 'subtheme', 'theme', 'title', 'updatedAt', 'userId'] as const
+  $columns = MediaModuleSchema.$columns
+  @column()
+  declare classId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare loosePartsGuide: any | null
+  @column()
+  declare slides: any
+  @column()
+  declare status: string | null
+  @column()
+  declare subtheme: string | null
+  @column()
+  declare theme: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class PackageSchema extends BaseModel {
   static $columns = ['createdAt', 'ctaLabel', 'description', 'displayName', 'features', 'id', 'isActive', 'isHighlighted', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
   $columns = PackageSchema.$columns

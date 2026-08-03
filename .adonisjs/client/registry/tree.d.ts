@@ -89,6 +89,18 @@ export interface ApiDefinition {
     destroy: typeof routes['rpph.destroy']
     generate: typeof routes['rpph.generate']
   }
+  lkpd: {
+    index: typeof routes['lkpd.index']
+    show: typeof routes['lkpd.show']
+    destroy: typeof routes['lkpd.destroy']
+    generate: typeof routes['lkpd.generate']
+  }
+  mediaModules: {
+    index: typeof routes['media-modules.index']
+    show: typeof routes['media-modules.show']
+    destroy: typeof routes['media-modules.destroy']
+    generate: typeof routes['media-modules.generate']
+  }
   paudAssessments: {
     index: typeof routes['paud-assessments.index']
     store: typeof routes['paud-assessments.store']

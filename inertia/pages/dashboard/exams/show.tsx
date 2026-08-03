@@ -15,9 +15,12 @@ interface Question {
   id: number
   type: string
   question: string
-  options: string[]
+  instruction?: string
+  visualType?: string
+  rubric?: string
+  options?: string[]
   answer: string
-  explanation: string
+  explanation?: string
 }
 
 interface Exam {
@@ -81,7 +84,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
       'questions',
       data.questions.map((q, i) =>
         i === questionIndex
-          ? { ...q, options: q.options.map((o, oi) => (oi === optionIndex ? value : o)) }
+          ? { ...q, options: (q.options ?? []).map((o, oi) => (oi === optionIndex ? value : o)) }
           : q
       )
     )
@@ -225,15 +228,38 @@ export default function ExamShow({ exam }: ExamShowProps) {
                     {index + 1}
                   </span>
                   {editing ? (
-                    <textarea
-                      value={question.question}
-                      onChange={(e) => updateQuestion(index, { question: e.target.value })}
-                      rows={2}
-                      className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                      placeholder="Tulis pertanyaan"
-                    />
+                    <div className="flex-1 space-y-2">
+                      <textarea
+                        value={question.question}
+                        onChange={(e) => updateQuestion(index, { question: e.target.value })}
+                        rows={2}
+                        className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        placeholder="Tulis pertanyaan / indikator"
+                      />
+                      {question.instruction !== undefined && (
+                        <input
+                          type="text"
+                          value={question.instruction ?? ''}
+                          onChange={(e) => updateQuestion(index, { instruction: e.target.value })}
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                          placeholder="Instruksi pengerjaan / penyampaian"
+                        />
+                      )}
+                    </div>
                   ) : (
-                    <p className="flex-1 text-neutral-900 dark:text-white">{question.question}</p>
+                    <div className="flex-1 space-y-1">
+                      {question.visualType && (
+                        <span className="inline-block rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+                          {question.visualType}
+                        </span>
+                      )}
+                      <p className="font-medium text-neutral-900 dark:text-white">{question.question}</p>
+                      {question.instruction && (
+                        <p className="text-xs italic text-neutral-500 dark:text-neutral-400">
+                          Instruksi: {question.instruction}
+                        </p>
+                      )}
+                    </div>
                   )}
                   {editing && (
                     <button
@@ -314,6 +340,11 @@ export default function ExamShow({ exam }: ExamShowProps) {
                 {!editing && question.explanation && (
                   <div className="ml-10 mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                     <strong>Pembahasan:</strong> {question.explanation}
+                  </div>
+                )}
+                {!editing && question.rubric && (
+                  <div className="ml-10 mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
+                    <strong>Rubrik Penilaian Lisan:</strong> {question.rubric}
                   </div>
                 )}
               </div>

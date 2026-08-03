@@ -111,6 +111,18 @@ router
     router.delete('/rpph/:id', '#controllers/daily_lesson_plans_controller.destroy').as('rpph.destroy')
     router.post('/rpph/generate', '#controllers/daily_lesson_plans_controller.generate').as('rpph.generate')
 
+    // LKPD (Lembar Kerja Peserta Didik / Lembar Aktivitas Anak)
+    router.get('/lkpd', '#controllers/lkpds_controller.index').as('lkpd.index')
+    router.get('/lkpd/:id', '#controllers/lkpds_controller.show').as('lkpd.show')
+    router.delete('/lkpd/:id', '#controllers/lkpds_controller.destroy').as('lkpd.destroy')
+    router.post('/lkpd/generate', '#controllers/lkpds_controller.generate').as('lkpd.generate')
+
+    // Media Ajar (Outline Slide & Loose Parts Guide)
+    router.get('/media-modules', '#controllers/media_modules_controller.index').as('media-modules.index')
+    router.get('/media-modules/:id', '#controllers/media_modules_controller.show').as('media-modules.show')
+    router.delete('/media-modules/:id', '#controllers/media_modules_controller.destroy').as('media-modules.destroy')
+    router.post('/media-modules/generate', '#controllers/media_modules_controller.generate').as('media-modules.generate')
+
     // Asesmen PAUD (ceklis, catatan anekdot, hasil karya, foto berseri)
     router.get('/paud-assessments', '#controllers/paud_assessments_controller.index').as('paud-assessments.index')
     router.post('/paud-assessments', '#controllers/paud_assessments_controller.store').as('paud-assessments.store')

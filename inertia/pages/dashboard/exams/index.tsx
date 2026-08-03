@@ -56,6 +56,7 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
     classId: classes[0]?.id || 0,
     subject: '',
     type: 'daily' as ExamType,
+    examMode: 'tertulis_visual' as 'tertulis_visual' | 'lisan' | 'multiple_choice',
     topic: '',
     questionCount: 10,
   })
@@ -151,7 +152,7 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
           </div>
         ) : (
           <div className="space-y-3">
-            {exams.map((item, index) => (
+            {exams.map((item) => (
               <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -280,6 +281,21 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                   ))}
                 </select>
                 {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
+              </div>
+              <div>
+                <label htmlFor="examMode" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  Bentuk / Format Soal
+                </label>
+                <select
+                  id="examMode"
+                  value={data.examMode}
+                  onChange={(e) => setData('examMode', e.target.value as any)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                >
+                  <option value="tertulis_visual">Soal Tertulis & Visual (Menebalkan/Mencocokkan/Melingkari - RA/TK B)</option>
+                  <option value="lisan">Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)</option>
+                  <option value="multiple_choice">Pilihan Ganda (SD / Umum)</option>
+                </select>
               </div>
               <div>
                 <label htmlFor="topic" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
