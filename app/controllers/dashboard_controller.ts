@@ -9,6 +9,8 @@ import DailyLessonPlan from '#models/daily_lesson_plan'
 import PaudAssessment from '#models/paud_assessment'
 import Student from '#models/student'
 import User from '#models/user'
+import Lkpd from '#models/lkpd'
+import MediaModule from '#models/media_module'
 
 export default class DashboardController {
   async index({ inertia, auth, response }: HttpContext) {
@@ -31,6 +33,8 @@ export default class DashboardController {
       totalWeeklyLessonPlans,
       totalDailyLessonPlans,
       totalPaudAssessments,
+      totalLkpds,
+      totalMediaModules,
     ] = await Promise.all([
       isAdmin
         ? SchoolClass.query().count('* as total')
@@ -61,6 +65,12 @@ export default class DashboardController {
       isAdmin
         ? PaudAssessment.query().count('* as total')
         : PaudAssessment.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? Lkpd.query().count('* as total')
+        : Lkpd.query().where('user_id', user.id).count('* as total'),
+      isAdmin
+        ? MediaModule.query().count('* as total')
+        : MediaModule.query().where('user_id', user.id).count('* as total'),
     ])
 
     let adminStats = null
@@ -74,6 +84,8 @@ export default class DashboardController {
         users: Number(totalUsers[0].$extras.total),
         guru: Number(totalGuru[0].$extras.total),
         admin: Number(totalAdmin[0].$extras.total),
+        lkpds: Number(totalLkpds[0].$extras.total),
+        mediaModules: Number(totalMediaModules[0].$extras.total),
       }
     }
 
@@ -83,6 +95,16 @@ export default class DashboardController {
       .limit(5)
 
     const recentExams = await Exam.query()
+      .where('user_id', user.id)
+      .orderBy('created_at', 'desc')
+      .limit(5)
+
+    const recentLkpds = await Lkpd.query()
+      .where('user_id', user.id)
+      .orderBy('created_at', 'desc')
+      .limit(5)
+
+    const recentMediaModules = await MediaModule.query()
       .where('user_id', user.id)
       .orderBy('created_at', 'desc')
       .limit(5)
@@ -100,10 +122,14 @@ export default class DashboardController {
         weeklyLessonPlans: Number(totalWeeklyLessonPlans[0].$extras.total),
         dailyLessonPlans: Number(totalDailyLessonPlans[0].$extras.total),
         paudAssessments: Number(totalPaudAssessments[0].$extras.total),
+        lkpds: Number(totalLkpds[0].$extras.total),
+        mediaModules: Number(totalMediaModules[0].$extras.total),
       },
       adminStats,
       recentTeachingModules: isTk ? [] : recentTeachingModules.map((m) => m.toJSON()),
       recentExams: isTk ? [] : recentExams.map((e) => e.toJSON()),
+      recentLkpds: isTk ? recentLkpds.map((l) => l.toJSON()) : [],
+      recentMediaModules: isTk ? recentMediaModules.map((m) => m.toJSON()) : [],
     })
   }
 }

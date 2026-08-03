@@ -143,17 +143,15 @@ export default function Sidebar({
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4 dark:border-neutral-800">
-          {!collapsed && (
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
-                <span className="text-sm font-bold text-white">S</span>
-              </div>
-              <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-                SiapAjar
-              </span>
-            </Link>
-          )}
-          <div className={cn('flex items-center', collapsed && 'w-full justify-center')}>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
+              <span className="text-sm font-bold text-white">S</span>
+            </div>
+            <span className={cn('text-lg font-semibold text-neutral-900 dark:text-white', collapsed && 'md:hidden')}>
+              SiapAjar
+            </span>
+          </Link>
+          <div className={cn('flex items-center', collapsed && 'md:w-full md:justify-center')}>
             {/* Desktop collapse toggle */}
             <button
               onClick={onToggle}
@@ -192,18 +190,18 @@ export default function Sidebar({
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-semibold'
+                    : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800/80 dark:hover:text-white'
                 )}
                 title={collapsed ? item.name : undefined}
               >
                 <item.icon
                   className={cn(
                     'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-emerald-600 dark:text-emerald-400' : ''
+                    isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500 dark:text-neutral-400'
                   )}
                 />
-                {!collapsed && <span>{item.name}</span>}
+                <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
               </Link>
             )
           })}
@@ -216,7 +214,7 @@ export default function Sidebar({
               onClick={() => setDropdownOpen((prev) => !prev)}
               className={cn(
                 'flex w-full cursor-pointer items-center gap-3 rounded-lg p-1 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800',
-                collapsed && 'justify-center'
+                collapsed && 'md:justify-center'
               )}
               title={collapsed ? user.fullName : undefined}
             >
@@ -231,37 +229,35 @@ export default function Sidebar({
                   {user.initials}
                 </div>
               )}
-              {!collapsed && (
-                <div className="flex-1 overflow-hidden text-left">
-                  <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
-                    {user.fullName}
-                  </p>
-                  <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                    {roleLabels[user.role] || user.role}
-                  </p>
-                </div>
-              )}
+              <div className={cn('flex-1 overflow-hidden text-left', collapsed && 'md:hidden')}>
+                <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                  {user.fullName}
+                </p>
+                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                  {roleLabels[user.role] || user.role}
+                </p>
+              </div>
               <ChevronRight
                 className={cn(
                   'h-4 w-4 flex-shrink-0 text-neutral-400 transition-transform',
-                  collapsed && 'hidden',
+                  collapsed && 'md:hidden',
                   dropdownOpen && 'rotate-180'
                 )}
               />
             </button>
 
-            {/* Right-side dropdown */}
+            {/* Dropdown position (bottom-full on mobile, left-full on desktop) */}
             {dropdownOpen && (
-              <div className="absolute bottom-0 left-full ml-2 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900 md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48">
                 <Link
                   href="/settings"
                   onClick={() => {
                     setDropdownOpen(false)
                     onMobileClose?.()
                   }}
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                   Pengaturan
                 </Link>
                 <button

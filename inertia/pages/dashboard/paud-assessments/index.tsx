@@ -2,7 +2,7 @@ import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { ClipboardList, Trash2, Plus } from 'lucide-react'
+import { ClipboardList, Trash2, Plus, CheckSquare, FileText, Palette, Camera } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 interface Student {
@@ -34,11 +34,11 @@ interface PaudAssessmentsIndexProps {
   readonly typeLabels: Record<AssessmentType, string>
 }
 
-const TYPE_ICONS: Record<AssessmentType, string> = {
-  checklist: '✅',
-  anecdotal_note: '📝',
-  work_sample: '🎨',
-  photo_series: '📸',
+const TYPE_ICONS: Record<AssessmentType, React.ComponentType<{ className?: string }>> = {
+  checklist: CheckSquare,
+  anecdotal_note: FileText,
+  work_sample: Palette,
+  photo_series: Camera,
 }
 
 export default function PaudAssessmentsIndex({ assessments, classes, typeLabels }: PaudAssessmentsIndexProps) {
@@ -49,7 +49,7 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
   const hasClasses = classes.length > 0
   const hasStudents = classes.some((c) => c.students.length > 0)
 
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, processing, errors, reset } = useForm({
     classId: classes[0]?.id || 0,
     studentId: classes[0]?.students[0]?.id || 0,
     type: 'checklist' as AssessmentType,
@@ -152,28 +152,32 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
           <button
             onClick={() => setFilterType('all')}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium',
+              'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
               filterType === 'all'
                 ? 'bg-emerald-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
             )}
           >
             Semua
           </button>
-          {(Object.keys(typeLabels) as AssessmentType[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={cn(
-                'rounded-full px-3 py-1.5 text-sm font-medium',
-                filterType === t
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-              )}
-            >
-              {TYPE_ICONS[t]} {typeLabels[t]}
-            </button>
-          ))}
+          {(Object.keys(typeLabels) as AssessmentType[]).map((t) => {
+            const Icon = TYPE_ICONS[t]
+            return (
+              <button
+                key={t}
+                onClick={() => setFilterType(t)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  filterType === t
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {typeLabels[t]}
+              </button>
+            )
+          })}
         </div>
 
         {filteredAssessments.length === 0 ? (
@@ -184,17 +188,21 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredAssessments.map((item, index) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span>{TYPE_ICONS[item.type]}</span>
-                      <h3 className="font-semibold text-neutral-900 dark:text-white">{item.student.fullName}</h3>
-                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                        {typeLabels[item.type]}
-                      </span>
-                    </div>
+            {filteredAssessments.map((item) => {
+              const ItemIcon = TYPE_ICONS[item.type]
+              return (
+                <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-md bg-emerald-50 p-1 dark:bg-emerald-900/30">
+                          <ItemIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="font-semibold text-neutral-900 dark:text-white">{item.student.fullName}</h3>
+                        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                          {typeLabels[item.type]}
+                        </span>
+                      </div>
                     <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
                       Kelompok {item.schoolClass.name} • {new Date(item.date).toLocaleDateString('id-ID')}
                     </p>
@@ -203,7 +211,7 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
                         <>
                           <ul className="list-inside list-disc">
                             {(item.content.indicators ?? []).map((ind: string, i: number) => (
-                              <li key={i}>{ind}</li>
+                              <li key={`ind-${i}-${ind.slice(0, 10)}`}>{ind}</li>
                             ))}
                           </ul>
                           {item.content.note && <p className="mt-1 italic">{item.content.note}</p>}
@@ -236,7 +244,8 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
                   </button>
                 </div>
               </div>
-            ))}
+            )
+          })}
           </div>
         )}
       </div>
