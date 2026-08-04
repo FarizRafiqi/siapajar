@@ -1,10 +1,11 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import Semester from '#models/semester'
+import AssessmentAttachment from '#models/assessment_attachment'
 
 export default class PaudAssessment extends BaseModel {
   static readonly table = 'paud_assessments'
@@ -69,6 +70,9 @@ export default class PaudAssessment extends BaseModel {
 
   @belongsTo(() => Semester, { foreignKey: 'semesterId' })
   declare semester: BelongsTo<typeof Semester>
+
+  @hasMany(() => AssessmentAttachment, { foreignKey: 'assessmentId' })
+  declare attachments: HasMany<typeof AssessmentAttachment>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

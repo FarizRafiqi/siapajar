@@ -26,6 +26,7 @@ interface Assessment {
   content: Record<string, any>
   schoolClass: SchoolClass
   student: Student
+  attachments?: Array<{ id: number; url: string; originalName: string; mimeType: string }>
 }
 
 interface CurriculumObjective {
@@ -58,6 +59,7 @@ export default function PaudAssessmentsIndex({
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingAssessment, setDeletingAssessment] = useState<Assessment | null>(null)
   const [filterType, setFilterType] = useState<AssessmentType | 'all'>('all')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
   const hasClasses = classes.length > 0
   const hasStudents = classes.some((c) => c.students.length > 0)
@@ -99,21 +101,23 @@ export default function PaudAssessmentsIndex({
       content = { activity: data.activity, narrative: data.narrative }
     }
 
-    router.post(
-      '/paud-assessments',
+    const payload = new FormData()
+    payload.append('classId', String(data.classId))
+    payload.append('studentId', String(data.studentId))
+    payload.append('type', data.type)
+    payload.append('date', data.date)
+    payload.append('content', JSON.stringify(content))
+    if (data.learningObjectiveId) payload.append('learningObjectiveId', String(data.learningObjectiveId))
+    if (data.iktpIndicatorId) payload.append('iktpIndicatorId', String(data.iktpIndicatorId))
+    if (data.achievementStatus) payload.append('achievementStatus', data.achievementStatus)
+    selectedFiles.forEach((file) => payload.append('attachments', file))
+
+    router.post('/paud-assessments', payload,
       {
-        classId: data.classId,
-        studentId: data.studentId,
-        type: data.type,
-        date: data.date,
-        content,
-        learningObjectiveId: data.learningObjectiveId || undefined,
-        iktpIndicatorId: data.iktpIndicatorId || undefined,
-        achievementStatus: data.achievementStatus || undefined,
-      },
-      {
+        forceFormData: true,
         onSuccess: () => {
           setShowAddModal(false)
+          setSelectedFiles([])
           reset()
         },
       }
@@ -284,6 +288,15 @@ export default function PaudAssessmentsIndex({
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+                    {item.attachments && item.attachments.length > 0 && (
+                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                        {item.attachments.map((attachment) => (
+                          attachment.mimeType === 'application/pdf'
+                            ? <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="rounded border border-neutral-200 p-2 text-xs text-emerald-700 dark:border-neutral-700 dark:text-emerald-300">{attachment.originalName}</a>
+                            : <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer"><img src={attachment.url} alt={attachment.originalName} className="h-20 w-full rounded object-cover" /></a>
+                         ))}
+                       </div>
+                     )}
                   </div>
                 </div>
               )
@@ -628,6 +641,14 @@ export default function PaudAssessmentsIndex({
                     />
                   </div>
                 </>
+              )}
+
+              {(data.type === 'work_sample' || data.type === 'photo_series') && (
+                <div>
+                  <label htmlFor="assessment-attachments" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Lampiran Foto/Karya (maks. 10 file)</label>
+                  <input id="assessment-attachments" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []).slice(0, 10))} className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white" />
+                  {selectedFiles.length > 0 && <div className="mt-3 grid grid-cols-3 gap-2">{selectedFiles.map((file) => <div key={`${file.name}-${file.lastModified}`} className="relative rounded border border-neutral-200 p-2 text-xs dark:border-neutral-700"><span className="block truncate">{file.name}</span><button type="button" onClick={() => setSelectedFiles((current) => current.filter((item) => item !== file))} className="mt-1 text-red-600">Hapus</button></div>)}</div>}
+                </div>
               )}
             </div>
             <div className="mt-6 flex gap-3">
