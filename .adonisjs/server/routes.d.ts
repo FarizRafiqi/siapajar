@@ -5,6 +5,9 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'home': { paramsTuple?: []; params?: {} }
+    'health': { paramsTuple?: []; params?: {} }
+    'privacy': { paramsTuple?: []; params?: {} }
+    'terms': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -16,6 +19,11 @@ export type ScannedRoutes = {
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
+    'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
+    'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
     'classes.store': { paramsTuple?: []; params?: {} }
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -90,6 +98,9 @@ export type ScannedRoutes = {
     'report-cards.index': { paramsTuple?: []; params?: {} }
     'report-cards.show': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
     'report-cards.exportPdf': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
+    'report-cards.narratives.save': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
+    'report-cards.narratives.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-narratives.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.index': { paramsTuple?: []; params?: {} }
     'subjects.store': { paramsTuple?: []; params?: {} }
     'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
@@ -116,9 +127,15 @@ export type ScannedRoutes = {
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
+    'health': { paramsTuple?: []; params?: {} }
+    'privacy': { paramsTuple?: []; params?: {} }
+    'terms': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
@@ -126,6 +143,7 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'curriculum.index': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
@@ -168,9 +186,15 @@ export type ScannedRoutes = {
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
     'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
+    'health': { paramsTuple?: []; params?: {} }
+    'privacy': { paramsTuple?: []; params?: {} }
+    'terms': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
@@ -178,6 +202,7 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'curriculum.index': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.index': { paramsTuple?: []; params?: {} }
@@ -220,12 +245,18 @@ export type ScannedRoutes = {
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
     'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
+    'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
+    'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
+    'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
     'classes.store': { paramsTuple?: []; params?: {} }
     'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -243,6 +274,9 @@ export type ScannedRoutes = {
     'media-modules.generate': { paramsTuple?: []; params?: {} }
     'paud-assessments.store': { paramsTuple?: []; params?: {} }
     'assessments.store': { paramsTuple?: []; params?: {} }
+    'report-cards.narratives.save': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
+    'report-cards.narratives.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-narratives.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subjects.store': { paramsTuple?: []; params?: {} }
     'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
     'admin.packages.store': { paramsTuple?: []; params?: {} }
@@ -252,6 +286,7 @@ export type ScannedRoutes = {
     'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
   }
   PUT: {
+    'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.updateStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'teaching-modules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

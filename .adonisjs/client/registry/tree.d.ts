@@ -3,6 +3,9 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   home: typeof routes['home']
+  health: typeof routes['health']
+  privacy: typeof routes['privacy']
+  terms: typeof routes['terms']
   comingSoon: typeof routes['coming-soon']
   newAccount: {
     create: typeof routes['new_account.create']
@@ -24,6 +27,19 @@ export interface ApiDefinition {
     store: typeof routes['onboarding.store']
   }
   dashboard: typeof routes['dashboard']
+  curriculum: {
+    index: typeof routes['curriculum.index']
+    objectives: {
+      store: typeof routes['curriculum.objectives.store']
+    }
+    sequences: {
+      store: typeof routes['curriculum.sequences.store']
+      update: typeof routes['curriculum.sequences.update']
+    }
+    indicators: {
+      store: typeof routes['curriculum.indicators.store']
+    }
+  }
   classes: {
     index: typeof routes['classes.index']
     store: typeof routes['classes.store']
@@ -123,6 +139,13 @@ export interface ApiDefinition {
     index: typeof routes['report-cards.index']
     show: typeof routes['report-cards.show']
     exportPdf: typeof routes['report-cards.exportPdf']
+    narratives: {
+      save: typeof routes['report-cards.narratives.save']
+      generate: typeof routes['report-cards.narratives.generate']
+    }
+  }
+  reportNarratives: {
+    approve: typeof routes['report-narratives.approve']
   }
   subjects: {
     index: typeof routes['subjects.index']
@@ -164,6 +187,15 @@ export interface ApiDefinition {
       update: typeof routes['admin.ai-settings.update']
       test: typeof routes['admin.ai-settings.test']
       models: typeof routes['admin.ai-settings.models']
+      oauth: {
+        openai: {
+          start: typeof routes['admin.ai-settings.oauth.openai.start']
+        }
+        gemini: {
+          start: typeof routes['admin.ai-settings.oauth.gemini.start']
+          callback: typeof routes['admin.ai-settings.oauth.gemini.callback']
+        }
+      }
     }
   }
 }

@@ -12,6 +12,7 @@ export const controllers = {
   AnnualPlans: () => import('#controllers/annual_plans_controller'),
   Assessments: () => import('#controllers/assessments_controller'),
   Classes: () => import('#controllers/classes_controller'),
+  Curriculum: () => import('#controllers/curriculum_controller'),
   DailyLessonPlans: () => import('#controllers/daily_lesson_plans_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Exams: () => import('#controllers/exams_controller'),

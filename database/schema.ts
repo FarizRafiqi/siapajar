@@ -22,11 +22,46 @@ export class AcademicYearSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class AiJobSchema extends BaseModel {
+  static $columns = ['attempts', 'availableAt', 'combo', 'createdAt', 'error', 'finishedAt', 'id', 'jobKey', 'payload', 'result', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  $columns = AiJobSchema.$columns
+  @column()
+  declare attempts: number
+  @column.dateTime()
+  declare availableAt: DateTime
+  @column()
+  declare combo: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare error: string | null
+  @column.dateTime()
+  declare finishedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare jobKey: string
+  @column()
+  declare payload: any
+  @column()
+  declare result: any | null
+  @column.dateTime()
+  declare startedAt: DateTime | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class AiSettingSchema extends BaseModel {
-  static $columns = ['apiKey', 'baseUrl', 'createdAt', 'id', 'model', 'provider', 'updatedAt'] as const
+  static $columns = ['apiKey', 'authMode', 'baseUrl', 'createdAt', 'id', 'model', 'oauthAccessToken', 'oauthEmail', 'oauthExpiresAt', 'oauthProjectId', 'oauthRefreshToken', 'provider', 'updatedAt'] as const
   $columns = AiSettingSchema.$columns
   @column()
   declare apiKey: string | null
+  @column()
+  declare authMode: string
   @column()
   declare baseUrl: string | null
   @column.dateTime({ autoCreate: true })
@@ -35,6 +70,16 @@ export class AiSettingSchema extends BaseModel {
   declare id: number
   @column()
   declare model: string | null
+  @column()
+  declare oauthAccessToken: string | null
+  @column()
+  declare oauthEmail: string | null
+  @column.dateTime()
+  declare oauthExpiresAt: DateTime | null
+  @column()
+  declare oauthProjectId: string | null
+  @column()
+  declare oauthRefreshToken: string | null
   @column()
   declare provider: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -88,7 +133,7 @@ export class AssessmentSchema extends BaseModel {
 }
 
 export class ClassSchema extends BaseModel {
-  static $columns = ['academicYearId', 'createdAt', 'gradeLevel', 'id', 'name', 'updatedAt', 'userId'] as const
+  static $columns = ['academicYearId', 'createdAt', 'gradeLevel', 'groupContext', 'id', 'name', 'updatedAt', 'userId'] as const
   $columns = ClassSchema.$columns
   @column()
   declare academicYearId: number
@@ -96,6 +141,8 @@ export class ClassSchema extends BaseModel {
   declare createdAt: DateTime | null
   @column()
   declare gradeLevel: number
+  @column()
+  declare groupContext: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -104,6 +151,31 @@ export class ClassSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare userId: number
+}
+
+export class CurriculumCpSchema extends BaseModel {
+  static $columns = ['code', 'createdAt', 'curriculumVersion', 'description', 'element', 'id', 'isOfficial', 'phase', 'title', 'updatedAt'] as const
+  $columns = CurriculumCpSchema.$columns
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare curriculumVersion: string
+  @column()
+  declare description: string
+  @column()
+  declare element: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isOfficial: boolean
+  @column()
+  declare phase: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }
 
 export class DailyLessonPlanSchema extends BaseModel {
@@ -146,6 +218,81 @@ export class ExamSchema extends BaseModel {
   declare title: string
   @column()
   declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class IktpIndicatorSchema extends BaseModel {
+  static $columns = ['achievementCriteria', 'createdAt', 'description', 'evidenceType', 'id', 'isActive', 'learningObjectiveId', 'updatedAt', 'userId'] as const
+  $columns = IktpIndicatorSchema.$columns
+  @column()
+  declare achievementCriteria: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string
+  @column()
+  declare evidenceType: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare learningObjectiveId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class LearningObjectiveSchema extends BaseModel {
+  static $columns = ['code', 'cpId', 'createdAt', 'groupContext', 'id', 'isActive', 'source', 'title', 'updatedAt', 'userId'] as const
+  $columns = LearningObjectiveSchema.$columns
+  @column()
+  declare code: string
+  @column()
+  declare cpId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare groupContext: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare source: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class LearningSequenceSchema extends BaseModel {
+  static $columns = ['createdAt', 'curriculumVersion', 'educationLevel', 'groupContext', 'id', 'items', 'schoolId', 'status', 'title', 'updatedAt', 'userId'] as const
+  $columns = LearningSequenceSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare curriculumVersion: string
+  @column()
+  declare educationLevel: string
+  @column()
+  declare groupContext: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare items: any
+  @column()
+  declare schoolId: number | null
+  @column()
+  declare status: string
+  @column()
+  declare title: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -208,6 +355,25 @@ export class MediaModuleSchema extends BaseModel {
   declare userId: number
 }
 
+export class PackageEntitlementSchema extends BaseModel {
+  static $columns = ['createdAt', 'featureKey', 'id', 'isEnabled', 'limitValue', 'packageId', 'updatedAt'] as const
+  $columns = PackageEntitlementSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare featureKey: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isEnabled: boolean
+  @column()
+  declare limitValue: number | null
+  @column()
+  declare packageId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class PackageSchema extends BaseModel {
   static $columns = ['createdAt', 'ctaLabel', 'description', 'displayName', 'features', 'id', 'isActive', 'isHighlighted', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
   $columns = PackageSchema.$columns
@@ -240,8 +406,12 @@ export class PackageSchema extends BaseModel {
 }
 
 export class PaudAssessmentSchema extends BaseModel {
-  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'semesterId', 'studentId', 'type', 'updatedAt', 'userId'] as const
+  static $columns = ['achievementStatus', 'activity', 'classId', 'content', 'createdAt', 'date', 'evidenceType', 'evidenceUrl', 'id', 'iktpIndicatorId', 'learningObjectiveId', 'semesterId', 'studentId', 'teacherNote', 'type', 'updatedAt', 'userId'] as const
   $columns = PaudAssessmentSchema.$columns
+  @column()
+  declare achievementStatus: string | null
+  @column()
+  declare activity: string | null
   @column()
   declare classId: number
   @column()
@@ -250,12 +420,22 @@ export class PaudAssessmentSchema extends BaseModel {
   declare createdAt: DateTime | null
   @column.date()
   declare date: DateTime
+  @column()
+  declare evidenceType: string | null
+  @column()
+  declare evidenceUrl: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare iktpIndicatorId: number | null
+  @column()
+  declare learningObjectiveId: number | null
   @column()
   declare semesterId: number | null
   @column()
   declare studentId: number
+  @column()
+  declare teacherNote: string | null
   @column()
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -279,6 +459,33 @@ export class RememberMeTokenSchema extends BaseModel {
   declare tokenableId: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class ReportNarrativeSchema extends BaseModel {
+  static $columns = ['approvedAt', 'classId', 'content', 'createdAt', 'element', 'id', 'semesterId', 'status', 'studentId', 'updatedAt', 'userId'] as const
+  $columns = ReportNarrativeSchema.$columns
+  @column.dateTime()
+  declare approvedAt: DateTime | null
+  @column()
+  declare classId: number
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare element: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare semesterId: number
+  @column()
+  declare status: string
+  @column()
+  declare studentId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
 }
 
 export class SchoolSchema extends BaseModel {
@@ -418,13 +625,38 @@ export class TeachingModuleSchema extends BaseModel {
   declare userId: number
 }
 
+export class UsageEventSchema extends BaseModel {
+  static $columns = ['createdAt', 'eventKey', 'id', 'metadata', 'periodStart', 'quantity', 'updatedAt', 'userId'] as const
+  $columns = UsageEventSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare eventKey: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: any
+  @column.date()
+  declare periodStart: DateTime
+  @column()
+  declare quantity: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'educationLevel', 'email', 'fullName', 'googleId', 'id', 'packageId', 'password', 'role', 'schoolId', 'schoolName', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'curriculumVersion', 'defaultGroupContext', 'educationLevel', 'email', 'fullName', 'googleId', 'id', 'institutionType', 'packageId', 'password', 'role', 'schoolId', 'schoolName', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarUrl: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare curriculumVersion: string | null
+  @column()
+  declare defaultGroupContext: string | null
   @column()
   declare educationLevel: string | null
   @column()
@@ -435,6 +667,8 @@ export class UserSchema extends BaseModel {
   declare googleId: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare institutionType: string | null
   @column()
   declare packageId: number | null
   @column({ serializeAs: null })
