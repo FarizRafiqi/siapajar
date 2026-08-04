@@ -15,6 +15,7 @@ export const controllers = {
   Curriculum: () => import('#controllers/curriculum_controller'),
   DailyLessonPlans: () => import('#controllers/daily_lesson_plans_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
+  DocumentWorkflows: () => import('#controllers/document_workflows_controller'),
   Exams: () => import('#controllers/exams_controller'),
   GoogleAuth: () => import('#controllers/google_auth_controller'),
   Home: () => import('#controllers/home_controller'),
