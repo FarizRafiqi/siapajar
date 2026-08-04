@@ -1,17 +1,15 @@
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-  PageBreak,
-} from 'docx'
-import TeachingModule from '#models/teaching_module'
-import Exam from '#models/exam'
-import AnnualPlan from '#models/annual_plan'
-import SemesterPlan from '#models/semester_plan'
-import User from '#models/user'
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx'
+import type TeachingModule from '#models/teaching_module'
+import type Exam from '#models/exam'
+import type AnnualPlan from '#models/annual_plan'
+import type SemesterPlan from '#models/semester_plan'
+import type User from '#models/user'
+import { assertEntitled, recordUsage } from '#services/entitlement_service'
+
+async function consumeExport(user: User) {
+  await assertEntitled(user, 'export_docx')
+  await recordUsage(user.id, 'export_docx', 1)
+}
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
   midterm: 'PTS (Penilaian Tengah Semester)',
@@ -59,6 +57,7 @@ async function toBuffer(doc: Document) {
 }
 
 export async function exportTeachingModule(teachingModule: TeachingModule, user: User) {
+  await consumeExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensiDasar', title: 'Kompetensi Dasar' },
     { key: 'tujuanPembelajaran', title: 'Tujuan Pembelajaran' },
@@ -79,7 +78,9 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
           new Paragraph({ text: `Mata Pelajaran: ${teachingModule.subject}` }),
           new Paragraph({ text: `Fase: ${teachingModule.phase}` }),
           new Paragraph({ text: '' }),
-          ...sections.flatMap((s) => sectionParagraphs(s.title, teachingModule.content[s.key] ?? [])),
+          ...sections.flatMap((s) =>
+            sectionParagraphs(s.title, teachingModule.content[s.key] ?? [])
+          ),
         ],
       },
     ],
@@ -89,6 +90,7 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
 }
 
 export async function exportExam(exam: Exam, user: User) {
+  await consumeExport(user)
   const questionParagraphs = exam.questions.flatMap((q, i) => {
     const paragraphs = [
       new Paragraph({
@@ -105,7 +107,8 @@ export async function exportExam(exam: Exam, user: User) {
   })
 
   const answerKeyParagraphs = exam.questions.map(
-    (q, i) => new Paragraph({ text: `${i + 1}. ${q.answer}${q.explanation ? ` — ${q.explanation}` : ''}` })
+    (q, i) =>
+      new Paragraph({ text: `${i + 1}. ${q.answer}${q.explanation ? ` — ${q.explanation}` : ''}` })
   )
 
   const doc = new Document({
@@ -135,6 +138,7 @@ export async function exportExam(exam: Exam, user: User) {
 }
 
 export async function exportAnnualPlan(annualPlan: AnnualPlan, user: User) {
+  await consumeExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensi', title: 'Kompetensi' },
     { key: 'alokasiWaktu', title: 'Alokasi Waktu' },
@@ -162,6 +166,7 @@ export async function exportAnnualPlan(annualPlan: AnnualPlan, user: User) {
 }
 
 export async function exportSemesterPlan(semesterPlan: SemesterPlan, user: User) {
+  await consumeExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'minggu', title: 'Pembagian Minggu' },
     { key: 'kegiatan', title: 'Kegiatan' },

@@ -1,8 +1,10 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Calendar, Trash2, Eye, Sparkles } from 'lucide-react'
+import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface AcademicYear {
   id: number
@@ -25,12 +27,14 @@ interface AnnualPlansIndexProps {
   readonly annualPlans: AnnualPlan[]
   readonly academicYears: AcademicYear[]
   readonly subjects: Subject[]
+  readonly sequences: { id: number; title: string; context: string }[]
 }
 
 export default function AnnualPlansIndex({
   annualPlans,
   academicYears,
   subjects,
+  sequences,
 }: AnnualPlansIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingPlan, setDeletingPlan] = useState<AnnualPlan | null>(null)
@@ -42,6 +46,7 @@ export default function AnnualPlansIndex({
   const { data, setData, post, processing, errors, reset } = useForm({
     academicYearId: academicYears[0]?.id || 0,
     subject: '',
+    learningSequenceId: undefined as number | undefined,
   })
 
   const handleGenerate = () => {
@@ -133,7 +138,10 @@ export default function AnnualPlansIndex({
         ) : (
           <div className="space-y-3">
             {annualPlans.map((item) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-neutral-900 dark:text-white">
@@ -182,7 +190,10 @@ export default function AnnualPlansIndex({
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="academicYearId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tahun Ajaran
                 </label>
                 <select
@@ -202,7 +213,10 @@ export default function AnnualPlansIndex({
                 )}
               </div>
               <div>
-                <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="subject"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Mata Pelajaran
                 </label>
                 <select
@@ -218,10 +232,13 @@ export default function AnnualPlansIndex({
                     </option>
                   ))}
                 </select>
-                {errors.subject && (
-                  <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
-                )}
+                {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
               </div>
+              <CurriculumSequenceSelect
+                sequences={sequences}
+                value={data.learningSequenceId}
+                onChange={(value) => setData('learningSequenceId', value)}
+              />
             </div>
             <div className="mt-6 flex gap-3">
               <button

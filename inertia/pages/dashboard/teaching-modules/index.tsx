@@ -26,16 +26,20 @@ interface TeachingModule {
   schoolClass: SchoolClass
 }
 
+interface LearningSequence { id: number; title: string; groupContext: 'a' | 'b' | null; items: unknown[] }
+
 interface TeachingModulesIndexProps {
   readonly teachingModules: TeachingModule[]
   readonly classes: SchoolClass[]
   readonly subjects: Subject[]
+  readonly sequences: LearningSequence[]
 }
 
 export default function TeachingModulesIndex({
   teachingModules,
   classes,
   subjects,
+  sequences,
 }: TeachingModulesIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingModule, setDeletingModule] = useState<TeachingModule | null>(null)
@@ -49,6 +53,7 @@ export default function TeachingModulesIndex({
     subject: '',
     topic: '',
     phase: 'B',
+    learningSequenceId: 0,
   })
 
   const handleGenerate = () => {
@@ -224,6 +229,10 @@ export default function TeachingModulesIndex({
                 {errors.classId && (
                   <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
                 )}
+              </div>
+              <div>
+                <label htmlFor="learningSequenceId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">ATP / urutan TP (opsional)</label>
+                <select id="learningSequenceId" value={data.learningSequenceId} onChange={(e) => setData('learningSequenceId', Number(e.target.value))} className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"><option value={0}>Tanpa ATP</option>{sequences.map((sequence) => <option key={sequence.id} value={sequence.id}>{sequence.title} ({sequence.items.length} TP)</option>)}</select>
               </div>
               <div>
                 <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">

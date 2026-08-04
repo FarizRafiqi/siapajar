@@ -1,9 +1,11 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { CalendarDays, Trash2, Eye, Sparkles } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
   id: number
@@ -28,12 +30,14 @@ interface DailyLessonPlansIndexProps {
   readonly dailyLessonPlans: DailyLessonPlan[]
   readonly classes: SchoolClass[]
   readonly weeklyLessonPlans: WeeklyLessonPlan[]
+  readonly sequences: { id: number; title: string; context: string }[]
 }
 
 export default function DailyLessonPlansIndex({
   dailyLessonPlans,
   classes,
   weeklyLessonPlans,
+  sequences,
 }: DailyLessonPlansIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingPlan, setDeletingPlan] = useState<DailyLessonPlan | null>(null)
@@ -45,6 +49,7 @@ export default function DailyLessonPlansIndex({
     weeklyLessonPlanId: weeklyLessonPlans[0]?.id || undefined,
     theme: '',
     date: '',
+    learningSequenceId: undefined as number | undefined,
   })
 
   const handleGenerate = () => {
@@ -64,14 +69,19 @@ export default function DailyLessonPlansIndex({
   }
 
   return (
-    <DashboardWrapper title="RPPH" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'RPPH' }]}>
+    <DashboardWrapper
+      title="RPPH"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'RPPH' }]}
+    >
       <Head title="RPPH" />
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">RPPH</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">Rencana Pelaksanaan Pembelajaran Harian</p>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Rencana Pelaksanaan Pembelajaran Harian
+            </p>
           </div>
           <button
             onClick={() => setShowGenerateModal(true)}
@@ -85,7 +95,9 @@ export default function DailyLessonPlansIndex({
 
         {!hasClasses && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Buat kelas dulu sebelum generate RPPH.</p>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Buat kelas dulu sebelum generate RPPH.
+            </p>
             <Link
               href="/classes"
               className="mt-2 inline-block rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
@@ -98,17 +110,26 @@ export default function DailyLessonPlansIndex({
         {dailyLessonPlans.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <CalendarDays className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">Belum ada RPPH</h3>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">Generate rencana harian pertama Anda</p>
+            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
+              Belum ada RPPH
+            </h3>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+              Generate rencana harian pertama Anda
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {dailyLessonPlans.map((item, index) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-neutral-900 dark:text-white">{item.content?.tema || 'RPPH'}</h3>
+                      <h3 className="font-semibold text-neutral-900 dark:text-white">
+                        {item.content?.tema || 'RPPH'}
+                      </h3>
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -158,11 +179,16 @@ export default function DailyLessonPlansIndex({
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Generate RPPH dengan AI</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Generate RPPH dengan AI
+              </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelompok
                 </label>
                 <select
@@ -181,13 +207,21 @@ export default function DailyLessonPlansIndex({
               </div>
               {weeklyLessonPlans.length > 0 && (
                 <div>
-                  <label htmlFor="weeklyLessonPlanId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label
+                    htmlFor="weeklyLessonPlanId"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
                     RPPM Terkait (opsional)
                   </label>
                   <select
                     id="weeklyLessonPlanId"
                     value={data.weeklyLessonPlanId ?? ''}
-                    onChange={(e) => setData('weeklyLessonPlanId', e.target.value ? Number(e.target.value) : undefined)}
+                    onChange={(e) =>
+                      setData(
+                        'weeklyLessonPlanId',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
                     className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   >
                     <option value="">Tanpa RPPM</option>
@@ -197,11 +231,16 @@ export default function DailyLessonPlansIndex({
                       </option>
                     ))}
                   </select>
-                  {errors.weeklyLessonPlanId && <p className="mt-1 text-sm text-red-500">{errors.weeklyLessonPlanId}</p>}
+                  {errors.weeklyLessonPlanId && (
+                    <p className="mt-1 text-sm text-red-500">{errors.weeklyLessonPlanId}</p>
+                  )}
                 </div>
               )}
               <div>
-                <label htmlFor="theme" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="theme"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tema Hari Ini
                 </label>
                 <input
@@ -215,7 +254,10 @@ export default function DailyLessonPlansIndex({
                 {errors.theme && <p className="mt-1 text-sm text-red-500">{errors.theme}</p>}
               </div>
               <div>
-                <label htmlFor="date" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="date"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tanggal
                 </label>
                 <input
@@ -227,6 +269,11 @@ export default function DailyLessonPlansIndex({
                 />
                 {errors.date && <p className="mt-1 text-sm text-red-500">{errors.date}</p>}
               </div>
+              <CurriculumSequenceSelect
+                sequences={sequences}
+                value={data.learningSequenceId}
+                onChange={(value) => setData('learningSequenceId', value)}
+              />
             </div>
             <div className="mt-6 flex gap-3">
               <button
@@ -257,8 +304,12 @@ export default function DailyLessonPlansIndex({
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
-            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">Hapus RPPH?</h3>
-            <p className="text-neutral-600 dark:text-neutral-400">RPPH ini akan dihapus secara permanen.</p>
+            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
+              Hapus RPPH?
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              RPPH ini akan dihapus secara permanen.
+            </p>
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setDeletingPlan(null)}
@@ -266,7 +317,10 @@ export default function DailyLessonPlansIndex({
               >
                 Batal
               </button>
-              <button onClick={handleDelete} className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700">
+              <button
+                onClick={handleDelete}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
                 Hapus
               </button>
             </div>
