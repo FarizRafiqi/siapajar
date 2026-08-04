@@ -8,6 +8,7 @@ import { exportExam } from '#services/export_service'
 import { exportExamPdf } from '#services/pdf_export_service'
 import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
+import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
@@ -145,7 +146,7 @@ export default class ExamsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, type, topic, questionCount, examMode } =
+    const { classId, subject, type, topic, questionCount, examMode, learningSequenceId } =
       await request.validateUsing(generateExamValidator)
 
     // Pastikan kelas milik user yang login
@@ -160,6 +161,7 @@ export default class ExamsController {
     }
 
     let questions: Record<string, any>[]
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     try {
       const isPaud = user.isTk
       const prompt = examPrompt({
@@ -171,6 +173,7 @@ export default class ExamsController {
         isPaud,
       })
       const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
+        userId: user.id,
         combo: 'siapajar-soal',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -186,6 +189,7 @@ export default class ExamsController {
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
         type: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
+        curriculum,
       }))
     } catch (error) {
       session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.')

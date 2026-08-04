@@ -2,12 +2,17 @@ import type { HttpContext } from '@adonisjs/core/http'
 import TeachingModule from '#models/teaching_module'
 import SchoolClass from '#models/school_class'
 import Subject from '#models/subject'
-import { createTeachingModuleValidator, updateTeachingModuleValidator } from '#validators/teaching_module'
+import {
+  createTeachingModuleValidator,
+  updateTeachingModuleValidator,
+} from '#validators/teaching_module'
 import { generateTeachingModuleValidator } from '#validators/generate'
 import { exportTeachingModule } from '#services/export_service'
 import { exportTeachingModulePdf } from '#services/pdf_export_service'
-import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { teachingModulePrompt } from '#services/ai_prompts'
+import { getCurriculumContext } from '#services/curriculum_context_service'
+import { callAiJsonForUser } from '#services/user_ai_service'
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -17,20 +22,22 @@ export default class TeachingModulesController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
 
     const subjects = await Subject.query()
       .where('user_id', user.id)
       .where('education_level', user.educationLevel || 'sd')
       .where('is_active', true)
       .orderBy('name')
+    const sequences = await import('#models/learning_sequence').then(({ default: Model }) =>
+      Model.query().where('user_id', user.id).orderBy('title')
+    )
 
     return inertia.render('dashboard/teaching-modules/index', {
       teachingModules: teachingModules.map((m) => m.toJSON()),
       classes: classes.map((c) => c.toJSON()),
       subjects: subjects.map((s) => s.toJSON()),
+      sequences: sequences.map((sequence) => sequence.toJSON()),
     })
   }
 
@@ -63,7 +70,10 @@ export default class TeachingModulesController {
     }
 
     const buffer = await exportTeachingModule(teachingModule, user)
-    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
     response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.docx"`)
     return response.send(buffer)
   }
@@ -136,8 +146,9 @@ export default class TeachingModulesController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, topic, phase } =
-      await request.validateUsing(generateTeachingModuleValidator)
+    const { classId, subject, topic, phase, learningSequenceId } = await request.validateUsing(
+      generateTeachingModuleValidator
+    )
 
     // Pastikan kelas milik user yang login
     const schoolClass = await SchoolClass.query()
@@ -150,10 +161,11 @@ export default class TeachingModulesController {
       return response.redirect().back()
     }
 
-    let content: Record<string, string[]>
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+    let content: Record<string, any>
     try {
       const prompt = teachingModulePrompt({ subject, topic, phase })
-      const raw = await callAiJson<Record<string, unknown>>({
+      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -165,8 +177,12 @@ export default class TeachingModulesController {
         'penilaian',
         'sumberBelajar',
       ])
+      content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate modul ajar. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate modul ajar. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

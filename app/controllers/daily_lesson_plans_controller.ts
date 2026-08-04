@@ -4,8 +4,11 @@ import SchoolClass from '#models/school_class'
 import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import { updateDailyLessonPlanValidator } from '#validators/daily_lesson_plan'
 import { generateDailyLessonPlanValidator } from '#validators/generate'
-import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { dailyLessonPlanPrompt } from '#services/ai_prompts'
+import { getCurriculumContext } from '#services/curriculum_context_service'
+import { callAiJsonForUser } from '#services/user_ai_service'
+import LearningSequence from '#models/learning_sequence'
 
 export default class DailyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -15,18 +18,18 @@ export default class DailyLessonPlansController {
       .preload('schoolClass')
       .orderBy('date', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
 
     const weeklyLessonPlans = await WeeklyLessonPlan.query()
       .where('user_id', user.id)
       .orderBy('week_start_date', 'desc')
+    const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/daily-lesson-plans/index', {
       dailyLessonPlans: dailyLessonPlans.map((p) => p.toJSON()),
       classes: classes.map((c) => c.toJSON()),
       weeklyLessonPlans: weeklyLessonPlans.map((p) => p.toJSON()),
+      sequences: sequences.map((s) => s.toJSON()),
     })
   }
 
@@ -85,7 +88,7 @@ export default class DailyLessonPlansController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, weeklyLessonPlanId, theme, date } =
+    const { classId, weeklyLessonPlanId, theme, date, learningSequenceId } =
       await request.validateUsing(generateDailyLessonPlanValidator)
 
     const schoolClass = await SchoolClass.query()
@@ -110,10 +113,11 @@ export default class DailyLessonPlansController {
       }
     }
 
-    let content: Record<string, string[] | string>
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+    let content: Record<string, any>
     try {
       const prompt = dailyLessonPlanPrompt({ theme, date: date.toFormat('dd/MM/yyyy') })
-      const raw = await callAiJson<Record<string, unknown>>({
+      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -127,8 +131,12 @@ export default class DailyLessonPlansController {
       ])
       // tema taruh terakhir — hasil AI tidak boleh menimpa tema yang guru pilih
       content = { ...generated, tema: theme }
+      content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate RPPH. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate RPPH. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

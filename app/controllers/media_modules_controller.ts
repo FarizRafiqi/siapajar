@@ -4,7 +4,9 @@ import SchoolClass from '#models/school_class'
 import { generateMediaModuleValidator } from '#validators/generate'
 import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
+import { getCurriculumContext } from '#services/curriculum_context_service'
 import { mediaModulePrompt } from '#services/ai_prompts'
+import LearningSequence from '#models/learning_sequence'
 
 export default class MediaModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -17,10 +19,12 @@ export default class MediaModulesController {
     const classes = await SchoolClass.query()
       .where('user_id', user.id)
       .orderBy('name')
+    const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/media-modules/index', {
       mediaModules: mediaModules.map((m) => m.toJSON()),
       classes: classes.map((c) => c.toJSON()),
+      sequences: sequences.map((s) => s.toJSON()),
     })
   }
 
@@ -43,7 +47,7 @@ export default class MediaModulesController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, theme, subtheme } = await request.validateUsing(generateMediaModuleValidator)
+    const { classId, theme, subtheme, learningSequenceId } = await request.validateUsing(generateMediaModuleValidator)
 
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
@@ -55,7 +59,8 @@ export default class MediaModulesController {
       return response.redirect().back()
     }
 
-    let result: { slides?: Record<string, any>[]; loosePartsGuide?: Record<string, any> }
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+    let result: { slides?: Record<string, any>[]; loosePartsGuide?: Record<string, any>; curriculum?: unknown }
     try {
       const prompt = mediaModulePrompt({
         theme,
@@ -64,10 +69,12 @@ export default class MediaModulesController {
       })
 
       result = await aiQueueService.enqueueAiJson<{ slides?: Record<string, any>[]; loosePartsGuide?: Record<string, any> }>({
+        userId: user.id,
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
+      result.curriculum = curriculum
     } catch (error) {
       session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate Media Ajar. Coba lagi.')
       return response.redirect().back()

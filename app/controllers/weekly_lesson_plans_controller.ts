@@ -3,8 +3,11 @@ import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import SchoolClass from '#models/school_class'
 import { updateWeeklyLessonPlanValidator } from '#validators/weekly_lesson_plan'
 import { generateWeeklyLessonPlanValidator } from '#validators/generate'
-import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { weeklyLessonPlanPrompt } from '#services/ai_prompts'
+import { getCurriculumContext } from '#services/curriculum_context_service'
+import { callAiJsonForUser } from '#services/user_ai_service'
+import LearningSequence from '#models/learning_sequence'
 
 export default class WeeklyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -14,13 +17,13 @@ export default class WeeklyLessonPlansController {
       .preload('schoolClass')
       .orderBy('week_start_date', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
+    const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/weekly-lesson-plans/index', {
       weeklyLessonPlans: weeklyLessonPlans.map((p) => p.toJSON()),
       classes: classes.map((c) => c.toJSON()),
+      sequences: sequences.map((s) => s.toJSON()),
     })
   }
 
@@ -78,7 +81,9 @@ export default class WeeklyLessonPlansController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, theme, weekStartDate } = await request.validateUsing(generateWeeklyLessonPlanValidator)
+    const { classId, theme, weekStartDate, learningSequenceId } = await request.validateUsing(
+      generateWeeklyLessonPlanValidator
+    )
 
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
@@ -90,10 +95,11 @@ export default class WeeklyLessonPlansController {
       return response.redirect().back()
     }
 
-    let content: Record<string, string[]>
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+    let content: Record<string, any>
     try {
       const prompt = weeklyLessonPlanPrompt({ theme })
-      const raw = await callAiJson<Record<string, unknown>>({
+      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -104,8 +110,12 @@ export default class WeeklyLessonPlansController {
         'literasiSainsTeknologi',
         'rencanaKegiatan',
       ])
+      content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate RPPM. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate RPPM. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

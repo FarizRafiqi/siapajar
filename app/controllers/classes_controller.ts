@@ -5,6 +5,7 @@ import AcademicYear from '#models/academic_year'
 import { createClassValidator, updateClassValidator } from '#validators/class'
 import { createStudentValidator, updateStudentValidator } from '#validators/student'
 import { parseStudentImportFile } from '#services/student_import_service'
+import { assertEntitled, recordUsage } from '#services/entitlement_service'
 
 export default class ClassesController {
   async index({ inertia, auth }: HttpContext) {
@@ -27,6 +28,12 @@ export default class ClassesController {
   async store({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
     const data = await request.validateUsing(createClassValidator)
+    try {
+      await assertEntitled(user, 'classes')
+    } catch (error) {
+      session.flash('error', error instanceof Error ? error.message : 'Batas paket tercapai')
+      return response.redirect().back()
+    }
 
     const duplicate = await SchoolClass.query()
       .where('user_id', user.id)
@@ -42,7 +49,9 @@ export default class ClassesController {
     await SchoolClass.create({
       ...data,
       userId: user.id,
+      groupContext: data.groupContext ?? (user.isTk ? user.defaultGroupContext : null),
     })
+    await recordUsage(user.id, 'classes')
 
     session.flash('success', 'Kelas berhasil dibuat')
     return response.redirect().back()
