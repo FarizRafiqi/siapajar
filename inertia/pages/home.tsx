@@ -75,8 +75,8 @@ const features = [
   },
   {
     icon: Link2,
-    title: 'Integrasi RPT & Dapodik',
-    description: 'Sinkronisasi otomatis ke RPT Digital & Dapodik — tidak perlu input data dua kali lagi.',
+    title: 'Import Data Sekolah',
+    description: 'Import siswa dari CSV/XLSX dan kelola data kelas dalam satu tempat. Integrasi API pemerintah akan hadir kemudian.',
     gradient: 'from-cyan-500 to-sky-500',
     lightBg: 'from-cyan-50 to-sky-50',
     darkBg: 'from-cyan-900/30 to-sky-900/30',
@@ -121,7 +121,7 @@ function formatPackagePrice(pkg: PricingPackage) {
   return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '/bulan' }
 }
 
-const testimonials = [
+const testimonials: Array<{ name: string; role: string; quote: string; avatarGradient: string; rating: number }> = [
   {
     name: 'Bu Rina',
     role: 'Guru TK B',
@@ -163,7 +163,7 @@ const faqs = [
   {
     question: 'Apakah SiapAjar sesuai dengan Kurikulum Merdeka?',
     answer:
-      'Ya, SiapAjar dirancang khusus untuk Kurikulum Merdeka dengan istilah CP, ATP, TP, KKTP, dan format modul ajar terbaru.',
+      'Ya, SiapAjar dirancang untuk alur CP, TP, ATP, IKTP/evidence, dan dokumen pembelajaran sesuai profil RA/TK atau SD.',
   },
   {
     question: 'Bagaimana cara kerja AI di SiapAjar?',
@@ -475,7 +475,7 @@ export default function Home({ packages }: HomeProps) {
               transition={{ duration: 0.5 }}
             >
               <Chip color="accent" variant="soft" className="mb-4">
-                Platform #1 untuk Guru Indonesia
+                Administrasi pembelajaran RA/TK dan SD
               </Chip>
             </motion.div>
 
@@ -490,8 +490,8 @@ export default function Home({ packages }: HomeProps) {
               transition={{ delay: 1.2, duration: 0.5 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl"
             >
-              Buat Protah, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat.
-              Hemat waktu hingga 80%.
+              Susun CP, TP, ATP, dokumen pembelajaran, asesmen, dan rapor dari satu tempat.
+              AI membantu menyiapkan draft, guru tetap memegang kendali.
             </motion.p>
 
             <motion.div
@@ -563,11 +563,11 @@ export default function Home({ packages }: HomeProps) {
             transition={{ duration: 0.5 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center"
           >
-            {[
-              { value: 10000, suffix: '+', label: 'Guru Aktif', decimals: 0 },
-              { value: 500000, suffix: '+', label: 'Dokumen Dibuat', decimals: 0 },
-              { value: 80, suffix: '%', label: 'Hemat Waktu Admin', decimals: 0 },
-              { value: 4.9, suffix: '★', label: 'Rating Pengguna', decimals: 1 },
+              {[
+              { value: 1, suffix: '', label: 'Satu alur data kelas', decimals: 0 },
+              { value: 3, suffix: '', label: 'Elemen CP Fase Fondasi', decimals: 0 },
+              { value: 2, suffix: '', label: 'Profil RA/TK dan SD', decimals: 0 },
+              { value: 2, suffix: '', label: 'Format export PDF/DOCX', decimals: 0 },
             ].map((stat, idx) => (
               <motion.div
                 key={stat.label}
@@ -799,8 +799,8 @@ export default function Home({ packages }: HomeProps) {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
+      {/* Testimonials are intentionally hidden until there are verified user testimonials. */}
+      {testimonials.length > 0 && <section className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -849,7 +849,7 @@ export default function Home({ packages }: HomeProps) {
             className="py-4"
           />
         </div>
-      </section>
+      </section>}
 
       {/* Pricing */}
       <section id="pricing" className="py-16 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid">
@@ -1048,8 +1048,8 @@ export default function Home({ packages }: HomeProps) {
             <div className="md:col-span-2">
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><a href="/coming-soon" className="hover:text-emerald-400 transition-colors">Kebijakan Privasi</a></li>
-                <li><a href="/coming-soon" className="hover:text-emerald-400 transition-colors">Syarat &amp; Ketentuan</a></li>
+                <li><Link href="/privacy" className="hover:text-emerald-400 transition-colors">Kebijakan Privasi</Link></li>
+                <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Syarat &amp; Ketentuan</Link></li>
               </ul>
             </div>
             <div className="md:col-span-2">
@@ -1088,7 +1088,7 @@ export default function Home({ packages }: HomeProps) {
 
           <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
             <p className="text-xs text-gray-500">© 2026 SiapAjar. All rights reserved.</p>
-            <p className="text-xs text-gray-600">Platform Administrasi Guru #1 di Indonesia 🇮🇩</p>
+            <p className="text-xs text-gray-600">Administrasi pembelajaran yang lebih siap untuk guru Indonesia 🇮🇩</p>
           </div>
         </div>
       </footer>
