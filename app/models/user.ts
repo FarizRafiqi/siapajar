@@ -41,6 +41,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'education_level' })
   declare educationLevel: string | null
 
+  @column({ columnName: 'institution_type' })
+  declare institutionType: 'tk' | 'ra' | null
+
+  @column({ columnName: 'curriculum_version' })
+  declare curriculumVersion: string | null
+
+  @column({ columnName: 'default_group_context' })
+  declare defaultGroupContext: 'a' | 'b' | null
+
   @column({ columnName: 'school_id' })
   declare schoolId: number | null
 

@@ -26,6 +26,9 @@ export default class SchoolClass extends BaseModel {
   @column({ columnName: 'grade_level' })
   declare gradeLevel: number
 
+  @column({ columnName: 'group_context' })
+  declare groupContext: 'a' | 'b' | null
+
   @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 
