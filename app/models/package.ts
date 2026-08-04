@@ -3,6 +3,7 @@ import type { HasMany } from '@adonisjs/lucid/types/relations'
 import { BaseModel } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import User from '#models/user'
+import PackageEntitlement from '#models/package_entitlement'
 
 export default class Package extends BaseModel {
   static table = 'packages'
@@ -51,6 +52,9 @@ export default class Package extends BaseModel {
 
   @hasMany(() => User)
   declare users: HasMany<typeof User>
+
+  @hasMany(() => PackageEntitlement)
+  declare entitlements: HasMany<typeof PackageEntitlement>
 
   @beforeCreate()
   static setDefaults(model: Package) {
