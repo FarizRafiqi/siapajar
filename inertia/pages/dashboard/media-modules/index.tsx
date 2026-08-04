@@ -117,7 +117,11 @@ export default function MediaModulesIndex({
             {mediaModules.map((item) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                role="link"
+                tabIndex={0}
+                onClick={() => router.visit(`/media-modules/${item.id}`)}
+                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') router.visit(`/media-modules/${item.id}`) }}
+                className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -133,7 +137,7 @@ export default function MediaModulesIndex({
                       {item.subtheme && <span>({item.subtheme})</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
                     <Link
                       href={`/media-modules/${item.id}`}
                       className="rounded-lg border border-neutral-200 p-2 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"

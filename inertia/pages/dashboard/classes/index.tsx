@@ -1,4 +1,4 @@
-import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
 import { Head, Link, router, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -30,11 +30,7 @@ interface ClassesIndexProps {
   readonly educationLevel: string
 }
 
-export default function ClassesIndex({
-  classes,
-  academicYears,
-  educationLevel,
-}: ClassesIndexProps) {
+export default function ClassesIndex({ classes, academicYears, educationLevel }: ClassesIndexProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null)
   const [deletingClass, setDeletingClass] = useState<SchoolClass | null>(null)
@@ -112,7 +108,9 @@ export default function ClassesIndex({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Manajemen Kelas</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">Kelola kelas dan siswa Anda</p>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Kelola kelas dan siswa Anda
+            </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -126,8 +124,7 @@ export default function ClassesIndex({
 
         {!hasAcademicYear && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
-            Belum ada tahun ajaran. Hubungi administrator untuk menambahkan tahun ajaran sebelum
-            membuat kelas.
+            Belum ada tahun ajaran. Hubungi administrator untuk menambahkan tahun ajaran sebelum membuat kelas.
           </div>
         )}
 
@@ -152,10 +149,7 @@ export default function ClassesIndex({
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {classes.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+              <div key={item.id} role="link" tabIndex={0} onClick={() => router.visit(`/classes/${item.id}`)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') router.visit(`/classes/${item.id}`) }} className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="mb-4 flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -170,7 +164,7 @@ export default function ClassesIndex({
                   </span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2" onClick={(event) => event.stopPropagation()}>
                   <Link
                     href={`/classes/${item.id}`}
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-neutral-200 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -210,10 +204,7 @@ export default function ClassesIndex({
             </h3>
             <div className="space-y-4">
               <div>
-                <label
-                  htmlFor="create_name"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="create_name" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Nama Kelas
                 </label>
                 <input
@@ -224,13 +215,12 @@ export default function ClassesIndex({
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder={isTk ? 'contoh: Mawar' : 'contoh: 1A'}
                 />
-                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                )}
               </div>
               <div>
-                <label
-                  htmlFor="create_academicYearId"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="create_academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tahun Ajaran
                 </label>
                 <select
@@ -250,10 +240,7 @@ export default function ClassesIndex({
                 )}
               </div>
               <div>
-                <label
-                  htmlFor="create_gradeLevel"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="create_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   {isTk ? 'Kelompok' : 'Tingkat Kelas'}
                 </label>
                 <select
@@ -308,10 +295,7 @@ export default function ClassesIndex({
             </h3>
             <div className="space-y-4">
               <div>
-                <label
-                  htmlFor="edit_name"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="edit_name" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Nama Kelas
                 </label>
                 <input
@@ -321,13 +305,12 @@ export default function ClassesIndex({
                   onChange={(e) => setData('name', e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
-                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                )}
               </div>
               <div>
-                <label
-                  htmlFor="edit_academicYearId"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="edit_academicYearId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tahun Ajaran
                 </label>
                 <select
@@ -347,10 +330,7 @@ export default function ClassesIndex({
                 )}
               </div>
               <div>
-                <label
-                  htmlFor="edit_gradeLevel"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="edit_gradeLevel" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   {isTk ? 'Kelompok' : 'Tingkat Kelas'}
                 </label>
                 <select

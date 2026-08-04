@@ -1,4 +1,4 @@
-import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -26,12 +26,7 @@ interface TeachingModule {
   schoolClass: SchoolClass
 }
 
-interface LearningSequence {
-  id: number
-  title: string
-  groupContext: 'a' | 'b' | null
-  items: unknown[]
-}
+interface LearningSequence { id: number; title: string; groupContext: 'a' | 'b' | null; items: unknown[] }
 
 interface TeachingModulesIndexProps {
   readonly teachingModules: TeachingModule[]
@@ -151,10 +146,7 @@ export default function TeachingModulesIndex({
         ) : (
           <div className="space-y-3">
             {teachingModules.map((item, index) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-              >
+              <div key={item.id} role="link" tabIndex={0} onClick={() => router.visit(`/teaching-modules/${item.id}`)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') router.visit(`/teaching-modules/${item.id}`) }} className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -180,7 +172,7 @@ export default function TeachingModulesIndex({
                       <span>Fase {item.phase}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
                     <Link
                       href={`/teaching-modules/${item.id}`}
                       className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -219,10 +211,7 @@ export default function TeachingModulesIndex({
             </div>
             <div className="space-y-4">
               <div>
-                <label
-                  htmlFor="classId"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Kelas
                 </label>
                 <select
@@ -237,34 +226,16 @@ export default function TeachingModulesIndex({
                     </option>
                   ))}
                 </select>
-                {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
+                {errors.classId && (
+                  <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
+                )}
               </div>
               <div>
-                <label
-                  htmlFor="learningSequenceId"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  ATP / urutan TP (opsional)
-                </label>
-                <select
-                  id="learningSequenceId"
-                  value={data.learningSequenceId}
-                  onChange={(e) => setData('learningSequenceId', Number(e.target.value))}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  <option value={0}>Tanpa ATP</option>
-                  {sequences.map((sequence) => (
-                    <option key={sequence.id} value={sequence.id}>
-                      {sequence.title} ({sequence.items.length} TP)
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="learningSequenceId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">ATP / urutan TP (opsional)</label>
+                <select id="learningSequenceId" value={data.learningSequenceId} onChange={(e) => setData('learningSequenceId', Number(e.target.value))} className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"><option value={0}>Tanpa ATP</option>{sequences.map((sequence) => <option key={sequence.id} value={sequence.id}>{sequence.title} ({sequence.items.length} TP)</option>)}</select>
               </div>
               <div>
-                <label
-                  htmlFor="subject"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Mata Pelajaran
                 </label>
                 <select
@@ -280,13 +251,12 @@ export default function TeachingModulesIndex({
                     </option>
                   ))}
                 </select>
-                {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
+                {errors.subject && (
+                  <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
+                )}
               </div>
               <div>
-                <label
-                  htmlFor="topic"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="topic" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Topik / Tema
                 </label>
                 <input
@@ -297,13 +267,12 @@ export default function TeachingModulesIndex({
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   placeholder="contoh: Memahami Bilangan Bulat"
                 />
-                {errors.topic && <p className="mt-1 text-sm text-red-500">{errors.topic}</p>}
+                {errors.topic && (
+                  <p className="mt-1 text-sm text-red-500">{errors.topic}</p>
+                )}
               </div>
               <div>
-                <label
-                  htmlFor="phase"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
+                <label htmlFor="phase" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Fase Kurikulum Merdeka
                 </label>
                 <select
@@ -318,7 +287,9 @@ export default function TeachingModulesIndex({
                     </option>
                   ))}
                 </select>
-                {errors.phase && <p className="mt-1 text-sm text-red-500">{errors.phase}</p>}
+                {errors.phase && (
+                  <p className="mt-1 text-sm text-red-500">{errors.phase}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
