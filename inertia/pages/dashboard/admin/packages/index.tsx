@@ -169,7 +169,7 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
                 )}
               </p>
               {pkg.features.length === 1 && /<\/?[a-z][^>]*>/i.test(pkg.features[0]) ? (
-                <div className="prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }} />
+                <div className="rich-text-content prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }} />
               ) : pkg.features.length > 0 ? (
                 <ul className="mt-3 flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
                   {pkg.features.map((feature) => (

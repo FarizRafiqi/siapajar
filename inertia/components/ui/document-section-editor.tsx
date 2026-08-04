@@ -10,7 +10,7 @@ export function DocumentSectionEditor({ value, onChange, placeholder }: Readonly
 }
 
 export function DocumentSectionValue({ value }: Readonly<{ value: string | string[] | undefined }>) {
-  if (typeof value === 'string') return <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(value) }} />
+  if (typeof value === 'string') return <div className="rich-text-content prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(value) }} />
   return <ul className="space-y-2">{(value ?? []).length === 0 ? <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li> : (value ?? []).map((item, i) => <li key={`${i}-${item.slice(0, 12)}`} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"><span className="mt-1 text-emerald-500">•</span>{item}</li>)}</ul>
 }
 

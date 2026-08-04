@@ -44,7 +44,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled 
     onUpdate: ({ editor: instance }) => onChange(instance.getHTML()),
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none min-h-[inherit] px-3 py-2 outline-none dark:prose-invert',
+        class: 'rich-text-content prose prose-sm max-w-none min-h-[inherit] px-3 py-2 outline-none dark:prose-invert',
         'data-placeholder': placeholder ?? '',
       },
     },

@@ -998,7 +998,7 @@ export default function Home({ packages }: HomeProps) {
                       </div>
                       <div className="mb-6 flex-1 text-left">
                         {plan.features.length === 1 && /<\/?[a-z][^>]*>/i.test(plan.features[0]) ? (
-                          <div className={`prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }} />
+                          <div className={`rich-text-content prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }} />
                         ) : <ul className="space-y-2.5">
                           {plan.features.map((feature) => (
                           <li
