@@ -28,10 +28,18 @@ interface Assessment {
   student: Student
 }
 
+interface CurriculumObjective {
+  id: number
+  code: string
+  title: string
+  indicators: Array<{ id: number; description: string; achievementCriteria: string }>
+}
+
 interface PaudAssessmentsIndexProps {
   readonly assessments: Assessment[]
   readonly classes: SchoolClass[]
   readonly typeLabels: Record<AssessmentType, string>
+  readonly curriculumObjectives: CurriculumObjective[]
 }
 
 const TYPE_ICONS: Record<AssessmentType, React.ComponentType<{ className?: string }>> = {
@@ -41,7 +49,7 @@ const TYPE_ICONS: Record<AssessmentType, React.ComponentType<{ className?: strin
   photo_series: Camera,
 }
 
-export default function PaudAssessmentsIndex({ assessments, classes, typeLabels }: PaudAssessmentsIndexProps) {
+export default function PaudAssessmentsIndex({ assessments, classes, typeLabels, curriculumObjectives }: PaudAssessmentsIndexProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingAssessment, setDeletingAssessment] = useState<Assessment | null>(null)
   const [filterType, setFilterType] = useState<AssessmentType | 'all'>('all')
@@ -52,6 +60,9 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
   const { data, setData, processing, errors, reset } = useForm({
     classId: classes[0]?.id || 0,
     studentId: classes[0]?.students[0]?.id || 0,
+    learningObjectiveId: 0,
+    iktpIndicatorId: 0,
+    achievementStatus: '',
     type: 'checklist' as AssessmentType,
     date: '',
     context: '',
@@ -87,6 +98,9 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
         type: data.type,
         date: data.date,
         content,
+        learningObjectiveId: data.learningObjectiveId || undefined,
+        iktpIndicatorId: data.iktpIndicatorId || undefined,
+        achievementStatus: data.achievementStatus || undefined,
       },
       {
         onSuccess: () => {
@@ -275,6 +289,15 @@ export default function PaudAssessmentsIndex({ assessments, classes, typeLabels 
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label htmlFor="learningObjectiveId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Tujuan Pembelajaran (opsional)</label>
+                <select id="learningObjectiveId" value={data.learningObjectiveId} onChange={(e) => { setData((prev) => ({ ...prev, learningObjectiveId: Number(e.target.value), iktpIndicatorId: 0 })) }} className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"><option value={0}>Tidak menghubungkan TP</option>{curriculumObjectives.map((objective) => <option key={objective.id} value={objective.id}>{objective.code} — {objective.title}</option>)}</select>
+              </div>
+              {data.learningObjectiveId > 0 && <div><label htmlFor="iktpIndicatorId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">IKTP / bukti perilaku</label><select id="iktpIndicatorId" value={data.iktpIndicatorId} onChange={(e) => setData('iktpIndicatorId', Number(e.target.value))} className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"><option value={0}>Pilih indikator</option>{curriculumObjectives.find((objective) => objective.id === data.learningObjectiveId)?.indicators.map((indicator) => <option key={indicator.id} value={indicator.id}>{indicator.description}</option>)}</select></div>}
+              <div>
+                <label htmlFor="achievementStatus" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Status ketercapaian</label>
+                <select id="achievementStatus" value={data.achievementStatus} onChange={(e) => setData('achievementStatus', e.target.value)} className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"><option value="">Belum dipilih</option><option value="belum_terlihat">Belum terlihat</option><option value="mulai_berkembang">Mulai berkembang</option><option value="berkembang_sesuai_harapan">Berkembang sesuai harapan</option><option value="berkembang_sangat_baik">Berkembang sangat baik</option></select>
               </div>
               <div>
                 <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">

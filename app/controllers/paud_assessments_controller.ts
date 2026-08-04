@@ -4,6 +4,7 @@ import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import Semester from '#models/semester'
 import { createPaudAssessmentValidator, updatePaudAssessmentValidator } from '#validators/paud_assessment'
+import LearningObjective from '#models/learning_objective'
 
 const TYPE_LABELS: Record<string, string> = {
   checklist: 'Ceklis',
@@ -25,11 +26,16 @@ export default class PaudAssessmentsController {
       .where('user_id', user.id)
       .preload('students')
       .orderBy('name')
+    const curriculumObjectives = await LearningObjective.query()
+      .where((q) => q.whereNull('user_id').orWhere('user_id', user.id))
+      .preload('indicators')
+      .orderBy('code')
 
     return inertia.render('dashboard/paud-assessments/index', {
       assessments: assessments.map((a) => a.toJSON()),
       classes: classes.map((c) => c.toJSON()),
       typeLabels: TYPE_LABELS,
+      curriculumObjectives: curriculumObjectives.map((objective) => objective.toJSON()),
     })
   }
 
@@ -57,6 +63,14 @@ export default class PaudAssessmentsController {
       return response.redirect().back()
     }
 
+    if (data.learningObjectiveId) {
+      const objective = await LearningObjective.query().where('id', data.learningObjectiveId).where((q) => q.whereNull('user_id').orWhere('user_id', user.id)).first()
+      if (!objective) {
+        session.flash('error', 'TP yang dipilih tidak valid')
+        return response.redirect().back()
+      }
+    }
+
     let semesterId = data.semesterId ?? null
     if (!semesterId) {
       const activeSemester = await Semester.query()
@@ -74,6 +88,13 @@ export default class PaudAssessmentsController {
       type: data.type,
       date: data.date,
       content: data.content ?? {},
+      learningObjectiveId: data.learningObjectiveId ?? null,
+      iktpIndicatorId: data.iktpIndicatorId ?? null,
+      achievementStatus: data.achievementStatus ?? null,
+      activity: data.activity ?? null,
+      teacherNote: data.teacherNote ?? null,
+      evidenceUrl: data.evidenceUrl ?? null,
+      evidenceType: data.evidenceType ?? null,
     })
 
     session.flash('success', `${TYPE_LABELS[data.type]} berhasil dicatat`)

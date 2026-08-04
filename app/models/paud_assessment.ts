@@ -24,6 +24,27 @@ export default class PaudAssessment extends BaseModel {
   @column({ columnName: 'semester_id' })
   declare semesterId: number | null
 
+  @column({ columnName: 'learning_objective_id' })
+  declare learningObjectiveId: number | null
+
+  @column({ columnName: 'iktp_indicator_id' })
+  declare iktpIndicatorId: number | null
+
+  @column({ columnName: 'achievement_status' })
+  declare achievementStatus: string | null
+
+  @column()
+  declare activity: string | null
+
+  @column({ columnName: 'teacher_note' })
+  declare teacherNote: string | null
+
+  @column({ columnName: 'evidence_url' })
+  declare evidenceUrl: string | null
+
+  @column({ columnName: 'evidence_type' })
+  declare evidenceType: string | null
+
   @column()
   declare type: 'checklist' | 'anecdotal_note' | 'work_sample' | 'photo_series'
 
