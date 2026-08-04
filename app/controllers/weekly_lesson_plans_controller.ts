@@ -8,6 +8,7 @@ import { weeklyLessonPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import LearningSequence from '#models/learning_sequence'
+import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
 
 export default class WeeklyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -39,8 +40,10 @@ export default class WeeklyLessonPlansController {
       return response.redirect('/rppm')
     }
 
+    const workflow = await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: weeklyLessonPlan.status })
     return inertia.render('dashboard/weekly-lesson-plans/show', {
       weeklyLessonPlan: weeklyLessonPlan.toJSON(),
+      workflow: workflow.toJSON(),
     })
   }
 
@@ -57,6 +60,8 @@ export default class WeeklyLessonPlansController {
 
     const data = await request.validateUsing(updateWeeklyLessonPlanValidator)
     await weeklyLessonPlan.merge(data).save()
+    const workflow = await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id)
+    await saveDocumentWorkflow(workflow, data.status as 'draft' | 'published' | undefined)
 
     session.flash('success', 'RPPM berhasil diupdate')
     return response.redirect().back()
@@ -127,6 +132,7 @@ export default class WeeklyLessonPlansController {
       content,
       status: 'draft',
     })
+    await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: 'draft' })
 
     session.flash('success', 'RPPM berhasil digenerate')
     return response.redirect().toRoute('rppm.show', { id: weeklyLessonPlan.id })

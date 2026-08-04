@@ -38,7 +38,10 @@ function writeKop(doc: PDFKit.PDFDocument, user: User, subtitle: string) {
   doc.moveDown(1)
 }
 
-function writeSection(doc: PDFKit.PDFDocument, title: string, items: string[]) {
+function writeSection(doc: PDFKit.PDFDocument, title: string, value: string | string[] | undefined) {
+  const items = (Array.isArray(value) ? value : value ? [value] : [])
+    .map((item) => item.replace(/<br\s*\/?>(\s*)/gi, '\n').replace(/<[^>]+>/g, '').trim())
+    .filter(Boolean)
   doc.font('Helvetica-Bold').fontSize(12).text(title)
   doc.font('Helvetica').fontSize(10)
   if (items.length === 0) {
@@ -68,7 +71,7 @@ export async function exportTeachingModulePdf(teachingModule: TeachingModule, us
   doc.text(`Fase: ${teachingModule.phase}`)
   doc.moveDown(1)
   for (const s of sections) {
-    writeSection(doc, s.title, teachingModule.content[s.key] ?? [])
+    writeSection(doc, s.title, teachingModule.content[s.key])
   }
 
   return toBuffer(doc)
