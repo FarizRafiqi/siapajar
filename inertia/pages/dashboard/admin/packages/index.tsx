@@ -352,8 +352,8 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
             Harga Bulanan
           </label>
           <InputGroup fullWidth className="mt-1">
-            <InputGroup.Prefix>Rp</InputGroup.Prefix>
-            <InputGroup.Input id={`${idPrefix}-priceMonthly`} type="number" value={String(data.priceMonthly)} onChange={(e) => setData('priceMonthly', Number(e.target.value))} aria-label="Harga bulanan" />
+            <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
+            <InputGroup.Input className="!rounded-none !rounded-r-lg" id={`${idPrefix}-priceMonthly`} type="number" value={String(data.priceMonthly)} onChange={(e) => setData('priceMonthly', Number(e.target.value))} aria-label="Harga bulanan" />
           </InputGroup>
           {errors.priceMonthly && (
             <p className="mt-1 text-sm text-red-500">{errors.priceMonthly}</p>
@@ -367,8 +367,8 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
             Harga Tahunan
           </label>
           <InputGroup fullWidth className="mt-1">
-            <InputGroup.Prefix>Rp</InputGroup.Prefix>
-            <InputGroup.Input id={`${idPrefix}-priceYearly`} type="number" value={String(data.priceYearly)} onChange={(e) => setData('priceYearly', Number(e.target.value))} aria-label="Harga tahunan" />
+            <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
+            <InputGroup.Input className="!rounded-none !rounded-r-lg" id={`${idPrefix}-priceYearly`} type="number" value={String(data.priceYearly)} onChange={(e) => setData('priceYearly', Number(e.target.value))} aria-label="Harga tahunan" />
           </InputGroup>
         </div>
       </div>
