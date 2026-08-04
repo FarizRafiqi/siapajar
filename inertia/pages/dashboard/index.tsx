@@ -104,7 +104,7 @@ export default function Dashboard({
 
       <div className="space-y-6">
         {/* Welcome */}
-        <div>
+        <div data-tour="welcome">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             {isAdmin ? 'Admin Dashboard' : 'Selamat Datang!'}
           </h2>
@@ -165,7 +165,7 @@ export default function Dashboard({
 
         {/* Stat Cards - Guru only */}
         {!isAdmin && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div data-tour="stat-cards" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {statCards.map((card) => {
             const colors = colorMap[card.color]
             const value = stats[card.key as keyof Stats] || 0
@@ -196,7 +196,7 @@ export default function Dashboard({
 
         {/* Quick Actions - Guru only */}
         {!isAdmin && (
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+        <div data-tour="quick-actions" className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
             Aksi Cepat
           </h3>

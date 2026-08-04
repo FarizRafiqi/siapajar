@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 export const updateAiSettingValidator = vine.create(
   vine.object({
     provider: vine.enum(['9router', 'anthropic', 'openai', 'gemini']),
+    authMode: vine.enum(['api_key', 'oauth']).optional(),
     apiKey: vine.string().trim().maxLength(500).optional(),
     baseUrl: vine
       .string()
@@ -18,6 +19,7 @@ export const updateAiSettingValidator = vine.create(
 export const listModelsValidator = vine.create(
   vine.object({
     provider: vine.enum(['9router', 'anthropic', 'openai', 'gemini']),
+    authMode: vine.enum(['api_key', 'oauth']).optional(),
     apiKey: vine.string().trim().maxLength(500).optional(),
   })
 )

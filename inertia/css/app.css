@@ -1,6 +1,27 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/* Driver.js tutorial theme */
+.driver-popover {
+  border-radius: 0.75rem;
+  font-family: inherit;
+  max-width:  min(22rem, calc(100vw - 2rem));
+}
+.driver-popover-title {
+  color: #064e3b;
+  font-size: 1rem;
+}
+.driver-popover-description {
+  color: #525252;
+  line-height: 1.5;
+}
+.dark .driver-popover {
+  background-color: #171717;
+  color: #f5f5f5;
+}
+.dark .driver-popover-title { color: #a7f3d0; }
+.dark .driver-popover-description { color: #d4d4d4; }
+
 /* Class-based dark mode for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 

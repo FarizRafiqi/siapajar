@@ -10,12 +10,29 @@
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
+import db from '@adonisjs/lucid/services/db'
+import redis from '@adonisjs/redis/services/main'
 
 router.get('/', '#controllers/home_controller.index').as('home')
+router
+  .get('/health', async ({ response }) => {
+    try {
+      await db.rawQuery('select 1')
+      await redis.ping()
+      return response.ok({ status: 'ok', database: 'ok', redis: 'ok' })
+    } catch {
+      return response.serviceUnavailable({ status: 'degraded' })
+    }
+  })
+  .as('health')
+router.get('/privacy', ({ inertia }) => inertia.render('legal/privacy', {})).as('privacy')
+router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('terms')
 
-router.get('/coming-soon', ({ inertia }) => {
-  return inertia.render('coming-soon', {})
-}).as('coming-soon')
+router
+  .get('/coming-soon', ({ inertia }) => {
+    return inertia.render('coming-soon', {})
+  })
+  .as('coming-soon')
 
 router
   .group(() => {
@@ -25,8 +42,12 @@ router
     router.get('login', [controllers.Session, 'create'])
     router.post('login', [controllers.Session, 'store'])
 
-    router.get('auth/google/redirect', '#controllers/google_auth_controller.redirect').as('auth.google.redirect')
-    router.get('auth/google/callback', '#controllers/google_auth_controller.callback').as('auth.google.callback')
+    router
+      .get('auth/google/redirect', '#controllers/google_auth_controller.redirect')
+      .as('auth.google.redirect')
+    router
+      .get('auth/google/callback', '#controllers/google_auth_controller.callback')
+      .as('auth.google.callback')
   })
   .use(middleware.guest())
 
@@ -46,26 +67,65 @@ router
     // Dashboard
     router.get('/dashboard', '#controllers/dashboard_controller.index').as('dashboard')
 
+    // Kurikulum terkontrol: CP Fase Fondasi, TP, ATP, dan IKTP
+    router.get('/curriculum', '#controllers/curriculum_controller.index').as('curriculum.index')
+    router
+      .post('/curriculum/objectives', '#controllers/curriculum_controller.storeObjective')
+      .as('curriculum.objectives.store')
+    router
+      .post('/curriculum/sequences', '#controllers/curriculum_controller.storeSequence')
+      .as('curriculum.sequences.store')
+    router
+      .put('/curriculum/sequences/:id', '#controllers/curriculum_controller.updateSequence')
+      .as('curriculum.sequences.update')
+    router
+      .post('/curriculum/indicators', '#controllers/curriculum_controller.storeIndicator')
+      .as('curriculum.indicators.store')
+
     // Classes (Kelas)
     router.get('/classes', '#controllers/classes_controller.index').as('classes.index')
     router.post('/classes', '#controllers/classes_controller.store').as('classes.store')
     router.get('/classes/:id', '#controllers/classes_controller.show').as('classes.show')
     router.put('/classes/:id', '#controllers/classes_controller.update').as('classes.update')
     router.delete('/classes/:id', '#controllers/classes_controller.destroy').as('classes.destroy')
-    router.post('/classes/:id/students', '#controllers/classes_controller.addStudent').as('classes.addStudent')
-    router.post('/classes/:id/students/import', '#controllers/classes_controller.importStudents').as('classes.importStudents')
-    router.put('/classes/:id/students/:studentId', '#controllers/classes_controller.updateStudent').as('classes.updateStudent')
-    router.delete('/classes/:id/students/:studentId', '#controllers/classes_controller.removeStudent').as('classes.removeStudent')
+    router
+      .post('/classes/:id/students', '#controllers/classes_controller.addStudent')
+      .as('classes.addStudent')
+    router
+      .post('/classes/:id/students/import', '#controllers/classes_controller.importStudents')
+      .as('classes.importStudents')
+    router
+      .put('/classes/:id/students/:studentId', '#controllers/classes_controller.updateStudent')
+      .as('classes.updateStudent')
+    router
+      .delete('/classes/:id/students/:studentId', '#controllers/classes_controller.removeStudent')
+      .as('classes.removeStudent')
 
     // Teaching Modules (Modul Ajar)
-    router.get('/teaching-modules', '#controllers/teaching_modules_controller.index').as('teaching-modules.index')
-    router.post('/teaching-modules', '#controllers/teaching_modules_controller.store').as('teaching-modules.store')
-    router.get('/teaching-modules/:id', '#controllers/teaching_modules_controller.show').as('teaching-modules.show')
-    router.put('/teaching-modules/:id', '#controllers/teaching_modules_controller.update').as('teaching-modules.update')
-    router.delete('/teaching-modules/:id', '#controllers/teaching_modules_controller.destroy').as('teaching-modules.destroy')
-    router.post('/teaching-modules/generate', '#controllers/teaching_modules_controller.generate').as('teaching-modules.generate')
-    router.get('/teaching-modules/:id/export', '#controllers/teaching_modules_controller.export').as('teaching-modules.export')
-    router.get('/teaching-modules/:id/export/pdf', '#controllers/teaching_modules_controller.exportPdf').as('teaching-modules.exportPdf')
+    router
+      .get('/teaching-modules', '#controllers/teaching_modules_controller.index')
+      .as('teaching-modules.index')
+    router
+      .post('/teaching-modules', '#controllers/teaching_modules_controller.store')
+      .as('teaching-modules.store')
+    router
+      .get('/teaching-modules/:id', '#controllers/teaching_modules_controller.show')
+      .as('teaching-modules.show')
+    router
+      .put('/teaching-modules/:id', '#controllers/teaching_modules_controller.update')
+      .as('teaching-modules.update')
+    router
+      .delete('/teaching-modules/:id', '#controllers/teaching_modules_controller.destroy')
+      .as('teaching-modules.destroy')
+    router
+      .post('/teaching-modules/generate', '#controllers/teaching_modules_controller.generate')
+      .as('teaching-modules.generate')
+    router
+      .get('/teaching-modules/:id/export', '#controllers/teaching_modules_controller.export')
+      .as('teaching-modules.export')
+    router
+      .get('/teaching-modules/:id/export/pdf', '#controllers/teaching_modules_controller.exportPdf')
+      .as('teaching-modules.exportPdf')
 
     // Exams (Soal)
     router.get('/exams', '#controllers/exams_controller.index').as('exams.index')
@@ -75,41 +135,83 @@ router
     router.delete('/exams/:id', '#controllers/exams_controller.destroy').as('exams.destroy')
     router.post('/exams/generate', '#controllers/exams_controller.generate').as('exams.generate')
     router.get('/exams/:id/export', '#controllers/exams_controller.export').as('exams.export')
-    router.get('/exams/:id/export/pdf', '#controllers/exams_controller.exportPdf').as('exams.exportPdf')
+    router
+      .get('/exams/:id/export/pdf', '#controllers/exams_controller.exportPdf')
+      .as('exams.exportPdf')
 
     // Annual Plans (Protah)
-    router.get('/annual-plans', '#controllers/annual_plans_controller.index').as('annual-plans.index')
-    router.post('/annual-plans', '#controllers/annual_plans_controller.store').as('annual-plans.store')
-    router.get('/annual-plans/:id', '#controllers/annual_plans_controller.show').as('annual-plans.show')
-    router.put('/annual-plans/:id', '#controllers/annual_plans_controller.update').as('annual-plans.update')
-    router.delete('/annual-plans/:id', '#controllers/annual_plans_controller.destroy').as('annual-plans.destroy')
-    router.post('/annual-plans/generate', '#controllers/annual_plans_controller.generate').as('annual-plans.generate')
-    router.get('/annual-plans/:id/export', '#controllers/annual_plans_controller.export').as('annual-plans.export')
-    router.get('/annual-plans/:id/export/pdf', '#controllers/annual_plans_controller.exportPdf').as('annual-plans.exportPdf')
+    router
+      .get('/annual-plans', '#controllers/annual_plans_controller.index')
+      .as('annual-plans.index')
+    router
+      .post('/annual-plans', '#controllers/annual_plans_controller.store')
+      .as('annual-plans.store')
+    router
+      .get('/annual-plans/:id', '#controllers/annual_plans_controller.show')
+      .as('annual-plans.show')
+    router
+      .put('/annual-plans/:id', '#controllers/annual_plans_controller.update')
+      .as('annual-plans.update')
+    router
+      .delete('/annual-plans/:id', '#controllers/annual_plans_controller.destroy')
+      .as('annual-plans.destroy')
+    router
+      .post('/annual-plans/generate', '#controllers/annual_plans_controller.generate')
+      .as('annual-plans.generate')
+    router
+      .get('/annual-plans/:id/export', '#controllers/annual_plans_controller.export')
+      .as('annual-plans.export')
+    router
+      .get('/annual-plans/:id/export/pdf', '#controllers/annual_plans_controller.exportPdf')
+      .as('annual-plans.exportPdf')
 
     // Semester Plans (Promes)
-    router.get('/semester-plans', '#controllers/semester_plans_controller.index').as('semester-plans.index')
-    router.post('/semester-plans', '#controllers/semester_plans_controller.store').as('semester-plans.store')
-    router.get('/semester-plans/:id', '#controllers/semester_plans_controller.show').as('semester-plans.show')
-    router.put('/semester-plans/:id', '#controllers/semester_plans_controller.update').as('semester-plans.update')
-    router.delete('/semester-plans/:id', '#controllers/semester_plans_controller.destroy').as('semester-plans.destroy')
-    router.post('/semester-plans/generate', '#controllers/semester_plans_controller.generate').as('semester-plans.generate')
-    router.get('/semester-plans/:id/export', '#controllers/semester_plans_controller.export').as('semester-plans.export')
-    router.get('/semester-plans/:id/export/pdf', '#controllers/semester_plans_controller.exportPdf').as('semester-plans.exportPdf')
+    router
+      .get('/semester-plans', '#controllers/semester_plans_controller.index')
+      .as('semester-plans.index')
+    router
+      .post('/semester-plans', '#controllers/semester_plans_controller.store')
+      .as('semester-plans.store')
+    router
+      .get('/semester-plans/:id', '#controllers/semester_plans_controller.show')
+      .as('semester-plans.show')
+    router
+      .put('/semester-plans/:id', '#controllers/semester_plans_controller.update')
+      .as('semester-plans.update')
+    router
+      .delete('/semester-plans/:id', '#controllers/semester_plans_controller.destroy')
+      .as('semester-plans.destroy')
+    router
+      .post('/semester-plans/generate', '#controllers/semester_plans_controller.generate')
+      .as('semester-plans.generate')
+    router
+      .get('/semester-plans/:id/export', '#controllers/semester_plans_controller.export')
+      .as('semester-plans.export')
+    router
+      .get('/semester-plans/:id/export/pdf', '#controllers/semester_plans_controller.exportPdf')
+      .as('semester-plans.exportPdf')
 
     // RPPM (rencana mingguan TK/PAUD)
     router.get('/rppm', '#controllers/weekly_lesson_plans_controller.index').as('rppm.index')
     router.get('/rppm/:id', '#controllers/weekly_lesson_plans_controller.show').as('rppm.show')
     router.put('/rppm/:id', '#controllers/weekly_lesson_plans_controller.update').as('rppm.update')
-    router.delete('/rppm/:id', '#controllers/weekly_lesson_plans_controller.destroy').as('rppm.destroy')
-    router.post('/rppm/generate', '#controllers/weekly_lesson_plans_controller.generate').as('rppm.generate')
+    router
+      .delete('/rppm/:id', '#controllers/weekly_lesson_plans_controller.destroy')
+      .as('rppm.destroy')
+    router
+      .post('/rppm/generate', '#controllers/weekly_lesson_plans_controller.generate')
+      .as('rppm.generate')
 
     // RPPH (rencana harian TK/PAUD)
     router.get('/rpph', '#controllers/daily_lesson_plans_controller.index').as('rpph.index')
     router.get('/rpph/:id', '#controllers/daily_lesson_plans_controller.show').as('rpph.show')
     router.put('/rpph/:id', '#controllers/daily_lesson_plans_controller.update').as('rpph.update')
-    router.delete('/rpph/:id', '#controllers/daily_lesson_plans_controller.destroy').as('rpph.destroy')
-    router.post('/rpph/generate', '#controllers/daily_lesson_plans_controller.generate').as('rpph.generate')
+    router
+      .delete('/rpph/:id', '#controllers/daily_lesson_plans_controller.destroy')
+      .as('rpph.destroy')
+    router
+      .post('/rpph/generate', '#controllers/daily_lesson_plans_controller.generate')
+      .as('rpph.generate')
 
     // LKPD (Lembar Kerja Peserta Didik / Lembar Aktivitas Anak)
     router.get('/lkpd', '#controllers/lkpds_controller.index').as('lkpd.index')
@@ -118,24 +220,48 @@ router
     router.post('/lkpd/generate', '#controllers/lkpds_controller.generate').as('lkpd.generate')
 
     // Media Ajar (Outline Slide & Loose Parts Guide)
-    router.get('/media-modules', '#controllers/media_modules_controller.index').as('media-modules.index')
-    router.get('/media-modules/:id', '#controllers/media_modules_controller.show').as('media-modules.show')
-    router.delete('/media-modules/:id', '#controllers/media_modules_controller.destroy').as('media-modules.destroy')
-    router.post('/media-modules/generate', '#controllers/media_modules_controller.generate').as('media-modules.generate')
+    router
+      .get('/media-modules', '#controllers/media_modules_controller.index')
+      .as('media-modules.index')
+    router
+      .get('/media-modules/:id', '#controllers/media_modules_controller.show')
+      .as('media-modules.show')
+    router
+      .delete('/media-modules/:id', '#controllers/media_modules_controller.destroy')
+      .as('media-modules.destroy')
+    router
+      .post('/media-modules/generate', '#controllers/media_modules_controller.generate')
+      .as('media-modules.generate')
 
     // Asesmen PAUD (ceklis, catatan anekdot, hasil karya, foto berseri)
-    router.get('/paud-assessments', '#controllers/paud_assessments_controller.index').as('paud-assessments.index')
-    router.post('/paud-assessments', '#controllers/paud_assessments_controller.store').as('paud-assessments.store')
-    router.put('/paud-assessments/:id', '#controllers/paud_assessments_controller.update').as('paud-assessments.update')
-    router.delete('/paud-assessments/:id', '#controllers/paud_assessments_controller.destroy').as('paud-assessments.destroy')
+    router
+      .get('/paud-assessments', '#controllers/paud_assessments_controller.index')
+      .as('paud-assessments.index')
+    router
+      .post('/paud-assessments', '#controllers/paud_assessments_controller.store')
+      .as('paud-assessments.store')
+    router
+      .put('/paud-assessments/:id', '#controllers/paud_assessments_controller.update')
+      .as('paud-assessments.update')
+    router
+      .delete('/paud-assessments/:id', '#controllers/paud_assessments_controller.destroy')
+      .as('paud-assessments.destroy')
 
     // Assessments (Penilaian & Nilai)
     router.get('/assessments', '#controllers/assessments_controller.index').as('assessments.index')
     router.post('/assessments', '#controllers/assessments_controller.store').as('assessments.store')
-    router.get('/assessments/:id', '#controllers/assessments_controller.show').as('assessments.show')
-    router.put('/assessments/:id/scores', '#controllers/assessments_controller.updateScores').as('assessments.updateScores')
-    router.delete('/assessments/:id', '#controllers/assessments_controller.destroy').as('assessments.destroy')
-    router.get('/assessments/:id/export', '#controllers/assessments_controller.export').as('assessments.export')
+    router
+      .get('/assessments/:id', '#controllers/assessments_controller.show')
+      .as('assessments.show')
+    router
+      .put('/assessments/:id/scores', '#controllers/assessments_controller.updateScores')
+      .as('assessments.updateScores')
+    router
+      .delete('/assessments/:id', '#controllers/assessments_controller.destroy')
+      .as('assessments.destroy')
+    router
+      .get('/assessments/:id/export', '#controllers/assessments_controller.export')
+      .as('assessments.export')
 
     // Kepala Sekolah — dashboard read-only
     router
@@ -148,16 +274,47 @@ router
       .use(middleware.role({ roles: ['kepala_sekolah'] }))
 
     // Rapor & Peringkat
-    router.get('/report-cards', '#controllers/report_cards_controller.index').as('report-cards.index')
-    router.get('/report-cards/:classId/:semesterId', '#controllers/report_cards_controller.show').as('report-cards.show')
-    router.get('/report-cards/:classId/:semesterId/:studentId/export', '#controllers/report_cards_controller.exportPdf').as('report-cards.exportPdf')
+    router
+      .get('/report-cards', '#controllers/report_cards_controller.index')
+      .as('report-cards.index')
+    router
+      .get('/report-cards/:classId/:semesterId', '#controllers/report_cards_controller.show')
+      .as('report-cards.show')
+    router
+      .get(
+        '/report-cards/:classId/:semesterId/:studentId/export',
+        '#controllers/report_cards_controller.exportPdf'
+      )
+      .as('report-cards.exportPdf')
+    router
+      .post(
+        '/report-cards/:classId/:semesterId/:studentId/narratives',
+        '#controllers/report_cards_controller.saveNarrative'
+      )
+      .as('report-cards.narratives.save')
+    router
+      .post(
+        '/report-cards/:classId/:semesterId/narratives/generate',
+        '#controllers/report_cards_controller.generateNarratives'
+      )
+      .as('report-cards.narratives.generate')
+    router
+      .post(
+        '/report-narratives/:id/approve',
+        '#controllers/report_cards_controller.approveNarrative'
+      )
+      .as('report-narratives.approve')
 
     // Subjects (Mata Pelajaran)
     router.get('/subjects', '#controllers/subjects_controller.index').as('subjects.index')
     router.post('/subjects', '#controllers/subjects_controller.store').as('subjects.store')
-    router.post('/subjects/defaults', '#controllers/subjects_controller.storeDefaults').as('subjects.storeDefaults')
+    router
+      .post('/subjects/defaults', '#controllers/subjects_controller.storeDefaults')
+      .as('subjects.storeDefaults')
     router.put('/subjects/:id', '#controllers/subjects_controller.update').as('subjects.update')
-    router.delete('/subjects/:id', '#controllers/subjects_controller.destroy').as('subjects.destroy')
+    router
+      .delete('/subjects/:id', '#controllers/subjects_controller.destroy')
+      .as('subjects.destroy')
 
     // Settings (Pengaturan)
     router.get('/settings', '#controllers/settings_controller.index').as('settings.index')
@@ -247,6 +404,27 @@ router
     router
       .post('/admin/ai-settings/models', '#controllers/admin_ai_settings_controller.models')
       .as('admin.ai-settings.models')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .get(
+        '/admin/ai-settings/oauth/openai/start',
+        '#controllers/admin_ai_settings_controller.oauthStart'
+      )
+      .as('admin.ai-settings.oauth.openai.start')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .get(
+        '/admin/ai-settings/oauth/gemini/start',
+        '#controllers/admin_ai_settings_controller.geminiOauthStart'
+      )
+      .as('admin.ai-settings.oauth.gemini.start')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .get(
+        '/admin/ai-settings/oauth/gemini/callback',
+        '#controllers/admin_ai_settings_controller.geminiOauthCallback'
+      )
+      .as('admin.ai-settings.oauth.gemini.callback')
       .use(middleware.role({ roles: ['admin'] }))
   })
   .use([middleware.auth(), middleware.onboarding()])
