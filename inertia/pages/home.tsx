@@ -26,6 +26,7 @@ import { AuroraBackground } from '~/components/ui/aurora-background'
 import { MagicButton } from '~/components/ui/magic-button'
 import { TracingBeam } from '~/components/ui/tracing-beam'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
+import { sanitizeRichText } from '~/lib/rich-text'
 
 const features = [
   {
@@ -995,8 +996,11 @@ export default function Home({ packages }: HomeProps) {
                           </span>
                         )}
                       </div>
-                      <ul className="text-left space-y-2.5 mb-6 flex-1">
-                        {plan.features.map((feature) => (
+                      <div className="mb-6 flex-1 text-left">
+                        {plan.features.length === 1 && /<\/?[a-z][^>]*>/i.test(plan.features[0]) ? (
+                          <div className={`prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }} />
+                        ) : <ul className="space-y-2.5">
+                          {plan.features.map((feature) => (
                           <li
                             key={feature}
                             className={`flex items-center gap-2 text-sm ${
@@ -1014,8 +1018,9 @@ export default function Home({ packages }: HomeProps) {
                             </span>
                             {feature}
                           </li>
-                        ))}
-                      </ul>
+                          ))}
+                        </ul>}
+                      </div>
                       <Link href="/signup">
                         <Button
                           variant={plan.isHighlighted ? 'primary' : 'outline'}

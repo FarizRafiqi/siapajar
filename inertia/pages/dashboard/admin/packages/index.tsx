@@ -3,6 +3,9 @@ import { Head, router, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import { Plus, Trash2, Pencil, Star } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import RichTextEditor from '~/components/ui/rich-text-editor'
+import { packageFeaturesToHtml, sanitizeRichText } from '~/lib/rich-text'
+import { InputGroup } from '@heroui/react'
 
 interface Package {
   id: number
@@ -54,10 +57,7 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
   const handleCreate = () => {
     createForm.transform((data) => ({
       ...data,
-      features: data.features
-        .split('\n')
-        .map((f) => f.trim())
-        .filter(Boolean),
+      features: data.features.trim() ? [data.features] : [],
     }))
     createForm.post('/admin/packages', {
       onSuccess: () => {
@@ -74,7 +74,7 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
       description: pkg.description ?? '',
       priceMonthly: pkg.priceMonthly,
       priceYearly: pkg.priceYearly ?? 0,
-      features: pkg.features.join('\n'),
+      features: packageFeaturesToHtml(pkg.features),
       isHighlighted: pkg.isHighlighted,
       ctaLabel: pkg.ctaLabel ?? '',
     })
@@ -85,10 +85,7 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
     if (!editingPackage) return
     editForm.transform((data) => ({
       ...data,
-      features: data.features
-        .split('\n')
-        .map((f) => f.trim())
-        .filter(Boolean),
+      features: data.features.trim() ? [data.features] : [],
     }))
     editForm.put(`/admin/packages/${editingPackage.id}`, {
       onSuccess: () => setEditingPackage(null),
@@ -108,15 +105,15 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
 
   return (
     <DashboardWrapper
-      title="Manage Packages"
-      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Manage Packages' }]}
+      title="Kelola Paket"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Kelola Paket' }]}
     >
-      <Head title="Manage Packages" />
+      <Head title="Kelola Paket" />
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Manage Packages</h2>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Kelola Paket</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
               Kelola paket langganan beserta daftar benefit yang tampil di landing page
             </p>
@@ -171,7 +168,9 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
                   <span className="text-sm font-normal text-neutral-500">/bulan</span>
                 )}
               </p>
-              {pkg.features.length > 0 && (
+              {pkg.features.length === 1 && /<\/?[a-z][^>]*>/i.test(pkg.features[0]) ? (
+                <div className="prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }} />
+              ) : pkg.features.length > 0 ? (
                 <ul className="mt-3 flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
                   {pkg.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-1.5">
@@ -180,7 +179,7 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
               <button
                 onClick={() => handleToggleActive(pkg)}
                 className={cn(
@@ -352,13 +351,10 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           >
             Harga Bulanan
           </label>
-          <input
-            id={`${idPrefix}-priceMonthly`}
-            type="number"
-            value={data.priceMonthly}
-            onChange={(e) => setData('priceMonthly', Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-          />
+          <InputGroup fullWidth className="mt-1">
+            <InputGroup.Prefix>Rp</InputGroup.Prefix>
+            <InputGroup.Input id={`${idPrefix}-priceMonthly`} type="number" value={String(data.priceMonthly)} onChange={(e) => setData('priceMonthly', Number(e.target.value))} aria-label="Harga bulanan" />
+          </InputGroup>
           {errors.priceMonthly && (
             <p className="mt-1 text-sm text-red-500">{errors.priceMonthly}</p>
           )}
@@ -370,13 +366,10 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           >
             Harga Tahunan
           </label>
-          <input
-            id={`${idPrefix}-priceYearly`}
-            type="number"
-            value={data.priceYearly}
-            onChange={(e) => setData('priceYearly', Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-          />
+          <InputGroup fullWidth className="mt-1">
+            <InputGroup.Prefix>Rp</InputGroup.Prefix>
+            <InputGroup.Input id={`${idPrefix}-priceYearly`} type="number" value={String(data.priceYearly)} onChange={(e) => setData('priceYearly', Number(e.target.value))} aria-label="Harga tahunan" />
+          </InputGroup>
         </div>
       </div>
       <div>
@@ -384,16 +377,9 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           htmlFor={`${idPrefix}-features`}
           className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Benefit / Fitur (satu baris = satu benefit)
+          Benefit / Fitur
         </label>
-        <textarea
-          id={`${idPrefix}-features`}
-          rows={5}
-          value={data.features}
-          onChange={(e) => setData('features', e.target.value)}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-          placeholder={'10 kelas\nUnlimited dokumen\nExport PDF & DOCX'}
-        />
+        <RichTextEditor value={data.features} onChange={(value) => setData('features', value)} placeholder="Tuliskan benefit paket dengan daftar, penebalan, atau tautan..." />
         {errors.features && <p className="mt-1 text-sm text-red-500">{errors.features}</p>}
       </div>
       <div>
@@ -412,7 +398,7 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           placeholder="contoh: Pilih Pro"
         />
       </div>
-      <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+      <label className="flex items-center gap-2 text-sm font-medium leading-5 text-neutral-700 dark:text-neutral-300">
         <input
           type="checkbox"
           checked={data.isHighlighted}
