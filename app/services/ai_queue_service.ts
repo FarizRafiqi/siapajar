@@ -1,5 +1,10 @@
 import env from '#start/env'
 import { callAiJson } from '#services/ai_service'
+import AiJob from '#models/ai_job'
+import { createHash } from 'node:crypto'
+import { DateTime } from 'luxon'
+import User from '#models/user'
+import { assertEntitled, recordUsage } from '#services/entitlement_service'
 
 export interface AiJobPayload<T = unknown> {
   id: string
@@ -27,6 +32,7 @@ class AiQueueService {
    * Menjalankan atau mengantrekan permintaan AI dengan kontrol konkurensi.
    */
   async enqueueAiJson<T>(options: {
+    userId?: number
     combo: string
     systemPrompt: string
     userPrompt: string
@@ -58,14 +64,49 @@ class AiQueueService {
   }
 
   private async executeDirectly<T>(options: {
+    userId?: number
     combo: string
     systemPrompt: string
     userPrompt: string
     timeoutMs?: number
   }): Promise<T> {
+    const owner = options.userId ? await User.find(options.userId) : null
+    if (owner) await assertEntitled(owner, 'ai_generation_monthly')
     this.activeJobs++
+    const jobKey = options.userId
+      ? createHash('sha256').update(`${options.userId}:${options.combo}:${options.systemPrompt}:${options.userPrompt}`).digest('hex')
+      : null
+    const job = options.userId && jobKey
+      ? await AiJob.firstOrCreate(
+          { jobKey },
+          { jobKey, userId: options.userId, combo: options.combo, status: 'pending', attempts: 0, payload: { systemPrompt: options.systemPrompt, userPrompt: options.userPrompt }, availableAt: DateTime.now() }
+        )
+      : null
     try {
-      return await callAiJson<T>(options)
+      if (job?.status === 'completed') return job.result as T
+      if (job) {
+        job.status = 'processing'
+        job.attempts += 1
+        job.startedAt = DateTime.now()
+        await job.save()
+      }
+      const result = await callAiJson<T>(options)
+      if (job) {
+        job.status = 'completed'
+        job.result = result
+        job.finishedAt = DateTime.now()
+        await job.save()
+      }
+      if (owner) await recordUsage(owner.id, 'ai_generation_monthly')
+      return result
+    } catch (error) {
+      if (job) {
+        job.status = 'failed'
+        job.error = error instanceof Error ? error.message : 'AI job failed'
+        job.finishedAt = DateTime.now()
+        await job.save()
+      }
+      throw error
     } finally {
       this.activeJobs--
       this.processNext()
