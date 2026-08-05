@@ -10,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
+      HOST: 127.0.0.1
+      LOG_LEVEL: info
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
       DB_USER: postgres
-      DB_PASSWORD:
+      DB_PASSWORD: ${{ github.run_id }}
       DB_DATABASE: siapajar_test
       APP_KEY: 0000000000000000000000000000000000000000000000000000000000000000
       SESSION_DRIVER: cookie
