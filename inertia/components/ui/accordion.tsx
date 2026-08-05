@@ -13,10 +13,7 @@ interface AccordionItemProps {
 function AccordionItem({ question, answer, isOpen, onToggle }: AccordionItemProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-between w-full p-6 text-left"
-      >
+      <button onClick={onToggle} className="flex items-center justify-between w-full p-6 text-left">
         <span className="font-bold text-gray-900 dark:text-gray-100 pr-4">{question}</span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}

@@ -16,9 +16,7 @@ export default class LkpdsController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
     const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/lkpd/index', {
@@ -47,7 +45,8 @@ export default class LkpdsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, theme, subtheme, ageGroup, learningSequenceId } = await request.validateUsing(generateLkpdValidator)
+    const { classId, theme, subtheme, ageGroup, learningSequenceId } =
+      await request.validateUsing(generateLkpdValidator)
 
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
@@ -77,7 +76,10 @@ export default class LkpdsController {
       })
       content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate LKPD. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate LKPD. Coba lagi.'
+      )
       return response.redirect().back()
     }
 
@@ -102,10 +104,7 @@ export default class LkpdsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const lkpd = await Lkpd.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const lkpd = await Lkpd.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!lkpd) {
       return response.redirect('/lkpd')

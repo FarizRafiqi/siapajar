@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft, Printer, FileText, Heart, Sparkles, CheckCircle2 } from 'lucide-react'
 
@@ -66,7 +66,9 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
             </Link>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{lkpd.title}</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {lkpd.title}
+                </h2>
                 <span className="rounded-full bg-purple-100 px-3 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
                   {lkpd.ageGroup}
                 </span>
@@ -75,7 +77,8 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-400">
-                Kelompok {lkpd.schoolClass.name} • Tema: {lkpd.theme} {lkpd.subtheme ? `(${lkpd.subtheme})` : ''}
+                Kelompok {lkpd.schoolClass.name} • Tema: {lkpd.theme}{' '}
+                {lkpd.subtheme ? `(${lkpd.subtheme})` : ''}
               </p>
             </div>
           </div>
@@ -94,28 +97,44 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
         <div className="mx-auto max-w-4xl rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 print:max-w-none print:border-none print:p-0 print:shadow-none">
           {/* Header Lembar Aktivitas */}
           <div className="border-b-2 border-dashed border-neutral-300 pb-6 text-center dark:border-neutral-700">
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">LEMBAR AKTIVITAS PESERTA DIDIK</h1>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              LEMBAR AKTIVITAS PESERTA DIDIK
+            </h1>
             <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              {lkpd.institutionType === 'RA' ? 'RAUDHATUL ATHFAL (RA)' : 'TAMAN KANAK-KANAK (TK / PAUD)'}
+              {lkpd.institutionType === 'RA'
+                ? 'RAUDHATUL ATHFAL (RA)'
+                : 'TAMAN KANAK-KANAK (TK / PAUD)'}
             </p>
 
             {/* Grid Identitas Siswa */}
             <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl bg-neutral-50 p-4 text-left text-sm dark:bg-neutral-800/50">
               <div>
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Nama Siswa:</span>
-                <div className="mt-1 h-7 border-b border-dotted border-neutral-400"></div>
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                  Nama Siswa:
+                </span>
+                <div className="mt-1 h-7 border-b border-dotted border-neutral-400" />
               </div>
               <div>
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Hari / Tanggal:</span>
-                <div className="mt-1 h-7 border-b border-dotted border-neutral-400"></div>
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                  Hari / Tanggal:
+                </span>
+                <div className="mt-1 h-7 border-b border-dotted border-neutral-400" />
               </div>
               <div>
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Kelompok / Usia:</span>
-                <p className="text-neutral-900 dark:text-white">{lkpd.schoolClass.name} ({lkpd.ageGroup})</p>
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                  Kelompok / Usia:
+                </span>
+                <p className="text-neutral-900 dark:text-white">
+                  {lkpd.schoolClass.name} ({lkpd.ageGroup})
+                </p>
               </div>
               <div>
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Tema / Sub-Tema:</span>
-                <p className="text-neutral-900 dark:text-white">{lkpd.theme} {lkpd.subtheme ? `/ ${lkpd.subtheme}` : ''}</p>
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                  Tema / Sub-Tema:
+                </span>
+                <p className="text-neutral-900 dark:text-white">
+                  {lkpd.theme} {lkpd.subtheme ? `/ ${lkpd.subtheme}` : ''}
+                </p>
               </div>
             </div>
           </div>
@@ -138,7 +157,8 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 <FileText className="h-4 w-4" /> Petunjuk Belajar
               </h3>
               <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                {content.petunjukBelajar || 'Bimbinglah anak dengan penuh kasih sayang dalam menyelesaikan kegiatan di bawah ini.'}
+                {content.petunjukBelajar ||
+                  'Bimbinglah anak dengan penuh kasih sayang dalam menyelesaikan kegiatan di bawah ini.'}
               </p>
             </div>
           </div>
@@ -150,7 +170,7 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 <Sparkles className="h-4 w-4" /> Ayo Dengarkan Cerita Ini!
               </h3>
               <p className="mt-2 italic text-neutral-800 dark:text-neutral-200 leading-relaxed">
-                "{content.stimulusCerita}"
+                &quot;{content.stimulusCerita}&quot;
               </p>
             </div>
           )}
@@ -165,8 +185,13 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 </h3>
                 <div className="mt-3 space-y-3">
                   {content.aktivitasMotorik.map((act, idx) => (
-                    <div key={`act1-${idx}-${act.slice(0, 10)}`} className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40">
-                      <p className="font-medium text-neutral-900 dark:text-white">{idx + 1}. {act}</p>
+                    <div
+                      key={`act1-${idx}-${act.slice(0, 10)}`}
+                      className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40"
+                    >
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {idx + 1}. {act}
+                      </p>
                       <div className="mt-3 h-12 rounded border border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xs italic">
                         [ Area Menebalkan / Menarik Garis ]
                       </div>
@@ -184,8 +209,13 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 </h3>
                 <div className="mt-3 space-y-3">
                   {content.aktivitasKognitifBahasa.map((act, idx) => (
-                    <div key={`act2-${idx}-${act.slice(0, 10)}`} className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40">
-                      <p className="font-medium text-neutral-900 dark:text-white">{idx + 1}. {act}</p>
+                    <div
+                      key={`act2-${idx}-${act.slice(0, 10)}`}
+                      className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40"
+                    >
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {idx + 1}. {act}
+                      </p>
                       <div className="mt-3 h-12 rounded border border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xs italic">
                         [ Area Jawab / Melingkari / Mencocokkan ]
                       </div>
@@ -203,8 +233,13 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 </h3>
                 <div className="mt-3 space-y-3">
                   {content.aktivitasSeniMewarnai.map((act, idx) => (
-                    <div key={`act3-${idx}-${act.slice(0, 10)}`} className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40">
-                      <p className="font-medium text-neutral-900 dark:text-white">{idx + 1}. {act}</p>
+                    <div
+                      key={`act3-${idx}-${act.slice(0, 10)}`}
+                      className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800/40"
+                    >
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {idx + 1}. {act}
+                      </p>
                       <div className="mt-3 h-40 rounded-lg border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xs italic bg-white dark:bg-neutral-900">
                         [ Gambar untuk Diwarnai / Dikreativitaskan Anak ]
                       </div>
@@ -223,21 +258,39 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
                 Lingkarilah emotikon yang menggambarkan perasaanmu setelah belajar:
               </p>
               <div className="mt-4 flex items-center justify-center gap-8 text-3xl">
-                <span className="cursor-pointer hover:scale-125 transition-transform" title="Sangat Senang">😀</span>
-                <span className="cursor-pointer hover:scale-125 transition-transform" title="Senang">😊</span>
-                <span className="cursor-pointer hover:scale-125 transition-transform" title="Biasa">😐</span>
-                <span className="cursor-pointer hover:scale-125 transition-transform" title="Sedih">😢</span>
+                <span
+                  className="cursor-pointer hover:scale-125 transition-transform"
+                  title="Sangat Senang"
+                >
+                  😀
+                </span>
+                <span
+                  className="cursor-pointer hover:scale-125 transition-transform"
+                  title="Senang"
+                >
+                  😊
+                </span>
+                <span className="cursor-pointer hover:scale-125 transition-transform" title="Biasa">
+                  😐
+                </span>
+                <span className="cursor-pointer hover:scale-125 transition-transform" title="Sedih">
+                  😢
+                </span>
               </div>
 
               {/* Area Paraf & Catatan Guru */}
               <div className="mt-8 grid grid-cols-2 gap-4 border-t border-amber-200 pt-4 text-center text-xs dark:border-amber-800">
                 <div>
-                  <p className="font-semibold text-neutral-700 dark:text-neutral-300">Paraf Guru:</p>
-                  <div className="mt-8 mx-auto w-32 border-b border-neutral-400"></div>
+                  <p className="font-semibold text-neutral-700 dark:text-neutral-300">
+                    Paraf Guru:
+                  </p>
+                  <div className="mt-8 mx-auto w-32 border-b border-neutral-400" />
                 </div>
                 <div>
-                  <p className="font-semibold text-neutral-700 dark:text-neutral-300">Paraf Orang Tua:</p>
-                  <div className="mt-8 mx-auto w-32 border-b border-neutral-400"></div>
+                  <p className="font-semibold text-neutral-700 dark:text-neutral-300">
+                    Paraf Orang Tua:
+                  </p>
+                  <div className="mt-8 mx-auto w-32 border-b border-neutral-400" />
                 </div>
               </div>
             </div>

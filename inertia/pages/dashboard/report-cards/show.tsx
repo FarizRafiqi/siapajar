@@ -111,7 +111,16 @@ export default function ReportCardShow({
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400">{semesterLabel}</p>
           </div>
-          {mode === 'narrative' && <button onClick={() => router.post(`/report-cards/${schoolClass.id}/${semester.id}/narratives/generate`)} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white">Buat draft satu kelas</button>}
+          {mode === 'narrative' && (
+            <button
+              onClick={() =>
+                router.post(`/report-cards/${schoolClass.id}/${semester.id}/narratives/generate`)
+              }
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white"
+            >
+              Buat draft satu kelas
+            </button>
+          )}
         </div>
 
         {mode === 'numeric' && report && (
@@ -237,14 +246,45 @@ export default function ReportCardShow({
                   </ul>
                 )}
                 <div className="mt-5 space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">Narasi perkembangan</p>
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                    Narasi perkembangan
+                  </p>
                   {student.narratives.map((item) => (
-                    <form key={item.element} onSubmit={(event) => { event.preventDefault(); const form = new FormData(event.currentTarget); router.post(`/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/narratives`, { element: item.element, content: form.get('content') }) }}>
-                      <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{item.element}</label>
-                      <textarea name="content" defaultValue={item.content} className="mt-1 min-h-20" placeholder="Tulis atau edit narasi berdasarkan bukti perkembangan..." />
-                      <button className="mt-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">Simpan narasi</button>
-                      <span className="ml-2 text-xs text-neutral-500">{item.status === 'approved' ? 'Disetujui' : 'Draft'}</span>
-                      {item.id && item.status !== 'approved' && <button type="button" onClick={() => router.post(`/report-narratives/${item.id}/approve`)} className="ml-2 text-xs font-medium text-emerald-700">Setujui</button>}
+                    <form
+                      key={item.element}
+                      onSubmit={(event) => {
+                        event.preventDefault()
+                        const form = new FormData(event.currentTarget)
+                        router.post(
+                          `/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/narratives`,
+                          { element: item.element, content: form.get('content') }
+                        )
+                      }}
+                    >
+                      <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                        {item.element}
+                      </label>
+                      <textarea
+                        name="content"
+                        defaultValue={item.content}
+                        className="mt-1 min-h-20"
+                        placeholder="Tulis atau edit narasi berdasarkan bukti perkembangan..."
+                      />
+                      <button className="mt-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">
+                        Simpan narasi
+                      </button>
+                      <span className="ml-2 text-xs text-neutral-500">
+                        {item.status === 'approved' ? 'Disetujui' : 'Draft'}
+                      </span>
+                      {item.id && item.status !== 'approved' && (
+                        <button
+                          type="button"
+                          onClick={() => router.post(`/report-narratives/${item.id}/approve`)}
+                          className="ml-2 text-xs font-medium text-emerald-700"
+                        >
+                          Setujui
+                        </button>
+                      )}
                     </form>
                   ))}
                 </div>

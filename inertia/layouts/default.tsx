@@ -54,7 +54,12 @@ export default function DefaultLayout({ children, flash, user }: DefaultLayoutPr
               {user ? (
                 <>
                   <span>{user.initials}</span>
-                  <form onSubmit={(e) => { e.preventDefault(); post(urlFor('session.destroy')) }}>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      post(urlFor('session.destroy'))
+                    }}
+                  >
                     <button type="submit">Logout</button>
                   </form>
                 </>

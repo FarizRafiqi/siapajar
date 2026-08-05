@@ -6,7 +6,13 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('academic_year_id').unsigned().references('id').inTable('academic_years').onDelete('CASCADE').notNullable()
+      table
+        .integer('academic_year_id')
+        .unsigned()
+        .references('id')
+        .inTable('academic_years')
+        .onDelete('CASCADE')
+        .notNullable()
       table.string('name').notNullable()
       table.boolean('is_active').defaultTo(false)
       table.timestamps()

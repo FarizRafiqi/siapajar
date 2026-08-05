@@ -184,7 +184,9 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
             <h3 className="mb-4 font-semibold text-neutral-900 dark:text-white">Kredensial</h3>
             {(data.provider === 'openai' || data.provider === 'gemini') && (
               <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
-                <p className="mb-2 font-medium">Metode autentikasi {data.provider === 'openai' ? 'OpenAI' : 'Gemini'}</p>
+                <p className="mb-2 font-medium">
+                  Metode autentikasi {data.provider === 'openai' ? 'OpenAI' : 'Gemini'}
+                </p>
                 <div className="flex gap-4">
                   {(['api_key', 'oauth'] as AuthMode[]).map((mode) => (
                     <label key={mode} className="flex cursor-pointer items-center gap-2">
@@ -212,7 +214,8 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                     {setting.codexAccount && (
                       <p className="mt-2 font-medium">
                         Terhubung sebagai {setting.codexAccount.email || 'akun ChatGPT'}
-                        {setting.codexAccount.planType ? ` (${setting.codexAccount.planType})` : ''}.
+                        {setting.codexAccount.planType ? ` (${setting.codexAccount.planType})` : ''}
+                        .
                       </p>
                     )}
                     <a
@@ -222,7 +225,8 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                       Hubungkan ChatGPT via Codex OAuth
                     </a>
                     <p className="mt-2 text-xs opacity-80">
-                      Setelah terhubung, isi model Codex (contoh: <code>gpt-5.1-codex</code>) lalu simpan.
+                      Setelah terhubung, isi model Codex (contoh: <code>gpt-5.1-codex</code>) lalu
+                      simpan.
                     </p>
                   </div>
                 )}
@@ -256,7 +260,10 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
               </div>
             )}
             <div className="space-y-4">
-              {!(data.authMode === 'oauth' && (data.provider === 'openai' || data.provider === 'gemini')) && (
+              {!(
+                data.authMode === 'oauth' &&
+                (data.provider === 'openai' || data.provider === 'gemini')
+              ) && (
                 <div>
                   <label
                     htmlFor="apiKey"

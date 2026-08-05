@@ -33,7 +33,10 @@ export default class AdminAiSettingsController {
         model: setting.model,
         hasApiKey: !!setting.apiKey,
         codexAccount,
-        geminiOAuthConnected: setting.provider === 'gemini' && setting.authMode === 'oauth' && !!setting.oauthRefreshToken,
+        geminiOAuthConnected:
+          setting.provider === 'gemini' &&
+          setting.authMode === 'oauth' &&
+          !!setting.oauthRefreshToken,
         geminiOAuthEmail: setting.oauthEmail,
       },
     })
@@ -48,7 +51,7 @@ export default class AdminAiSettingsController {
     if (!['openai', 'gemini'].includes(setting.provider)) {
       setting.authMode = 'api_key'
     }
-    setting.baseUrl = data.provider === '9router' ? data.baseUrl ?? null : null
+    setting.baseUrl = data.provider === '9router' ? (data.baseUrl ?? null) : null
     setting.model = data.model ?? null
     if (data.apiKey) {
       setting.apiKey = data.apiKey
@@ -111,8 +114,7 @@ export default class AdminAiSettingsController {
 
   async geminiOauthCallback({ request, response, session }: HttpContext) {
     const flow = session.get('ai_gemini_oauth_flow') as
-      | { state: string; redirectUri: string }
-      | undefined
+      { state: string; redirectUri: string } | undefined
     const error = request.input('error')
     if (error) {
       session.forget('ai_gemini_oauth_flow')
@@ -159,8 +161,13 @@ export default class AdminAiSettingsController {
       setting.oauthProjectId = env.get('GEMINI_OAUTH_PROJECT_ID') || null
       await setting.save()
       session.flash('success', 'Akun Google berhasil terhubung ke Gemini OAuth.')
-    } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal menyelesaikan OAuth Gemini.')
+    } catch (oauthError) {
+      session.flash(
+        'error',
+        oauthError instanceof AiServiceError
+          ? oauthError.message
+          : 'Gagal menyelesaikan OAuth Gemini.'
+      )
     } finally {
       session.forget('ai_gemini_oauth_flow')
     }
@@ -238,7 +245,12 @@ export default class AdminAiSettingsController {
   }
 
   private geminiOauthRedirectUri() {
-    const appUrl = env.get('GEMINI_OAUTH_CALLBACK_URL') || env.get('APP_URL') || `http://${env.get('HOST')}:${env.get('PORT')}`
-    return appUrl.endsWith('/callback') ? appUrl : `${appUrl.replace(/\/$/, '')}/admin/ai-settings/oauth/gemini/callback`
+    const appUrl =
+      env.get('GEMINI_OAUTH_CALLBACK_URL') ||
+      env.get('APP_URL') ||
+      `http://${env.get('HOST')}:${env.get('PORT')}`
+    return appUrl.endsWith('/callback')
+      ? appUrl
+      : `${appUrl.replace(/\/$/, '')}/admin/ai-settings/oauth/gemini/callback`
   }
 }

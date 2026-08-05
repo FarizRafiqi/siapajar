@@ -27,9 +27,7 @@ export default class ExamsController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
 
     const subjects = await Subject.query()
       .where('user_id', user.id)
@@ -63,27 +61,24 @@ export default class ExamsController {
 
   async export({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
     }
 
     const buffer = await exportExam(exam, user)
-    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
     response.header('Content-Disposition', `attachment; filename="${exam.title}.docx"`)
     return response.send(buffer)
   }
 
   async exportPdf({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -111,10 +106,7 @@ export default class ExamsController {
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -129,10 +121,7 @@ export default class ExamsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -184,7 +173,9 @@ export default class ExamsController {
         instruction: typeof q.instruction === 'string' ? q.instruction : '',
         visualType: typeof q.visualType === 'string' ? q.visualType : '',
         rubric: typeof q.rubric === 'string' ? q.rubric : '',
-        options: Array.isArray(q.options) ? q.options.filter((o: unknown) => typeof o === 'string') : [],
+        options: Array.isArray(q.options)
+          ? q.options.filter((o: unknown) => typeof o === 'string')
+          : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
@@ -192,7 +183,10 @@ export default class ExamsController {
         curriculum,
       }))
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

@@ -14,8 +14,9 @@ export function MagicButton({ children, className = '', onClick }: MagicButtonPr
 
   // Clean up RAF on unmount
   useEffect(() => {
+    const rafId = rafRef.current
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 

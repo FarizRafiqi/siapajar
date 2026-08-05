@@ -9,7 +9,13 @@ interface HeaderProps {
   onTourClick?: () => void
 }
 
-export default function Header({ title, breadcrumbs, onMenuClick, showTour, onTourClick }: Readonly<HeaderProps>) {
+export default function Header({
+  title,
+  breadcrumbs,
+  onMenuClick,
+  showTour,
+  onTourClick,
+}: Readonly<HeaderProps>) {
   const [darkMode, setDarkMode] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   )
@@ -83,7 +89,6 @@ export default function Header({ title, breadcrumbs, onMenuClick, showTour, onTo
         >
           {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-
       </div>
     </header>
   )

@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Download, Pencil, Save, X, Trash2, Plus } from 'lucide-react'
@@ -253,7 +253,9 @@ export default function ExamShow({ exam }: ExamShowProps) {
                           {question.visualType}
                         </span>
                       )}
-                      <p className="font-medium text-neutral-900 dark:text-white">{question.question}</p>
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {question.question}
+                      </p>
                       {question.instruction && (
                         <p className="text-xs italic text-neutral-500 dark:text-neutral-400">
                           Instruksi: {question.instruction}

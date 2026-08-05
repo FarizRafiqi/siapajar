@@ -74,14 +74,27 @@ class AiQueueService {
     if (owner) await assertEntitled(owner, 'ai_generation_monthly')
     this.activeJobs++
     const jobKey = options.userId
-      ? createHash('sha256').update(`${options.userId}:${options.combo}:${options.systemPrompt}:${options.userPrompt}`).digest('hex')
+      ? createHash('sha256')
+          .update(
+            `${options.userId}:${options.combo}:${options.systemPrompt}:${options.userPrompt}`
+          )
+          .digest('hex')
       : null
-    const job = options.userId && jobKey
-      ? await AiJob.firstOrCreate(
-          { jobKey },
-          { jobKey, userId: options.userId, combo: options.combo, status: 'pending', attempts: 0, payload: { systemPrompt: options.systemPrompt, userPrompt: options.userPrompt }, availableAt: DateTime.now() }
-        )
-      : null
+    const job =
+      options.userId && jobKey
+        ? await AiJob.firstOrCreate(
+            { jobKey },
+            {
+              jobKey,
+              userId: options.userId,
+              combo: options.combo,
+              status: 'pending',
+              attempts: 0,
+              payload: { systemPrompt: options.systemPrompt, userPrompt: options.userPrompt },
+              availableAt: DateTime.now(),
+            }
+          )
+        : null
     try {
       if (job?.status === 'completed') return job.result as T
       if (job) {

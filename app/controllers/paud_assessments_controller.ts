@@ -3,7 +3,10 @@ import PaudAssessment from '#models/paud_assessment'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import Semester from '#models/semester'
-import { createPaudAssessmentValidator, updatePaudAssessmentValidator } from '#validators/paud_assessment'
+import {
+  createPaudAssessmentValidator,
+  updatePaudAssessmentValidator,
+} from '#validators/paud_assessment'
 import LearningObjective from '#models/learning_objective'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -64,7 +67,10 @@ export default class PaudAssessmentsController {
     }
 
     if (data.learningObjectiveId) {
-      const objective = await LearningObjective.query().where('id', data.learningObjectiveId).where((q) => q.whereNull('user_id').orWhere('user_id', user.id)).first()
+      const objective = await LearningObjective.query()
+        .where('id', data.learningObjectiveId)
+        .where((q) => q.whereNull('user_id').orWhere('user_id', user.id))
+        .first()
       if (!objective) {
         session.flash('error', 'TP yang dipilih tidak valid')
         return response.redirect().back()

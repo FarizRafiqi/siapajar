@@ -78,7 +78,8 @@ export default class DatabaseSeeder extends BaseSeeder {
     for (const pkg of packages) {
       const saved = await Package.updateOrCreate({ name: pkg.name }, pkg)
       const entitlementMap: Record<string, number | null> = {
-        classes: pkg.name === 'free' ? 1 : pkg.name === 'basic' ? 3 : pkg.name === 'pro' ? 10 : null,
+        classes:
+          pkg.name === 'free' ? 1 : pkg.name === 'basic' ? 3 : pkg.name === 'pro' ? 10 : null,
         ai_generation_monthly: pkg.name === 'free' ? 5 : pkg.name === 'basic' ? 30 : null,
         export_pdf: 1,
         export_docx: pkg.name === 'free' ? 0 : 1,
@@ -86,7 +87,9 @@ export default class DatabaseSeeder extends BaseSeeder {
         custom_iktp: pkg.name === 'free' ? 0 : 1,
       }
       for (const [featureKey, limitValue] of Object.entries(entitlementMap)) {
-        await saved.related('entitlements').updateOrCreate({ featureKey }, { featureKey, limitValue, isEnabled: limitValue !== 0 })
+        await saved
+          .related('entitlements')
+          .updateOrCreate({ featureKey }, { featureKey, limitValue, isEnabled: limitValue !== 0 })
       }
     }
 

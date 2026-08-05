@@ -13,11 +13,7 @@ export function TextGenerateEffect({ words, className = '' }: TextGenerateEffect
 
   useEffect(() => {
     if (!containerRef.current) return
-    animate(
-      'span',
-      { opacity: 1, filter: 'blur(0px)' },
-      { duration: 0.5, delay: stagger(0.15) }
-    )
+    animate('span', { opacity: 1, filter: 'blur(0px)' }, { duration: 0.5, delay: stagger(0.15) })
   }, [animate])
 
   return (

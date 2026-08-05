@@ -30,16 +30,18 @@ export default function DashboardTour({
         element: '[data-tour="welcome"]',
         popover: {
           title: 'Selamat datang di SiapAjar',
-          description: 'Tur singkat ini membantu Anda menemukan fitur utama untuk menyiapkan pembelajaran.',
+          description:
+            'Tur singkat ini membantu Anda menemukan fitur utama untuk menyiapkan pembelajaran.',
         },
       },
       {
         element: '[data-tour="sidebar"]',
         popover: {
           title: 'Menu pembelajaran',
-          description: educationLevel === 'tk'
-            ? 'Gunakan menu ini untuk mengelola kelompok, RPPM, RPPH, LKPD, media ajar, asesmen, dan rapor PAUD.'
-            : 'Gunakan menu ini untuk mengelola kelas, modul ajar, penilaian, bank soal, dan rapor.',
+          description:
+            educationLevel === 'tk'
+              ? 'Gunakan menu ini untuk mengelola kelompok, RPPM, RPPH, LKPD, media ajar, asesmen, dan rapor PAUD.'
+              : 'Gunakan menu ini untuk mengelola kelas, modul ajar, penilaian, bank soal, dan rapor.',
           side: 'right' as const,
         },
       },
@@ -47,7 +49,8 @@ export default function DashboardTour({
         element: '[data-tour="stat-cards"]',
         popover: {
           title: 'Ringkasan aktivitas',
-          description: 'Kartu ini menampilkan jumlah data yang sudah Anda buat. Klik kartu untuk langsung membuka fiturnya.',
+          description:
+            'Kartu ini menampilkan jumlah data yang sudah Anda buat. Klik kartu untuk langsung membuka fiturnya.',
           side: 'bottom' as const,
         },
       },
@@ -55,7 +58,8 @@ export default function DashboardTour({
         element: '[data-tour="quick-actions"]',
         popover: {
           title: 'Aksi cepat',
-          description: 'Mulai pekerjaan yang paling sering digunakan dari sini, seperti membuat kelas atau dokumen pembelajaran.',
+          description:
+            'Mulai pekerjaan yang paling sering digunakan dari sini, seperti membuat kelas atau dokumen pembelajaran.',
           side: 'top' as const,
         },
       },

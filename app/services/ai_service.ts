@@ -176,7 +176,12 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}`, 'x-goog-user-project': resolved.oauthProjectId! } : {}),
+        ...(accessToken
+          ? {
+              'Authorization': `Bearer ${accessToken}`,
+              'x-goog-user-project': resolved.oauthProjectId!,
+            }
+          : {}),
       },
       body: JSON.stringify({
         contents: [
@@ -209,7 +214,11 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
 }
 
 async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<string> {
-  if (resolved.oauthAccessToken && resolved.oauthExpiresAt && resolved.oauthExpiresAt > DateTime.now().plus({ seconds: 60 })) {
+  if (
+    resolved.oauthAccessToken &&
+    resolved.oauthExpiresAt &&
+    resolved.oauthExpiresAt > DateTime.now().plus({ seconds: 60 })
+  ) {
     return resolved.oauthAccessToken
   }
   if (!resolved.oauthRefreshToken) {
@@ -234,9 +243,11 @@ async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<str
     },
     15_000
   )
-  if (!response.ok) throw new AiServiceError('Token OAuth Gemini kedaluwarsa. Hubungkan ulang akun Google.')
+  if (!response.ok)
+    throw new AiServiceError('Token OAuth Gemini kedaluwarsa. Hubungkan ulang akun Google.')
   const payload = (await response.json()) as { access_token?: string; expires_in?: number }
-  if (!payload.access_token) throw new AiServiceError('Google tidak mengembalikan access token Gemini.')
+  if (!payload.access_token)
+    throw new AiServiceError('Google tidak mengembalikan access token Gemini.')
 
   const setting = await AiSetting.current()
   setting.oauthAccessToken = payload.access_token
@@ -261,7 +272,7 @@ export async function listGeminiModelsForOAuth(): Promise<string[]> {
     {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${accessToken}`,
         'x-goog-user-project': resolved.oauthProjectId,
       },
     },
@@ -476,9 +487,10 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
   let text: string
   switch (resolved.provider) {
     case 'openai':
-      text = resolved.authMode === 'oauth'
-        ? await callCodex(options.systemPrompt, options.userPrompt, resolved.model)
-        : await callOpenAi(resolved, options)
+      text =
+        resolved.authMode === 'oauth'
+          ? await callCodex(options.systemPrompt, options.userPrompt, resolved.model)
+          : await callOpenAi(resolved, options)
       break
     case 'anthropic':
       text = await callAnthropic(resolved, options)

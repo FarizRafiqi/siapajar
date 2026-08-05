@@ -82,9 +82,7 @@ const adminNavigation = [
   { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
 ]
 
-const principalNavigation = [
-  { name: 'Dashboard', href: '/principal', icon: LayoutDashboard },
-]
+const principalNavigation = [{ name: 'Dashboard', href: '/principal', icon: LayoutDashboard }]
 
 export default function Sidebar({
   user,
@@ -151,7 +149,12 @@ export default function Sidebar({
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
               <span className="text-sm font-bold text-white">S</span>
             </div>
-            <span className={cn('text-lg font-semibold text-neutral-900 dark:text-white', collapsed && 'md:hidden')}>
+            <span
+              className={cn(
+                'text-lg font-semibold text-neutral-900 dark:text-white',
+                collapsed && 'md:hidden'
+              )}
+            >
               SiapAjar
             </span>
           </Link>
@@ -202,7 +205,9 @@ export default function Sidebar({
                 <item.icon
                   className={cn(
                     'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500 dark:text-neutral-400'
+                    isActive
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-neutral-500 dark:text-neutral-400'
                   )}
                 />
                 <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>

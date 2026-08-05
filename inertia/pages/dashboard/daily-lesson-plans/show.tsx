@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Save, Pencil, X } from 'lucide-react'
@@ -111,8 +111,11 @@ export default function DailyLessonPlanShow({ dailyLessonPlan }: DailyLessonPlan
               </button>
             </div>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Kelompok {dailyLessonPlan.schoolClass.name} • {new Date(dailyLessonPlan.date).toLocaleDateString('id-ID')}
-              {dailyLessonPlan.weeklyLessonPlan && <> • RPPM: {dailyLessonPlan.weeklyLessonPlan.theme}</>}
+              Kelompok {dailyLessonPlan.schoolClass.name} •{' '}
+              {new Date(dailyLessonPlan.date).toLocaleDateString('id-ID')}
+              {dailyLessonPlan.weeklyLessonPlan && (
+                <> • RPPM: {dailyLessonPlan.weeklyLessonPlan.theme}</>
+              )}
             </p>
           </div>
           <div className="flex gap-2">
@@ -152,7 +155,10 @@ export default function DailyLessonPlanShow({ dailyLessonPlan }: DailyLessonPlan
             const draftItems = (data.content?.[section.key] as string[] | undefined) ?? []
 
             return (
-              <div key={section.key} className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={section.key}
+                className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
                   <span>{section.icon}</span>
                   {section.title}
@@ -176,7 +182,10 @@ export default function DailyLessonPlanShow({ dailyLessonPlan }: DailyLessonPlan
                       <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li>
                     ) : (
                       items.map((item: string, i: number) => (
-                        <li key={`${section.key}-${i}`} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300">
+                        <li
+                          key={`${section.key}-${i}`}
+                          className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"
+                        >
                           <span className="mt-1 text-emerald-500">•</span>
                           {item}
                         </li>

@@ -31,7 +31,8 @@ const features = [
   {
     icon: ClipboardList,
     title: 'Perencanaan',
-    description: 'Protah, Promes, ATP otomatis sesuai Kurikulum Merdeka. Semua saling sinkron dari satu data kelas.',
+    description:
+      'Protah, Promes, ATP otomatis sesuai Kurikulum Merdeka. Semua saling sinkron dari satu data kelas.',
     gradient: 'from-emerald-500 to-teal-500',
     lightBg: 'from-emerald-50 to-teal-50',
     darkBg: 'from-emerald-900/30 to-teal-900/30',
@@ -49,7 +50,8 @@ const features = [
   {
     icon: FileText,
     title: 'Soal & Penilaian',
-    description: 'Buat soal PTS/PAS/PAT lengkap dengan kunci jawaban dan rubrik penilaian otomatis.',
+    description:
+      'Buat soal PTS/PAS/PAT lengkap dengan kunci jawaban dan rubrik penilaian otomatis.',
     gradient: 'from-purple-500 to-violet-500',
     lightBg: 'from-purple-50 to-violet-50',
     darkBg: 'from-purple-900/30 to-violet-900/30',
@@ -67,7 +69,8 @@ const features = [
   {
     icon: Trophy,
     title: 'Peringkat & Sertifikat',
-    description: 'Ranking siswa otomatis + generate sertifikat prestasi siap cetak dalam satu klik.',
+    description:
+      'Ranking siswa otomatis + generate sertifikat prestasi siap cetak dalam satu klik.',
     gradient: 'from-rose-500 to-pink-500',
     lightBg: 'from-rose-50 to-pink-50',
     darkBg: 'from-rose-900/30 to-pink-900/30',
@@ -76,7 +79,8 @@ const features = [
   {
     icon: Link2,
     title: 'Import Data Sekolah',
-    description: 'Import siswa dari CSV/XLSX dan kelola data kelas dalam satu tempat. Integrasi API pemerintah akan hadir kemudian.',
+    description:
+      'Import siswa dari CSV/XLSX dan kelola data kelas dalam satu tempat. Integrasi API pemerintah akan hadir kemudian.',
     gradient: 'from-cyan-500 to-sky-500',
     lightBg: 'from-cyan-50 to-sky-50',
     darkBg: 'from-cyan-900/30 to-sky-900/30',
@@ -121,7 +125,13 @@ function formatPackagePrice(pkg: PricingPackage) {
   return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '/bulan' }
 }
 
-const testimonials: Array<{ name: string; role: string; quote: string; avatarGradient: string; rating: number }> = [
+const testimonials: Array<{
+  name: string
+  role: string
+  quote: string
+  avatarGradient: string
+  rating: number
+}> = [
   {
     name: 'Bu Rina',
     role: 'Guru TK B',
@@ -203,7 +213,7 @@ function FloatingOrnament({
   delay = 0,
   duration = 6,
   yRange = [0, -15, 0],
-  xRange = [0, 10, 0]
+  xRange = [0, 10, 0],
 }: FloatingOrnamentProps) {
   return (
     <motion.div
@@ -227,20 +237,38 @@ function FloatingOrnament({
 }
 
 const BookOrnament = () => (
-  <svg className="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    className="w-8 h-8 text-emerald-500"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
   </svg>
 )
 
 const PencilOrnament = () => (
-  <svg className="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    className="w-8 h-8 text-blue-500"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
   </svg>
 )
 
 const LightbulbOrnament = () => (
-  <svg className="w-8 h-8 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    className="w-8 h-8 text-yellow-500"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .4 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
     <line x1="9" y1="18" x2="15" y2="18" />
     <line x1="10" y1="22" x2="14" y2="22" />
@@ -248,13 +276,25 @@ const LightbulbOrnament = () => (
 )
 
 const SparkleOrnament = () => (
-  <svg className="w-6 h-6 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    className="w-6 h-6 text-purple-500"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243l-2.121 2.121m0-10.607l2.121 2.121m6.364 6.364l2.121 2.121" />
   </svg>
 )
 
 const CapOrnament = () => (
-  <svg className="w-10 h-10 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    className="w-10 h-10 text-indigo-500"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
     <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
   </svg>
@@ -329,7 +369,12 @@ function FloatingNav() {
             <ThemeToggle />
             {user ? (
               <Link href="/dashboard">
-                <Button variant="primary" className="bg-emerald-600 text-white hover:bg-emerald-700">Dashboard</Button>
+                <Button
+                  variant="primary"
+                  className="bg-emerald-600 text-white hover:bg-emerald-700"
+                >
+                  Dashboard
+                </Button>
               </Link>
             ) : (
               <>
@@ -337,7 +382,12 @@ function FloatingNav() {
                   <Button variant="ghost">Login</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button variant="primary" className="bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
+                  <Button
+                    variant="primary"
+                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                  >
+                    Mulai Gratis
+                  </Button>
                 </Link>
               </>
             )}
@@ -406,15 +456,27 @@ function FloatingNav() {
               <div className="border-t border-gray-100 dark:border-gray-800 mt-2 pt-3 flex flex-col gap-2">
                 {user ? (
                   <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
-                    <Button variant="primary" className="w-full bg-emerald-600 text-white hover:bg-emerald-700">Dashboard</Button>
+                    <Button
+                      variant="primary"
+                      className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                    >
+                      Dashboard
+                    </Button>
                   </Link>
                 ) : (
                   <>
                     <Link href="/login" onClick={() => setMobileOpen(false)}>
-                      <Button variant="ghost" className="w-full">Login</Button>
+                      <Button variant="ghost" className="w-full">
+                        Login
+                      </Button>
                     </Link>
                     <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                      <Button variant="primary" className="w-full bg-emerald-600 text-white hover:bg-emerald-700">Mulai Gratis</Button>
+                      <Button
+                        variant="primary"
+                        className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                      >
+                        Mulai Gratis
+                      </Button>
                     </Link>
                   </>
                 )}
@@ -454,7 +516,12 @@ export default function Home({ packages }: HomeProps) {
         <FloatingOrnament className="top-12 left-10" delay={0}>
           <BookOrnament />
         </FloatingOrnament>
-        <FloatingOrnament className="bottom-16 left-1/4" delay={1.5} duration={5} yRange={[0, 12, 0]}>
+        <FloatingOrnament
+          className="bottom-16 left-1/4"
+          delay={1.5}
+          duration={5}
+          yRange={[0, 12, 0]}
+        >
           <PencilOrnament />
         </FloatingOrnament>
         <FloatingOrnament className="top-24 right-1/3" delay={0.8} duration={7}>
@@ -490,8 +557,8 @@ export default function Home({ packages }: HomeProps) {
               transition={{ delay: 1.2, duration: 0.5 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl"
             >
-              Susun CP, TP, ATP, dokumen pembelajaran, asesmen, dan rapor dari satu tempat.
-              AI membantu menyiapkan draft, guru tetap memegang kendali.
+              Susun CP, TP, ATP, dokumen pembelajaran, asesmen, dan rapor dari satu tempat. AI
+              membantu menyiapkan draft, guru tetap memegang kendali.
             </motion.p>
 
             <motion.div
@@ -504,7 +571,11 @@ export default function Home({ packages }: HomeProps) {
                 <MagicButton>Mulai Gratis &rarr;</MagicButton>
               </Link>
               <a href="#features">
-                <Button variant="outline" size="lg" className="text-lg px-8 min-h-12 bg-white/80 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-200 backdrop-blur-sm">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8 min-h-12 bg-white/80 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-200 backdrop-blur-sm"
+                >
                   Lihat Demo
                 </Button>
               </a>
@@ -516,9 +587,15 @@ export default function Home({ packages }: HomeProps) {
               transition={{ delay: 2, duration: 0.5 }}
               className="text-sm text-gray-500 dark:text-gray-400 mt-4 flex items-center gap-4 flex-wrap"
             >
-              <span className="flex items-center gap-1"><span className="text-emerald-500">✓</span> Gratis untuk 1 kelas</span>
-              <span className="flex items-center gap-1"><span className="text-emerald-500">✓</span> Tanpa kartu kredit</span>
-              <span className="flex items-center gap-1"><span className="text-emerald-500">✓</span> Setup 2 menit</span>
+              <span className="flex items-center gap-1">
+                <span className="text-emerald-500">✓</span> Gratis untuk 1 kelas
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="text-emerald-500">✓</span> Tanpa kartu kredit
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="text-emerald-500">✓</span> Setup 2 menit
+              </span>
             </motion.p>
           </div>
 
@@ -531,14 +608,14 @@ export default function Home({ packages }: HomeProps) {
             >
               {/* Backglow panel */}
               <div className="absolute -inset-1 bg-gradient-to-tr from-emerald-500 to-emerald-400 rounded-3xl blur-2xl opacity-30 dark:opacity-20 animate-pulse" />
-              
+
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "easeInOut"
+                  repeatType: 'reverse',
+                  ease: 'easeInOut',
                 }}
                 className="relative bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-3xl p-4 shadow-2xl"
               >
@@ -563,7 +640,7 @@ export default function Home({ packages }: HomeProps) {
             transition={{ duration: 0.5 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center"
           >
-              {[
+            {[
               { value: 1, suffix: '', label: 'Satu alur data kelas', decimals: 0 },
               { value: 3, suffix: '', label: 'Elemen CP Fase Fondasi', decimals: 0 },
               { value: 2, suffix: '', label: 'Profil RA/TK dan SD', decimals: 0 },
@@ -617,8 +694,7 @@ export default function Home({ packages }: HomeProps) {
               Masalah Nyata
             </Chip>
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Guru Menghabiskan{' '}
-              <AnimatedNumber value={40} suffix="–" className="text-red-500" />
+              Guru Menghabiskan <AnimatedNumber value={40} suffix="–" className="text-red-500" />
               <AnimatedNumber value={60} suffix="% " className="text-red-500" />
               Waktu untuk Administrasi
             </h2>
@@ -656,9 +732,21 @@ export default function Home({ packages }: HomeProps) {
             <div className="md:col-span-7 space-y-6 order-1 md:order-2">
               <div className="grid sm:grid-cols-1 gap-6">
                 {[
-                  { icon: Shuffle, title: 'Fragmentasi Tools', desc: 'Modul ajar di platform A, soal di platform B, rapor di aplikasi desktop C. Tidak saling terintegrasi.' },
-                  { icon: BookOpen, title: 'Kurva Belajar KM yang Tinggi', desc: 'Istilah CP, ATP, TP, KKTP masih baru dan membingungkan bagi banyak guru.' },
-                  { icon: Settings, title: 'Tidak Ada Otomatisasi', desc: 'Protah, Promes, ATP disusun manual dari nol dengan copy-paste berulang kali setiap tahun.' },
+                  {
+                    icon: Shuffle,
+                    title: 'Fragmentasi Tools',
+                    desc: 'Modul ajar di platform A, soal di platform B, rapor di aplikasi desktop C. Tidak saling terintegrasi.',
+                  },
+                  {
+                    icon: BookOpen,
+                    title: 'Kurva Belajar KM yang Tinggi',
+                    desc: 'Istilah CP, ATP, TP, KKTP masih baru dan membingungkan bagi banyak guru.',
+                  },
+                  {
+                    icon: Settings,
+                    title: 'Tidak Ada Otomatisasi',
+                    desc: 'Protah, Promes, ATP disusun manual dari nol dengan copy-paste berulang kali setiap tahun.',
+                  },
                 ].map((problem, idx) => (
                   <motion.div
                     key={problem.title}
@@ -673,8 +761,12 @@ export default function Home({ packages }: HomeProps) {
                           <problem.icon className="w-6 h-6 text-red-500" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{problem.title}</h3>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{problem.desc}</p>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            {problem.title}
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                            {problem.desc}
+                          </p>
                         </div>
                       </div>
                     </SpotlightCard>
@@ -691,7 +783,12 @@ export default function Home({ packages }: HomeProps) {
             transition={{ delay: 0.5, duration: 0.4 }}
             className="text-center mt-12"
           >
-            <Chip color="accent" variant="primary" size="lg" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
+            <Chip
+              color="accent"
+              variant="primary"
+              size="lg"
+              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+            >
               SiapAjar selesaikan semua kerumitan ini dalam satu platform
             </Chip>
           </motion.div>
@@ -731,14 +828,18 @@ export default function Home({ packages }: HomeProps) {
               >
                 <SpotlightCard className="h-full">
                   <div className="flex items-start gap-4">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${feature.lightBg} dark:${feature.darkBg} flex items-center justify-center shadow-sm`}>
+                    <div
+                      className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${feature.lightBg} dark:${feature.darkBg} flex items-center justify-center shadow-sm`}
+                    >
                       <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                         {feature.title}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        {feature.description}
+                      </p>
                     </div>
                   </div>
                 </SpotlightCard>
@@ -800,56 +901,64 @@ export default function Home({ packages }: HomeProps) {
       </section>
 
       {/* Testimonials are intentionally hidden until there are verified user testimonials. */}
-      {testimonials.length > 0 && <section className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <Chip color="default" variant="soft" className="mb-4">
-              Testimoni
-            </Chip>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Apa Kata Guru?
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Dipercaya oleh ribuan guru di seluruh Indonesia
-            </p>
-          </motion.div>
+      {testimonials.length > 0 && (
+        <section className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-12"
+            >
+              <Chip color="default" variant="soft" className="mb-4">
+                Testimoni
+              </Chip>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Apa Kata Guru?
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Dipercaya oleh ribuan guru di seluruh Indonesia
+              </p>
+            </motion.div>
 
-          <InfiniteMovingCards
-            items={testimonials.map((t) => ({
-              content: (
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-3">
-                    <Quote className="w-8 h-8 text-emerald-200 dark:text-emerald-800" />
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: t.rating }).map((_, i) => (
-                        <span key={`star-${String(i)}`} className="text-amber-400 text-sm">★</span>
-                      ))}
+            <InfiniteMovingCards
+              items={testimonials.map((t) => ({
+                content: (
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
+                    <div className="flex items-start justify-between mb-3">
+                      <Quote className="w-8 h-8 text-emerald-200 dark:text-emerald-800" />
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: t.rating }).map((_, i) => (
+                          <span key={`star-${String(i)}`} className="text-amber-400 text-sm">
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 italic mb-5 flex-1 leading-relaxed">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 bg-gradient-to-br ${t.avatarGradient} text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm`}
+                      >
+                        {t.name[0]}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-sm">{t.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 italic mb-5 flex-1 leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 bg-gradient-to-br ${t.avatarGradient} text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm`}>
-                      {t.name[0]}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{t.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ),
-            }))}
-            speed="slow"
-            className="py-4"
-          />
-        </div>
-      </section>}
+                ),
+              }))}
+              speed="slow"
+              className="py-4"
+            />
+          </div>
+        </section>
+      )}
 
       {/* Pricing */}
       <section id="pricing" className="py-16 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid">
@@ -896,15 +1005,31 @@ export default function Home({ packages }: HomeProps) {
                       </div>
                     )}
                     <div className="p-6 text-center flex flex-col flex-1">
-                      <h3 className={`text-xl font-bold mb-2 ${
-                        plan.isHighlighted ? 'text-white' : 'text-gray-900 dark:text-white'
-                      }`}>{plan.displayName}</h3>
+                      <h3
+                        className={`text-xl font-bold mb-2 ${
+                          plan.isHighlighted ? 'text-white' : 'text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        {plan.displayName}
+                      </h3>
                       <div className="mb-5">
-                        <span className={`text-4xl font-black ${
-                          plan.isHighlighted ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'
-                        }`}>{price}</span>
+                        <span
+                          className={`text-4xl font-black ${
+                            plan.isHighlighted
+                              ? 'text-white'
+                              : 'text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          {price}
+                        </span>
                         {period && (
-                          <span className={plan.isHighlighted ? 'text-emerald-200' : 'text-gray-500 dark:text-gray-400'}>
+                          <span
+                            className={
+                              plan.isHighlighted
+                                ? 'text-emerald-200'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }
+                          >
                             {period}
                           </span>
                         )}
@@ -914,12 +1039,18 @@ export default function Home({ packages }: HomeProps) {
                           <li
                             key={feature}
                             className={`flex items-center gap-2 text-sm ${
-                              plan.isHighlighted ? 'text-emerald-100' : 'text-gray-600 dark:text-gray-400'
+                              plan.isHighlighted
+                                ? 'text-emerald-100'
+                                : 'text-gray-600 dark:text-gray-400'
                             }`}
                           >
-                            <span className={`font-bold text-base flex-shrink-0 ${
-                              plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
-                            }`}>✓</span>
+                            <span
+                              className={`font-bold text-base flex-shrink-0 ${
+                                plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
+                              }`}
+                            >
+                              ✓
+                            </span>
                             {feature}
                           </li>
                         ))}
@@ -1002,7 +1133,11 @@ export default function Home({ packages }: HomeProps) {
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <Link href="/signup">
-              <Button variant="primary" size="lg" className="text-lg px-10 font-bold bg-white text-emerald-700 hover:bg-emerald-50">
+              <Button
+                variant="primary"
+                size="lg"
+                className="text-lg px-10 font-bold bg-white text-emerald-700 hover:bg-emerald-50"
+              >
                 Mulai Gratis &rarr;
               </Button>
             </Link>
@@ -1024,7 +1159,10 @@ export default function Home({ packages }: HomeProps) {
                   SiapAjar
                 </span>
               </div>
-              <p className="text-sm leading-relaxed mb-4">Platform all-in-one administrasi guru Kurikulum Merdeka. Satu data, semua dokumen sinkron otomatis.</p>
+              <p className="text-sm leading-relaxed mb-4">
+                Platform all-in-one administrasi guru Kurikulum Merdeka. Satu data, semua dokumen
+                sinkron otomatis.
+              </p>
               <p className="text-xs text-gray-500">Made with ❤️ for Guru Indonesia</p>
             </div>
 
@@ -1032,52 +1170,93 @@ export default function Home({ packages }: HomeProps) {
             <div className="md:col-span-2">
               <h4 className="font-bold text-white mb-4">Produk</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><a href="#features" className="hover:text-emerald-400 transition-colors">Fitur</a></li>
-                <li><a href="#pricing" className="hover:text-emerald-400 transition-colors">Harga</a></li>
-                <li><a href="#faq" className="hover:text-emerald-400 transition-colors">FAQ</a></li>
+                <li>
+                  <a href="#features" className="hover:text-emerald-400 transition-colors">
+                    Fitur
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-emerald-400 transition-colors">
+                    Harga
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="md:col-span-2">
               <h4 className="font-bold text-white mb-4">Perusahaan</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><a href="/coming-soon" className="hover:text-emerald-400 transition-colors">Tentang Kami</a></li>
-                <li><a href="/coming-soon" className="hover:text-emerald-400 transition-colors">Blog</a></li>
-                <li><a href="/coming-soon" className="hover:text-emerald-400 transition-colors">Karir</a></li>
+                <li>
+                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
+                    Tentang Kami
+                  </a>
+                </li>
+                <li>
+                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
+                    Karir
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="md:col-span-2">
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><Link href="/privacy" className="hover:text-emerald-400 transition-colors">Kebijakan Privasi</Link></li>
-                <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Syarat &amp; Ketentuan</Link></li>
+                <li>
+                  <Link href="/privacy" className="hover:text-emerald-400 transition-colors">
+                    Kebijakan Privasi
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-emerald-400 transition-colors">
+                    Syarat &amp; Ketentuan
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="md:col-span-2">
               <h4 className="font-bold text-white mb-4">Ikuti Kami</h4>
               <div className="flex flex-col gap-3">
                 {/* Instagram */}
-                <a href="/coming-soon" className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group">
+                <a
+                  href="/coming-soon"
+                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
+                >
                   <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                     </svg>
                   </span>
                   <span>Instagram</span>
                 </a>
                 {/* WhatsApp */}
-                <a href="/coming-soon" className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group">
+                <a
+                  href="/coming-soon"
+                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
+                >
                   <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                     </svg>
                   </span>
                   <span>WhatsApp</span>
                 </a>
                 {/* TikTok */}
-                <a href="/coming-soon" className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group">
+                <a
+                  href="/coming-soon"
+                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
+                >
                   <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
                     </svg>
                   </span>
                   <span>TikTok</span>
@@ -1088,7 +1267,9 @@ export default function Home({ packages }: HomeProps) {
 
           <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
             <p className="text-xs text-gray-500">© 2026 SiapAjar. All rights reserved.</p>
-            <p className="text-xs text-gray-600">Administrasi pembelajaran yang lebih siap untuk guru Indonesia 🇮🇩</p>
+            <p className="text-xs text-gray-600">
+              Administrasi pembelajaran yang lebih siap untuk guru Indonesia 🇮🇩
+            </p>
           </div>
         </div>
       </footer>

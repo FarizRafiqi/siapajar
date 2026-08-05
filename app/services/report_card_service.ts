@@ -118,7 +118,12 @@ export interface PaudStudentNarrative {
   nis: string
   fullName: string
   entries: { type: string; typeLabel: string; date: string; content: Record<string, unknown> }[]
-  narratives: { id: number | null; element: string; content: string; status: 'draft' | 'approved' }[]
+  narratives: {
+    id: number | null
+    element: string
+    content: string
+    status: 'draft' | 'approved'
+  }[]
 }
 
 /**
@@ -137,7 +142,10 @@ export async function compileNarrativeReport(
     .where('semester_id', semesterId)
     .where('user_id', userId)
     .orderBy('date', 'asc')
-  const savedNarratives = await ReportNarrative.query().where('class_id', classId).where('semester_id', semesterId).where('user_id', userId)
+  const savedNarratives = await ReportNarrative.query()
+    .where('class_id', classId)
+    .where('semester_id', semesterId)
+    .where('user_id', userId)
 
   const byStudent = new Map<number, PaudAssessment[]>()
   for (const assessment of assessments) {
@@ -147,7 +155,11 @@ export async function compileNarrativeReport(
     byStudent.get(assessment.studentId)!.push(assessment)
   }
 
-  const elements = ['Nilai Agama dan Budi Pekerti', 'Jati Diri', 'Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni']
+  const elements = [
+    'Nilai Agama dan Budi Pekerti',
+    'Jati Diri',
+    'Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni',
+  ]
   return students.map((student) => ({
     studentId: student.id,
     nis: student.nis,
@@ -159,8 +171,15 @@ export async function compileNarrativeReport(
       content: a.content,
     })),
     narratives: elements.map((element) => {
-      const saved = savedNarratives.find((item) => item.studentId === student.id && item.element === element)
-      return { id: saved?.id ?? null, element, content: saved?.content ?? '', status: saved?.status ?? 'draft' }
+      const saved = savedNarratives.find(
+        (item) => item.studentId === student.id && item.element === element
+      )
+      return {
+        id: saved?.id ?? null,
+        element,
+        content: saved?.content ?? '',
+        status: saved?.status ?? 'draft',
+      }
     }),
   }))
 }

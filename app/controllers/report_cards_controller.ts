@@ -138,17 +138,32 @@ export default class ReportCardsController {
     const classId = Number(params.classId)
     const semesterId = Number(params.semesterId)
     const studentId = Number(params.studentId)
-    const schoolClass = await SchoolClass.query().where('id', classId).where('user_id', user.id).first()
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
     const student = await Student.query().where('id', studentId).where('class_id', classId).first()
     if (!schoolClass || !student) return response.redirect('/report-cards')
     const payload = request.only(['element', 'content'])
-    if (typeof payload.element !== 'string' || typeof payload.content !== 'string' || payload.content.trim().length === 0) {
+    if (
+      typeof payload.element !== 'string' ||
+      typeof payload.content !== 'string' ||
+      payload.content.trim().length === 0
+    ) {
       session.flash('error', 'Isi narasi dan elemen terlebih dahulu')
       return response.redirect().back()
     }
     await ReportNarrative.updateOrCreate(
       { studentId, semesterId, element: payload.element },
-      { userId: user.id, classId, studentId, semesterId, element: payload.element, content: payload.content.trim(), status: 'draft' }
+      {
+        userId: user.id,
+        classId,
+        studentId,
+        semesterId,
+        element: payload.element,
+        content: payload.content.trim(),
+        status: 'draft',
+      }
     )
     session.flash('success', 'Narasi berhasil disimpan sebagai draft')
     return response.redirect().back()
@@ -158,15 +173,28 @@ export default class ReportCardsController {
     const user = auth.user!
     const classId = Number(params.classId)
     const semesterId = Number(params.semesterId)
-    const schoolClass = await SchoolClass.query().where('id', classId).where('user_id', user.id).first()
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
     if (!schoolClass) return response.redirect('/report-cards')
-    const { jobId } = await GenerateNarratives.dispatch({ userId: user.id, classId, semesterId }).dedup({ id: `narratives:${user.id}:${classId}:${semesterId}`, ttl: '5m' })
-    session.flash('success', `Pembuatan draft narasi dimulai (job ${jobId}). Tinjau dan edit sebelum menyetujui.`)
+    const { jobId } = await GenerateNarratives.dispatch({
+      userId: user.id,
+      classId,
+      semesterId,
+    }).dedup({ id: `narratives:${user.id}:${classId}:${semesterId}`, ttl: '5m' })
+    session.flash(
+      'success',
+      `Pembuatan draft narasi dimulai (job ${jobId}). Tinjau dan edit sebelum menyetujui.`
+    )
     return response.redirect().back()
   }
 
   async approveNarrative({ params, response, session, auth }: HttpContext) {
-    const narrative = await ReportNarrative.query().where('id', params.id).where('user_id', auth.user!.id).first()
+    const narrative = await ReportNarrative.query()
+      .where('id', params.id)
+      .where('user_id', auth.user!.id)
+      .first()
     if (!narrative) return response.redirect('/report-cards')
     narrative.status = 'approved'
     narrative.approvedAt = DateTime.now()

@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
@@ -43,14 +43,19 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
   }
 
   return (
-    <DashboardWrapper title="Tahun Ajaran" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Tahun Ajaran' }]}>
+    <DashboardWrapper
+      title="Tahun Ajaran"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Tahun Ajaran' }]}
+    >
       <Head title="Tahun Ajaran" />
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Tahun Ajaran</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">Kelola tahun ajaran untuk seluruh sekolah</p>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Kelola tahun ajaran untuk seluruh sekolah
+            </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -66,15 +71,26 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
             <table className="w-full">
               <thead>
                 <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Tahun Ajaran</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Status</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-neutral-400">Aksi</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Tahun Ajaran
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {academicYears.map((year) => (
-                  <tr key={year.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">{year.name}</td>
+                  <tr
+                    key={year.id}
+                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                      {year.name}
+                    </td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleActive(year)}
@@ -107,9 +123,14 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900">
-            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">Tambah Tahun Ajaran</h3>
+            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
+              Tambah Tahun Ajaran
+            </h3>
             <div>
-              <label htmlFor="name" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="name"
+                className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              >
                 Nama Tahun Ajaran
               </label>
               <input
@@ -147,9 +168,12 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
       {deletingYear && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900">
-            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">Hapus Tahun Ajaran?</h3>
+            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
+              Hapus Tahun Ajaran?
+            </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Tahun ajaran <strong>{deletingYear.name}</strong> beserta semua kelas dan data di dalamnya akan terhapus permanen.
+              Tahun ajaran <strong>{deletingYear.name}</strong> beserta semua kelas dan data di
+              dalamnya akan terhapus permanen.
             </p>
             <div className="mt-6 flex gap-3">
               <button
@@ -158,7 +182,10 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
               >
                 Batal
               </button>
-              <button onClick={handleDelete} className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700">
+              <button
+                onClick={handleDelete}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
                 Hapus
               </button>
             </div>

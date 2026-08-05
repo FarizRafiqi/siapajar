@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Save, Pencil, X } from 'lucide-react'
@@ -34,7 +34,11 @@ interface WeeklyLessonPlanShowProps {
 const SECTIONS = [
   { key: 'nilaiAgamaBudiPekerti', title: 'Nilai Agama dan Budi Pekerti', icon: '🙏' },
   { key: 'jatiDiri', title: 'Jati Diri', icon: '🧒' },
-  { key: 'literasiSainsTeknologi', title: 'Dasar-Dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni', icon: '🔬' },
+  {
+    key: 'literasiSainsTeknologi',
+    title: 'Dasar-Dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni',
+    icon: '🔬',
+  },
   { key: 'rencanaKegiatan', title: 'Rencana Kegiatan Mingguan', icon: '📝' },
 ]
 
@@ -89,7 +93,9 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
           </Link>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{weeklyLessonPlan.theme}</h2>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                {weeklyLessonPlan.theme}
+              </h2>
               <button
                 onClick={handleTogglePublish}
                 className={cn(
@@ -144,7 +150,10 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
             const draftItems = data.content?.[section.key] ?? []
 
             return (
-              <div key={section.key} className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={section.key}
+                className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
                   <span>{section.icon}</span>
                   {section.title}
@@ -168,7 +177,10 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
                       <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li>
                     ) : (
                       items.map((item: string, i: number) => (
-                        <li key={`${section.key}-${i}`} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300">
+                        <li
+                          key={`${section.key}-${i}`}
+                          className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"
+                        >
                           <span className="mt-1 text-emerald-500">•</span>
                           {item}
                         </li>

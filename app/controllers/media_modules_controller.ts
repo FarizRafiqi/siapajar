@@ -16,9 +16,7 @@ export default class MediaModulesController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
     const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/media-modules/index', {
@@ -47,7 +45,9 @@ export default class MediaModulesController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, theme, subtheme, learningSequenceId } = await request.validateUsing(generateMediaModuleValidator)
+    const { classId, theme, subtheme, learningSequenceId } = await request.validateUsing(
+      generateMediaModuleValidator
+    )
 
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
@@ -60,7 +60,11 @@ export default class MediaModulesController {
     }
 
     const curriculum = await getCurriculumContext(user.id, learningSequenceId)
-    let result: { slides?: Record<string, any>[]; loosePartsGuide?: Record<string, any>; curriculum?: unknown }
+    let result: {
+      slides?: Record<string, any>[]
+      loosePartsGuide?: Record<string, any>
+      curriculum?: unknown
+    }
     try {
       const prompt = mediaModulePrompt({
         theme,
@@ -68,7 +72,10 @@ export default class MediaModulesController {
         institutionType: user.educationLevel || 'tk',
       })
 
-      result = await aiQueueService.enqueueAiJson<{ slides?: Record<string, any>[]; loosePartsGuide?: Record<string, any> }>({
+      result = await aiQueueService.enqueueAiJson<{
+        slides?: Record<string, any>[]
+        loosePartsGuide?: Record<string, any>
+      }>({
         userId: user.id,
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
@@ -76,7 +83,10 @@ export default class MediaModulesController {
       })
       result.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate Media Ajar. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate Media Ajar. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

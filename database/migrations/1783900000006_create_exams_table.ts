@@ -6,8 +6,20 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE').notNullable()
-      table.integer('class_id').unsigned().references('id').inTable('classes').onDelete('CASCADE').notNullable()
+      table
+        .integer('user_id')
+        .unsigned()
+        .references('id')
+        .inTable('users')
+        .onDelete('CASCADE')
+        .notNullable()
+      table
+        .integer('class_id')
+        .unsigned()
+        .references('id')
+        .inTable('classes')
+        .onDelete('CASCADE')
+        .notNullable()
       table.string('title').notNullable()
       table.enum('type', ['midterm', 'final', 'daily', 'summative']).notNullable()
       table.jsonb('questions').notNullable()

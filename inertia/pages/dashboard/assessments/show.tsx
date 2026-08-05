@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, Link } from '@inertiajs/react'
 import { useRef, useState } from 'react'
 import { ArrowLeft, Download, Save } from 'lucide-react'
@@ -113,10 +113,13 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{assessment.title}</h2>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              {assessment.title}
+            </h2>
             <p className="text-neutral-600 dark:text-neutral-400">
               {assessment.subject} • Kelas {assessment.schoolClass.name} •{' '}
-              {new Date(assessment.date).toLocaleDateString('id-ID')} • {filledCount} dari {totalCount} terisi
+              {new Date(assessment.date).toLocaleDateString('id-ID')} • {filledCount} dari{' '}
+              {totalCount} terisi
             </p>
           </div>
           <button
@@ -141,19 +144,38 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">No</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">NIS</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Nama</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Nilai</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">Catatan</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    No
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    NIS
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Nilai
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                    Catatan
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {assessment.scores.map((score, index) => (
-                  <tr key={score.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
-                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">{index + 1}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">{score.student.nis}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">{score.student.fullName}</td>
+                  <tr
+                    key={score.id}
+                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                  >
+                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                      {score.student.nis}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                      {score.student.fullName}
+                    </td>
                     <td className="px-4 py-3">
                       <input
                         ref={(el) => {

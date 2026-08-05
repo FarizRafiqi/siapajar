@@ -19,12 +19,42 @@ export default class GenerateNarratives extends Job<GenerateNarrativesPayload> {
   }
 
   async execute() {
-    const compiled = await compileNarrativeReport(this.payload.classId, this.payload.semesterId, this.payload.userId)
-    const elements = ['Nilai Agama dan Budi Pekerti', 'Jati Diri', 'Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni']
+    const compiled = await compileNarrativeReport(
+      this.payload.classId,
+      this.payload.semesterId,
+      this.payload.userId
+    )
+    const elements = [
+      'Nilai Agama dan Budi Pekerti',
+      'Jati Diri',
+      'Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni',
+    ]
     for (const student of compiled) {
-      const evidence = student.entries.map((entry) => entry.content).filter(Boolean).map((content) => Object.values(content).filter((value) => typeof value === 'string' && value.trim()).join(' — ')).filter(Boolean).join('. ')
+      const evidence = student.entries
+        .map((entry) => entry.content)
+        .filter(Boolean)
+        .map((content) =>
+          Object.values(content)
+            .filter((value) => typeof value === 'string' && value.trim())
+            .join(' — ')
+        )
+        .filter(Boolean)
+        .join('. ')
       for (const element of elements) {
-        await ReportNarrative.updateOrCreate({ studentId: student.studentId, semesterId: this.payload.semesterId, element }, { userId: this.payload.userId, classId: this.payload.classId, studentId: student.studentId, semesterId: this.payload.semesterId, element, content: evidence ? `Draft ${element.toLowerCase()} berdasarkan bukti observasi: ${evidence}.` : '', status: 'draft' })
+        await ReportNarrative.updateOrCreate(
+          { studentId: student.studentId, semesterId: this.payload.semesterId, element },
+          {
+            userId: this.payload.userId,
+            classId: this.payload.classId,
+            studentId: student.studentId,
+            semesterId: this.payload.semesterId,
+            element,
+            content: evidence
+              ? `Draft ${element.toLowerCase()} berdasarkan bukti observasi: ${evidence}.`
+              : '',
+            status: 'draft',
+          }
+        )
       }
     }
   }

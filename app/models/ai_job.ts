@@ -15,7 +15,7 @@ export default class AiJob extends BaseModel {
   })
   declare payload: Record<string, unknown>
   @column({
-    prepare: (v: unknown) => (v == null ? null : JSON.stringify(v)),
+    prepare: (v: unknown) => (v === null || v === undefined ? null : JSON.stringify(v)),
     consume: (v: unknown) => (typeof v === 'string' ? JSON.parse(v) : v),
   })
   declare result: unknown

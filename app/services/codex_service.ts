@@ -47,9 +47,15 @@ class CodexAppServerClient {
     this.readline = createInterface({ input: child.stdout })
     this.readline.on('line', (line) => this.handleLine(line))
     child.stderr.on('data', () => undefined)
-    child.once('error', (error) => this.failAll(new CodexServiceError(`Codex tidak dapat dijalankan: ${error.message}`)))
+    child.once('error', (error) =>
+      this.failAll(new CodexServiceError(`Codex tidak dapat dijalankan: ${error.message}`))
+    )
     child.once('exit', () => {
-      this.failAll(new CodexServiceError('Proses Codex berhenti. Pastikan Codex CLI terpasang dan sudah login.'))
+      this.failAll(
+        new CodexServiceError(
+          'Proses Codex berhenti. Pastikan Codex CLI terpasang dan sudah login.'
+        )
+      )
       this.process = null
       this.readline?.close()
       this.readline = null
@@ -173,7 +179,11 @@ class CodexAppServerClient {
         if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
           this.notificationHandlers.delete(handler)
           if (params.turn?.status === 'failed') {
-            reject(new CodexServiceError(params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'))
+            reject(
+              new CodexServiceError(
+                params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'
+              )
+            )
           } else {
             resolve()
           }
