@@ -69,7 +69,7 @@ export function examPrompt(params: {
         'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
         '{"questions": [{"question": string, "visualType": string, "instruction": string, "imagePrompt": string, "answer": string, "rubric": string}]}. ' +
         'visualType bisa berupa "Menghubungkan Gambar", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda". ' +
-        'imagePrompt harus menjelaskan ilustrasi yang perlu dibuat jika aktivitas membutuhkan gambar.',
+        'Jika aktivitas membutuhkan gambar, imagePrompt wajib berisi prompt ilustrasi konkret yang aman untuk anak, tanpa teks kecil, watermark, atau instruksi yang harus dibaca di dalam gambar. Jika tidak membutuhkan gambar, imagePrompt harus berupa string kosong.',
       user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }

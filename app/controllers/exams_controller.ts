@@ -6,7 +6,7 @@ import { createExamValidator, updateExamValidator } from '#validators/exam'
 import { generateExamValidator } from '#validators/generate'
 import { exportExam } from '#services/export_service'
 import { exportExamPdf } from '#services/pdf_export_service'
-import { AiServiceError } from '#services/ai_service'
+import { AiServiceError, generateGeminiImage } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
@@ -199,6 +199,17 @@ export default class ExamsController {
             : examMode || (isPaud ? 'visual' : 'multiple_choice'),
         curriculum,
       }))
+
+      // Illustration generation is best-effort: a text-only exam must still
+      // be created if Gemini image generation is unavailable or fails.
+      for (const question of questions) {
+        if (!question.imagePrompt || question.imageUrl) continue
+        try {
+          question.imageUrl = (await generateGeminiImage(question.imagePrompt)) || ''
+        } catch {
+          question.imageUrl = ''
+        }
+      }
     } catch (error) {
       session.flash(
         'error',

@@ -1,4 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import db from '@adonisjs/lucid/services/db'
+import { rm, unlink } from 'node:fs/promises'
 import PaudAssessment from '#models/paud_assessment'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
@@ -19,6 +21,14 @@ import {
   sendExport,
   wantsInlinePreview,
 } from '#services/export_file_service'
+
+const ATTACHMENT_EXTENSIONS: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  pdf: 'application/pdf',
+}
 
 const TYPE_LABELS: Record<string, string> = {
   checklist: 'Ceklis',
@@ -47,7 +57,13 @@ export default class PaudAssessmentsController {
       .orderBy('code')
 
     return inertia.render('dashboard/paud-assessments/index', {
-      assessments: assessments.map((a) => a.toJSON()),
+      assessments: assessments.map((a) => ({
+        ...a.toJSON(),
+        attachments: a.attachments.map((attachment) => ({
+          ...attachment.toJSON(),
+          url: `/paud-assessments/${a.id}/attachments/${attachment.id}`,
+        })),
+      })),
       classes: classes.map((c) => c.toJSON()),
       typeLabels: TYPE_LABELS,
       curriculumObjectives: curriculumObjectives.map((objective) => objective.toJSON()),
@@ -133,50 +149,72 @@ export default class PaudAssessmentsController {
       semesterId = activeSemester?.id ?? null
     }
 
-    const assessment = await PaudAssessment.create({
-      userId: user.id,
-      classId: data.classId,
-      semesterId,
-      studentId: data.studentId,
-      type: data.type,
-      date: data.date,
-      content,
-      learningObjectiveId: data.learningObjectiveId ?? null,
-      iktpIndicatorId: data.iktpIndicatorId ?? null,
-      achievementStatus: data.achievementStatus ?? null,
-      activity: data.activity ?? null,
-      teacherNote: data.teacherNote ?? null,
-      evidenceUrl: data.evidenceUrl ?? null,
-      evidenceType: data.evidenceType ?? null,
-    })
+    const uploadedPaths: string[] = []
+    let assessment: PaudAssessment
+    try {
+      assessment = await db.transaction(async (trx) => {
+        const createdAssessment = await PaudAssessment.create(
+          {
+            userId: user.id,
+            classId: data.classId,
+            semesterId,
+            studentId: data.studentId,
+            type: data.type,
+            date: data.date,
+            content,
+            learningObjectiveId: data.learningObjectiveId ?? null,
+            iktpIndicatorId: data.iktpIndicatorId ?? null,
+            achievementStatus: data.achievementStatus ?? null,
+            activity: data.activity ?? null,
+            teacherNote: data.teacherNote ?? null,
+            evidenceUrl: data.evidenceUrl ?? null,
+            evidenceType: data.evidenceType ?? null,
+          },
+          { client: trx }
+        )
 
-    if (['work_sample', 'photo_series'].includes(data.type)) {
-      const files = request
-        .files('attachments', {
-          size: '5mb',
-          extnames: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
-        })
-        .slice(0, 10)
-      for (const [index, file] of files.entries()) {
-        if (!file.isValid || !file.tmpPath) continue
-        const storedName = `${string.uuid()}.${file.extname}`
-        await file.move(`public/uploads/assessments/${user.id}/${assessment.id}`, {
-          name: storedName,
-          overwrite: false,
-        })
-        if (!file.isValid) continue
-        await AssessmentAttachment.create({
-          assessmentId: assessment.id,
-          userId: user.id,
-          originalName: file.clientName,
-          storedName,
-          url: `/uploads/assessments/${user.id}/${assessment.id}/${storedName}`,
-          mimeType: file.type ?? 'application/octet-stream',
-          size: file.size,
-          displayOrder: index,
-        })
-      }
+        if (['work_sample', 'photo_series'].includes(data.type)) {
+          const files = request
+            .files('attachments', {
+              size: '5mb',
+              extnames: Object.keys(ATTACHMENT_EXTENSIONS),
+            })
+            .slice(0, 10)
+          for (const [index, file] of files.entries()) {
+            if (!file.isValid || !file.tmpPath) {
+              if (file.hasErrors) throw new Error('Lampiran tidak valid')
+              continue
+            }
+            const extension = file.extname.toLowerCase()
+            const storedName = `${string.uuid()}.${extension}`
+            const relativePath = `uploads/assessments/${user.id}/${createdAssessment.id}/${storedName}`
+            await file.move(`public/${relativePath}`, { name: storedName, overwrite: false })
+            if (!file.isValid) throw new Error('Lampiran gagal disimpan')
+            uploadedPaths.push(`public/${relativePath}`)
+            await AssessmentAttachment.create(
+              {
+                assessmentId: createdAssessment.id,
+                userId: user.id,
+                originalName: file.clientName,
+                storedName,
+                url: `/paud-assessments/${createdAssessment.id}/attachments/{attachmentId}`,
+                mimeType: ATTACHMENT_EXTENSIONS[extension],
+                size: file.size,
+                displayOrder: index,
+              },
+              { client: trx }
+            )
+          }
+        }
+        return createdAssessment
+      })
+    } catch (error) {
+      await Promise.all(uploadedPaths.map((filePath) => unlink(filePath).catch(() => {})))
+      throw error
     }
+
+    // Replace the placeholder URL only after attachment rows have their IDs.
+    // The client receives route URLs from index(), never public storage paths.
 
     await auditService.record({
       actorId: user.id,
@@ -219,12 +257,18 @@ export default class PaudAssessmentsController {
       return response.redirect('/paud-assessments')
     }
 
-    const attachments = await AssessmentAttachment.query().where('assessment_id', assessment.id)
-    const fs = await import('node:fs/promises')
-    await Promise.all(
-      attachments.map((attachment) => fs.unlink(`public${attachment.url}`).catch(() => {}))
+    const attachmentDirectory = `public/uploads/assessments/${user.id}/${assessment.id}`
+    const storedPaths = (await AssessmentAttachment.query().where('assessment_id', assessment.id)).map(
+      (attachment) => `public/uploads/assessments/${user.id}/${assessment.id}/${attachment.storedName}`
     )
-    await assessment.delete()
+    await db.transaction(async (trx) => {
+      await AssessmentAttachment.query({ client: trx })
+        .where('assessment_id', assessment.id)
+        .delete()
+      await PaudAssessment.query({ client: trx }).where('id', assessment.id).delete()
+    })
+    await Promise.all(storedPaths.map((filePath) => unlink(filePath).catch(() => {})))
+    await rm(attachmentDirectory, { recursive: true, force: true })
 
     session.flash('success', 'Asesmen berhasil dihapus')
     return response.redirect().toRoute('paud-assessments.index')
