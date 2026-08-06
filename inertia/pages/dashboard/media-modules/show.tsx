@@ -1,7 +1,17 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Box, ShieldAlert } from 'lucide-react'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Box,
+  ShieldAlert,
+  Download,
+  FileText,
+  Presentation,
+} from 'lucide-react'
 
 interface SchoolClass {
   id: number
@@ -58,6 +68,8 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
     }
   }
 
+  const pdfUrl = `/media-modules/${mediaModule.id}/export/pdf?disposition=inline`
+
   return (
     <DashboardWrapper
       title={mediaModule.title}
@@ -88,7 +100,55 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
               </p>
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href={`/media-modules/${mediaModule.id}/export/pptx`}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            >
+              <Presentation className="h-4 w-4" /> Download PPTX
+            </a>
+            <a
+              href={`/media-modules/${mediaModule.id}/export/pdf`}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4" /> Download PDF
+            </a>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            >
+              <FileText className="h-4 w-4" /> Preview PDF
+            </a>
+          </div>
         </div>
+
+        <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
+            <div>
+              <h3 className="font-semibold text-neutral-900 dark:text-white">
+                Pratinjau PDF presentasi
+              </h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                PPTX tersedia untuk diunduh; PDF dapat dipreview di tab baru.
+              </p>
+            </div>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="cursor-pointer text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+            >
+              Buka tab baru
+            </a>
+          </div>
+          <iframe
+            title="Pratinjau Media Ajar PDF"
+            src={pdfUrl}
+            className="h-[720px] w-full bg-neutral-100 dark:bg-neutral-800"
+          />
+        </section>
 
         {/* Presentasi Visual Interactive Viewer */}
         {slides.length > 0 && currentSlide && (

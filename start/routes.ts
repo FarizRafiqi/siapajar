@@ -244,6 +244,12 @@ router
     router
       .post('/media-modules/generate', '#controllers/media_modules_controller.generate')
       .as('media-modules.generate')
+    router
+      .get('/media-modules/:id/export/pptx', '#controllers/media_modules_controller.exportPptx')
+      .as('media-modules.exportPptx')
+    router
+      .get('/media-modules/:id/export/pdf', '#controllers/media_modules_controller.exportPdf')
+      .as('media-modules.exportPdf')
 
     // Asesmen PAUD (ceklis, catatan anekdot, hasil karya, foto berseri)
     router

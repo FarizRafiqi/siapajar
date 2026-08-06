@@ -7,6 +7,11 @@ import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { mediaModulePrompt } from '#services/ai_prompts'
 import LearningSequence from '#models/learning_sequence'
+import {
+  exportMediaModulePdf,
+  exportMediaModulePptx,
+  safeFilename,
+} from '#services/media_module_export_service'
 
 export default class MediaModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -123,5 +128,47 @@ export default class MediaModulesController {
 
     session.flash('success', 'Media Ajar berhasil dihapus')
     return response.redirect().toRoute('media-modules.index')
+  }
+
+  async exportPptx({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const mediaModule = await MediaModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+
+    if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
+
+    const buffer = await exportMediaModulePptx(mediaModule, user)
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    )
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="${safeFilename(mediaModule.title)}.pptx"`
+    )
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const mediaModule = await MediaModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+
+    if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
+
+    const buffer = await exportMediaModulePdf(mediaModule, user)
+    response.header('Content-Type', 'application/pdf')
+    const disposition = request.input('disposition') === 'inline' ? 'inline' : 'attachment'
+    response.header(
+      'Content-Disposition',
+      `${disposition}; filename="${safeFilename(mediaModule.title)}.pdf"`
+    )
+    return response.send(buffer)
   }
 }
