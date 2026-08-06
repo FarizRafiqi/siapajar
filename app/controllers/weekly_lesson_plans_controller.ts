@@ -40,7 +40,9 @@ export default class WeeklyLessonPlansController {
       return response.redirect('/rppm')
     }
 
-    const workflow = await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: weeklyLessonPlan.status })
+    const workflow = await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, {
+      status: weeklyLessonPlan.status,
+    })
     return inertia.render('dashboard/weekly-lesson-plans/show', {
       weeklyLessonPlan: weeklyLessonPlan.toJSON(),
       workflow: workflow.toJSON(),

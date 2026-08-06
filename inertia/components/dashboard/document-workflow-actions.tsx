@@ -1,10 +1,63 @@
 import { router } from '@inertiajs/react'
 import { Archive, Copy, RotateCcw } from 'lucide-react'
 
-interface Props { type: 'teaching_module' | 'rppm' | 'rpph' | 'lkpd' | 'media_module'; id: number; status: 'draft' | 'published' | 'archived'; templateKey?: string | null; onSaved?: () => void }
+interface Props {
+  type: 'teaching_module' | 'rppm' | 'rpph' | 'lkpd' | 'media_module'
+  id: number
+  status: 'draft' | 'published' | 'archived'
+  templateKey?: string | null
+  onSaved?: () => void
+}
 
 export default function DocumentWorkflowActions({ type, id, status, templateKey, onSaved }: Props) {
-  const updateStatus = (next: 'draft' | 'published' | 'archived') => router.post(`/documents/${type}/${id}/status`, { status: next }, { preserveScroll: true, onSuccess: onSaved })
-  const updateTemplate = () => router.post(`/documents/${type}/${id}/status`, { templateKey: templateKey ? null : 'user-template' }, { preserveScroll: true, onSuccess: onSaved })
-  return <div className="flex flex-wrap gap-2"><button type="button" onClick={() => router.post(`/documents/${type}/${id}/duplicate`)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"><Copy className="h-4 w-4" />Duplicate</button><button type="button" onClick={updateTemplate} className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300">{templateKey ? 'Remove template' : 'Save as template'}</button>{status === 'archived' ? <button type="button" onClick={() => updateStatus('draft')} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"><RotateCcw className="h-4 w-4" />Restore</button> : <button type="button" onClick={() => updateStatus('archived')} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"><Archive className="h-4 w-4" />Archive</button>}</div>
+  const updateStatus = (next: 'draft' | 'published' | 'archived') =>
+    router.post(
+      `/documents/${type}/${id}/status`,
+      { status: next },
+      { preserveScroll: true, onSuccess: onSaved }
+    )
+  const updateTemplate = () =>
+    router.post(
+      `/documents/${type}/${id}/status`,
+      { templateKey: templateKey ? null : 'user-template' },
+      { preserveScroll: true, onSuccess: onSaved }
+    )
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => router.post(`/documents/${type}/${id}/duplicate`)}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+      >
+        <Copy className="h-4 w-4" />
+        Duplicate
+      </button>
+      <button
+        type="button"
+        onClick={updateTemplate}
+        className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"
+      >
+        {templateKey ? 'Remove template' : 'Save as template'}
+      </button>
+      {status === 'archived' ? (
+        <button
+          type="button"
+          onClick={() => updateStatus('draft')}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Restore
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => updateStatus('archived')}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"
+        >
+          <Archive className="h-4 w-4" />
+          Archive
+        </button>
+      )}
+    </div>
+  )
 }

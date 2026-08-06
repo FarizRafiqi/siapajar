@@ -6,7 +6,10 @@ import { cn } from '~/lib/utils'
 import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
 import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
 import { useDocumentAutosave } from '~/hooks/use-document-autosave'
-import { DocumentSectionEditor, DocumentSectionValue } from '~/components/ui/document-section-editor'
+import {
+  DocumentSectionEditor,
+  DocumentSectionValue,
+} from '~/components/ui/document-section-editor'
 
 interface SchoolClass {
   id: number
@@ -40,7 +43,11 @@ interface DailyLessonPlan {
 
 interface DailyLessonPlanShowProps {
   readonly dailyLessonPlan: DailyLessonPlan
-  readonly workflow?: { status: 'draft' | 'published' | 'archived'; lastSavedAt?: string | null; version?: number }
+  readonly workflow?: {
+    status: 'draft' | 'published' | 'archived'
+    lastSavedAt?: string | null
+    version?: number
+  }
 }
 
 const SECTIONS = [
@@ -51,7 +58,10 @@ const SECTIONS = [
   { key: 'rencanaAsesmen', title: 'Rencana Asesmen', icon: '✅' },
 ]
 
-export default function DailyLessonPlanShow({ dailyLessonPlan, workflow }: DailyLessonPlanShowProps) {
+export default function DailyLessonPlanShow({
+  dailyLessonPlan,
+  workflow,
+}: DailyLessonPlanShowProps) {
   const [editing, setEditing] = useState(false)
   const title = dailyLessonPlan.content?.tema || 'RPPH'
 
@@ -59,7 +69,13 @@ export default function DailyLessonPlanShow({ dailyLessonPlan, workflow }: Daily
     status: dailyLessonPlan.status,
     content: dailyLessonPlan.content ?? {},
   })
-  useDocumentAutosave('rpph', dailyLessonPlan.id, data.content, data.status as 'draft' | 'published', editing)
+  useDocumentAutosave(
+    'rpph',
+    dailyLessonPlan.id,
+    data.content,
+    data.status as 'draft' | 'published',
+    editing
+  )
 
   const handleSave = () => {
     put(`/rpph/${dailyLessonPlan.id}`, {
@@ -123,10 +139,20 @@ export default function DailyLessonPlanShow({ dailyLessonPlan, workflow }: Daily
                 <> • RPPM: {dailyLessonPlan.weeklyLessonPlan.theme}</>
               )}
             </p>
-            <DocumentWorkflowMeta status={workflow?.status ?? (dailyLessonPlan.status as 'draft' | 'published')} lastSavedAt={workflow?.lastSavedAt} version={workflow?.version} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowMeta
+              status={workflow?.status ?? (dailyLessonPlan.status as 'draft' | 'published')}
+              lastSavedAt={workflow?.lastSavedAt}
+              version={workflow?.version}
+              templateKey={workflow?.templateKey}
+            />
           </div>
           <div className="flex gap-2">
-            <DocumentWorkflowActions type="rpph" id={dailyLessonPlan.id} status={workflow?.status ?? (dailyLessonPlan.status as 'draft' | 'published')} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowActions
+              type="rpph"
+              id={dailyLessonPlan.id}
+              status={workflow?.status ?? (dailyLessonPlan.status as 'draft' | 'published')}
+              templateKey={workflow?.templateKey}
+            />
             {editing ? (
               <>
                 <button
@@ -172,7 +198,13 @@ export default function DailyLessonPlanShow({ dailyLessonPlan, workflow }: Daily
                   {section.title}
                 </h3>
                 {editing ? (
-                  <DocumentSectionEditor value={draftItems} onChange={(value) => setData('content', { ...data.content, [section.key]: value })} placeholder={`Masukkan ${section.title.toLowerCase()}`} />
+                  <DocumentSectionEditor
+                    value={draftItems}
+                    onChange={(value) =>
+                      setData('content', { ...data.content, [section.key]: value })
+                    }
+                    placeholder={`Masukkan ${section.title.toLowerCase()}`}
+                  />
                 ) : (
                   <DocumentSectionValue value={items} />
                 )}

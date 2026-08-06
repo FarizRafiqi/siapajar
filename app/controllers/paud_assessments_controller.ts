@@ -49,7 +49,8 @@ export default class PaudAssessmentsController {
   async store({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
     const data = await request.validateUsing(createPaudAssessmentValidator)
-    const content = typeof data.content === 'string' ? JSON.parse(data.content) : (data.content ?? {})
+    const content =
+      typeof data.content === 'string' ? JSON.parse(data.content) : (data.content ?? {})
 
     const schoolClass = await SchoolClass.query()
       .where('id', data.classId)
@@ -109,14 +110,19 @@ export default class PaudAssessmentsController {
     })
 
     if (['work_sample', 'photo_series'].includes(data.type)) {
-      const files = request.files('attachments', {
-        size: '5mb',
-        extnames: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
-      }).slice(0, 10)
+      const files = request
+        .files('attachments', {
+          size: '5mb',
+          extnames: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+        })
+        .slice(0, 10)
       for (const [index, file] of files.entries()) {
         if (!file.isValid || !file.tmpPath) continue
         const storedName = `${string.uuid()}.${file.extname}`
-        await file.move(`public/uploads/assessments/${user.id}/${assessment.id}`, { name: storedName, overwrite: false })
+        await file.move(`public/uploads/assessments/${user.id}/${assessment.id}`, {
+          name: storedName,
+          overwrite: false,
+        })
         if (!file.isValid) continue
         await AssessmentAttachment.create({
           assessmentId: assessment.id,
@@ -131,7 +137,13 @@ export default class PaudAssessmentsController {
       }
     }
 
-    await auditService.record({ actorId: user.id, action: 'assessment.create', entityType: 'paud_assessment', entityId: assessment.id, metadata: { type: data.type, attachmentCount: selectedAttachmentCount(request) } })
+    await auditService.record({
+      actorId: user.id,
+      action: 'assessment.create',
+      entityType: 'paud_assessment',
+      entityId: assessment.id,
+      metadata: { type: data.type, attachmentCount: selectedAttachmentCount(request) },
+    })
 
     session.flash('success', `${TYPE_LABELS[data.type]} berhasil dicatat`)
     return response.redirect().back()
@@ -168,7 +180,9 @@ export default class PaudAssessmentsController {
 
     const attachments = await AssessmentAttachment.query().where('assessment_id', assessment.id)
     const fs = await import('node:fs/promises')
-    await Promise.all(attachments.map((attachment) => fs.unlink(`public${attachment.url}`).catch(() => {})))
+    await Promise.all(
+      attachments.map((attachment) => fs.unlink(`public${attachment.url}`).catch(() => {}))
+    )
     await assessment.delete()
 
     session.flash('success', 'Asesmen berhasil dihapus')

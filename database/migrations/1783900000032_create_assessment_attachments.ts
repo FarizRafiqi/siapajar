@@ -4,8 +4,20 @@ export default class CreateAssessmentAttachments extends BaseSchema {
   async up() {
     this.schema.createTable('assessment_attachments', (table) => {
       table.increments('id')
-      table.integer('assessment_id').unsigned().references('id').inTable('paud_assessments').onDelete('CASCADE').notNullable()
-      table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE').notNullable()
+      table
+        .integer('assessment_id')
+        .unsigned()
+        .references('id')
+        .inTable('paud_assessments')
+        .onDelete('CASCADE')
+        .notNullable()
+      table
+        .integer('user_id')
+        .unsigned()
+        .references('id')
+        .inTable('users')
+        .onDelete('CASCADE')
+        .notNullable()
       table.string('original_name').notNullable()
       table.string('stored_name').notNullable()
       table.string('url').notNullable()

@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -153,7 +153,16 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
         ) : (
           <div className="space-y-3">
             {exams.map((item) => (
-              <div key={item.id} role="link" tabIndex={0} onClick={() => router.visit(`/exams/${item.id}`)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') router.visit(`/exams/${item.id}`) }} className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                role="link"
+                tabIndex={0}
+                onClick={() => router.visit(`/exams/${item.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') router.visit(`/exams/${item.id}`)
+                }}
+                className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -185,7 +194,10 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                       Kelas {item.schoolClass.name} • {(item.questions ?? []).length} soal
                     </div>
                   </div>
-                  <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
+                  <div
+                    className="flex items-center gap-2"
+                    onClick={(event) => event.stopPropagation()}
+                  >
                     <Link
                       href={`/exams/${item.id}`}
                       className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -224,7 +236,10 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelas
                 </label>
                 <select
@@ -239,12 +254,13 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                     </option>
                   ))}
                 </select>
-                {errors.classId && (
-                  <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
-                )}
+                {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
               </div>
               <div>
-                <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="subject"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Mata Pelajaran
                 </label>
                 <select
@@ -260,12 +276,13 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                     </option>
                   ))}
                 </select>
-                {errors.subject && (
-                  <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
-                )}
+                {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
               </div>
               <div>
-                <label htmlFor="type" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="type"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Jenis Soal
                 </label>
                 <select
@@ -283,7 +300,10 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                 {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
               </div>
               <div>
-                <label htmlFor="examMode" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="examMode"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Bentuk / Format Soal
                 </label>
                 <select
@@ -292,13 +312,20 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                   onChange={(e) => setData('examMode', e.target.value as any)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
-                  <option value="tertulis_visual">Soal Tertulis & Visual (Menebalkan/Mencocokkan/Melingkari - RA/TK B)</option>
-                  <option value="lisan">Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)</option>
+                  <option value="tertulis_visual">
+                    Soal Tertulis & Visual (Menebalkan/Mencocokkan/Melingkari - RA/TK B)
+                  </option>
+                  <option value="lisan">
+                    Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)
+                  </option>
                   <option value="multiple_choice">Pilihan Ganda (SD / Umum)</option>
                 </select>
               </div>
               <div>
-                <label htmlFor="topic" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="topic"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Topik / Materi
                 </label>
                 <input
@@ -312,7 +339,10 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                 {errors.topic && <p className="mt-1 text-sm text-red-500">{errors.topic}</p>}
               </div>
               <div>
-                <label htmlFor="questionCount" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="questionCount"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Jumlah Soal
                 </label>
                 <input

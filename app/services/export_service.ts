@@ -35,7 +35,12 @@ function kopParagraphs(user: User, subtitle: string) {
 function richTextItems(value: string | string[] | undefined): string[] {
   const items = Array.isArray(value) ? value : value ? [value] : []
   return items
-    .map((item) => item.replace(/<br\s*\/?>(\s*)/gi, '\n').replace(/<[^>]+>/g, '').trim())
+    .map((item) =>
+      item
+        .replace(/<br\s*\/?>(\s*)/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .trim()
+    )
     .filter(Boolean)
 }
 
@@ -86,9 +91,7 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
           new Paragraph({ text: `Mata Pelajaran: ${teachingModule.subject}` }),
           new Paragraph({ text: `Fase: ${teachingModule.phase}` }),
           new Paragraph({ text: '' }),
-          ...sections.flatMap((s) =>
-            sectionParagraphs(s.title, teachingModule.content[s.key])
-          ),
+          ...sections.flatMap((s) => sectionParagraphs(s.title, teachingModule.content[s.key])),
         ],
       },
     ],

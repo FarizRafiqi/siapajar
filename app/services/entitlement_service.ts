@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import PackageEntitlement from '#models/package_entitlement'
 import UsageEvent from '#models/usage_event'
-import User from '#models/user'
+import type User from '#models/user'
 import db from '@adonisjs/lucid/services/db'
 
 export class EntitlementError extends Error {
@@ -16,7 +16,8 @@ export async function assertEntitled(user: User, featureKey: string, amount = 1)
     .first()
   // Package lama tetap kompatibel sampai admin mengisi entitlement secara eksplisit.
   if (!entitlement) return
-  if (!entitlement.isEnabled) throw new EntitlementError(`Fitur ${featureKey} tidak tersedia pada paket Anda`)
+  if (!entitlement.isEnabled)
+    throw new EntitlementError(`Fitur ${featureKey} tidak tersedia pada paket Anda`)
   if (entitlement.limitValue === null) return
   const periodStart = DateTime.now().startOf('month')
   const total = await UsageEvent.query()

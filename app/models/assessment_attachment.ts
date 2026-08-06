@@ -19,6 +19,8 @@ export default class AssessmentAttachment extends BaseModel {
   @column.dateTime({ autoCreate: true }) declare createdAt: DateTime
   @column.dateTime({ autoCreate: true, autoUpdate: true }) declare updatedAt: DateTime
 
-  @belongsTo(() => PaudAssessment, { foreignKey: 'assessmentId' }) declare assessment: BelongsTo<typeof PaudAssessment>
+  @belongsTo(() => PaudAssessment, { foreignKey: 'assessmentId' }) declare assessment: BelongsTo<
+    typeof PaudAssessment
+  >
   @belongsTo(() => User, { foreignKey: 'userId' }) declare user: BelongsTo<typeof User>
 }

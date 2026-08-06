@@ -107,21 +107,20 @@ export default function PaudAssessmentsIndex({
     payload.append('type', data.type)
     payload.append('date', data.date)
     payload.append('content', JSON.stringify(content))
-    if (data.learningObjectiveId) payload.append('learningObjectiveId', String(data.learningObjectiveId))
+    if (data.learningObjectiveId)
+      payload.append('learningObjectiveId', String(data.learningObjectiveId))
     if (data.iktpIndicatorId) payload.append('iktpIndicatorId', String(data.iktpIndicatorId))
     if (data.achievementStatus) payload.append('achievementStatus', data.achievementStatus)
     selectedFiles.forEach((file) => payload.append('attachments', file))
 
-    router.post('/paud-assessments', payload,
-      {
-        forceFormData: true,
-        onSuccess: () => {
-          setShowAddModal(false)
-          setSelectedFiles([])
-          reset()
-        },
-      }
-    )
+    router.post('/paud-assessments', payload, {
+      forceFormData: true,
+      onSuccess: () => {
+        setShowAddModal(false)
+        setSelectedFiles([])
+        reset()
+      },
+    })
   }
 
   const handleDelete = () => {
@@ -290,13 +289,34 @@ export default function PaudAssessmentsIndex({
                     </button>
                     {item.attachments && item.attachments.length > 0 && (
                       <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                        {item.attachments.map((attachment) => (
-                          attachment.mimeType === 'application/pdf'
-                            ? <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="rounded border border-neutral-200 p-2 text-xs text-emerald-700 dark:border-neutral-700 dark:text-emerald-300">{attachment.originalName}</a>
-                            : <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer"><img src={attachment.url} alt={attachment.originalName} className="h-20 w-full rounded object-cover" /></a>
-                         ))}
-                       </div>
-                     )}
+                        {item.attachments.map((attachment) =>
+                          attachment.mimeType === 'application/pdf' ? (
+                            <a
+                              key={attachment.id}
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded border border-neutral-200 p-2 text-xs text-emerald-700 dark:border-neutral-700 dark:text-emerald-300"
+                            >
+                              {attachment.originalName}
+                            </a>
+                          ) : (
+                            <a
+                              key={attachment.id}
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <img
+                                src={attachment.url}
+                                alt={attachment.originalName}
+                                className="h-20 w-full rounded object-cover"
+                              />
+                            </a>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -645,9 +665,43 @@ export default function PaudAssessmentsIndex({
 
               {(data.type === 'work_sample' || data.type === 'photo_series') && (
                 <div>
-                  <label htmlFor="assessment-attachments" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Lampiran Foto/Karya (maks. 10 file)</label>
-                  <input id="assessment-attachments" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []).slice(0, 10))} className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white" />
-                  {selectedFiles.length > 0 && <div className="mt-3 grid grid-cols-3 gap-2">{selectedFiles.map((file) => <div key={`${file.name}-${file.lastModified}`} className="relative rounded border border-neutral-200 p-2 text-xs dark:border-neutral-700"><span className="block truncate">{file.name}</span><button type="button" onClick={() => setSelectedFiles((current) => current.filter((item) => item !== file))} className="mt-1 text-red-600">Hapus</button></div>)}</div>}
+                  <label
+                    htmlFor="assessment-attachments"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Lampiran Foto/Karya (maks. 10 file)
+                  </label>
+                  <input
+                    id="assessment-attachments"
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    onChange={(event) =>
+                      setSelectedFiles(Array.from(event.target.files ?? []).slice(0, 10))
+                    }
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  />
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {selectedFiles.map((file) => (
+                        <div
+                          key={`${file.name}-${file.lastModified}`}
+                          className="relative rounded border border-neutral-200 p-2 text-xs dark:border-neutral-700"
+                        >
+                          <span className="block truncate">{file.name}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedFiles((current) => current.filter((item) => item !== file))
+                            }
+                            className="mt-1 text-red-600"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

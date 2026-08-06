@@ -16,7 +16,13 @@ export interface GenerateAiJsonPayload {
 }
 
 export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
-  static options: JobOptions = { queue: 'ai', maxRetries: 3, timeout: '5m', removeOnComplete: { age: '1h' }, removeOnFail: { age: '1d' } }
+  static options: JobOptions = {
+    queue: 'ai',
+    maxRetries: 3,
+    timeout: '5m',
+    removeOnComplete: { age: '1h' },
+    removeOnFail: { age: '1d' },
+  }
 
   async execute() {
     const job = await AiJob.findByOrFail('job_key', this.payload.jobKey)
@@ -28,7 +34,12 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
     job.startedAt = DateTime.now()
     await job.save()
     try {
-      const result = await callAiJson({ combo: this.payload.combo, systemPrompt: this.payload.systemPrompt, userPrompt: this.payload.userPrompt, timeoutMs: this.payload.timeoutMs })
+      const result = await callAiJson({
+        combo: this.payload.combo,
+        systemPrompt: this.payload.systemPrompt,
+        userPrompt: this.payload.userPrompt,
+        timeoutMs: this.payload.timeoutMs,
+      })
       job.status = 'completed'
       job.result = result
       job.finishedAt = DateTime.now()

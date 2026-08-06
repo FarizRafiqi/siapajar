@@ -38,9 +38,18 @@ function writeKop(doc: PDFKit.PDFDocument, user: User, subtitle: string) {
   doc.moveDown(1)
 }
 
-function writeSection(doc: PDFKit.PDFDocument, title: string, value: string | string[] | undefined) {
+function writeSection(
+  doc: PDFKit.PDFDocument,
+  title: string,
+  value: string | string[] | undefined
+) {
   const items = (Array.isArray(value) ? value : value ? [value] : [])
-    .map((item) => item.replace(/<br\s*\/?>(\s*)/gi, '\n').replace(/<[^>]+>/g, '').trim())
+    .map((item) =>
+      item
+        .replace(/<br\s*\/?>(\s*)/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .trim()
+    )
     .filter(Boolean)
   doc.font('Helvetica-Bold').fontSize(12).text(title)
   doc.font('Helvetica').fontSize(10)

@@ -4,7 +4,13 @@ export default class CreateDocumentWorkflows extends BaseSchema {
   async up() {
     this.schema.createTable('document_workflows', (table) => {
       table.increments('id')
-      table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE').notNullable()
+      table
+        .integer('user_id')
+        .unsigned()
+        .references('id')
+        .inTable('users')
+        .onDelete('CASCADE')
+        .notNullable()
       table.string('document_type').notNullable()
       table.integer('document_id').unsigned().notNullable()
       table.enum('status', ['draft', 'published', 'archived']).notNullable().defaultTo('draft')

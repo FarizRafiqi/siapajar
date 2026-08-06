@@ -6,7 +6,10 @@ import { cn } from '~/lib/utils'
 import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
 import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
 import { useDocumentAutosave } from '~/hooks/use-document-autosave'
-import { DocumentSectionEditor, DocumentSectionValue } from '~/components/ui/document-section-editor'
+import {
+  DocumentSectionEditor,
+  DocumentSectionValue,
+} from '~/components/ui/document-section-editor'
 
 interface SchoolClass {
   id: number
@@ -33,7 +36,11 @@ interface WeeklyLessonPlan {
 
 interface WeeklyLessonPlanShowProps {
   readonly weeklyLessonPlan: WeeklyLessonPlan
-  readonly workflow?: { status: 'draft' | 'published' | 'archived'; lastSavedAt?: string | null; version?: number }
+  readonly workflow?: {
+    status: 'draft' | 'published' | 'archived'
+    lastSavedAt?: string | null
+    version?: number
+  }
 }
 
 const SECTIONS = [
@@ -47,7 +54,10 @@ const SECTIONS = [
   { key: 'rencanaKegiatan', title: 'Rencana Kegiatan Mingguan', icon: '📝' },
 ]
 
-export default function WeeklyLessonPlanShow({ weeklyLessonPlan, workflow }: WeeklyLessonPlanShowProps) {
+export default function WeeklyLessonPlanShow({
+  weeklyLessonPlan,
+  workflow,
+}: WeeklyLessonPlanShowProps) {
   const [editing, setEditing] = useState(false)
 
   const { data, setData, put, processing, reset } = useForm({
@@ -55,7 +65,13 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan, workflow }: Wee
     status: weeklyLessonPlan.status,
     content: weeklyLessonPlan.content ?? {},
   })
-  useDocumentAutosave('rppm', weeklyLessonPlan.id, data.content, data.status as 'draft' | 'published', editing)
+  useDocumentAutosave(
+    'rppm',
+    weeklyLessonPlan.id,
+    data.content,
+    data.status as 'draft' | 'published',
+    editing
+  )
 
   const handleSave = () => {
     put(`/rppm/${weeklyLessonPlan.id}`, {
@@ -118,10 +134,20 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan, workflow }: Wee
               Kelompok {weeklyLessonPlan.schoolClass.name} • Minggu{' '}
               {new Date(weeklyLessonPlan.weekStartDate).toLocaleDateString('id-ID')}
             </p>
-            <DocumentWorkflowMeta status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')} lastSavedAt={workflow?.lastSavedAt} version={workflow?.version} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowMeta
+              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              lastSavedAt={workflow?.lastSavedAt}
+              version={workflow?.version}
+              templateKey={workflow?.templateKey}
+            />
           </div>
           <div className="flex gap-2">
-            <DocumentWorkflowActions type="rppm" id={weeklyLessonPlan.id} status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowActions
+              type="rppm"
+              id={weeklyLessonPlan.id}
+              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              templateKey={workflow?.templateKey}
+            />
             {editing ? (
               <>
                 <button
@@ -167,7 +193,13 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan, workflow }: Wee
                   {section.title}
                 </h3>
                 {editing ? (
-                  <DocumentSectionEditor value={draftItems} onChange={(value) => setData('content', { ...data.content, [section.key]: value })} placeholder={`Masukkan ${section.title.toLowerCase()}`} />
+                  <DocumentSectionEditor
+                    value={draftItems}
+                    onChange={(value) =>
+                      setData('content', { ...data.content, [section.key]: value })
+                    }
+                    placeholder={`Masukkan ${section.title.toLowerCase()}`}
+                  />
                 ) : (
                   <DocumentSectionValue value={items} />
                 )}

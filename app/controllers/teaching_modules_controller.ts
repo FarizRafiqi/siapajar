@@ -54,7 +54,9 @@ export default class TeachingModulesController {
       return response.redirect('/teaching-modules')
     }
 
-    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, { status: teachingModule.status })
+    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
+      status: teachingModule.status,
+    })
     return inertia.render('dashboard/teaching-modules/show', {
       teachingModule: teachingModule.toJSON(),
       workflow: workflow.toJSON(),

@@ -6,7 +6,10 @@ import { cn } from '~/lib/utils'
 import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
 import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
 import { useDocumentAutosave } from '~/hooks/use-document-autosave'
-import { DocumentSectionEditor, DocumentSectionValue } from '~/components/ui/document-section-editor'
+import {
+  DocumentSectionEditor,
+  DocumentSectionValue,
+} from '~/components/ui/document-section-editor'
 
 interface SchoolClass {
   id: number
@@ -36,7 +39,11 @@ interface TeachingModule {
 
 interface TeachingModuleShowProps {
   readonly teachingModule: TeachingModule
-  readonly workflow?: { status: 'draft' | 'published' | 'archived'; lastSavedAt?: string | null; version?: number }
+  readonly workflow?: {
+    status: 'draft' | 'published' | 'archived'
+    lastSavedAt?: string | null
+    version?: number
+  }
 }
 
 const SECTIONS = [
@@ -57,7 +64,13 @@ export default function TeachingModuleShow({ teachingModule, workflow }: Teachin
     status: teachingModule.status,
     content: teachingModule.content ?? {},
   })
-  useDocumentAutosave('teaching_module', teachingModule.id, data.content, data.status as 'draft' | 'published', editing)
+  useDocumentAutosave(
+    'teaching_module',
+    teachingModule.id,
+    data.content,
+    data.status as 'draft' | 'published',
+    editing
+  )
 
   const handleSave = () => {
     put(`/teaching-modules/${teachingModule.id}`, {
@@ -130,10 +143,20 @@ export default function TeachingModuleShow({ teachingModule, workflow }: Teachin
               {teachingModule.subject} • Kelas {teachingModule.schoolClass.name} • Fase{' '}
               {teachingModule.phase}
             </p>
-            <DocumentWorkflowMeta status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')} lastSavedAt={workflow?.lastSavedAt} version={workflow?.version} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowMeta
+              status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')}
+              lastSavedAt={workflow?.lastSavedAt}
+              version={workflow?.version}
+              templateKey={workflow?.templateKey}
+            />
           </div>
           <div className="flex gap-2">
-            <DocumentWorkflowActions type="teaching_module" id={teachingModule.id} status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')} templateKey={workflow?.templateKey} />
+            <DocumentWorkflowActions
+              type="teaching_module"
+              id={teachingModule.id}
+              status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')}
+              templateKey={workflow?.templateKey}
+            />
             <button
               onClick={handleExport}
               className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -194,7 +217,13 @@ export default function TeachingModuleShow({ teachingModule, workflow }: Teachin
                   {section.title}
                 </h3>
                 {editing ? (
-                  <DocumentSectionEditor value={draftItems} onChange={(value) => setData('content', { ...data.content, [section.key]: value })} placeholder={`Masukkan ${section.title.toLowerCase()}`} />
+                  <DocumentSectionEditor
+                    value={draftItems}
+                    onChange={(value) =>
+                      setData('content', { ...data.content, [section.key]: value })
+                    }
+                    placeholder={`Masukkan ${section.title.toLowerCase()}`}
+                  />
                 ) : (
                   <DocumentSectionValue value={items} />
                 )}

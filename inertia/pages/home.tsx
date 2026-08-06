@@ -998,28 +998,33 @@ export default function Home({ packages }: HomeProps) {
                       </div>
                       <div className="mb-6 flex-1 text-left">
                         {plan.features.length === 1 && /<\/?[a-z][^>]*>/i.test(plan.features[0]) ? (
-                          <div className={`rich-text-content prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }} />
-                        ) : <ul className="space-y-2.5">
-                          {plan.features.map((feature) => (
-                          <li
-                            key={feature}
-                            className={`flex items-center gap-2 text-sm ${
-                              plan.isHighlighted
-                                ? 'text-emerald-100'
-                                : 'text-gray-600 dark:text-gray-400'
-                            }`}
-                          >
-                            <span
-                              className={`font-bold text-base flex-shrink-0 ${
-                                plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
-                              }`}
-                            >
-                              ✓
-                            </span>
-                            {feature}
-                          </li>
-                          ))}
-                        </ul>}
+                          <div
+                            className={`rich-text-content prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`}
+                            dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }}
+                          />
+                        ) : (
+                          <ul className="space-y-2.5">
+                            {plan.features.map((feature) => (
+                              <li
+                                key={feature}
+                                className={`flex items-center gap-2 text-sm ${
+                                  plan.isHighlighted
+                                    ? 'text-emerald-100'
+                                    : 'text-gray-600 dark:text-gray-400'
+                                }`}
+                              >
+                                <span
+                                  className={`font-bold text-base flex-shrink-0 ${
+                                    plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
+                                  }`}
+                                >
+                                  ✓
+                                </span>
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                       <Link href="/signup">
                         <Button

@@ -47,7 +47,9 @@ export default class DailyLessonPlansController {
       return response.redirect('/rpph')
     }
 
-    const workflow = await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, { status: dailyLessonPlan.status })
+    const workflow = await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, {
+      status: dailyLessonPlan.status,
+    })
     return inertia.render('dashboard/daily-lesson-plans/show', {
       dailyLessonPlan: dailyLessonPlan.toJSON(),
       workflow: workflow.toJSON(),

@@ -4,7 +4,13 @@ export default class CreateAuditLogs extends BaseSchema {
   async up() {
     this.schema.createTable('audit_logs', (table) => {
       table.increments('id')
-      table.integer('actor_id').unsigned().references('id').inTable('users').onDelete('SET NULL').nullable()
+      table
+        .integer('actor_id')
+        .unsigned()
+        .references('id')
+        .inTable('users')
+        .onDelete('SET NULL')
+        .nullable()
       table.string('action').notNullable()
       table.string('entity_type').nullable()
       table.string('entity_id').nullable()

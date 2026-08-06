@@ -169,7 +169,10 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
                 )}
               </p>
               {pkg.features.length === 1 && /<\/?[a-z][^>]*>/i.test(pkg.features[0]) ? (
-                <div className="rich-text-content prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }} />
+                <div
+                  className="rich-text-content prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }}
+                />
               ) : pkg.features.length > 0 ? (
                 <ul className="mt-3 flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
                   {pkg.features.map((feature) => (
@@ -353,7 +356,14 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           </label>
           <InputGroup fullWidth className="mt-1">
             <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
-            <InputGroup.Input className="!rounded-none !rounded-r-lg" id={`${idPrefix}-priceMonthly`} type="number" value={String(data.priceMonthly)} onChange={(e) => setData('priceMonthly', Number(e.target.value))} aria-label="Harga bulanan" />
+            <InputGroup.Input
+              className="!rounded-none !rounded-r-lg"
+              id={`${idPrefix}-priceMonthly`}
+              type="number"
+              value={String(data.priceMonthly)}
+              onChange={(e) => setData('priceMonthly', Number(e.target.value))}
+              aria-label="Harga bulanan"
+            />
           </InputGroup>
           {errors.priceMonthly && (
             <p className="mt-1 text-sm text-red-500">{errors.priceMonthly}</p>
@@ -368,7 +378,14 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           </label>
           <InputGroup fullWidth className="mt-1">
             <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
-            <InputGroup.Input className="!rounded-none !rounded-r-lg" id={`${idPrefix}-priceYearly`} type="number" value={String(data.priceYearly)} onChange={(e) => setData('priceYearly', Number(e.target.value))} aria-label="Harga tahunan" />
+            <InputGroup.Input
+              className="!rounded-none !rounded-r-lg"
+              id={`${idPrefix}-priceYearly`}
+              type="number"
+              value={String(data.priceYearly)}
+              onChange={(e) => setData('priceYearly', Number(e.target.value))}
+              aria-label="Harga tahunan"
+            />
           </InputGroup>
         </div>
       </div>
@@ -379,7 +396,11 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
         >
           Benefit / Fitur
         </label>
-        <RichTextEditor value={data.features} onChange={(value) => setData('features', value)} placeholder="Tuliskan benefit paket dengan daftar, penebalan, atau tautan..." />
+        <RichTextEditor
+          value={data.features}
+          onChange={(value) => setData('features', value)}
+          placeholder="Tuliskan benefit paket dengan daftar, penebalan, atau tautan..."
+        />
         {errors.features && <p className="mt-1 text-sm text-red-500">{errors.features}</p>}
       </div>
       <div>
