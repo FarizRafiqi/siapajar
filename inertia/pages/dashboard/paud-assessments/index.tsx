@@ -2,7 +2,18 @@ import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { ClipboardList, Trash2, Plus, CheckSquare, FileText, Palette, Camera } from 'lucide-react'
+import {
+  ClipboardList,
+  Trash2,
+  Plus,
+  CheckSquare,
+  FileText,
+  Palette,
+  Camera,
+  File,
+  FileImage,
+  ExternalLink,
+} from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 interface Student {
@@ -27,6 +38,12 @@ interface Assessment {
   schoolClass: SchoolClass
   student: Student
   attachments?: Array<{ id: number; url: string; originalName: string; mimeType: string }>
+}
+
+function AttachmentIcon({ mimeType }: Readonly<{ mimeType: string }>) {
+  if (mimeType.startsWith('image/')) return <FileImage className="h-5 w-5" />
+  if (mimeType === 'application/pdf') return <FileText className="h-5 w-5" />
+  return <File className="h-5 w-5" />
 }
 
 interface CurriculumObjective {
@@ -141,7 +158,7 @@ export default function PaudAssessmentsIndex({
       <Head title="Asesmen PAUD" />
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div data-tour="assessment-intro" className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Asesmen PAUD</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
@@ -149,9 +166,11 @@ export default function PaudAssessmentsIndex({
             </p>
           </div>
           <button
+            data-tour="assessment-create"
+            type="button"
             onClick={() => setShowAddModal(true)}
             disabled={!hasClasses || !hasStudents}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             Catat Asesmen
@@ -179,11 +198,12 @@ export default function PaudAssessmentsIndex({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div data-tour="assessment-filters" className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => setFilterType('all')}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              'cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500',
               filterType === 'all'
                 ? 'bg-emerald-600 text-white'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
@@ -196,9 +216,10 @@ export default function PaudAssessmentsIndex({
             return (
               <button
                 key={t}
+                type="button"
                 onClick={() => setFilterType(t)}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500',
                   filterType === t
                     ? 'bg-emerald-600 text-white'
                     : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
@@ -222,7 +243,7 @@ export default function PaudAssessmentsIndex({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div data-tour="assessment-list" className="space-y-3">
             {filteredAssessments.map((item) => {
               const ItemIcon = TYPE_ICONS[item.type]
               return (
@@ -282,39 +303,38 @@ export default function PaudAssessmentsIndex({
                       </div>
                     </div>
                     <button
+                      type="button"
+                      aria-label={`Hapus asesmen ${item.student.fullName}`}
                       onClick={() => setDeletingAssessment(item)}
-                      className="rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
+                      className="cursor-pointer rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-500 dark:border-neutral-700 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                     {item.attachments && item.attachments.length > 0 && (
-                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                        {item.attachments.map((attachment) =>
-                          attachment.mimeType === 'application/pdf' ? (
+                      <div className="mt-3 space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                          Lampiran ({item.attachments.length})
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {item.attachments.map((attachment) => (
                             <a
                               key={attachment.id}
                               href={attachment.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded border border-neutral-200 p-2 text-xs text-emerald-700 dark:border-neutral-700 dark:text-emerald-300"
+                              className="group flex min-w-0 items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20"
+                              title={`Buka ${attachment.originalName} di tab baru`}
                             >
-                              {attachment.originalName}
+                              <span className="shrink-0 text-neutral-500 group-hover:text-emerald-600 dark:text-neutral-400 dark:group-hover:text-emerald-400">
+                                <AttachmentIcon mimeType={attachment.mimeType} />
+                              </span>
+                              <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">
+                                {attachment.originalName}
+                              </span>
+                              <ExternalLink className="h-4 w-4 shrink-0 text-neutral-400" />
                             </a>
-                          ) : (
-                            <a
-                              key={attachment.id}
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <img
-                                src={attachment.url}
-                                alt={attachment.originalName}
-                                className="h-20 w-full rounded object-cover"
-                              />
-                            </a>
-                          )
-                        )}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
