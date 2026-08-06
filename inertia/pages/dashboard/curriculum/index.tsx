@@ -1,4 +1,5 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import CurriculumGlossary from '~/components/dashboard/curriculum-glossary'
 import RichTextEditor from '~/components/ui/rich-text-editor'
 import { Head, useForm } from '@inertiajs/react'
 import { useState } from 'react'
@@ -126,11 +127,11 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
     >
       <Head title="CP, TP & ATP" />
       <div className="space-y-6">
-        <div>
+        <div data-tour="curriculum-intro">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             {isPaud ? `Kurikulum ${institutionLabel} · PAUD Fase Fondasi` : 'Kurikulum SD'}
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p data-tour="curriculum-flow" className="text-neutral-600 dark:text-neutral-400">
             Struktur terkontrol: CP → TP → ATP → IKTP/evidence.{' '}
             {isPaud
               ? 'CP Fase Fondasi tetap sama untuk Kelompok A dan B.'
@@ -158,7 +159,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
           </button>
         </div>
         <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-          <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <div
+            data-tour="curriculum-cp"
+            className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+          >
             <h3 className="mb-3 font-semibold text-neutral-900 dark:text-white">Elemen CP</h3>
             {cps.map((item) => (
               <button
@@ -187,7 +191,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                   {cp.description}
                 </p>
-                <div className="mt-5 space-y-3">
+                <div data-tour="curriculum-tp" className="mt-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-neutral-900 dark:text-white">
                       Tujuan Pembelajaran
@@ -230,7 +234,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 </div>
               </div>
             )}
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div
+              data-tour="curriculum-atp"
+              className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-neutral-900 dark:text-white">ATP Saya</h3>
@@ -268,7 +275,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div
+              data-tour="curriculum-iktp"
+              className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-neutral-900 dark:text-white">IKTP / Evidence</h3>
                 <button
@@ -288,6 +298,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             </div>
           </div>
         </div>
+        <CurriculumGlossary />
       </div>
       {showObjectiveModal && (
         <Modal title="Tambah TP Custom" onClose={closeObjective}>

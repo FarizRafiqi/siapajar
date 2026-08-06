@@ -4,7 +4,7 @@ import { usePage } from '@inertiajs/react'
 import { toast, Toaster } from 'sonner'
 import Sidebar from '~/components/dashboard/sidebar'
 import Header from '~/components/dashboard/header'
-import DashboardTour from '~/components/dashboard/dashboard-tour'
+import DashboardTour, { type DashboardTourName } from '~/components/dashboard/dashboard-tour'
 import { cn } from '~/lib/utils'
 
 interface User {
@@ -38,7 +38,16 @@ export default function DashboardLayout({
     flash?: { success?: string; error?: string }
   }
   const page = usePage()
-  const isGuruDashboard = user.role === 'guru' && page.url === '/dashboard'
+  const isGuru = user.role === 'guru'
+  const tourName: DashboardTourName | null =
+    isGuru && page.url === '/dashboard'
+      ? 'dashboard'
+      : isGuru && page.url.startsWith('/curriculum')
+        ? 'curriculum'
+        : isGuru && page.url.startsWith('/paud-assessments')
+          ? 'paud-assessment'
+          : null
+  const isTourAvailable = tourName !== null
   const startTour = useCallback(() => setTourOpen(true), [])
   const finishTour = useCallback(() => setTourOpen(false), [])
 
@@ -69,18 +78,19 @@ export default function DashboardLayout({
           title={title}
           breadcrumbs={breadcrumbs}
           onMenuClick={() => setMobileMenuOpen(true)}
-          showTour={isGuruDashboard}
+          showTour={isTourAvailable}
           onTourClick={startTour}
         />
         <main className="p-4 sm:p-6">{children}</main>
       </div>
 
       <Toaster position="top-right" closeButton />
-      {isGuruDashboard && (
+      {tourName && (
         <DashboardTour
           active={tourOpen}
           autoStart
           educationLevel={user.educationLevel}
+          tourName={tourName}
           onAutoStart={startTour}
           onFinish={finishTour}
         />
