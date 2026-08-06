@@ -40,6 +40,11 @@ export interface ApiDefinition {
       store: typeof routes['curriculum.indicators.store']
     }
   }
+  documents: {
+    autosave: typeof routes['documents.autosave']
+    status: typeof routes['documents.status']
+    duplicate: typeof routes['documents.duplicate']
+  }
   classes: {
     index: typeof routes['classes.index']
     store: typeof routes['classes.store']

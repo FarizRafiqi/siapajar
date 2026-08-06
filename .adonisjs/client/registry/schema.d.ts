@@ -199,6 +199,42 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'documents.autosave': {
+    methods: ["POST"]
+    pattern: '/documents/:type/:id/autosave'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { type: ParamValue; id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'documents.status': {
+    methods: ["POST"]
+    pattern: '/documents/:type/:id/status'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { type: ParamValue; id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'documents.duplicate': {
+    methods: ["POST"]
+    pattern: '/documents/:type/:id/duplicate'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { type: ParamValue; id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'curriculum.objectives.store': {
     methods: ["POST"]
     pattern: '/curriculum/objectives'

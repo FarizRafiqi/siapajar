@@ -20,6 +20,9 @@ export type ScannedRoutes = {
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -254,6 +257,9 @@ export type ScannedRoutes = {
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
+    'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
     'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
