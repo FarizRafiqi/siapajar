@@ -1,8 +1,10 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { FileSpreadsheet, Trash2, Eye, Sparkles } from 'lucide-react'
+import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
   id: number
@@ -24,9 +26,10 @@ interface LkpdItem {
 interface LkpdIndexProps {
   readonly lkpds: LkpdItem[]
   readonly classes: SchoolClass[]
+  readonly sequences: { id: number; title: string; context: string }[]
 }
 
-export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
+export default function LkpdIndex({ lkpds, classes, sequences }: LkpdIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingLkpd, setDeletingLkpd] = useState<LkpdItem | null>(null)
 
@@ -37,6 +40,7 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
     theme: '',
     subtheme: '',
     ageGroup: 'Kelompok B (5-6 Tahun)',
+    learningSequenceId: undefined as number | undefined,
   })
 
   const handleGenerate = () => {
@@ -56,14 +60,21 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
   }
 
   return (
-    <DashboardWrapper title="LKPD Anak" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'LKPD Anak' }]}>
+    <DashboardWrapper
+      title="LKPD Anak"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'LKPD Anak' }]}
+    >
       <Head title="LKPD Anak — Lembar Aktivitas TK/RA" />
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">LKPD / Lembar Aktivitas Anak</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">Lembar Kerja Peserta Didik TK/RA (Menebalkan, Mencocokkan, Mewarnai, Emosi)</p>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              LKPD / Lembar Aktivitas Anak
+            </h2>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Lembar Kerja Peserta Didik TK/RA (Menebalkan, Mencocokkan, Mewarnai, Emosi)
+            </p>
           </div>
           <button
             onClick={() => setShowGenerateModal(true)}
@@ -77,7 +88,9 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
 
         {!hasClasses && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Buat kelas terlebih dahulu sebelum membuat LKPD.</p>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Buat kelas terlebih dahulu sebelum membuat LKPD.
+            </p>
             <Link
               href="/classes"
               className="mt-2 inline-block rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
@@ -90,17 +103,26 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
         {lkpds.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <FileSpreadsheet className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">Belum ada LKPD</h3>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">Generate lembar aktivitas siswa pertama Anda dengan AI</p>
+            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
+              Belum ada LKPD
+            </h3>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+              Generate lembar aktivitas siswa pertama Anda dengan AI
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {lkpds.map((item) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-neutral-900 dark:text-white">{item.title}</h3>
+                      <h3 className="font-semibold text-neutral-900 dark:text-white">
+                        {item.title}
+                      </h3>
                       <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                         {item.ageGroup}
                       </span>
@@ -144,11 +166,16 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Generate LKPD / Lembar Aktivitas AI</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Generate LKPD / Lembar Aktivitas AI
+              </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelompok
                 </label>
                 <select
@@ -164,8 +191,16 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
                   ))}
                 </select>
               </div>
+              <CurriculumSequenceSelect
+                sequences={sequences}
+                value={data.learningSequenceId}
+                onChange={(value) => setData('learningSequenceId', value)}
+              />
               <div>
-                <label htmlFor="ageGroup" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="ageGroup"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelompok Usia Anak
                 </label>
                 <select
@@ -180,7 +215,10 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
                 </select>
               </div>
               <div>
-                <label htmlFor="theme" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="theme"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tema Utama
                 </label>
                 <input
@@ -194,7 +232,10 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
                 {errors.theme && <p className="mt-1 text-sm text-red-500">{errors.theme}</p>}
               </div>
               <div>
-                <label htmlFor="subtheme" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="subtheme"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Sub-Tema (opsional)
                 </label>
                 <input
@@ -234,7 +275,7 @@ export default function LkpdIndex({ lkpds, classes }: LkpdIndexProps) {
           <div className="w-full max-w-md rounded-xl bg-white p-6 dark:bg-neutral-900">
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Hapus LKPD?</h3>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-              Apakah Anda yakin ingin menghapus "{deletingLkpd.title}"?
+              Apakah Anda yakin ingin menghapus &quot;{deletingLkpd.title}&quot;?
             </p>
             <div className="mt-6 flex gap-3">
               <button

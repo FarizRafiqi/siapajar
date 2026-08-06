@@ -12,6 +12,24 @@ const routes = {
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
     types: placeholder as Registry['home']['types'],
   },
+  'health': {
+    methods: ["GET","HEAD"],
+    pattern: '/health',
+    tokens: [{"old":"/health","type":0,"val":"health","end":""}],
+    types: placeholder as Registry['health']['types'],
+  },
+  'privacy': {
+    methods: ["GET","HEAD"],
+    pattern: '/privacy',
+    tokens: [{"old":"/privacy","type":0,"val":"privacy","end":""}],
+    types: placeholder as Registry['privacy']['types'],
+  },
+  'terms': {
+    methods: ["GET","HEAD"],
+    pattern: '/terms',
+    tokens: [{"old":"/terms","type":0,"val":"terms","end":""}],
+    types: placeholder as Registry['terms']['types'],
+  },
   'coming-soon': {
     methods: ["GET","HEAD"],
     pattern: '/coming-soon',
@@ -77,6 +95,36 @@ const routes = {
     pattern: '/dashboard',
     tokens: [{"old":"/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['dashboard']['types'],
+  },
+  'curriculum.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/curriculum',
+    tokens: [{"old":"/curriculum","type":0,"val":"curriculum","end":""}],
+    types: placeholder as Registry['curriculum.index']['types'],
+  },
+  'curriculum.objectives.store': {
+    methods: ["POST"],
+    pattern: '/curriculum/objectives',
+    tokens: [{"old":"/curriculum/objectives","type":0,"val":"curriculum","end":""},{"old":"/curriculum/objectives","type":0,"val":"objectives","end":""}],
+    types: placeholder as Registry['curriculum.objectives.store']['types'],
+  },
+  'curriculum.sequences.store': {
+    methods: ["POST"],
+    pattern: '/curriculum/sequences',
+    tokens: [{"old":"/curriculum/sequences","type":0,"val":"curriculum","end":""},{"old":"/curriculum/sequences","type":0,"val":"sequences","end":""}],
+    types: placeholder as Registry['curriculum.sequences.store']['types'],
+  },
+  'curriculum.sequences.update': {
+    methods: ["PUT"],
+    pattern: '/curriculum/sequences/:id',
+    tokens: [{"old":"/curriculum/sequences/:id","type":0,"val":"curriculum","end":""},{"old":"/curriculum/sequences/:id","type":0,"val":"sequences","end":""},{"old":"/curriculum/sequences/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['curriculum.sequences.update']['types'],
+  },
+  'curriculum.indicators.store': {
+    methods: ["POST"],
+    pattern: '/curriculum/indicators',
+    tokens: [{"old":"/curriculum/indicators","type":0,"val":"curriculum","end":""},{"old":"/curriculum/indicators","type":0,"val":"indicators","end":""}],
+    types: placeholder as Registry['curriculum.indicators.store']['types'],
   },
   'classes.index': {
     methods: ["GET","HEAD"],
@@ -522,6 +570,24 @@ const routes = {
     tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['report-cards.exportPdf']['types'],
   },
+  'report-cards.narratives.save': {
+    methods: ["POST"],
+    pattern: '/report-cards/:classId/:semesterId/:studentId/narratives',
+    tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/narratives","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/narratives","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/narratives","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/narratives","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/narratives","type":0,"val":"narratives","end":""}],
+    types: placeholder as Registry['report-cards.narratives.save']['types'],
+  },
+  'report-cards.narratives.generate': {
+    methods: ["POST"],
+    pattern: '/report-cards/:classId/:semesterId/narratives/generate',
+    tokens: [{"old":"/report-cards/:classId/:semesterId/narratives/generate","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/narratives/generate","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/narratives/generate","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/narratives/generate","type":0,"val":"narratives","end":""},{"old":"/report-cards/:classId/:semesterId/narratives/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['report-cards.narratives.generate']['types'],
+  },
+  'report-narratives.approve': {
+    methods: ["POST"],
+    pattern: '/report-narratives/:id/approve',
+    tokens: [{"old":"/report-narratives/:id/approve","type":0,"val":"report-narratives","end":""},{"old":"/report-narratives/:id/approve","type":1,"val":"id","end":""},{"old":"/report-narratives/:id/approve","type":0,"val":"approve","end":""}],
+    types: placeholder as Registry['report-narratives.approve']['types'],
+  },
   'subjects.index': {
     methods: ["GET","HEAD"],
     pattern: '/subjects',
@@ -677,6 +743,24 @@ const routes = {
     pattern: '/admin/ai-settings/models',
     tokens: [{"old":"/admin/ai-settings/models","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/models","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/models","type":0,"val":"models","end":""}],
     types: placeholder as Registry['admin.ai-settings.models']['types'],
+  },
+  'admin.ai-settings.oauth.openai.start': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/ai-settings/oauth/openai/start',
+    tokens: [{"old":"/admin/ai-settings/oauth/openai/start","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/oauth/openai/start","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/oauth/openai/start","type":0,"val":"oauth","end":""},{"old":"/admin/ai-settings/oauth/openai/start","type":0,"val":"openai","end":""},{"old":"/admin/ai-settings/oauth/openai/start","type":0,"val":"start","end":""}],
+    types: placeholder as Registry['admin.ai-settings.oauth.openai.start']['types'],
+  },
+  'admin.ai-settings.oauth.gemini.start': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/ai-settings/oauth/gemini/start',
+    tokens: [{"old":"/admin/ai-settings/oauth/gemini/start","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/oauth/gemini/start","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/oauth/gemini/start","type":0,"val":"oauth","end":""},{"old":"/admin/ai-settings/oauth/gemini/start","type":0,"val":"gemini","end":""},{"old":"/admin/ai-settings/oauth/gemini/start","type":0,"val":"start","end":""}],
+    types: placeholder as Registry['admin.ai-settings.oauth.gemini.start']['types'],
+  },
+  'admin.ai-settings.oauth.gemini.callback': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/ai-settings/oauth/gemini/callback',
+    tokens: [{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"oauth","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"gemini","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"callback","end":""}],
+    types: placeholder as Registry['admin.ai-settings.oauth.gemini.callback']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

@@ -26,6 +26,9 @@ export default function Onboarding({ role }: OnboardingProps) {
   const [step, setStep] = useState(1)
   const { data, setData, post, processing, errors, transform } = useForm({
     educationLevel: '' as 'tk' | 'sd' | '',
+    institutionType: 'tk' as 'tk' | 'ra',
+    curriculumVersion: 'Kurikulum Merdeka',
+    defaultGroupContext: 'b' as 'a' | 'b',
     schoolName: '',
   })
 
@@ -188,6 +191,49 @@ export default function Onboarding({ role }: OnboardingProps) {
                       )}
                     </button>
                   </div>
+
+                  {data.educationLevel === 'tk' && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="institutionType"
+                          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >
+                          Profil lembaga
+                        </label>
+                        <select
+                          id="institutionType"
+                          value={data.institutionType}
+                          onChange={(e) =>
+                            setData('institutionType', e.target.value as 'tk' | 'ra')
+                          }
+                          className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        >
+                          <option value="tk">TK</option>
+                          <option value="ra">RA</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="defaultGroupContext"
+                          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >
+                          Kelompok awal
+                        </label>
+                        <select
+                          id="defaultGroupContext"
+                          value={data.defaultGroupContext}
+                          onChange={(e) =>
+                            setData('defaultGroupContext', e.target.value as 'a' | 'b')
+                          }
+                          className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        >
+                          <option value="a">Kelompok A</option>
+                          <option value="b">Kelompok B</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="pt-4 flex justify-end">
                     <button

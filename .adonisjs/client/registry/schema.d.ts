@@ -19,6 +19,42 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'health': {
+    methods: ["GET","HEAD"]
+    pattern: '/health'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'privacy': {
+    methods: ["GET","HEAD"]
+    pattern: '/privacy'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'terms': {
+    methods: ["GET","HEAD"]
+    pattern: '/terms'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'coming-soon': {
     methods: ["GET","HEAD"]
     pattern: '/coming-soon'
@@ -142,6 +178,66 @@ export interface Registry {
   'dashboard': {
     methods: ["GET","HEAD"]
     pattern: '/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/curriculum'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.objectives.store': {
+    methods: ["POST"]
+    pattern: '/curriculum/objectives'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.sequences.store': {
+    methods: ["POST"]
+    pattern: '/curriculum/sequences'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.sequences.update': {
+    methods: ["PUT"]
+    pattern: '/curriculum/sequences/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.indicators.store': {
+    methods: ["POST"]
+    pattern: '/curriculum/indicators'
     types: {
       body: {}
       paramsTuple: []
@@ -1039,6 +1135,42 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'report-cards.narratives.save': {
+    methods: ["POST"]
+    pattern: '/report-cards/:classId/:semesterId/:studentId/narratives'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.narratives.generate': {
+    methods: ["POST"]
+    pattern: '/report-cards/:classId/:semesterId/narratives/generate'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-narratives.approve': {
+    methods: ["POST"]
+    pattern: '/report-narratives/:id/approve'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'subjects.index': {
     methods: ["GET","HEAD"]
     pattern: '/subjects'
@@ -1342,6 +1474,42 @@ export interface Registry {
   'admin.ai-settings.models': {
     methods: ["POST"]
     pattern: '/admin/ai-settings/models'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.oauth.openai.start': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/ai-settings/oauth/openai/start'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.oauth.gemini.start': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/ai-settings/oauth/gemini/start'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.ai-settings.oauth.gemini.callback': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/ai-settings/oauth/gemini/callback'
     types: {
       body: {}
       paramsTuple: []

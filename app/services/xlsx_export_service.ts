@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx'
-import Assessment from '#models/assessment'
-import User from '#models/user'
+import type Assessment from '#models/assessment'
+import type User from '#models/user'
 
 /**
  * Layout kolom mengikuti struktur RPT Digital / e-Rapor SD agar copy-paste

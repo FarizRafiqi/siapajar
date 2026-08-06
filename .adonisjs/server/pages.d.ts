@@ -26,6 +26,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/assessments/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/assessments/show.tsx'))['default']>
     'dashboard/classes/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/index.tsx'))['default']>
     'dashboard/classes/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/show.tsx'))['default']>
+    'dashboard/curriculum/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/curriculum/index.tsx'))['default']>
     'dashboard/daily-lesson-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/index.tsx'))['default']>
     'dashboard/daily-lesson-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/show.tsx'))['default']>
     'dashboard/exams/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/index.tsx'))['default']>
@@ -51,6 +52,8 @@ declare module '@adonisjs/inertia/types' {
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
+    'legal/privacy': ExtractProps<(typeof import('../../inertia/pages/legal/privacy.tsx'))['default']>
+    'legal/terms': ExtractProps<(typeof import('../../inertia/pages/legal/terms.tsx'))['default']>
     'onboarding': ExtractProps<(typeof import('../../inertia/pages/onboarding.tsx'))['default']>
   }
 }

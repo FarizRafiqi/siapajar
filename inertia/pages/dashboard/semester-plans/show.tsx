@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Download, Pencil, Save, X } from 'lucide-react'
@@ -153,7 +153,10 @@ export default function SemesterPlanShow({ semesterPlan }: SemesterPlanShowProps
             const draftItems = data.content?.[section.key] ?? []
 
             return (
-              <div key={section.key} className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={section.key}
+                className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
                   <span>{section.icon}</span>
                   {section.title}

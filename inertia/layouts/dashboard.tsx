@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { usePage } from '@inertiajs/react'
 import { toast, Toaster } from 'sonner'
 import Sidebar from '~/components/dashboard/sidebar'
 import Header from '~/components/dashboard/header'
+import DashboardTour from '~/components/dashboard/dashboard-tour'
 import { cn } from '~/lib/utils'
 
 interface User {
@@ -31,10 +32,15 @@ export default function DashboardLayout({
 }: Readonly<DashboardLayoutProps>) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
 
   const { flash } = usePage().props as {
     flash?: { success?: string; error?: string }
   }
+  const page = usePage()
+  const isGuruDashboard = user.role === 'guru' && page.url === '/dashboard'
+  const startTour = useCallback(() => setTourOpen(true), [])
+  const finishTour = useCallback(() => setTourOpen(false), [])
 
   useEffect(() => {
     if (flash?.success) toast.success(flash.success)
@@ -63,11 +69,22 @@ export default function DashboardLayout({
           title={title}
           breadcrumbs={breadcrumbs}
           onMenuClick={() => setMobileMenuOpen(true)}
+          showTour={isGuruDashboard}
+          onTourClick={startTour}
         />
         <main className="p-4 sm:p-6">{children}</main>
       </div>
 
       <Toaster position="top-right" closeButton />
+      {isGuruDashboard && (
+        <DashboardTour
+          active={tourOpen}
+          autoStart
+          educationLevel={user.educationLevel}
+          onAutoStart={startTour}
+          onFinish={finishTour}
+        />
+      )}
     </div>
   )
 }

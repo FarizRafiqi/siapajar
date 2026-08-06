@@ -1,10 +1,12 @@
 import env from '#start/env'
 import AiSetting from '#models/ai_setting'
+import { callCodex } from '#services/codex_service'
+import { DateTime } from 'luxon'
 
 /** Error yang aman ditampilkan langsung ke guru — bukan stack trace. */
 export class AiServiceError extends Error {}
 
-interface CallAiJsonOptions {
+export interface CallAiJsonOptions {
   /** Nama combo 9router — fallback kalau resolved.model belum diset. */
   combo: string
   systemPrompt: string
@@ -14,23 +16,33 @@ interface CallAiJsonOptions {
 
 interface ResolvedProvider {
   provider: '9router' | 'anthropic' | 'openai' | 'gemini'
+  authMode: 'api_key' | 'oauth'
   apiKey: string | null
   baseUrl: string | null
   model: string | null
+  oauthAccessToken: string | null
+  oauthRefreshToken: string | null
+  oauthExpiresAt: DateTime | null
+  oauthProjectId: string | null
 }
 
 async function resolveProvider(): Promise<ResolvedProvider> {
   const setting = await AiSetting.current()
 
-  // Fallback ke .env cuma valid buat 9router — kunci OpenAI/Anthropic
-  // tidak boleh diam-diam dipakai lintas provider.
+  // ROUTER_API_KEY hanya boleh dipakai saat kartu 9router dipilih.
+  // OAuth OpenAI dikelola oleh Codex CLI, bukan oleh 9router.
   const envFallback = setting.provider === '9router' ? env.get('ROUTER_API_KEY') : undefined
 
   return {
     provider: setting.provider,
+    authMode: setting.authMode || 'api_key',
     apiKey: setting.apiKey || envFallback || null,
-    baseUrl: setting.baseUrl,
+    baseUrl: setting.provider === '9router' ? setting.baseUrl : null,
     model: setting.model,
+    oauthAccessToken: setting.oauthAccessToken || null,
+    oauthRefreshToken: setting.oauthRefreshToken || null,
+    oauthExpiresAt: setting.oauthExpiresAt || null,
+    oauthProjectId: setting.oauthProjectId || null,
   }
 }
 
@@ -142,18 +154,35 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
 }
 
 async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
-  if (!resolved.apiKey)
+  let accessToken: string | null = null
+  if (resolved.authMode === 'oauth') {
+    accessToken = await refreshGeminiAccessToken(resolved)
+    if (!resolved.oauthProjectId) {
+      throw new AiServiceError('Google Cloud Project ID Gemini belum diisi.')
+    }
+  } else if (!resolved.apiKey) {
     throw new AiServiceError('API key Gemini belum diisi. Atur di halaman Konfigurasi AI.')
+  }
   if (!resolved.model) throw new AiServiceError('Model Gemini belum dipilih.')
 
   const baseUrl = resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'
-  const url = `${baseUrl}/models/${resolved.model}:generateContent?key=${resolved.apiKey}`
+  const url = accessToken
+    ? `${baseUrl}/models/${resolved.model}:generateContent`
+    : `${baseUrl}/models/${resolved.model}:generateContent?key=${resolved.apiKey}`
 
   const response = await fetchWithTimeout(
     url,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken
+          ? {
+              'Authorization': `Bearer ${accessToken}`,
+              'x-goog-user-project': resolved.oauthProjectId!,
+            }
+          : {}),
+      },
       body: JSON.stringify({
         contents: [
           {
@@ -182,6 +211,84 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
   const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
   return text
+}
+
+async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<string> {
+  if (
+    resolved.oauthAccessToken &&
+    resolved.oauthExpiresAt &&
+    resolved.oauthExpiresAt > DateTime.now().plus({ seconds: 60 })
+  ) {
+    return resolved.oauthAccessToken
+  }
+  if (!resolved.oauthRefreshToken) {
+    throw new AiServiceError('Akun Google Gemini belum terhubung. Hubungkan OAuth terlebih dahulu.')
+  }
+  const clientId = env.get('GOOGLE_CLIENT_ID')
+  const clientSecret = env.get('GOOGLE_CLIENT_SECRET')
+  if (!clientId || !clientSecret) {
+    throw new AiServiceError('GOOGLE_CLIENT_ID dan GOOGLE_CLIENT_SECRET belum dikonfigurasi.')
+  }
+  const response = await fetchWithTimeout(
+    'https://oauth2.googleapis.com/token',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: resolved.oauthRefreshToken,
+        grant_type: 'refresh_token',
+      }),
+    },
+    15_000
+  )
+  if (!response.ok)
+    throw new AiServiceError('Token OAuth Gemini kedaluwarsa. Hubungkan ulang akun Google.')
+  const payload = (await response.json()) as { access_token?: string; expires_in?: number }
+  if (!payload.access_token)
+    throw new AiServiceError('Google tidak mengembalikan access token Gemini.')
+
+  const setting = await AiSetting.current()
+  setting.oauthAccessToken = payload.access_token
+  setting.oauthExpiresAt = DateTime.now().plus({ seconds: payload.expires_in || 3600 })
+  await setting.save()
+  return payload.access_token
+}
+
+export async function listGeminiModelsForOAuth(): Promise<string[]> {
+  const resolved = await resolveProvider()
+  if (resolved.provider !== 'gemini' || resolved.authMode !== 'oauth') {
+    throw new AiServiceError('Mode OAuth Gemini belum dipilih.')
+  }
+  const accessToken = await refreshGeminiAccessToken(resolved)
+  if (!resolved.oauthProjectId) {
+    throw new AiServiceError('Google Cloud Project ID Gemini belum diisi.')
+  }
+
+  const baseUrl = 'https://generativelanguage.googleapis.com/v1beta'
+  const response = await fetchWithTimeout(
+    `${baseUrl}/models?pageSize=1000`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'x-goog-user-project': resolved.oauthProjectId,
+      },
+    },
+    15_000
+  )
+  if (!response.ok) {
+    throw new AiServiceError(`Gagal ambil daftar model Gemini OAuth (status ${response.status}).`)
+  }
+  const payload = (await response.json()) as {
+    models?: Array<{ name?: string; supportedGenerationMethods?: string[] }>
+  }
+  return (payload.models || [])
+    .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
+    .map((model) => (model.name || '').replace(/^models\//, ''))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b))
 }
 
 async function callAnthropic(
@@ -380,7 +487,10 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
   let text: string
   switch (resolved.provider) {
     case 'openai':
-      text = await callOpenAi(resolved, options)
+      text =
+        resolved.authMode === 'oauth'
+          ? await callCodex(options.systemPrompt, options.userPrompt, resolved.model)
+          : await callOpenAi(resolved, options)
       break
     case 'anthropic':
       text = await callAnthropic(resolved, options)

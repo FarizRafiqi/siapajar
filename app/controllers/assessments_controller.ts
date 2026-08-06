@@ -16,9 +16,7 @@ export default class AssessmentsController {
       .preload('schoolClass')
       .orderBy('date', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
 
     const subjects = await Subject.query()
       .where('user_id', user.id)
@@ -69,7 +67,12 @@ export default class AssessmentsController {
 
     const students = await Student.query().where('class_id', data.classId)
     for (const student of students) {
-      await Score.create({ assessmentId: assessment.id, studentId: student.id, value: null, note: null })
+      await Score.create({
+        assessmentId: assessment.id,
+        studentId: student.id,
+        value: null,
+        note: null,
+      })
     }
 
     session.flash('success', 'Penilaian berhasil dibuat')
@@ -108,7 +111,10 @@ export default class AssessmentsController {
     }
 
     const buffer = exportAssessmentScores(assessment, user)
-    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
     response.header('Content-Disposition', `attachment; filename="${assessment.title}.xlsx"`)
     return response.send(buffer)
   }

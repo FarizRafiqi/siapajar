@@ -10,7 +10,8 @@ export default class OnboardingController {
 
   async store({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { schoolName, educationLevel } = await request.validateUsing(onboardingValidator)
+    const { schoolName, educationLevel, institutionType, curriculumVersion, defaultGroupContext } =
+      await request.validateUsing(onboardingValidator)
 
     if (user.role === 'guru' && !educationLevel) {
       session.flash('error', 'Pilih jenjang pendidikan')
@@ -22,13 +23,16 @@ export default class OnboardingController {
       .whereRaw('LOWER(name) = ?', [normalizedName.toLowerCase()])
       .first()
 
-    school ??= await School.create({ name: normalizedName });
+    school ??= await School.create({ name: normalizedName })
 
     user.schoolName = normalizedName
     user.schoolId = school.id
     if (educationLevel) {
       user.educationLevel = educationLevel
     }
+    if (institutionType) user.institutionType = institutionType
+    if (curriculumVersion) user.curriculumVersion = curriculumVersion
+    if (defaultGroupContext) user.defaultGroupContext = defaultGroupContext
     await user.save()
 
     return response.redirect().toRoute('dashboard')

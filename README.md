@@ -17,16 +17,17 @@ These are referenced in `.env.example` / the product roadmap but have no code wi
 
 - **Payment:** Xendit
 - **WhatsApp notifications:** Baileys
-- **Background queue:** BullMQ + Redis
 
 ## Quick Start
 
-### 1. Set up PostgreSQL
+### 1. Set up PostgreSQL and Redis natively
 
-Create a local Postgres database (no `docker-compose.yml` is provided yet — use a local Postgres install, or run your own container):
+Install PostgreSQL and Redis using the native packages for your operating system, then make sure both services listen on their default local ports. AdonisJS Lucid owns the PostgreSQL connection and `@adonisjs/redis` owns the Redis connection; there is no Docker requirement.
 
 ```bash
-createdb siapajar
+# Verify native services
+psql --version
+redis-cli ping
 ```
 
 ### 2. Install dependencies
@@ -62,6 +63,12 @@ npm run dev
 
 Open http://localhost:3333
 
+For local development without a Redis worker, set `QUEUE_DRIVER=sync`. For production or a shared environment, set `QUEUE_DRIVER=redis` and run the worker in a separate process:
+
+```bash
+node ace queue:work
+```
+
 ## Project Structure
 
 ```
@@ -83,7 +90,7 @@ siapajar/
 ├── providers/               # AdonisJS service providers
 ├── start/                   # routes.ts, kernel.ts, env.ts
 ├── docs/                    # roles-and-permissions.md, etc.
-├── Dockerfile                # production build image
+├── Dockerfile                # optional production image; local setup does not require Docker
 └── PRD-SiapAjar.md          # Product Requirements Document
 ```
 
@@ -98,9 +105,39 @@ Required:
 
 Optional (only needed for specific features):
 
-- `ROUTER_API_KEY`, `ROUTER_API_URL` — AI generation via 9router/OpenAI/Anthropic-compatible endpoint
-- `XENDIT_KEY` — payment integration (not yet implemented in code)
-- `REDIS_HOST`, `REDIS_PORT`, `WA_SESSION_DIR` — reserved for planned queue/WhatsApp integrations (not yet implemented)
+- `ROUTER_API_KEY`, `ROUTER_API_URL` — AI generation only when the 9router card is selected
+- `CODEX_CLI_PATH` — optional path to the official Codex CLI for direct OpenAI ChatGPT OAuth
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GEMINI_OAUTH_PROJECT_ID` — direct Gemini Google OAuth; add the callback URL from `.env.example` to the Google OAuth client
+- `XENDIT_KEY` — reserved for payment integration; billing is intentionally outside the beta scope
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `QUEUE_DRIVER`, `AI_QUEUE_*`, `WA_SESSION_DIR` — queue/WhatsApp configuration
+
+## Kurikulum RA/TK
+
+The curriculum flow is intentionally controlled around one shared PAUD Fase Fondasi CP library:
+
+`CP → TP → ATP → IKTP/evidence → narrative report`
+
+CP is seeded as reference data. Teachers can create custom TP, arrange an ATP for Kelompok A/B, define observable IKTP criteria, attach assessment evidence, and edit/approve narrative report drafts. TK and RA are stored as institution profiles; they do not duplicate CP data.
+
+Run the curriculum seed after migrations:
+
+```bash
+node ace db:seed --files database/seeders/curriculum_seeder.ts
+```
+
+Start the AdonisJS queue worker in a separate terminal:
+
+```bash
+node ace queue:work
+```
+
+Check the native services through the application health endpoint:
+
+```bash
+curl http://localhost:3333/health
+```
+
+The official AdonisJS queue package documents Redis as the production adapter and Sync as the development/test adapter. Redis is configured in `config/redis.ts`; queue behavior is configured in `config/queue.ts`. No `docker-compose` file is required by this project.
 
 ## License
 

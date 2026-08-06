@@ -92,7 +92,10 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
   }
 
   return (
-    <DashboardWrapper title="Mata Pelajaran" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Mata Pelajaran' }]}>
+    <DashboardWrapper
+      title="Mata Pelajaran"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Mata Pelajaran' }]}
+    >
       <Head title="Mata Pelajaran" />
 
       <div className="space-y-6">
@@ -259,7 +262,9 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
                 </label>
                 <select
                   value={data.gradeLevel ?? ''}
-                  onChange={(e) => setData('gradeLevel', e.target.value === '' ? null : Number(e.target.value))}
+                  onChange={(e) =>
+                    setData('gradeLevel', e.target.value === '' ? null : Number(e.target.value))
+                  }
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
                   {gradeOptions.map((opt) => (
@@ -272,7 +277,10 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
             </div>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => { setShowCreateModal(false); reset() }}
+                onClick={() => {
+                  setShowCreateModal(false)
+                  reset()
+                }}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal
@@ -319,7 +327,9 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
                 </label>
                 <select
                   value={data.gradeLevel ?? ''}
-                  onChange={(e) => setData('gradeLevel', e.target.value === '' ? null : Number(e.target.value))}
+                  onChange={(e) =>
+                    setData('gradeLevel', e.target.value === '' ? null : Number(e.target.value))
+                  }
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 >
                   {gradeOptions.map((opt) => (
@@ -332,7 +342,10 @@ export default function SubjectsIndex({ subjects, educationLevel }: Readonly<Sub
             </div>
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => { setEditingSubject(null); reset() }}
+                onClick={() => {
+                  setEditingSubject(null)
+                  reset()
+                }}
                 className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Batal

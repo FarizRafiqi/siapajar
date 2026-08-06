@@ -24,9 +24,7 @@ export function SpotlightCard({ children, className = '' }: Readonly<SpotlightCa
     setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top })
   }
 
-  const spotlightColor = isDark
-    ? 'rgba(16,185,129,0.12)'
-    : 'rgba(16,185,129,0.08)'
+  const spotlightColor = isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.08)'
 
   return (
     <motion.div

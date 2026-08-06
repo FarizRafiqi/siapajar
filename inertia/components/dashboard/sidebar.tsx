@@ -22,6 +22,7 @@ import {
   X,
   FileSpreadsheet,
   Presentation,
+  Route,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
@@ -46,6 +47,7 @@ interface SidebarProps {
 
 const guruSdNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
   { name: 'Kelas', href: '/classes', icon: Users },
   { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
   { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
@@ -58,6 +60,7 @@ const guruSdNavigation = [
 
 const guruTkNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
   { name: 'Kelompok', href: '/classes', icon: Users },
   { name: 'RPPM', href: '/rppm', icon: CalendarRange },
   { name: 'RPPH', href: '/rpph', icon: CalendarDays },
@@ -79,9 +82,7 @@ const adminNavigation = [
   { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
 ]
 
-const principalNavigation = [
-  { name: 'Dashboard', href: '/principal', icon: LayoutDashboard },
-]
+const principalNavigation = [{ name: 'Dashboard', href: '/principal', icon: LayoutDashboard }]
 
 export default function Sidebar({
   user,
@@ -133,6 +134,7 @@ export default function Sidebar({
       )}
 
       <aside
+        data-tour="sidebar"
         className={cn(
           'fixed left-0 top-0 z-50 h-screen w-64 border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950',
           'md:transition-all',
@@ -147,7 +149,12 @@ export default function Sidebar({
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
               <span className="text-sm font-bold text-white">S</span>
             </div>
-            <span className={cn('text-lg font-semibold text-neutral-900 dark:text-white', collapsed && 'md:hidden')}>
+            <span
+              className={cn(
+                'text-lg font-semibold text-neutral-900 dark:text-white',
+                collapsed && 'md:hidden'
+              )}
+            >
               SiapAjar
             </span>
           </Link>
@@ -198,7 +205,9 @@ export default function Sidebar({
                 <item.icon
                   className={cn(
                     'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500 dark:text-neutral-400'
+                    isActive
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-neutral-500 dark:text-neutral-400'
                   )}
                 />
                 <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
@@ -209,7 +218,7 @@ export default function Sidebar({
 
         {/* User section */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef} data-tour="profile-menu">
             <button
               onClick={() => setDropdownOpen((prev) => !prev)}
               className={cn(

@@ -4,7 +4,9 @@ import SchoolClass from '#models/school_class'
 import { generateLkpdValidator } from '#validators/generate'
 import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
+import { getCurriculumContext } from '#services/curriculum_context_service'
 import { lkpdPrompt } from '#services/ai_prompts'
+import LearningSequence from '#models/learning_sequence'
 
 export default class LkpdsController {
   async index({ inertia, auth }: HttpContext) {
@@ -14,13 +16,13 @@ export default class LkpdsController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
+    const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/lkpd/index', {
       lkpds: lkpds.map((l) => l.toJSON()),
       classes: classes.map((c) => c.toJSON()),
+      sequences: sequences.map((s) => s.toJSON()),
     })
   }
 
@@ -43,7 +45,8 @@ export default class LkpdsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, theme, subtheme, ageGroup } = await request.validateUsing(generateLkpdValidator)
+    const { classId, theme, subtheme, ageGroup, learningSequenceId } =
+      await request.validateUsing(generateLkpdValidator)
 
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
@@ -55,6 +58,7 @@ export default class LkpdsController {
       return response.redirect().back()
     }
 
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     let content: Record<string, any>
     try {
       const prompt = lkpdPrompt({
@@ -65,12 +69,17 @@ export default class LkpdsController {
       })
 
       content = await aiQueueService.enqueueAiJson<Record<string, any>>({
+        userId: user.id,
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
+      content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate LKPD. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate LKPD. Coba lagi.'
+      )
       return response.redirect().back()
     }
 
@@ -95,10 +104,7 @@ export default class LkpdsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const lkpd = await Lkpd.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const lkpd = await Lkpd.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!lkpd) {
       return response.redirect('/lkpd')

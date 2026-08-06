@@ -34,10 +34,16 @@ export default await Env.create(new URL('../', import.meta.url), {
   // Redis
   REDIS_HOST: Env.schema.string(),
   REDIS_PORT: Env.schema.number(),
+  REDIS_PASSWORD: Env.schema.secret.optional(),
+  QUEUE_DRIVER: Env.schema.enum(['redis', 'sync'] as const),
+  AI_QUEUE_MAX_CONCURRENCY: Env.schema.number.optional(),
+  AI_QUEUE_MAX_ATTEMPTS: Env.schema.number.optional(),
 
   // AI Router (9router.com)
   ROUTER_API_KEY: Env.schema.string.optional(),
   ROUTER_API_URL: Env.schema.string.optional(),
+  APP_URL: Env.schema.string.optional(),
+  CODEX_CLI_PATH: Env.schema.string.optional(),
 
   // Payment (Xendit)
   XENDIT_KEY: Env.schema.string.optional(),
@@ -52,4 +58,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   GOOGLE_CLIENT_ID: Env.schema.string.optional(),
   GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
   GOOGLE_CALLBACK_URL: Env.schema.string.optional(),
+  GEMINI_OAUTH_CALLBACK_URL: Env.schema.string.optional(),
+  GEMINI_OAUTH_PROJECT_ID: Env.schema.string.optional(),
 })

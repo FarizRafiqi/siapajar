@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Download, Pencil, Save, X } from 'lucide-react'
@@ -86,9 +86,7 @@ export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Program Tahunan — {annualPlan.subject}
             </h2>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              {annualPlan.academicYear.name}
-            </p>
+            <p className="text-neutral-600 dark:text-neutral-400">{annualPlan.academicYear.name}</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -142,7 +140,10 @@ export default function AnnualPlanShow({ annualPlan }: AnnualPlanShowProps) {
             const draftItems = data.content?.[section.key] ?? []
 
             return (
-              <div key={section.key} className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={section.key}
+                className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white">
                   <span>{section.icon}</span>
                   {section.title}

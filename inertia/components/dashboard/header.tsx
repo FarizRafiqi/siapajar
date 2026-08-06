@@ -1,13 +1,21 @@
-import { Menu, Moon, Sun } from 'lucide-react'
+import { CircleHelp, Menu, Moon, Sun } from 'lucide-react'
 import { useState } from 'react'
 
 interface HeaderProps {
   title?: string
   breadcrumbs?: { label: string; href?: string }[]
   onMenuClick?: () => void
+  showTour?: boolean
+  onTourClick?: () => void
 }
 
-export default function Header({ title, breadcrumbs, onMenuClick }: Readonly<HeaderProps>) {
+export default function Header({
+  title,
+  breadcrumbs,
+  onMenuClick,
+  showTour,
+  onTourClick,
+}: Readonly<HeaderProps>) {
   const [darkMode, setDarkMode] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   )
@@ -64,13 +72,23 @@ export default function Header({ title, breadcrumbs, onMenuClick }: Readonly<Hea
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {showTour && (
+          <button
+            type="button"
+            onClick={onTourClick}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+            aria-label="Buka tutorial dashboard"
+          >
+            <CircleHelp className="h-5 w-5" />
+            <span className="hidden sm:inline">Lihat tutorial</span>
+          </button>
+        )}
         <button
           onClick={toggleDarkMode}
           className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
           {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-
       </div>
     </header>
   )

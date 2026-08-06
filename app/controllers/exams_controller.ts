@@ -8,6 +8,7 @@ import { exportExam } from '#services/export_service'
 import { exportExamPdf } from '#services/pdf_export_service'
 import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
+import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
@@ -26,9 +27,7 @@ export default class ExamsController {
       .preload('schoolClass')
       .orderBy('created_at', 'desc')
 
-    const classes = await SchoolClass.query()
-      .where('user_id', user.id)
-      .orderBy('name')
+    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
 
     const subjects = await Subject.query()
       .where('user_id', user.id)
@@ -62,27 +61,24 @@ export default class ExamsController {
 
   async export({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
     }
 
     const buffer = await exportExam(exam, user)
-    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
     response.header('Content-Disposition', `attachment; filename="${exam.title}.docx"`)
     return response.send(buffer)
   }
 
   async exportPdf({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -110,10 +106,7 @@ export default class ExamsController {
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -128,10 +121,7 @@ export default class ExamsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const exam = await Exam.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!exam) {
       return response.redirect('/exams')
@@ -145,7 +135,7 @@ export default class ExamsController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, type, topic, questionCount, examMode } =
+    const { classId, subject, type, topic, questionCount, examMode, learningSequenceId } =
       await request.validateUsing(generateExamValidator)
 
     // Pastikan kelas milik user yang login
@@ -160,6 +150,7 @@ export default class ExamsController {
     }
 
     let questions: Record<string, any>[]
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     try {
       const isPaud = user.isTk
       const prompt = examPrompt({
@@ -171,6 +162,7 @@ export default class ExamsController {
         isPaud,
       })
       const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
+        userId: user.id,
         combo: 'siapajar-soal',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
@@ -181,14 +173,20 @@ export default class ExamsController {
         instruction: typeof q.instruction === 'string' ? q.instruction : '',
         visualType: typeof q.visualType === 'string' ? q.visualType : '',
         rubric: typeof q.rubric === 'string' ? q.rubric : '',
-        options: Array.isArray(q.options) ? q.options.filter((o: unknown) => typeof o === 'string') : [],
+        options: Array.isArray(q.options)
+          ? q.options.filter((o: unknown) => typeof o === 'string')
+          : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
         type: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
+        curriculum,
       }))
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate soal. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

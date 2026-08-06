@@ -88,10 +88,7 @@ export default class SubjectsController {
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const subject = await Subject.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const subject = await Subject.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!subject) {
       return response.redirect('/subjects')
@@ -106,10 +103,7 @@ export default class SubjectsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const subject = await Subject.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const subject = await Subject.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!subject) {
       return response.redirect('/subjects')

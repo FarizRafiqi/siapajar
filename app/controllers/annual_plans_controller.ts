@@ -6,8 +6,11 @@ import { createAnnualPlanValidator, updateAnnualPlanValidator } from '#validator
 import { generateAnnualPlanValidator } from '#validators/generate'
 import { exportAnnualPlan } from '#services/export_service'
 import { exportAnnualPlanPdf } from '#services/pdf_export_service'
-import { callAiJson, normalizeStringArraySections, AiServiceError } from '#services/ai_service'
+import { normalizeStringArraySections, AiServiceError } from '#services/ai_service'
 import { annualPlanPrompt } from '#services/ai_prompts'
+import { getCurriculumContext } from '#services/curriculum_context_service'
+import { callAiJsonForUser } from '#services/user_ai_service'
+import LearningSequence from '#models/learning_sequence'
 
 export default class AnnualPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -24,11 +27,13 @@ export default class AnnualPlansController {
       .where('education_level', user.educationLevel || 'sd')
       .where('is_active', true)
       .orderBy('name')
+    const sequences = await LearningSequence.query().where('user_id', user.id).orderBy('title')
 
     return inertia.render('dashboard/annual-plans/index', {
       annualPlans: annualPlans.map((p) => p.toJSON()),
       academicYears: academicYears.map((y) => y.toJSON()),
       subjects: subjects.map((s) => s.toJSON()),
+      sequences: sequences.map((s) => s.toJSON()),
     })
   }
 
@@ -61,8 +66,14 @@ export default class AnnualPlansController {
     }
 
     const buffer = await exportAnnualPlan(annualPlan, user)
-    response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response.header('Content-Disposition', `attachment; filename="Protah ${annualPlan.subject}.docx"`)
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="Protah ${annualPlan.subject}.docx"`
+    )
     return response.send(buffer)
   }
 
@@ -79,7 +90,10 @@ export default class AnnualPlansController {
 
     const buffer = await exportAnnualPlanPdf(annualPlan, user)
     response.header('Content-Type', 'application/pdf')
-    response.header('Content-Disposition', `attachment; filename="Protah ${annualPlan.subject}.pdf"`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="Protah ${annualPlan.subject}.pdf"`
+    )
     return response.send(buffer)
   }
 
@@ -133,7 +147,9 @@ export default class AnnualPlansController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { academicYearId, subject } = await request.validateUsing(generateAnnualPlanValidator)
+    const { academicYearId, subject, learningSequenceId } = await request.validateUsing(
+      generateAnnualPlanValidator
+    )
 
     const academicYear = await AcademicYear.find(academicYearId)
     if (!academicYear) {
@@ -141,17 +157,27 @@ export default class AnnualPlansController {
       return response.redirect().back()
     }
 
-    let content: Record<string, string[]>
+    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+    let content: Record<string, any>
     try {
       const prompt = annualPlanPrompt({ subject })
-      const raw = await callAiJson<Record<string, unknown>>({
+      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
-      content = normalizeStringArraySections(raw, ['kompetensi', 'alokasiWaktu', 'kegiatan', 'minggu'])
+      content = normalizeStringArraySections(raw, [
+        'kompetensi',
+        'alokasiWaktu',
+        'kegiatan',
+        'minggu',
+      ])
+      content.curriculum = curriculum
     } catch (error) {
-      session.flash('error', error instanceof AiServiceError ? error.message : 'Gagal generate Protah. Coba lagi.')
+      session.flash(
+        'error',
+        error instanceof AiServiceError ? error.message : 'Gagal generate Protah. Coba lagi.'
+      )
       return response.redirect().back()
     }
 

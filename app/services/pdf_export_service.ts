@@ -5,6 +5,12 @@ import type AnnualPlan from '#models/annual_plan'
 import type SemesterPlan from '#models/semester_plan'
 import type User from '#models/user'
 import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
+import { assertEntitled, recordUsage } from '#services/entitlement_service'
+
+async function consumePdfExport(user: User) {
+  await assertEntitled(user, 'export_pdf')
+  await recordUsage(user.id, 'export_pdf', 1)
+}
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
   midterm: 'PTS (Penilaian Tengah Semester)',
@@ -46,6 +52,7 @@ function writeSection(doc: PDFKit.PDFDocument, title: string, items: string[]) {
 }
 
 export async function exportTeachingModulePdf(teachingModule: TeachingModule, user: User) {
+  await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensiDasar', title: 'Kompetensi Dasar' },
     { key: 'tujuanPembelajaran', title: 'Tujuan Pembelajaran' },
@@ -68,6 +75,7 @@ export async function exportTeachingModulePdf(teachingModule: TeachingModule, us
 }
 
 export async function exportExamPdf(exam: Exam, user: User) {
+  await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, EXAM_TYPE_LABELS[exam.type] ?? exam.type)
   doc.font('Helvetica-Bold').fontSize(16).text(exam.title)
@@ -97,6 +105,7 @@ export async function exportExamPdf(exam: Exam, user: User) {
 }
 
 export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User) {
+  await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensi', title: 'Kompetensi' },
     { key: 'alokasiWaktu', title: 'Alokasi Waktu' },
@@ -116,6 +125,7 @@ export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User) {
 }
 
 export async function exportSemesterPlanPdf(semesterPlan: SemesterPlan, user: User) {
+  await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'minggu', title: 'Pembagian Minggu' },
     { key: 'kegiatan', title: 'Kegiatan' },
@@ -145,6 +155,7 @@ export async function exportReportCardPdf(
   user: User,
   ctx: ReportCardContext
 ) {
+  await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
 
@@ -198,6 +209,7 @@ export async function exportNarrativeReportPdf(
   user: User,
   ctx: ReportCardContext
 ) {
+  await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
 
@@ -213,6 +225,15 @@ export async function exportNarrativeReportPdf(
       doc.font('Helvetica').fontSize(10).text(formatPaudContent(entry))
       doc.moveDown(0.5)
     }
+  }
+
+  doc.moveDown(0.75)
+  doc.font('Helvetica-Bold').fontSize(12).text('Narasi Perkembangan')
+  doc.font('Helvetica').fontSize(10)
+  for (const item of narrative.narratives) {
+    doc.font('Helvetica-Bold').text(item.element)
+    doc.font('Helvetica').text(item.content.trim() || 'Belum ada narasi yang disetujui.')
+    doc.moveDown(0.5)
   }
 
   return toBuffer(doc)

@@ -1,0 +1,235 @@
+import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import { createInterface, type Interface } from 'node:readline'
+import env from '#start/env'
+
+export class CodexServiceError extends Error {}
+
+type JsonRpcMessage = {
+  id?: number
+  method?: string
+  result?: unknown
+  error?: { message?: string }
+  params?: Record<string, any>
+}
+
+type PendingRequest = {
+  resolve: (value: unknown) => void
+  reject: (error: Error) => void
+  timer: ReturnType<typeof setTimeout>
+}
+
+type CodexAccount = {
+  type?: string
+  email?: string | null
+  planType?: string | null
+}
+
+class CodexAppServerClient {
+  private process: ChildProcessWithoutNullStreams | null = null
+  private readline: Interface | null = null
+  private initialized = false
+  private nextId = 1
+  private readonly pending = new Map<number, PendingRequest>()
+  private readonly notificationHandlers = new Set<(message: JsonRpcMessage) => void>()
+
+  private async ensureStarted() {
+    if (this.process && this.initialized) return
+
+    const binary = env.get('CODEX_CLI_PATH') || 'codex'
+    const child = spawn(binary, ['app-server', '--stdio'], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+
+    this.process = child
+    this.initialized = false
+    this.readline = createInterface({ input: child.stdout })
+    this.readline.on('line', (line) => this.handleLine(line))
+    child.stderr.on('data', () => undefined)
+    child.once('error', (error) =>
+      this.failAll(new CodexServiceError(`Codex tidak dapat dijalankan: ${error.message}`))
+    )
+    child.once('exit', () => {
+      this.failAll(
+        new CodexServiceError(
+          'Proses Codex berhenti. Pastikan Codex CLI terpasang dan sudah login.'
+        )
+      )
+      this.process = null
+      this.readline?.close()
+      this.readline = null
+      this.initialized = false
+    })
+
+    await this.requestRaw('initialize', {
+      clientInfo: { name: 'siapajar', title: 'SiapAjar', version: '1.0.0' },
+      capabilities: { optOutNotificationMethods: ['item/agentMessage/delta'] },
+    })
+    this.send({ method: 'initialized' })
+    this.initialized = true
+  }
+
+  private handleLine(line: string) {
+    if (!line.trim()) return
+    let message: JsonRpcMessage
+    try {
+      message = JSON.parse(line) as JsonRpcMessage
+    } catch {
+      return
+    }
+
+    if (typeof message.id === 'number') {
+      const pending = this.pending.get(message.id)
+      if (!pending) return
+      clearTimeout(pending.timer)
+      this.pending.delete(message.id)
+      if (message.error) {
+        pending.reject(new CodexServiceError(message.error.message || 'Codex mengembalikan error.'))
+      } else {
+        pending.resolve(message.result)
+      }
+      return
+    }
+
+    for (const handler of this.notificationHandlers) handler(message)
+  }
+
+  private send(message: Record<string, unknown>) {
+    if (!this.process?.stdin.writable) {
+      throw new CodexServiceError('Proses Codex belum siap.')
+    }
+    this.process.stdin.write(`${JSON.stringify(message)}\n`)
+  }
+
+  private requestRaw(method: string, params?: Record<string, unknown>): Promise<any> {
+    const id = this.nextId++
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id)
+        reject(new CodexServiceError(`Codex tidak merespons untuk ${method}.`))
+      }, 45_000)
+      this.pending.set(id, { resolve, reject, timer })
+      this.send({ method, id, ...(params ? { params } : {}) })
+    })
+  }
+
+  private async request(method: string, params?: Record<string, unknown>) {
+    await this.ensureStarted()
+    return this.requestRaw(method, params)
+  }
+
+  private failAll(error: Error) {
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timer)
+      pending.reject(error)
+    }
+    this.pending.clear()
+  }
+
+  async startChatGptLogin() {
+    const result = (await this.request('account/login/start', { type: 'chatgpt' })) as {
+      authUrl?: string
+    }
+    if (!result.authUrl) throw new CodexServiceError('Codex tidak mengembalikan URL login ChatGPT.')
+    return result.authUrl
+  }
+
+  async account() {
+    const result = (await this.request('account/read', { refreshToken: true })) as {
+      account?: CodexAccount | null
+    }
+    return result.account || null
+  }
+
+  async models() {
+    const result = (await this.request('model/list', { includeHidden: false })) as {
+      data?: Array<{ id?: string; slug?: string; model?: string }>
+      models?: Array<{ id?: string; slug?: string; model?: string }>
+    }
+    const entries = result.data || result.models || []
+    return entries
+      .map((entry) => entry.id || entry.slug || entry.model)
+      .filter((model): model is string => Boolean(model))
+  }
+
+  async generate(systemPrompt: string, userPrompt: string, model?: string | null) {
+    await this.ensureStarted()
+    const threadResult = (await this.requestRaw('thread/start', {
+      model: model || undefined,
+      approvalPolicy: 'never',
+      sandbox: 'read-only',
+      ephemeral: true,
+    })) as { thread?: { id?: string } }
+    const threadId = threadResult.thread?.id
+    if (!threadId) throw new CodexServiceError('Codex tidak membuat thread baru.')
+
+    let responseText = ''
+    let activeTurnId: string | undefined
+    const completed = new Promise<void>((resolve, reject) => {
+      const handler = (message: JsonRpcMessage) => {
+        const params = message.params || {}
+        if (
+          message.method === 'turn/started' &&
+          params.turn?.threadId === threadId &&
+          typeof params.turn?.id === 'string'
+        ) {
+          activeTurnId = params.turn.id
+        }
+        if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
+          this.notificationHandlers.delete(handler)
+          if (params.turn?.status === 'failed') {
+            reject(
+              new CodexServiceError(
+                params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'
+              )
+            )
+          } else {
+            resolve()
+          }
+        }
+        if (message.method === 'item/completed' && params.item?.type === 'agentMessage') {
+          responseText = typeof params.item.text === 'string' ? params.item.text : responseText
+        }
+        if (message.method === 'item/agentMessage/delta' && params.threadId === threadId) {
+          responseText += typeof params.delta === 'string' ? params.delta : ''
+        }
+      }
+      this.notificationHandlers.add(handler)
+      setTimeout(() => {
+        this.notificationHandlers.delete(handler)
+        reject(new CodexServiceError('Codex tidak menyelesaikan generate dalam waktu wajar.'))
+      }, 90_000)
+    })
+
+    const turnResult = (await this.requestRaw('turn/start', {
+      threadId,
+      model: model || undefined,
+      approvalPolicy: 'never',
+      input: [{ type: 'text', text: `${systemPrompt}\n\n${userPrompt}` }],
+    })) as { turn?: { id?: string } }
+    activeTurnId = turnResult.turn?.id
+    if (!activeTurnId) throw new CodexServiceError('Codex tidak memulai turn.')
+    await completed
+    if (!responseText.trim()) throw new CodexServiceError('Codex tidak mengembalikan konten.')
+    return responseText
+  }
+}
+
+const client = new CodexAppServerClient()
+
+export function startCodexChatGptLogin() {
+  return client.startChatGptLogin()
+}
+
+export function getCodexAccount() {
+  return client.account()
+}
+
+export function listCodexModels() {
+  return client.models()
+}
+
+export function callCodex(systemPrompt: string, userPrompt: string, model?: string | null) {
+  return client.generate(systemPrompt, userPrompt, model)
+}

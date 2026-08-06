@@ -8,7 +8,12 @@ interface AnimatedNumberProps {
   readonly decimals?: number
 }
 
-export function AnimatedNumber({ value, suffix = '', className = '', decimals = 0 }: AnimatedNumberProps) {
+export function AnimatedNumber({
+  value,
+  suffix = '',
+  className = '',
+  decimals = 0,
+}: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
   const motionValue = useMotionValue(0)
@@ -34,12 +39,16 @@ export function AnimatedNumber({ value, suffix = '', className = '', decimals = 
 
   const formattedValue =
     decimals > 0
-      ? displayValue.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      ? displayValue.toLocaleString('id-ID', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        })
       : displayValue.toLocaleString('id-ID')
 
   return (
     <motion.span ref={ref} className={className}>
-      {formattedValue}{suffix}
+      {formattedValue}
+      {suffix}
     </motion.span>
   )
 }

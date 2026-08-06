@@ -18,19 +18,13 @@ export function TracingBeam({ children, className = '' }: Readonly<TracingBeamPr
         {/* Background line */}
         <div className="h-full w-full bg-gray-200 dark:bg-gray-700/50" />
         {/* Animated gradient */}
-        <motion.div
-          className="absolute top-0 left-0 w-full"
-          style={{ y: y1, height: '30%' }}
-        >
+        <motion.div className="absolute top-0 left-0 w-full" style={{ y: y1, height: '30%' }}>
           <div className="w-full h-full bg-gradient-to-b from-emerald-500 to-transparent rounded-full" />
         </motion.div>
       </div>
 
       {/* Glowing dot */}
-      <motion.div
-        className="absolute left-[29px] w-3 h-3 z-10"
-        style={{ top: y2 }}
-      >
+      <motion.div className="absolute left-[29px] w-3 h-3 z-10" style={{ top: y2 }}>
         <div className="w-full h-full rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 dark:shadow-emerald-400/40" />
       </motion.div>
 

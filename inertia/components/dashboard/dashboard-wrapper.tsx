@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { usePage } from '@inertiajs/react'
 import DashboardLayout from '~/layouts/dashboard'
 
@@ -22,7 +22,11 @@ interface DashboardWrapperProps {
   breadcrumbs?: { label: string; href?: string }[]
 }
 
-export default function DashboardWrapper({ children, title, breadcrumbs }: Readonly<DashboardWrapperProps>) {
+export default function DashboardWrapper({
+  children,
+  title,
+  breadcrumbs,
+}: Readonly<DashboardWrapperProps>) {
   const { user } = usePage().props as unknown as PageProps
 
   return (

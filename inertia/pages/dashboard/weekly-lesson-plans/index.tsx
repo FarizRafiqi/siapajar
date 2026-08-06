@@ -1,9 +1,11 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { CalendarRange, Trash2, Eye, Sparkles } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
   id: number
@@ -22,9 +24,14 @@ interface WeeklyLessonPlan {
 interface WeeklyLessonPlansIndexProps {
   readonly weeklyLessonPlans: WeeklyLessonPlan[]
   readonly classes: SchoolClass[]
+  readonly sequences: { id: number; title: string; context: string }[]
 }
 
-export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: WeeklyLessonPlansIndexProps) {
+export default function WeeklyLessonPlansIndex({
+  weeklyLessonPlans,
+  classes,
+  sequences,
+}: WeeklyLessonPlansIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingPlan, setDeletingPlan] = useState<WeeklyLessonPlan | null>(null)
 
@@ -34,6 +41,7 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
     classId: classes[0]?.id || 0,
     theme: '',
     weekStartDate: '',
+    learningSequenceId: undefined as number | undefined,
   })
 
   const handleGenerate = () => {
@@ -53,7 +61,10 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
   }
 
   return (
-    <DashboardWrapper title="RPPM" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'RPPM' }]}>
+    <DashboardWrapper
+      title="RPPM"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'RPPM' }]}
+    >
       <Head title="RPPM" />
 
       <div className="space-y-6">
@@ -76,7 +87,9 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
 
         {!hasClasses && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Buat kelas dulu sebelum generate RPPM.</p>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Buat kelas dulu sebelum generate RPPM.
+            </p>
             <Link
               href="/classes"
               className="mt-2 inline-block rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
@@ -89,17 +102,26 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
         {weeklyLessonPlans.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <CalendarRange className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">Belum ada RPPM</h3>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">Generate rencana mingguan pertama Anda</p>
+            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
+              Belum ada RPPM
+            </h3>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+              Generate rencana mingguan pertama Anda
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {weeklyLessonPlans.map((item, index) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-neutral-900 dark:text-white">{item.theme}</h3>
+                      <h3 className="font-semibold text-neutral-900 dark:text-white">
+                        {item.theme}
+                      </h3>
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -149,11 +171,16 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Generate RPPM dengan AI</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Generate RPPM dengan AI
+              </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelompok
                 </label>
                 <select
@@ -171,7 +198,10 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
                 {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
               </div>
               <div>
-                <label htmlFor="theme" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="theme"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tema Mingguan
                 </label>
                 <input
@@ -185,7 +215,10 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
                 {errors.theme && <p className="mt-1 text-sm text-red-500">{errors.theme}</p>}
               </div>
               <div>
-                <label htmlFor="weekStartDate" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="weekStartDate"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tanggal Mulai Minggu
                 </label>
                 <input
@@ -195,8 +228,15 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
                   onChange={(e) => setData('weekStartDate', e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
-                {errors.weekStartDate && <p className="mt-1 text-sm text-red-500">{errors.weekStartDate}</p>}
+                {errors.weekStartDate && (
+                  <p className="mt-1 text-sm text-red-500">{errors.weekStartDate}</p>
+                )}
               </div>
+              <CurriculumSequenceSelect
+                sequences={sequences}
+                value={data.learningSequenceId}
+                onChange={(value) => setData('learningSequenceId', value)}
+              />
             </div>
             <div className="mt-6 flex gap-3">
               <button
@@ -227,7 +267,9 @@ export default function WeeklyLessonPlansIndex({ weeklyLessonPlans, classes }: W
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
-            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">Hapus RPPM?</h3>
+            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
+              Hapus RPPM?
+            </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
               RPPM <strong>{deletingPlan.theme}</strong> akan dihapus secara permanen.
             </p>

@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -36,7 +36,11 @@ const TYPE_LABELS: Record<string, string> = {
   summative: 'Sumatif',
 }
 
-export default function AssessmentsIndex({ assessments, classes, subjects }: AssessmentsIndexProps) {
+export default function AssessmentsIndex({
+  assessments,
+  classes,
+  subjects,
+}: AssessmentsIndexProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [deletingAssessment, setDeletingAssessment] = useState<Assessment | null>(null)
 
@@ -70,14 +74,19 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
   }
 
   return (
-    <DashboardWrapper title="Penilaian" breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Penilaian' }]}>
+    <DashboardWrapper
+      title="Penilaian"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Penilaian' }]}
+    >
       <Head title="Penilaian" />
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Penilaian</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">Input nilai per kelas, satu tabel untuk semua siswa</p>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Input nilai per kelas, satu tabel untuk semua siswa
+            </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -91,15 +100,23 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
 
         {!canCreate && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Lengkapi dulu sebelum bisa buat penilaian:</p>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Lengkapi dulu sebelum bisa buat penilaian:
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {!hasClasses && (
-                <Link href="/classes" className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60">
+                <Link
+                  href="/classes"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
                   Buat kelas dulu →
                 </Link>
               )}
               {!hasSubjects && (
-                <Link href="/subjects" className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60">
+                <Link
+                  href="/subjects"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >
                   Tambah mata pelajaran dulu →
                 </Link>
               )}
@@ -110,17 +127,26 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
         {assessments.length === 0 ? (
           <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
             <ClipboardCheck className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">Belum ada penilaian</h3>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">Buat penilaian pertama untuk mulai input nilai</p>
+            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
+              Belum ada penilaian
+            </h3>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+              Buat penilaian pertama untuk mulai input nilai
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {assessments.map((item, index) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-neutral-900 dark:text-white">{item.title}</h3>
+                      <h3 className="font-semibold text-neutral-900 dark:text-white">
+                        {item.title}
+                      </h3>
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -168,10 +194,15 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
-            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">Buat Penilaian Baru</h3>
+            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
+              Buat Penilaian Baru
+            </h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelas
                 </label>
                 <select
@@ -189,7 +220,10 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
                 {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
               </div>
               <div>
-                <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="subject"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Mata Pelajaran
                 </label>
                 <select
@@ -208,7 +242,10 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
                 {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
               </div>
               <div>
-                <label htmlFor="type" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="type"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Jenis
                 </label>
                 <select
@@ -222,7 +259,10 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
                 </select>
               </div>
               <div>
-                <label htmlFor="title" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="title"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Judul Penilaian
                 </label>
                 <input
@@ -236,7 +276,10 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
                 {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
               </div>
               <div>
-                <label htmlFor="learningObjective" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="learningObjective"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tujuan Pembelajaran (opsional)
                 </label>
                 <input
@@ -246,10 +289,15 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
                   onChange={(e) => setData('learningObjective', e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                 />
-                {errors.learningObjective && <p className="mt-1 text-sm text-red-500">{errors.learningObjective}</p>}
+                {errors.learningObjective && (
+                  <p className="mt-1 text-sm text-red-500">{errors.learningObjective}</p>
+                )}
               </div>
               <div>
-                <label htmlFor="date" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="date"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Tanggal
                 </label>
                 <input
@@ -291,9 +339,12 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
           >
-            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">Hapus Penilaian?</h3>
+            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
+              Hapus Penilaian?
+            </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Penilaian <strong>{deletingAssessment.title}</strong> beserta semua nilai siswa akan dihapus.
+              Penilaian <strong>{deletingAssessment.title}</strong> beserta semua nilai siswa akan
+              dihapus.
             </p>
             <div className="mt-6 flex gap-3">
               <button
@@ -302,7 +353,10 @@ export default function AssessmentsIndex({ assessments, classes, subjects }: Ass
               >
                 Batal
               </button>
-              <button onClick={handleDelete} className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700">
+              <button
+                onClick={handleDelete}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
                 Hapus
               </button>
             </div>

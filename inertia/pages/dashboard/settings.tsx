@@ -1,8 +1,18 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm } from '@inertiajs/react'
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Save, User, School, GraduationCap, Check, Compass, AlertTriangle, X, Camera } from 'lucide-react'
+import {
+  Save,
+  User,
+  School,
+  GraduationCap,
+  Check,
+  Compass,
+  AlertTriangle,
+  X,
+  Camera,
+} from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 function getLevelLabel(level: string | null): string {
@@ -83,9 +93,7 @@ export default function Settings({ user }: SettingsProps) {
             <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <User className="h-5 w-5 text-neutral-500" />
-                <h3 className="font-semibold text-neutral-900 dark:text-white">
-                  Profil Pengguna
-                </h3>
+                <h3 className="font-semibold text-neutral-900 dark:text-white">Profil Pengguna</h3>
               </div>
 
               {/* Avatar */}
@@ -131,7 +139,10 @@ export default function Settings({ user }: SettingsProps) {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5"
+                  >
                     Nama Lengkap
                   </label>
                   <input
@@ -147,7 +158,10 @@ export default function Settings({ user }: SettingsProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5"
+                  >
                     Alamat Email
                   </label>
                   <input
@@ -157,90 +171,113 @@ export default function Settings({ user }: SettingsProps) {
                     onChange={(e) => setData('email', e.target.value)}
                     className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
                   />
-                  {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                  )}
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
               </div>
             </div>
 
             {/* Kartu Sekolah & Jenjang — tidak relevan untuk admin */}
             {!isAdmin && (
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 p-6 space-y-4">
-              <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                <School className="h-5 w-5 text-neutral-500" />
-                <h3 className="font-semibold text-neutral-900 dark:text-white">
-                  Instansi / Sekolah
-                </h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="schoolName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Nama Sekolah
-                  </label>
-                  <input
-                    id="schoolName"
-                    type="text"
-                    value={data.schoolName}
-                    onChange={(e) => setData('schoolName', e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                  />
-                  {errors.schoolName && (
-                    <p className="text-red-500 text-sm mt-1">{errors.schoolName}</p>
-                  )}
+              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 p-6 space-y-4">
+                <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                  <School className="h-5 w-5 text-neutral-500" />
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">
+                    Instansi / Sekolah
+                  </h3>
                 </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    Jenjang Sekolah
-                  </span>
-                  <div className="grid gap-3 grid-cols-2">
-                    {/* TK/RA Card */}
-                    <button
-                      type="button"
-                      onClick={() => setData('educationLevel', 'tk')}
-                      className={cn(
-                        "relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300",
-                        data.educationLevel === 'tk'
-                          ? "border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20"
-                          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
-                      )}
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="schoolName"
+                      className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5"
                     >
-                      <Compass className={cn("h-5 w-5 mb-1.5", data.educationLevel === 'tk' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
-                      <span className="text-sm font-medium text-neutral-950 dark:text-white">RA & TK / PAUD</span>
-                      <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">KMA 450/2024 & Kemendikdasmen</span>
-                      {data.educationLevel === 'tk' && (
-                        <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
-                          <Check className="h-3 w-3" />
-                        </div>
-                      )}
-                    </button>
+                      Nama Sekolah
+                    </label>
+                    <input
+                      id="schoolName"
+                      type="text"
+                      value={data.schoolName}
+                      onChange={(e) => setData('schoolName', e.target.value)}
+                      className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    />
+                    {errors.schoolName && (
+                      <p className="text-red-500 text-sm mt-1">{errors.schoolName}</p>
+                    )}
+                  </div>
 
-                    {/* SD Card */}
-                    <button
-                      type="button"
-                      onClick={() => setData('educationLevel', 'sd')}
-                      className={cn(
-                        "relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300",
-                        data.educationLevel === 'sd'
-                          ? "border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20"
-                          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent"
-                      )}
-                    >
-                      <GraduationCap className={cn("h-5 w-5 mb-1.5", data.educationLevel === 'sd' ? "text-emerald-600 dark:text-emerald-400" : "text-neutral-400")} />
-                      <span className="text-sm font-medium text-neutral-950 dark:text-white">SD / MI</span>
-                      <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Sekolah Dasar / Madrasah Ibtidaiyah</span>
-                      {data.educationLevel === 'sd' && (
-                        <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
-                          <Check className="h-3 w-3" />
-                        </div>
-                      )}
-                    </button>
+                  <div>
+                    <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                      Jenjang Sekolah
+                    </span>
+                    <div className="grid gap-3 grid-cols-2">
+                      {/* TK/RA Card */}
+                      <button
+                        type="button"
+                        onClick={() => setData('educationLevel', 'tk')}
+                        className={cn(
+                          'relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300',
+                          data.educationLevel === 'tk'
+                            ? 'border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20'
+                            : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
+                        )}
+                      >
+                        <Compass
+                          className={cn(
+                            'h-5 w-5 mb-1.5',
+                            data.educationLevel === 'tk'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-neutral-400'
+                          )}
+                        />
+                        <span className="text-sm font-medium text-neutral-950 dark:text-white">
+                          RA & TK / PAUD
+                        </span>
+                        <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                          KMA 450/2024 & Kemendikdasmen
+                        </span>
+                        {data.educationLevel === 'tk' && (
+                          <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* SD Card */}
+                      <button
+                        type="button"
+                        onClick={() => setData('educationLevel', 'sd')}
+                        className={cn(
+                          'relative flex flex-col items-center p-4 rounded-lg border text-center transition-all duration-300',
+                          data.educationLevel === 'sd'
+                            ? 'border-emerald-600 bg-emerald-50/20 dark:border-emerald-500 dark:bg-emerald-950/10 ring-2 ring-emerald-500/20'
+                            : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
+                        )}
+                      >
+                        <GraduationCap
+                          className={cn(
+                            'h-5 w-5 mb-1.5',
+                            data.educationLevel === 'sd'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-neutral-400'
+                          )}
+                        />
+                        <span className="text-sm font-medium text-neutral-950 dark:text-white">
+                          SD / MI
+                        </span>
+                        <span className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                          Sekolah Dasar / Madrasah Ibtidaiyah
+                        </span>
+                        {data.educationLevel === 'sd' && (
+                          <div className="absolute top-2 right-2 rounded-full bg-emerald-600 text-white p-0.5">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             )}
           </div>
 
@@ -298,17 +335,20 @@ export default function Settings({ user }: SettingsProps) {
                       ke{' '}
                       <span className="font-medium text-neutral-900 dark:text-white">
                         {targetLevelLabel}
-                      </span>.
+                      </span>
+                      .
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-6 space-y-2 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800/50">
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                    <span className="font-medium">Yang berubah:</span> Menu navigasi akan menyesuaikan dengan jenjang baru.
+                    <span className="font-medium">Yang berubah:</span> Menu navigasi akan
+                    menyesuaikan dengan jenjang baru.
                   </p>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                    <span className="font-medium">Yang tetap:</span> Semua dokumen yang sudah dibuat (Protah, Promes, RPPM, RPPH, Modul Ajar, dll.) tetap tersimpan dan bisa diakses.
+                    <span className="font-medium">Yang tetap:</span> Semua dokumen yang sudah dibuat
+                    (Protah, Promes, RPPM, RPPH, Modul Ajar, dll.) tetap tersimpan dan bisa diakses.
                   </p>
                 </div>
 

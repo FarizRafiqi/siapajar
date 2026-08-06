@@ -1,4 +1,4 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Box, ShieldAlert } from 'lucide-react'
@@ -80,7 +80,9 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{mediaModule.title}</h2>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                {mediaModule.title}
+              </h2>
               <p className="text-neutral-600 dark:text-neutral-400">
                 Kelompok {mediaModule.schoolClass.name} • {slides.length} Slide Presentasi Visual
               </p>
@@ -93,24 +95,33 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
           <div className="rounded-2xl border border-neutral-200 bg-neutral-900 p-8 text-white shadow-xl dark:border-neutral-800">
             <div className="flex items-center justify-between border-b border-neutral-800 pb-4 text-xs font-semibold text-emerald-400">
               <span className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" /> SLIDE PRESENTASI VISUAL ANAK (SLIDE {currentSlide.slideNumber} OF {slides.length})
+                <Sparkles className="h-4 w-4" /> SLIDE PRESENTASI VISUAL ANAK (SLIDE{' '}
+                {currentSlide.slideNumber} OF {slides.length})
               </span>
               <span>Tema: {mediaModule.theme}</span>
             </div>
 
             {/* Slide Body Container */}
             <div className="my-8 flex min-h-[300px] flex-col justify-center rounded-xl bg-neutral-850 p-8 text-center border border-neutral-800">
-              <h1 className="text-3xl font-extrabold text-white tracking-wide">{currentSlide.title}</h1>
-              
+              <h1 className="text-3xl font-extrabold text-white tracking-wide">
+                {currentSlide.title}
+              </h1>
+
               <div className="mt-6 rounded-lg bg-neutral-800/80 p-6 text-emerald-200 border border-emerald-900/40">
-                <p className="text-sm font-semibold uppercase text-emerald-400">Visual / Ilustrasi Pembuka:</p>
+                <p className="text-sm font-semibold uppercase text-emerald-400">
+                  Visual / Ilustrasi Pembuka:
+                </p>
                 <p className="mt-2 text-lg italic">{currentSlide.visualDescription}</p>
               </div>
 
               {currentSlide.keyQuestion && (
                 <div className="mt-6 rounded-lg bg-amber-950/40 p-4 text-amber-200 border border-amber-900/40">
-                  <p className="text-xs font-bold uppercase text-amber-400">Pertanyaan Pemantik Anak:</p>
-                  <p className="mt-1 text-xl font-semibold">"{currentSlide.keyQuestion}"</p>
+                  <p className="text-xs font-bold uppercase text-amber-400">
+                    Pertanyaan Pemantik Anak:
+                  </p>
+                  <p className="mt-1 text-xl font-semibold">
+                    &quot;{currentSlide.keyQuestion}&quot;
+                  </p>
                 </div>
               )}
             </div>
@@ -152,7 +163,9 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
-              <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">Bahan-bahan Loose Parts Disarankan:</h4>
+              <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">
+                Bahan-bahan Loose Parts Disarankan:
+              </h4>
               <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
                 {(guide.materials ?? []).map((item, idx) => (
                   <li key={`mat-${idx}-${item.slice(0, 10)}`}>{item}</li>
@@ -161,7 +174,9 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
             </div>
 
             <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
-              <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">Ragam Kegiatan Loose Parts:</h4>
+              <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">
+                Ragam Kegiatan Loose Parts:
+              </h4>
               <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
                 {(guide.activities ?? []).map((act, idx) => (
                   <li key={`act-${idx}-${act.slice(0, 10)}`}>{act}</li>

@@ -1,8 +1,10 @@
-import DashboardWrapper from "~/components/dashboard/dashboard-wrapper"
-import { Head, router, useForm, Link } from '@inertiajs/react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { CalendarDays, Trash2, Eye, Sparkles } from 'lucide-react'
+import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
   id: number
@@ -36,6 +38,7 @@ interface SemesterPlansIndexProps {
   readonly classes: SchoolClass[]
   readonly semesters: Semester[]
   readonly subjects: Subject[]
+  readonly sequences: { id: number; title: string; context: string }[]
 }
 
 export default function SemesterPlansIndex({
@@ -43,6 +46,7 @@ export default function SemesterPlansIndex({
   classes,
   semesters,
   subjects,
+  sequences,
 }: SemesterPlansIndexProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [deletingPlan, setDeletingPlan] = useState<SemesterPlan | null>(null)
@@ -56,6 +60,7 @@ export default function SemesterPlansIndex({
     classId: classes[0]?.id || 0,
     semesterId: semesters[0]?.id || 0,
     subject: '',
+    learningSequenceId: undefined as number | undefined,
   })
 
   const handleGenerate = () => {
@@ -155,7 +160,10 @@ export default function SemesterPlansIndex({
         ) : (
           <div className="space-y-3">
             {semesterPlans.map((item, index) => (
-              <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+              <div
+                key={item.id}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-neutral-900 dark:text-white">
@@ -205,7 +213,10 @@ export default function SemesterPlansIndex({
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="classId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Kelas
                 </label>
                 <select
@@ -220,12 +231,13 @@ export default function SemesterPlansIndex({
                     </option>
                   ))}
                 </select>
-                {errors.classId && (
-                  <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
-                )}
+                {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
               </div>
               <div>
-                <label htmlFor="semesterId" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="semesterId"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Semester
                 </label>
                 <select
@@ -245,7 +257,10 @@ export default function SemesterPlansIndex({
                 )}
               </div>
               <div>
-                <label htmlFor="subject" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label
+                  htmlFor="subject"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
                   Mata Pelajaran
                 </label>
                 <select
@@ -261,10 +276,13 @@ export default function SemesterPlansIndex({
                     </option>
                   ))}
                 </select>
-                {errors.subject && (
-                  <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
-                )}
+                {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
               </div>
+              <CurriculumSequenceSelect
+                sequences={sequences}
+                value={data.learningSequenceId}
+                onChange={(value) => setData('learningSequenceId', value)}
+              />
             </div>
             <div className="mt-6 flex gap-3">
               <button

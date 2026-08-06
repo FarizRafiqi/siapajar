@@ -76,7 +76,21 @@ export default class DatabaseSeeder extends BaseSeeder {
     ]
 
     for (const pkg of packages) {
-      await Package.updateOrCreate({ name: pkg.name }, pkg)
+      const saved = await Package.updateOrCreate({ name: pkg.name }, pkg)
+      const entitlementMap: Record<string, number | null> = {
+        classes:
+          pkg.name === 'free' ? 1 : pkg.name === 'basic' ? 3 : pkg.name === 'pro' ? 10 : null,
+        ai_generation_monthly: pkg.name === 'free' ? 5 : pkg.name === 'basic' ? 30 : null,
+        export_pdf: 1,
+        export_docx: pkg.name === 'free' ? 0 : 1,
+        custom_atp: pkg.name === 'free' ? 0 : 1,
+        custom_iktp: pkg.name === 'free' ? 0 : 1,
+      }
+      for (const [featureKey, limitValue] of Object.entries(entitlementMap)) {
+        await saved
+          .related('entitlements')
+          .updateOrCreate({ featureKey }, { featureKey, limitValue, isEnabled: limitValue !== 0 })
+      }
     }
 
     // Get package IDs
@@ -108,6 +122,7 @@ export default class DatabaseSeeder extends BaseSeeder {
         packageId: proPkg.id,
         schoolName: 'SD Negeri 1 Contoh',
         educationLevel: 'sd',
+        curriculumVersion: 'Kurikulum Merdeka',
       }
     )
 
@@ -122,6 +137,9 @@ export default class DatabaseSeeder extends BaseSeeder {
         packageId: proPkg.id,
         schoolName: 'TK Tunas Bangsa',
         educationLevel: 'tk',
+        institutionType: 'tk',
+        curriculumVersion: 'Kurikulum Merdeka',
+        defaultGroupContext: 'b',
       }
     )
   }

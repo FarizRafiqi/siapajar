@@ -11,6 +11,9 @@ export default class AiSetting extends BaseModel {
   @column()
   declare provider: '9router' | 'anthropic' | 'openai' | 'gemini'
 
+  @column({ columnName: 'auth_mode' })
+  declare authMode: 'api_key' | 'oauth'
+
   /**
    * Tidak pernah dikirim ke client (serializeAs: null) — dan dienkripsi
    * di kolom DB (APP_KEY) supaya dump/backup tidak bocorin key mentah.
@@ -22,6 +25,31 @@ export default class AiSetting extends BaseModel {
     consume: (value: string | null) => (value ? (encryption.decrypt<string>(value) ?? null) : null),
   })
   declare apiKey: string | null
+
+  @column({
+    columnName: 'oauth_access_token',
+    serializeAs: null,
+    prepare: (value: string | null) => (value ? encryption.encrypt(value) : null),
+    consume: (value: string | null) => (value ? (encryption.decrypt<string>(value) ?? null) : null),
+  })
+  declare oauthAccessToken: string | null
+
+  @column({
+    columnName: 'oauth_refresh_token',
+    serializeAs: null,
+    prepare: (value: string | null) => (value ? encryption.encrypt(value) : null),
+    consume: (value: string | null) => (value ? (encryption.decrypt<string>(value) ?? null) : null),
+  })
+  declare oauthRefreshToken: string | null
+
+  @column.dateTime({ columnName: 'oauth_expires_at' })
+  declare oauthExpiresAt: DateTime | null
+
+  @column({ columnName: 'oauth_email' })
+  declare oauthEmail: string | null
+
+  @column({ columnName: 'oauth_project_id' })
+  declare oauthProjectId: string | null
 
   @column({ columnName: 'base_url' })
   declare baseUrl: string | null
@@ -38,7 +66,7 @@ export default class AiSetting extends BaseModel {
   static async current() {
     let setting = await AiSetting.query().orderBy('id', 'asc').first()
     if (!setting) {
-      setting = await AiSetting.create({ provider: '9router' })
+      setting = await AiSetting.create({ provider: '9router', authMode: 'api_key' })
     }
     return setting
   }
