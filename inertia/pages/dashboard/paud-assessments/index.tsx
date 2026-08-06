@@ -13,6 +13,7 @@ import {
   File,
   FileImage,
   ExternalLink,
+  X,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -75,6 +76,7 @@ export default function PaudAssessmentsIndex({
 }: PaudAssessmentsIndexProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingAssessment, setDeletingAssessment] = useState<Assessment | null>(null)
+  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null)
   const [filterType, setFilterType] = useState<AssessmentType | 'all'>('all')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
@@ -167,6 +169,7 @@ export default function PaudAssessmentsIndex({
           </div>
           <button
             data-tour="assessment-create"
+            data-tour-ready={hasClasses && hasStudents ? 'true' : 'false'}
             type="button"
             onClick={() => setShowAddModal(true)}
             disabled={!hasClasses || !hasStudents}
@@ -249,7 +252,16 @@ export default function PaudAssessmentsIndex({
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedAssessment(item)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedAssessment(item)
+                    }
+                  }}
+                  className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50/30 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/10"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -305,7 +317,10 @@ export default function PaudAssessmentsIndex({
                     <button
                       type="button"
                       aria-label={`Hapus asesmen ${item.student.fullName}`}
-                      onClick={() => setDeletingAssessment(item)}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setDeletingAssessment(item)
+                      }}
                       className="cursor-pointer rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-500 dark:border-neutral-700 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -324,6 +339,7 @@ export default function PaudAssessmentsIndex({
                               rel="noreferrer"
                               className="group flex min-w-0 items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20"
                               title={`Buka ${attachment.originalName} di tab baru`}
+                              onClick={(event) => event.stopPropagation()}
                             >
                               <span className="shrink-0 text-neutral-500 group-hover:text-emerald-600 dark:text-neutral-400 dark:group-hover:text-emerald-400">
                                 <AttachmentIcon mimeType={attachment.mimeType} />
@@ -344,6 +360,126 @@ export default function PaudAssessmentsIndex({
           </div>
         )}
       </div>
+
+      {selectedAssessment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedAssessment(null)
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="paud-assessment-detail-title"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  {typeLabels[selectedAssessment.type]}
+                </p>
+                <h3
+                  id="paud-assessment-detail-title"
+                  className="mt-1 text-xl font-semibold text-neutral-900 dark:text-white"
+                >
+                  {selectedAssessment.student.fullName}
+                </h3>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  Kelompok {selectedAssessment.schoolClass.name} •{' '}
+                  {new Date(selectedAssessment.date).toLocaleDateString('id-ID')}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Tutup detail asesmen"
+                onClick={() => setSelectedAssessment(null)}
+                className="cursor-pointer rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:hover:bg-neutral-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-6 space-y-4 text-sm text-neutral-700 dark:text-neutral-300">
+              {selectedAssessment.type === 'checklist' && (
+                <>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">Indikator</h4>
+                  <ul className="list-inside list-disc space-y-1">
+                    {(selectedAssessment.content.indicators ?? []).map((indicator: string) => (
+                      <li key={indicator}>{indicator}</li>
+                    ))}
+                  </ul>
+                  {selectedAssessment.content.note && (
+                    <p>
+                      <strong>Catatan:</strong> {selectedAssessment.content.note}
+                    </p>
+                  )}
+                </>
+              )}
+              {selectedAssessment.type === 'anecdotal_note' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Latar</dt>
+                    <dd>{selectedAssessment.content.context}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Perilaku</dt>
+                    <dd>{selectedAssessment.content.behavior}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Analisis</dt>
+                    <dd>{selectedAssessment.content.analysis}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.type === 'work_sample' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Deskripsi karya</dt>
+                    <dd>{selectedAssessment.content.description}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Analisis</dt>
+                    <dd>{selectedAssessment.content.analysis}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.type === 'photo_series' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Kegiatan</dt>
+                    <dd>{selectedAssessment.content.activity}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Narasi</dt>
+                    <dd>{selectedAssessment.content.narrative}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.attachments && selectedAssessment.attachments.length > 0 && (
+                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-800">
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">Lampiran</h4>
+                  <div className="mt-2 space-y-2">
+                    {selectedAssessment.attachments.map((attachment) => (
+                      <a
+                        key={attachment.id}
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 px-3 py-2 hover:border-emerald-400 hover:bg-emerald-50 dark:border-neutral-700 dark:hover:bg-emerald-900/20"
+                      >
+                        <AttachmentIcon mimeType={attachment.mimeType} />
+                        <span className="min-w-0 flex-1 truncate">{attachment.originalName}</span>
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

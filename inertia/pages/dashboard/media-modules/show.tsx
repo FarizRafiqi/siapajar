@@ -148,6 +148,12 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
             src={pdfUrl}
             className="h-[720px] w-full bg-neutral-100 dark:bg-neutral-800"
           />
+          <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-4 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-300">
+            <strong>Viewer tidak tampil?</strong> Beberapa browser memblokir preview PDF atau tidak
+            dapat menampilkan PPTX secara langsung. Gunakan <strong>Buka tab baru</strong> untuk PDF
+            atau <strong>Download PPTX</strong> untuk membukanya di PowerPoint, Google Slides, atau
+            aplikasi presentasi lain.
+          </div>
         </section>
 
         {/* Presentasi Visual Interactive Viewer */}

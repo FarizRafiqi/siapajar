@@ -155,7 +155,7 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
 
         <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="dashboard-data-table w-full">
               <thead>
                 <tr className="border-b border-neutral-200 dark:border-neutral-800">
                   <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
