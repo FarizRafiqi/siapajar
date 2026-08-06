@@ -630,45 +630,6 @@ export default function Home({ packages }: HomeProps) {
         </div>
       </section>
 
-      {/* Stats Bar (Social Proof) */}
-      <section className="py-8 px-4 bg-white dark:bg-gray-900/80 dark:backdrop-blur border-y border-gray-100 dark:border-gray-800/60">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center"
-          >
-            {[
-              { value: 1, suffix: '', label: 'Satu alur data kelas', decimals: 0 },
-              { value: 3, suffix: '', label: 'Elemen CP Fase Fondasi', decimals: 0 },
-              { value: 2, suffix: '', label: 'Profil RA/TK dan SD', decimals: 0 },
-              { value: 2, suffix: '', label: 'Format export PDF/DOCX', decimals: 0 },
-            ].map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.4 }}
-                className="flex flex-col items-center gap-1 group"
-              >
-                <div className="text-3xl md:text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-                  <AnimatedNumber
-                    value={stat.value}
-                    suffix={stat.suffix}
-                    decimals={stat.decimals}
-                    className="text-3xl md:text-4xl font-black text-emerald-600 dark:text-emerald-400"
-                  />
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* Problem Section */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid relative overflow-hidden">
         {/* Decorative Ornaments */}
