@@ -334,7 +334,7 @@ export default function PaudAssessmentsIndex({
                           {item.attachments.map((attachment) => (
                             <a
                               key={attachment.id}
-                              href={attachment.url}
+                              href={`${attachment.url}?disposition=inline`}
                               target="_blank"
                               rel="noreferrer"
                               className="group flex min-w-0 items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20"
@@ -463,7 +463,7 @@ export default function PaudAssessmentsIndex({
                     {selectedAssessment.attachments.map((attachment) => (
                       <a
                         key={attachment.id}
-                        href={attachment.url}
+                        href={`${attachment.url}?disposition=inline`}
                         target="_blank"
                         rel="noreferrer"
                         className="flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 px-3 py-2 hover:border-emerald-400 hover:bg-emerald-50 dark:border-neutral-700 dark:hover:bg-emerald-900/20"

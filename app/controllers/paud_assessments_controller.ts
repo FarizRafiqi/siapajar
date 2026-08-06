@@ -185,25 +185,31 @@ export default class PaudAssessmentsController {
               if (file.hasErrors) throw new Error('Lampiran tidak valid')
               continue
             }
-            const extension = file.extname.toLowerCase()
+            const extension = file.extname?.toLowerCase()
+            if (!extension || !ATTACHMENT_EXTENSIONS[extension]) {
+              throw new Error('Ekstensi lampiran tidak didukung')
+            }
             const storedName = `${string.uuid()}.${extension}`
-            const relativePath = `uploads/assessments/${user.id}/${createdAssessment.id}/${storedName}`
-            await file.move(`public/${relativePath}`, { name: storedName, overwrite: false })
+            const uploadDirectory = `public/uploads/assessments/${user.id}/${createdAssessment.id}`
+            const relativePath = `${uploadDirectory}/${storedName}`
+            await file.move(uploadDirectory, { name: storedName, overwrite: false })
             if (!file.isValid) throw new Error('Lampiran gagal disimpan')
             uploadedPaths.push(`public/${relativePath}`)
-            await AssessmentAttachment.create(
+            const attachment = await AssessmentAttachment.create(
               {
                 assessmentId: createdAssessment.id,
                 userId: user.id,
                 originalName: file.clientName,
                 storedName,
-                url: `/paud-assessments/${createdAssessment.id}/attachments/{attachmentId}`,
+                url: '',
                 mimeType: ATTACHMENT_EXTENSIONS[extension],
                 size: file.size,
                 displayOrder: index,
               },
               { client: trx }
             )
+            attachment.url = `/paud-assessments/${createdAssessment.id}/attachments/${attachment.id}`
+            await attachment.save()
           }
         }
         return createdAssessment
@@ -212,9 +218,6 @@ export default class PaudAssessmentsController {
       await Promise.all(uploadedPaths.map((filePath) => unlink(filePath).catch(() => {})))
       throw error
     }
-
-    // Replace the placeholder URL only after attachment rows have their IDs.
-    // The client receives route URLs from index(), never public storage paths.
 
     await auditService.record({
       actorId: user.id,
@@ -258,8 +261,10 @@ export default class PaudAssessmentsController {
     }
 
     const attachmentDirectory = `public/uploads/assessments/${user.id}/${assessment.id}`
-    const storedPaths = (await AssessmentAttachment.query().where('assessment_id', assessment.id)).map(
-      (attachment) => `public/uploads/assessments/${user.id}/${assessment.id}/${attachment.storedName}`
+    const attachments = await AssessmentAttachment.query().where('assessment_id', assessment.id)
+    const storedPaths = attachments.map(
+      (attachment) =>
+        `public/uploads/assessments/${user.id}/${assessment.id}/${attachment.storedName}`
     )
     await db.transaction(async (trx) => {
       await AssessmentAttachment.query({ client: trx })
