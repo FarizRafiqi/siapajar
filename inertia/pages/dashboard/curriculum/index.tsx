@@ -139,6 +139,20 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <a
+            href="/curriculum/export/pdf?disposition=inline"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            Export PDF
+          </a>
+          <a
+            href="/curriculum/export"
+            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            Export DOCX
+          </a>
           <button
             type="button"
             onClick={() => {

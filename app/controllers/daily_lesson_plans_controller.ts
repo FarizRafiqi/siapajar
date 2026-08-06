@@ -10,6 +10,14 @@ import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import LearningSequence from '#models/learning_sequence'
 import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
+import { exportDailyLessonPlan } from '#services/export_service'
+import { exportDailyLessonPlanPdf } from '#services/pdf_export_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class DailyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -54,6 +62,41 @@ export default class DailyLessonPlansController {
       dailyLessonPlan: dailyLessonPlan.toJSON(),
       workflow: workflow.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const plan = await DailyLessonPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+    if (!plan) return response.redirect('/rpph')
+    const buffer = await exportDailyLessonPlan(plan, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(['RPPH', plan.content?.tema || plan.id], 'docx')
+    )
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const plan = await DailyLessonPlan.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+    if (!plan) return response.redirect('/rpph')
+    const buffer = await exportDailyLessonPlanPdf(plan, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['RPPH', plan.content?.tema || plan.id], 'pdf'),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async update({ params, request, response, session, auth }: HttpContext) {

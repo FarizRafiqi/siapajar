@@ -11,6 +11,14 @@ import LearningObjective from '#models/learning_objective'
 import AssessmentAttachment from '#models/assessment_attachment'
 import string from '@adonisjs/core/helpers/string'
 import { auditService } from '#services/audit_service'
+import { exportPaudAssessment } from '#services/export_service'
+import { exportPaudAssessmentPdf } from '#services/pdf_export_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 const TYPE_LABELS: Record<string, string> = {
   checklist: 'Ceklis',
@@ -44,6 +52,39 @@ export default class PaudAssessmentsController {
       typeLabels: TYPE_LABELS,
       curriculumObjectives: curriculumObjectives.map((objective) => objective.toJSON()),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const assessment = await this.findOwnedAssessment(params.id, user.id)
+    if (!assessment) return response.redirect('/paud-assessments')
+    const buffer = await exportPaudAssessment(assessment, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(
+        ['Asesmen PAUD', assessment.student?.fullName, assessment.date.toISODate()],
+        'docx'
+      )
+    )
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const assessment = await this.findOwnedAssessment(params.id, user.id)
+    if (!assessment) return response.redirect('/paud-assessments')
+    const buffer = await exportPaudAssessmentPdf(assessment, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(
+        ['Asesmen PAUD', assessment.student?.fullName, assessment.date.toISODate()],
+        'pdf'
+      ),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -187,6 +228,16 @@ export default class PaudAssessmentsController {
 
     session.flash('success', 'Asesmen berhasil dihapus')
     return response.redirect().toRoute('paud-assessments.index')
+  }
+
+  private findOwnedAssessment(id: string | number, userId: number) {
+    return PaudAssessment.query()
+      .where('id', id)
+      .where('user_id', userId)
+      .preload('schoolClass')
+      .preload('student')
+      .preload('attachments', (query) => query.orderBy('display_order'))
+      .first()
   }
 }
 

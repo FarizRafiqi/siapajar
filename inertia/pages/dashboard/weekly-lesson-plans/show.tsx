@@ -1,7 +1,7 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { ArrowLeft, Save, Pencil, X } from 'lucide-react'
+import { ArrowLeft, Save, Pencil, X, Download } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
 import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
@@ -142,6 +142,20 @@ export default function WeeklyLessonPlanShow({
             />
           </div>
           <div className="flex gap-2">
+            <a
+              href={`/rppm/${weeklyLessonPlan.id}/export/pdf?disposition=inline`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4" /> PDF
+            </a>
+            <a
+              href={`/rppm/${weeklyLessonPlan.id}/export`}
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              DOCX
+            </a>
             <DocumentWorkflowActions
               type="rppm"
               id={weeklyLessonPlan.id}

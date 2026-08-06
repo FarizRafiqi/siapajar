@@ -3,6 +3,12 @@ import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
 import type AnnualPlan from '#models/annual_plan'
 import type SemesterPlan from '#models/semester_plan'
+import type WeeklyLessonPlan from '#models/weekly_lesson_plan'
+import type DailyLessonPlan from '#models/daily_lesson_plan'
+import type Lkpd from '#models/lkpd'
+import type Assessment from '#models/assessment'
+import type PaudAssessment from '#models/paud_assessment'
+import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
 import type User from '#models/user'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
 
@@ -67,6 +73,22 @@ function sectionParagraphs(title: string, value: string | string[] | undefined) 
 
 async function toBuffer(doc: Document) {
   return Packer.toBuffer(doc)
+}
+
+function contentValue(value: unknown): string | string[] {
+  if (Array.isArray(value)) return value.map((item) => String(item))
+  if (value === null || value === undefined) return ''
+  return typeof value === 'string' ? value : String(value)
+}
+
+function documentFromChildren(children: Paragraph[]) {
+  return toBuffer(new Document({ sections: [{ children }] }))
+}
+
+function metaParagraphs(meta: Array<[string, unknown]>) {
+  return meta
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '')
+    .map(([label, value]) => new Paragraph({ text: `${label}: ${String(value)}` }))
 }
 
 export async function exportTeachingModule(teachingModule: TeachingModule, user: User) {
@@ -202,4 +224,258 @@ export async function exportSemesterPlan(semesterPlan: SemesterPlan, user: User)
   })
 
   return toBuffer(doc)
+}
+
+export async function exportCurriculum(
+  cps: Array<Record<string, any>>,
+  sequences: Array<Record<string, any>>,
+  user: User
+) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Kurikulum CP, TP, ATP, dan IKTP'),
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      children: [new TextRun({ text: 'Capaian Pembelajaran (CP)', bold: true })],
+    }),
+  ]
+
+  for (const cp of cps) {
+    children.push(
+      new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: `${cp.code ?? ''} ${cp.title ?? ''}`.trim(), bold: true })],
+      }),
+      new Paragraph({
+        text: `${cp.element ?? ''} • ${cp.phase ?? ''} • ${cp.curriculumVersion ?? ''}`,
+      }),
+      new Paragraph({ text: cp.description || '-' })
+    )
+    const objectives = Array.isArray(cp.learningObjectives) ? cp.learningObjectives : []
+    for (const objective of objectives) {
+      children.push(
+        new Paragraph({
+          text: `TP ${objective.code ?? ''}: ${objective.title ?? '-'}`,
+          bullet: { level: 0 },
+        })
+      )
+      for (const indicator of objective.indicators ?? []) {
+        children.push(
+          new Paragraph({
+            text: `IKTP: ${indicator.description ?? '-'}`,
+            bullet: { level: 1 },
+          })
+        )
+      }
+    }
+  }
+
+  children.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      children: [new TextRun({ text: 'Alur Tujuan Pembelajaran (ATP)', bold: true })],
+    })
+  )
+  for (const sequence of sequences) {
+    children.push(
+      new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: sequence.title || 'ATP', bold: true })],
+      }),
+      ...metaParagraphs([
+        ['Profil', sequence.educationLevel],
+        ['Kelompok', sequence.groupContext],
+        ['Versi kurikulum', sequence.curriculumVersion],
+        ['Status', sequence.status],
+      ])
+    )
+    for (const [index, item] of (sequence.items ?? []).entries()) {
+      children.push(
+        new Paragraph({
+          text: `${index + 1}. ${item.title ?? item.learningObjectiveId ?? '-'}`,
+          bullet: { level: 0 },
+        })
+      )
+    }
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportWeeklyLessonPlan(weekly: WeeklyLessonPlan, user: User) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)'),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: weekly.theme }),
+    ...metaParagraphs([
+      ['Kelompok', weekly.schoolClass?.name],
+      ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
+      ['Status', weekly.status],
+    ]),
+    new Paragraph({ text: '' }),
+  ]
+  for (const [key, value] of Object.entries(weekly.content ?? {})) {
+    if (key === 'curriculum') continue
+    children.push(...sectionParagraphs(key, contentValue(value)))
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportDailyLessonPlan(daily: DailyLessonPlan, user: User) {
+  await consumeExport(user)
+  const title = String(daily.content?.tema || 'RPPH')
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Rencana Pelaksanaan Pembelajaran Harian (RPPH)'),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: title }),
+    ...metaParagraphs([
+      ['Kelompok', daily.schoolClass?.name],
+      ['Tanggal', daily.date?.toFormat('dd/MM/yyyy')],
+      ['Status', daily.status],
+    ]),
+    new Paragraph({ text: '' }),
+  ]
+  for (const [key, value] of Object.entries(daily.content ?? {})) {
+    if (key === 'tema' || key === 'curriculum') continue
+    children.push(...sectionParagraphs(key, contentValue(value)))
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportLkpd(lkpd: Lkpd, user: User) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Lembar Kerja Peserta Didik (LKPD)'),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: lkpd.title }),
+    ...metaParagraphs([
+      ['Kelompok', lkpd.schoolClass?.name],
+      ['Usia', lkpd.ageGroup],
+      ['Institusi', lkpd.institutionType],
+      ['Tema', lkpd.theme],
+      ['Subtema', lkpd.subtheme],
+    ]),
+    new Paragraph({ text: '' }),
+  ]
+  for (const [key, value] of Object.entries(lkpd.content ?? {})) {
+    children.push(...sectionParagraphs(key, contentValue(value)))
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportAssessment(assessment: Assessment, user: User) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Rekap Penilaian'),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: assessment.title }),
+    ...metaParagraphs([
+      ['Mata pelajaran', assessment.subject],
+      ['Kelas', assessment.schoolClass?.name],
+      ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
+      ['Jenis', assessment.type],
+      ['Tujuan pembelajaran', assessment.learningObjective],
+    ]),
+    new Paragraph({ text: '' }),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Daftar Nilai' }),
+  ]
+  for (const [index, score] of (assessment.scores ?? []).entries()) {
+    children.push(
+      new Paragraph({
+        text: `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${score.value ?? '-'}${score.note ? ` — ${score.note}` : ''}`,
+      })
+    )
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportPaudAssessment(assessment: PaudAssessment, user: User) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, 'Catatan Asesmen PAUD'),
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      text: assessment.student?.fullName || 'Asesmen PAUD',
+    }),
+    ...metaParagraphs([
+      ['Kelompok', assessment.schoolClass?.name],
+      ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
+      ['Jenis asesmen', assessment.type],
+      ['Status ketercapaian', assessment.achievementStatus],
+      ['Kegiatan', assessment.activity],
+    ]),
+    ...sectionParagraphs('Catatan Guru', assessment.teacherNote || ''),
+  ]
+  for (const [key, value] of Object.entries(assessment.content ?? {})) {
+    children.push(...sectionParagraphs(key, contentValue(value)))
+  }
+  if (assessment.attachments?.length) {
+    children.push(
+      ...sectionParagraphs(
+        'Evidence',
+        assessment.attachments.map((file) => file.originalName)
+      )
+    )
+  }
+  return documentFromChildren(children)
+}
+
+export async function exportStudentReport(
+  report: StudentReport,
+  user: User,
+  ctx: { className: string; semesterLabel: string; totalStudents: number }
+) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, `Rapor — ${ctx.semesterLabel}`),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: report.fullName }),
+    ...metaParagraphs([
+      ['NIS', report.nis],
+      ['Kelas', ctx.className],
+    ]),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Nilai per Mata Pelajaran' }),
+    ...report.subjects.map(
+      (subject) =>
+        new Paragraph({
+          text: `${subject.subject}: ${subject.average?.toFixed(1) ?? '-'}`,
+          bullet: { level: 0 },
+        })
+    ),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Ringkasan' }),
+    new Paragraph({ text: `Rata-rata keseluruhan: ${report.overallAverage?.toFixed(1) ?? '-'}` }),
+    new Paragraph({ text: `Peringkat: ${report.rank ?? '-'} dari ${ctx.totalStudents} siswa` }),
+  ]
+  return documentFromChildren(children)
+}
+
+export async function exportNarrativeReport(
+  narrative: PaudStudentNarrative,
+  user: User,
+  ctx: { className: string; semesterLabel: string }
+) {
+  await consumeExport(user)
+  const children: Paragraph[] = [
+    ...kopParagraphs(user, `Rapor Perkembangan — ${ctx.semesterLabel}`),
+    new Paragraph({ heading: HeadingLevel.HEADING_1, text: narrative.fullName }),
+    ...metaParagraphs([
+      ['NIS', narrative.nis],
+      ['Kelompok', ctx.className],
+    ]),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Catatan Perkembangan' }),
+    ...narrative.entries.flatMap((entry) => [
+      new Paragraph({
+        text: `${entry.typeLabel} — ${entry.date}`,
+        heading: HeadingLevel.HEADING_3,
+      }),
+      new Paragraph({ text: formatNarrativeEntry(entry) }),
+    ]),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Narasi Perkembangan' }),
+    ...narrative.narratives.flatMap((item) => [
+      new Paragraph({ text: item.element, heading: HeadingLevel.HEADING_3 }),
+      new Paragraph({ text: item.content.trim() || 'Belum ada narasi yang disetujui.' }),
+    ]),
+  ]
+  return documentFromChildren(children)
+}
+
+function formatNarrativeEntry(entry: PaudStudentNarrative['entries'][number]) {
+  return Object.entries(entry.content)
+    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : String(value)}`)
+    .join(' — ')
 }

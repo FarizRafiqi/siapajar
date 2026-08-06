@@ -7,6 +7,14 @@ import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { lkpdPrompt } from '#services/ai_prompts'
 import LearningSequence from '#models/learning_sequence'
+import { exportLkpd } from '#services/export_service'
+import { exportLkpdPdf } from '#services/pdf_export_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class LkpdsController {
   async index({ inertia, auth }: HttpContext) {
@@ -41,6 +49,41 @@ export default class LkpdsController {
     return inertia.render('dashboard/lkpd/show', {
       lkpd: lkpd.toJSON(),
     })
+  }
+
+  async export({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const lkpd = await Lkpd.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+    if (!lkpd) return response.redirect('/lkpd')
+    const buffer = await exportLkpd(lkpd, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(['LKPD', lkpd.title], 'docx')
+    )
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const lkpd = await Lkpd.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+    if (!lkpd) return response.redirect('/lkpd')
+    const buffer = await exportLkpdPdf(lkpd, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['LKPD', lkpd.title], 'pdf'),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async generate({ request, response, session, auth }: HttpContext) {

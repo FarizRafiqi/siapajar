@@ -129,6 +129,20 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
             <Download className="h-4 w-4" />
             Export XLSX
           </button>
+          <a
+            href={`/assessments/${assessment.id}/export/pdf?disposition=inline`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            <Download className="h-4 w-4" /> PDF
+          </a>
+          <a
+            href={`/assessments/${assessment.id}/export/docx`}
+            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            DOCX
+          </a>
           <button
             onClick={handleSaveAll}
             disabled={saving}

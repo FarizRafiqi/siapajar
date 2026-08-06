@@ -7,6 +7,15 @@ import Subject from '#models/subject'
 import Semester from '#models/semester'
 import { createAssessmentValidator, updateScoresValidator } from '#validators/assessment'
 import { exportAssessmentScores } from '#services/xlsx_export_service'
+import { exportAssessment as exportAssessmentDocx } from '#services/export_service'
+import { exportAssessmentPdf } from '#services/pdf_export_service'
+import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class AssessmentsController {
   async index({ inertia, auth }: HttpContext) {
@@ -110,13 +119,52 @@ export default class AssessmentsController {
       return response.redirect('/assessments')
     }
 
+    await assertEntitled(user, 'export_xlsx')
+    await recordUsage(user.id, 'export_xlsx')
     const buffer = exportAssessmentScores(assessment, user)
-    response.header(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.xlsx,
+      exportFilename(['Penilaian', assessment.title], 'xlsx')
     )
-    response.header('Content-Disposition', `attachment; filename="${assessment.title}.xlsx"`)
-    return response.send(buffer)
+  }
+
+  async exportDocx({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const assessment = await Assessment.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .preload('scores', (q) => q.preload('student'))
+      .first()
+    if (!assessment) return response.redirect('/assessments')
+    const buffer = await exportAssessmentDocx(assessment, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(['Penilaian', assessment.title], 'docx')
+    )
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const assessment = await Assessment.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .preload('scores', (q) => q.preload('student'))
+      .first()
+    if (!assessment) return response.redirect('/assessments')
+    const buffer = await exportAssessmentPdf(assessment, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['Penilaian', assessment.title], 'pdf'),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async updateScores({ params, request, response, session, auth }: HttpContext) {

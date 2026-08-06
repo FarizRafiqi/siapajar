@@ -30,6 +30,8 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/daily-lesson-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/index.tsx'))['default']>
     'dashboard/daily-lesson-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/show.tsx'))['default']>
     'dashboard/exams/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/index.tsx'))['default']>
+    'dashboard/exams/question-renderer': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/question-renderer.tsx'))['default']>
+    'dashboard/exams/question-types': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/question-types.ts'))['default']>
     'dashboard/exams/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/show.tsx'))['default']>
     'dashboard/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/index.tsx'))['default']>
     'dashboard/lkpd/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/index.tsx'))['default']>

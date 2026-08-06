@@ -14,6 +14,12 @@ import { teachingModulePrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -75,15 +81,15 @@ export default class TeachingModulesController {
     }
 
     const buffer = await exportTeachingModule(teachingModule, user)
-    response.header(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(['Modul Ajar', teachingModule.title], 'docx')
     )
-    response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.docx"`)
-    return response.send(buffer)
   }
 
-  async exportPdf({ params, response, auth }: HttpContext) {
+  async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
     const teachingModule = await TeachingModule.query()
       .where('id', params.id)
@@ -95,9 +101,13 @@ export default class TeachingModulesController {
     }
 
     const buffer = await exportTeachingModulePdf(teachingModule, user)
-    response.header('Content-Type', 'application/pdf')
-    response.header('Content-Disposition', `attachment; filename="${teachingModule.title}.pdf"`)
-    return response.send(buffer)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['Modul Ajar', teachingModule.title], 'pdf'),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async store({ request, response, session, auth }: HttpContext) {

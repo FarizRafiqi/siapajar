@@ -3,8 +3,13 @@ import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
 import type AnnualPlan from '#models/annual_plan'
 import type SemesterPlan from '#models/semester_plan'
-import type User from '#models/user'
+import type WeeklyLessonPlan from '#models/weekly_lesson_plan'
+import type DailyLessonPlan from '#models/daily_lesson_plan'
+import type Lkpd from '#models/lkpd'
+import type Assessment from '#models/assessment'
+import type PaudAssessment from '#models/paud_assessment'
 import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
+import type User from '#models/user'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
 
 async function consumePdfExport(user: User) {
@@ -248,5 +253,214 @@ export async function exportNarrativeReportPdf(
     doc.moveDown(0.5)
   }
 
+  return toBuffer(doc)
+}
+
+function writeMetadata(doc: PDFKit.PDFDocument, values: Array<[string, unknown]>) {
+  doc.font('Helvetica').fontSize(10)
+  for (const [label, value] of values) {
+    if (value !== null && value !== undefined && String(value).trim() !== '') {
+      doc.text(`${label}: ${String(value)}`)
+    }
+  }
+  doc.moveDown(0.75)
+}
+
+function writeContentObject(doc: PDFKit.PDFDocument, content: Record<string, unknown>) {
+  for (const [key, value] of Object.entries(content)) {
+    if (key === 'curriculum' || key === 'tema') continue
+    writeSection(doc, key, Array.isArray(value) ? value.map(String) : String(value ?? ''))
+  }
+}
+
+export async function exportCurriculumPdf(
+  cps: Array<Record<string, any>>,
+  sequences: Array<Record<string, any>>,
+  user: User
+) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Kurikulum CP, TP, ATP, dan IKTP')
+  doc.font('Helvetica-Bold').fontSize(16).text('Capaian Pembelajaran (CP)')
+  doc.moveDown(0.5)
+  for (const cp of cps) {
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .text(`${cp.code ?? ''} ${cp.title ?? ''}`.trim())
+    doc
+      .font('Helvetica')
+      .fontSize(10)
+      .text(`${cp.element ?? ''} • ${cp.phase ?? ''} • ${cp.curriculumVersion ?? ''}`)
+    doc.text(cp.description || '-')
+    for (const objective of cp.learningObjectives ?? []) {
+      doc.text(`• TP ${objective.code ?? ''}: ${objective.title ?? '-'}`)
+      for (const indicator of objective.indicators ?? [])
+        doc.text(`  • IKTP: ${indicator.description ?? '-'}`)
+    }
+    doc.moveDown(0.5)
+  }
+  doc.font('Helvetica-Bold').fontSize(16).text('Alur Tujuan Pembelajaran (ATP)')
+  doc.moveDown(0.5)
+  for (const sequence of sequences) {
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .text(sequence.title || 'ATP')
+    writeMetadata(doc, [
+      ['Profil', sequence.educationLevel],
+      ['Kelompok', sequence.groupContext],
+      ['Versi kurikulum', sequence.curriculumVersion],
+      ['Status', sequence.status],
+    ])
+    for (const [index, item] of (sequence.items ?? []).entries())
+      doc.text(`${index + 1}. ${item.title ?? item.learningObjectiveId ?? '-'}`)
+    doc.moveDown(0.5)
+  }
+  return toBuffer(doc)
+}
+
+export async function exportWeeklyLessonPlanPdf(weekly: WeeklyLessonPlan, user: User) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
+  doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
+  writeMetadata(doc, [
+    ['Kelompok', weekly.schoolClass?.name],
+    ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
+    ['Status', weekly.status],
+  ])
+  writeContentObject(doc, weekly.content ?? {})
+  return toBuffer(doc)
+}
+
+export async function exportDailyLessonPlanPdf(daily: DailyLessonPlan, user: User) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Harian (RPPH)')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(16)
+    .text(String(daily.content?.tema || 'RPPH'))
+  writeMetadata(doc, [
+    ['Kelompok', daily.schoolClass?.name],
+    ['Tanggal', daily.date?.toFormat('dd/MM/yyyy')],
+    ['Status', daily.status],
+  ])
+  writeContentObject(doc, daily.content ?? {})
+  return toBuffer(doc)
+}
+
+export async function exportLkpdPdf(lkpd: Lkpd, user: User) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Lembar Kerja Peserta Didik (LKPD)')
+  doc.font('Helvetica-Bold').fontSize(16).text(lkpd.title)
+  writeMetadata(doc, [
+    ['Kelompok', lkpd.schoolClass?.name],
+    ['Usia', lkpd.ageGroup],
+    ['Institusi', lkpd.institutionType],
+    ['Tema', lkpd.theme],
+    ['Subtema', lkpd.subtheme],
+  ])
+  writeContentObject(doc, lkpd.content ?? {})
+  return toBuffer(doc)
+}
+
+export async function exportAssessmentPdf(assessment: Assessment, user: User) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Rekap Penilaian')
+  doc.font('Helvetica-Bold').fontSize(16).text(assessment.title)
+  writeMetadata(doc, [
+    ['Mata pelajaran', assessment.subject],
+    ['Kelas', assessment.schoolClass?.name],
+    ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
+    ['Jenis', assessment.type],
+    ['Tujuan pembelajaran', assessment.learningObjective],
+  ])
+  doc.font('Helvetica-Bold').fontSize(12).text('Daftar Nilai')
+  doc.font('Helvetica').fontSize(10)
+  for (const [index, score] of (assessment.scores ?? []).entries())
+    doc.text(
+      `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${score.value ?? '-'}${score.note ? ` — ${score.note}` : ''}`
+    )
+  return toBuffer(doc)
+}
+
+export async function exportPaudAssessmentPdf(assessment: PaudAssessment, user: User) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, 'Catatan Asesmen PAUD')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(16)
+    .text(assessment.student?.fullName || 'Asesmen PAUD')
+  writeMetadata(doc, [
+    ['Kelompok', assessment.schoolClass?.name],
+    ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
+    ['Jenis asesmen', assessment.type],
+    ['Status ketercapaian', assessment.achievementStatus],
+    ['Kegiatan', assessment.activity],
+  ])
+  writeSection(doc, 'Catatan Guru', assessment.teacherNote || '')
+  writeContentObject(doc, assessment.content ?? {})
+  if (assessment.attachments?.length)
+    writeSection(
+      doc,
+      'Evidence',
+      assessment.attachments.map((file) => file.originalName)
+    )
+  return toBuffer(doc)
+}
+
+export async function exportStudentReportDocPdf(
+  report: StudentReport,
+  user: User,
+  ctx: { className: string; semesterLabel: string; totalStudents: number }
+) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
+  doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
+  writeMetadata(doc, [
+    ['NIS', report.nis],
+    ['Kelas', ctx.className],
+  ])
+  writeSection(
+    doc,
+    'Nilai per Mata Pelajaran',
+    report.subjects.map((subject) => `${subject.subject}: ${subject.average?.toFixed(1) ?? '-'}`)
+  )
+  writeSection(doc, 'Ringkasan', [
+    `Rata-rata keseluruhan: ${report.overallAverage?.toFixed(1) ?? '-'}`,
+    `Peringkat: ${report.rank ?? '-'} dari ${ctx.totalStudents} siswa`,
+  ])
+  return toBuffer(doc)
+}
+
+export async function exportNarrativeReportDocPdf(
+  narrative: PaudStudentNarrative,
+  user: User,
+  ctx: { className: string; semesterLabel: string }
+) {
+  await consumePdfExport(user)
+  const doc = new PDFDocument({ margin: 50 })
+  writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
+  doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
+  writeMetadata(doc, [
+    ['NIS', narrative.nis],
+    ['Kelompok', ctx.className],
+  ])
+  for (const entry of narrative.entries)
+    writeSection(
+      doc,
+      `${entry.typeLabel} — ${entry.date}`,
+      Object.entries(entry.content).map(
+        ([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : String(value)}`
+      )
+    )
+  for (const item of narrative.narratives)
+    writeSection(doc, item.element, item.content.trim() || 'Belum ada narasi yang disetujui.')
   return toBuffer(doc)
 }
