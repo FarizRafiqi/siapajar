@@ -107,11 +107,16 @@ export default class ReportCardsController {
         return response.redirect(`/report-cards/${classId}/${semesterId}`)
       }
 
-      const buffer = await exportNarrativeReportPdf(studentNarrative, user, {
-        className: schoolClass.name,
-        semesterLabel,
-        totalStudents: narrative.length,
-      })
+      const buffer = await exportNarrativeReportPdf(
+        studentNarrative,
+        user,
+        {
+          className: schoolClass.name,
+          semesterLabel,
+          totalStudents: narrative.length,
+        },
+        !wantsInlinePreview(request)
+      )
       return sendExport(
         response,
         buffer,
@@ -128,11 +133,16 @@ export default class ReportCardsController {
       return response.redirect(`/report-cards/${classId}/${semesterId}`)
     }
 
-    const buffer = await exportReportCardPdf(studentReport, user, {
-      className: schoolClass.name,
-      semesterLabel,
-      totalStudents: students.length,
-    })
+    const buffer = await exportReportCardPdf(
+      studentReport,
+      user,
+      {
+        className: schoolClass.name,
+        semesterLabel,
+        totalStudents: students.length,
+      },
+      !wantsInlinePreview(request)
+    )
     return sendExport(
       response,
       buffer,

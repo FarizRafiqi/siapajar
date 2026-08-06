@@ -148,8 +148,12 @@ function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, numb
   doc.moveDown(0.6)
 }
 
-export async function exportTeachingModulePdf(teachingModule: TeachingModule, user: User) {
-  await consumePdfExport(user)
+export async function exportTeachingModulePdf(
+  teachingModule: TeachingModule,
+  user: User,
+  charge = true
+) {
+  if (charge) await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensiDasar', title: 'Kompetensi Dasar' },
     { key: 'tujuanPembelajaran', title: 'Tujuan Pembelajaran' },
@@ -171,8 +175,8 @@ export async function exportTeachingModulePdf(teachingModule: TeachingModule, us
   return toBuffer(doc)
 }
 
-export async function exportExamPdf(exam: Exam, user: User) {
-  await consumePdfExport(user)
+export async function exportExamPdf(exam: Exam, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeExamHeader(doc, exam, user)
   doc.font('Helvetica-Bold').fontSize(16).text(exam.title)
@@ -190,8 +194,8 @@ export async function exportExamPdf(exam: Exam, user: User) {
   return toBuffer(doc)
 }
 
-export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User) {
-  await consumePdfExport(user)
+export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'kompetensi', title: 'Kompetensi' },
     { key: 'alokasiWaktu', title: 'Alokasi Waktu' },
@@ -210,8 +214,8 @@ export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User) {
   return toBuffer(doc)
 }
 
-export async function exportSemesterPlanPdf(semesterPlan: SemesterPlan, user: User) {
-  await consumePdfExport(user)
+export async function exportSemesterPlanPdf(semesterPlan: SemesterPlan, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
     { key: 'minggu', title: 'Pembagian Minggu' },
     { key: 'kegiatan', title: 'Kegiatan' },
@@ -239,9 +243,10 @@ interface ReportCardContext {
 export async function exportReportCardPdf(
   report: StudentReport,
   user: User,
-  ctx: ReportCardContext
+  ctx: ReportCardContext,
+  charge = true
 ) {
-  await consumePdfExport(user)
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
 
@@ -293,9 +298,10 @@ function formatPaudContent(entry: PaudStudentNarrative['entries'][number]) {
 export async function exportNarrativeReportPdf(
   narrative: PaudStudentNarrative,
   user: User,
-  ctx: ReportCardContext
+  ctx: ReportCardContext,
+  charge = true
 ) {
-  await consumePdfExport(user)
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
 
@@ -390,8 +396,12 @@ export async function exportCurriculumPdf(
   return toBuffer(doc)
 }
 
-export async function exportWeeklyLessonPlanPdf(weekly: WeeklyLessonPlan, user: User) {
-  await consumePdfExport(user)
+export async function exportWeeklyLessonPlanPdf(
+  weekly: WeeklyLessonPlan,
+  user: User,
+  charge = true
+) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
   doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
@@ -404,8 +414,8 @@ export async function exportWeeklyLessonPlanPdf(weekly: WeeklyLessonPlan, user: 
   return toBuffer(doc)
 }
 
-export async function exportDailyLessonPlanPdf(daily: DailyLessonPlan, user: User) {
-  await consumePdfExport(user)
+export async function exportDailyLessonPlanPdf(daily: DailyLessonPlan, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Harian (RPPH)')
   doc
@@ -421,8 +431,8 @@ export async function exportDailyLessonPlanPdf(daily: DailyLessonPlan, user: Use
   return toBuffer(doc)
 }
 
-export async function exportLkpdPdf(lkpd: Lkpd, user: User) {
-  await consumePdfExport(user)
+export async function exportLkpdPdf(lkpd: Lkpd, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Lembar Kerja Peserta Didik (LKPD)')
   doc.font('Helvetica-Bold').fontSize(16).text(lkpd.title)
@@ -437,8 +447,8 @@ export async function exportLkpdPdf(lkpd: Lkpd, user: User) {
   return toBuffer(doc)
 }
 
-export async function exportAssessmentPdf(assessment: Assessment, user: User) {
-  await consumePdfExport(user)
+export async function exportAssessmentPdf(assessment: Assessment, user: User, charge = true) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Rekap Penilaian')
   doc.font('Helvetica-Bold').fontSize(16).text(assessment.title)
@@ -458,8 +468,12 @@ export async function exportAssessmentPdf(assessment: Assessment, user: User) {
   return toBuffer(doc)
 }
 
-export async function exportPaudAssessmentPdf(assessment: PaudAssessment, user: User) {
-  await consumePdfExport(user)
+export async function exportPaudAssessmentPdf(
+  assessment: PaudAssessment,
+  user: User,
+  charge = true
+) {
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Catatan Asesmen PAUD')
   doc

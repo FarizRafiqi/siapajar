@@ -100,7 +100,7 @@ export default class TeachingModulesController {
       return response.redirect('/teaching-modules')
     }
 
-    const buffer = await exportTeachingModulePdf(teachingModule, user)
+    const buffer = await exportTeachingModulePdf(teachingModule, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

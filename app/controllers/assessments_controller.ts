@@ -157,7 +157,7 @@ export default class AssessmentsController {
       .preload('scores', (q) => q.preload('student'))
       .first()
     if (!assessment) return response.redirect('/assessments')
-    const buffer = await exportAssessmentPdf(assessment, user)
+    const buffer = await exportAssessmentPdf(assessment, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

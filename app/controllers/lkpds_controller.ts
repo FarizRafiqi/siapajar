@@ -76,7 +76,7 @@ export default class LkpdsController {
       .preload('schoolClass')
       .first()
     if (!lkpd) return response.redirect('/lkpd')
-    const buffer = await exportLkpdPdf(lkpd, user)
+    const buffer = await exportLkpdPdf(lkpd, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

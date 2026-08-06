@@ -97,7 +97,7 @@ export default class SemesterPlansController {
       return response.redirect('/semester-plans')
     }
 
-    const buffer = await exportSemesterPlanPdf(semesterPlan, user)
+    const buffer = await exportSemesterPlanPdf(semesterPlan, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

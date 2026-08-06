@@ -82,7 +82,7 @@ export default class WeeklyLessonPlansController {
       .preload('schoolClass')
       .first()
     if (!plan) return response.redirect('/rppm')
-    const buffer = await exportWeeklyLessonPlanPdf(plan, user)
+    const buffer = await exportWeeklyLessonPlanPdf(plan, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

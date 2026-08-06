@@ -90,7 +90,7 @@ export default class PaudAssessmentsController {
     const user = auth.user!
     const assessment = await this.findOwnedAssessment(params.id, user.id)
     if (!assessment) return response.redirect('/paud-assessments')
-    const buffer = await exportPaudAssessmentPdf(assessment, user)
+    const buffer = await exportPaudAssessmentPdf(assessment, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

@@ -10,6 +10,12 @@ import { AiServiceError, generateGeminiImage } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
+import {
+  commitUsageReservation,
+  releaseUsageReservation,
+  reserveUsage,
+} from '#services/entitlement_service'
+import { randomUUID } from 'node:crypto'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
 const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
@@ -213,9 +219,15 @@ export default class ExamsController {
       // be created if Gemini image generation is unavailable or fails.
       for (const question of questions) {
         if (!question.imagePrompt || question.imageUrl) continue
+        const reservationKey = `exam-image:${user.id}:${randomUUID()}`
+        const reserved = await reserveUsage(user, 'ai_generation_monthly', reservationKey, 1, {
+          combo: 'siapajar-soal-image',
+        })
         try {
           question.imageUrl = (await generateGeminiImage(question.imagePrompt)) || ''
+          if (reserved) await commitUsageReservation(reservationKey)
         } catch {
+          if (reserved) await releaseUsageReservation(reservationKey)
           question.imageUrl = ''
         }
       }

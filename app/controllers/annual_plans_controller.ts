@@ -91,7 +91,7 @@ export default class AnnualPlansController {
       return response.redirect('/annual-plans')
     }
 
-    const buffer = await exportAnnualPlanPdf(annualPlan, user)
+    const buffer = await exportAnnualPlanPdf(annualPlan, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

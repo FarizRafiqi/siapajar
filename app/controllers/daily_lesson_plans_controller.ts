@@ -89,7 +89,7 @@ export default class DailyLessonPlansController {
       .preload('schoolClass')
       .first()
     if (!plan) return response.redirect('/rpph')
-    const buffer = await exportDailyLessonPlanPdf(plan, user)
+    const buffer = await exportDailyLessonPlanPdf(plan, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,
