@@ -60,7 +60,7 @@ export default class CurriculumController {
   async exportPdf({ request, response, auth }: HttpContext) {
     const user = auth.user!
     const { cps, sequences } = await this.exportData(user.id)
-    const buffer = await exportCurriculumPdf(cps, sequences, user)
+    const buffer = await exportCurriculumPdf(cps, sequences, user, !wantsInlinePreview(request))
     return sendExport(
       response,
       buffer,

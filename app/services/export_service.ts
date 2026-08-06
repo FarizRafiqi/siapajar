@@ -183,14 +183,15 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
   }
   if (q.imageUrl?.startsWith('data:image/')) {
     const encoded = q.imageUrl.split(',')[1]
-    if (encoded) {
+    const mime = q.imageUrl.match(/^data:(image\/(?:png|jpeg));base64,/)?.[1]
+    if (encoded && mime) {
       try {
         children.push(
           new Paragraph({
             children: [
               new ImageRun({
                 data: Buffer.from(encoded, 'base64'),
-                type: 'png',
+                type: mime === 'image/jpeg' ? 'jpg' : 'png',
                 transformation: { width: 360, height: 220 },
               }),
             ],

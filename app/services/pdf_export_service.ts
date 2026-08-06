@@ -345,9 +345,10 @@ function writeContentObject(doc: PDFKit.PDFDocument, content: Record<string, unk
 export async function exportCurriculumPdf(
   cps: Array<Record<string, any>>,
   sequences: Array<Record<string, any>>,
-  user: User
+  user: User,
+  charge = true
 ) {
-  await consumePdfExport(user)
+  if (charge) await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
   writeKop(doc, user, 'Kurikulum CP, TP, ATP, dan IKTP')
   doc.font('Helvetica-Bold').fontSize(16).text('Capaian Pembelajaran (CP)')

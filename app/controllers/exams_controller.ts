@@ -181,22 +181,31 @@ export default class ExamsController {
         options: Array.isArray(q.options)
           ? q.options
               .map((o: unknown) => {
-                if (typeof o === 'string') return o
+                if (typeof o === 'string') {
+                  const match = o.trim().match(/^([A-Z])[.)\-:]?\s*(.*)$/i)
+                  return { label: match?.[1]?.toUpperCase() || '', text: match?.[2] || o.trim() }
+                }
                 if (o && typeof o === 'object' && 'text' in o) {
                   const option = o as { label?: unknown; text?: unknown }
-                  return `${typeof option.label === 'string' ? option.label : ''}. ${typeof option.text === 'string' ? option.text : ''}`.trim()
+                  return {
+                    label: typeof option.label === 'string' ? option.label.toUpperCase() : '',
+                    text: typeof option.text === 'string' ? option.text : '',
+                  }
                 }
                 return null
               })
-              .filter((o): o is string => Boolean(o))
+              .filter((o) => Boolean(o))
           : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
         type:
-          examMode === 'tertulis_visual'
-            ? 'visual'
-            : examMode || (isPaud ? 'visual' : 'multiple_choice'),
+          typeof q.type === 'string' &&
+          ['multiple_choice', 'essay', 'visual', 'practical', 'oral'].includes(q.type)
+            ? q.type
+            : examMode === 'tertulis_visual'
+              ? 'visual'
+              : examMode || (isPaud ? 'visual' : 'multiple_choice'),
         curriculum,
       }))
 

@@ -283,7 +283,14 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                   {sequences.map((sequence) => (
                     <div
                       key={sequence.id}
-                      className="cursor-pointer rounded-lg border border-neutral-200 p-3 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-neutral-700 dark:hover:bg-emerald-950/20"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Buka ATP ${sequence.title}`}
+                      onClick={() => setShowSequenceModal(true)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') setShowSequenceModal(true)
+                      }}
+                      className="cursor-pointer rounded-lg border border-neutral-200 p-3 text-left text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50/50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:hover:bg-emerald-950/20"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{sequence.title}</span>
@@ -299,7 +306,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             </div>
             <div
               data-tour="curriculum-iktp"
-              data-tour-ready={cp ? 'true' : 'false'}
+              data-tour-ready={cp && cp.learningObjectives.length > 0 ? 'true' : 'false'}
               className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
             >
               <div className="flex items-center justify-between">
