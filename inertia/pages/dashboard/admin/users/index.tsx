@@ -72,14 +72,14 @@ export default function AdminUsersIndex({ users, packages, schools }: AdminUsers
 
   return (
     <DashboardWrapper
-      title="Manage Users"
-      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Manage Users' }]}
+      title="Kelola Pengguna"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Kelola Pengguna' }]}
     >
-      <Head title="Manage Users" />
+      <Head title="Kelola Pengguna" />
 
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Manage Users</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Kelola Pengguna</h2>
           <p className="text-neutral-600 dark:text-neutral-400">
             Kelola role dan paket semua pengguna
           </p>

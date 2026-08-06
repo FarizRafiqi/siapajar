@@ -1,18 +1,20 @@
 import type User from '#models/user'
-import { assertEntitled, recordUsage } from '#services/entitlement_service'
-import { AiServiceError, callAiJson, type CallAiJsonOptions } from '#services/ai_service'
+import { AiServiceError, type CallAiJsonOptions } from '#services/ai_service'
+import { aiQueueService } from '#services/ai_queue_service'
 
 /**
- * Satu pintu untuk generate AI langsung: quota diperiksa sebelum request dan
- * pemakaian dicatat hanya setelah provider berhasil mengembalikan hasil.
+ * Semua generator menggunakan antrean AdonisJS/Redis yang sama.
  */
 export async function callAiJsonForUser<T>(user: User, options: CallAiJsonOptions): Promise<T> {
   try {
-    await assertEntitled(user, 'ai_generation_monthly')
+    return await aiQueueService.enqueueAiJson<T>({
+      userId: user.id,
+      combo: options.combo,
+      systemPrompt: options.systemPrompt,
+      userPrompt: options.userPrompt,
+      timeoutMs: options.timeoutMs,
+    })
   } catch (error) {
     throw new AiServiceError(error instanceof Error ? error.message : 'Quota AI tidak tersedia')
   }
-  const result = await callAiJson<T>(options)
-  await recordUsage(user.id, 'ai_generation_monthly', 1, { combo: options.combo })
-  return result
 }

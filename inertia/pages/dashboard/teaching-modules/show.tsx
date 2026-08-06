@@ -3,6 +3,13 @@ import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Save, Download, Pencil, X } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
+import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
+import { useDocumentAutosave } from '~/hooks/use-document-autosave'
+import {
+  DocumentSectionEditor,
+  DocumentSectionValue,
+} from '~/components/ui/document-section-editor'
 
 interface SchoolClass {
   id: number
@@ -32,6 +39,11 @@ interface TeachingModule {
 
 interface TeachingModuleShowProps {
   readonly teachingModule: TeachingModule
+  readonly workflow?: {
+    status: 'draft' | 'published' | 'archived'
+    lastSavedAt?: string | null
+    version?: number
+  }
 }
 
 const SECTIONS = [
@@ -42,7 +54,7 @@ const SECTIONS = [
   { key: 'sumberBelajar', title: 'Sumber Belajar', icon: '📖' },
 ]
 
-export default function TeachingModuleShow({ teachingModule }: TeachingModuleShowProps) {
+export default function TeachingModuleShow({ teachingModule, workflow }: TeachingModuleShowProps) {
   const [editing, setEditing] = useState(false)
 
   const { data, setData, put, processing, reset } = useForm({
@@ -52,6 +64,13 @@ export default function TeachingModuleShow({ teachingModule }: TeachingModuleSho
     status: teachingModule.status,
     content: teachingModule.content ?? {},
   })
+  useDocumentAutosave(
+    'teaching_module',
+    teachingModule.id,
+    data.content,
+    data.status as 'draft' | 'published',
+    editing
+  )
 
   const handleSave = () => {
     put(`/teaching-modules/${teachingModule.id}`, {
@@ -124,8 +143,20 @@ export default function TeachingModuleShow({ teachingModule }: TeachingModuleSho
               {teachingModule.subject} • Kelas {teachingModule.schoolClass.name} • Fase{' '}
               {teachingModule.phase}
             </p>
+            <DocumentWorkflowMeta
+              status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')}
+              lastSavedAt={workflow?.lastSavedAt}
+              version={workflow?.version}
+              templateKey={workflow?.templateKey}
+            />
           </div>
           <div className="flex gap-2">
+            <DocumentWorkflowActions
+              type="teaching_module"
+              id={teachingModule.id}
+              status={workflow?.status ?? (teachingModule.status as 'draft' | 'published')}
+              templateKey={workflow?.templateKey}
+            />
             <button
               onClick={handleExport}
               className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -186,34 +217,15 @@ export default function TeachingModuleShow({ teachingModule }: TeachingModuleSho
                   {section.title}
                 </h3>
                 {editing ? (
-                  <textarea
-                    value={draftItems.join('\n')}
-                    onChange={(e) => {
-                      setData('content', {
-                        ...data.content,
-                        [section.key]: e.target.value.split('\n').filter((line) => line.trim()),
-                      })
-                    }}
-                    rows={6}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                    placeholder={`Masukkan ${section.title.toLowerCase()} (satu item per baris)`}
+                  <DocumentSectionEditor
+                    value={draftItems}
+                    onChange={(value) =>
+                      setData('content', { ...data.content, [section.key]: value })
+                    }
+                    placeholder={`Masukkan ${section.title.toLowerCase()}`}
                   />
                 ) : (
-                  <ul className="space-y-2">
-                    {items.length === 0 ? (
-                      <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li>
-                    ) : (
-                      items.map((item: string, i: number) => (
-                        <li
-                          key={`${section.key}-${i}`}
-                          className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"
-                        >
-                          <span className="mt-1 text-emerald-500">•</span>
-                          {item}
-                        </li>
-                      ))
-                    )}
-                  </ul>
+                  <DocumentSectionValue value={items} />
                 )}
               </div>
             )

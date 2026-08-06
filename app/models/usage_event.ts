@@ -6,6 +6,7 @@ export default class UsageEvent extends BaseModel {
   @column({ isPrimary: true }) declare id: number
   @column({ columnName: 'user_id' }) declare userId: number
   @column({ columnName: 'event_key' }) declare eventKey: string
+  @column({ columnName: 'reservation_key' }) declare reservationKey: string | null
   @column() declare quantity: number
   @column.date({ columnName: 'period_start' }) declare periodStart: DateTime
   @column({

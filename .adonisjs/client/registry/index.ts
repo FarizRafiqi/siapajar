@@ -102,6 +102,24 @@ const routes = {
     tokens: [{"old":"/curriculum","type":0,"val":"curriculum","end":""}],
     types: placeholder as Registry['curriculum.index']['types'],
   },
+  'documents.autosave': {
+    methods: ["POST"],
+    pattern: '/documents/:type/:id/autosave',
+    tokens: [{"old":"/documents/:type/:id/autosave","type":0,"val":"documents","end":""},{"old":"/documents/:type/:id/autosave","type":1,"val":"type","end":""},{"old":"/documents/:type/:id/autosave","type":1,"val":"id","end":""},{"old":"/documents/:type/:id/autosave","type":0,"val":"autosave","end":""}],
+    types: placeholder as Registry['documents.autosave']['types'],
+  },
+  'documents.status': {
+    methods: ["POST"],
+    pattern: '/documents/:type/:id/status',
+    tokens: [{"old":"/documents/:type/:id/status","type":0,"val":"documents","end":""},{"old":"/documents/:type/:id/status","type":1,"val":"type","end":""},{"old":"/documents/:type/:id/status","type":1,"val":"id","end":""},{"old":"/documents/:type/:id/status","type":0,"val":"status","end":""}],
+    types: placeholder as Registry['documents.status']['types'],
+  },
+  'documents.duplicate': {
+    methods: ["POST"],
+    pattern: '/documents/:type/:id/duplicate',
+    tokens: [{"old":"/documents/:type/:id/duplicate","type":0,"val":"documents","end":""},{"old":"/documents/:type/:id/duplicate","type":1,"val":"type","end":""},{"old":"/documents/:type/:id/duplicate","type":1,"val":"id","end":""},{"old":"/documents/:type/:id/duplicate","type":0,"val":"duplicate","end":""}],
+    types: placeholder as Registry['documents.duplicate']['types'],
+  },
   'curriculum.objectives.store': {
     methods: ["POST"],
     pattern: '/curriculum/objectives',

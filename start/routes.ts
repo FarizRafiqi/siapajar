@@ -70,6 +70,18 @@ router
     // Kurikulum terkontrol: CP Fase Fondasi, TP, ATP, dan IKTP
     router.get('/curriculum', '#controllers/curriculum_controller.index').as('curriculum.index')
     router
+      .post('/documents/:type/:id/autosave', '#controllers/document_workflows_controller.autosave')
+      .as('documents.autosave')
+    router
+      .post('/documents/:type/:id/status', '#controllers/document_workflows_controller.status')
+      .as('documents.status')
+    router
+      .post(
+        '/documents/:type/:id/duplicate',
+        '#controllers/document_workflows_controller.duplicate'
+      )
+      .as('documents.duplicate')
+    router
       .post('/curriculum/objectives', '#controllers/curriculum_controller.storeObjective')
       .as('curriculum.objectives.store')
     router

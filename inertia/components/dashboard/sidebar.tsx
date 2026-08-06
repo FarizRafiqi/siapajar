@@ -75,8 +75,8 @@ const guruTkNavigation = [
 
 const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Manage Users', href: '/admin/users', icon: Shield },
-  { name: 'Manage Packages', href: '/admin/packages', icon: Package },
+  { name: 'Kelola Pengguna', href: '/admin/users', icon: Shield },
+  { name: 'Kelola Paket', href: '/admin/packages', icon: Package },
   { name: 'Sekolah', href: '/admin/schools', icon: School },
   { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
   { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },

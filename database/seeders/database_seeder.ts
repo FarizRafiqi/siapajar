@@ -1,9 +1,11 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Package from '#models/package'
 import User from '#models/user'
+import CurriculumSeeder from './curriculum_seeder.js'
 
 export default class DatabaseSeeder extends BaseSeeder {
   async run() {
+    await new CurriculumSeeder(this.client).run()
     // Create packages — features berisi daftar benefit yang tampil di landing page pricing
     const packages = [
       {

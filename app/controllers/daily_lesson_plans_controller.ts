@@ -9,6 +9,7 @@ import { dailyLessonPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import LearningSequence from '#models/learning_sequence'
+import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
 
 export default class DailyLessonPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -46,8 +47,12 @@ export default class DailyLessonPlansController {
       return response.redirect('/rpph')
     }
 
+    const workflow = await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, {
+      status: dailyLessonPlan.status,
+    })
     return inertia.render('dashboard/daily-lesson-plans/show', {
       dailyLessonPlan: dailyLessonPlan.toJSON(),
+      workflow: workflow.toJSON(),
     })
   }
 
@@ -64,6 +69,8 @@ export default class DailyLessonPlansController {
 
     const data = await request.validateUsing(updateDailyLessonPlanValidator)
     await dailyLessonPlan.merge(data).save()
+    const workflow = await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id)
+    await saveDocumentWorkflow(workflow, data.status as 'draft' | 'published' | undefined)
 
     session.flash('success', 'RPPH berhasil diupdate')
     return response.redirect().back()
@@ -148,6 +155,7 @@ export default class DailyLessonPlansController {
       content,
       status: 'draft',
     })
+    await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, { status: 'draft' })
 
     session.flash('success', 'RPPH berhasil digenerate')
     return response.redirect().toRoute('rpph.show', { id: dailyLessonPlan.id })

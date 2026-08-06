@@ -3,6 +3,13 @@ import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { ArrowLeft, Save, Pencil, X } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
+import DocumentWorkflowActions from '~/components/dashboard/document-workflow-actions'
+import { useDocumentAutosave } from '~/hooks/use-document-autosave'
+import {
+  DocumentSectionEditor,
+  DocumentSectionValue,
+} from '~/components/ui/document-section-editor'
 
 interface SchoolClass {
   id: number
@@ -29,6 +36,11 @@ interface WeeklyLessonPlan {
 
 interface WeeklyLessonPlanShowProps {
   readonly weeklyLessonPlan: WeeklyLessonPlan
+  readonly workflow?: {
+    status: 'draft' | 'published' | 'archived'
+    lastSavedAt?: string | null
+    version?: number
+  }
 }
 
 const SECTIONS = [
@@ -42,7 +54,10 @@ const SECTIONS = [
   { key: 'rencanaKegiatan', title: 'Rencana Kegiatan Mingguan', icon: '📝' },
 ]
 
-export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonPlanShowProps) {
+export default function WeeklyLessonPlanShow({
+  weeklyLessonPlan,
+  workflow,
+}: WeeklyLessonPlanShowProps) {
   const [editing, setEditing] = useState(false)
 
   const { data, setData, put, processing, reset } = useForm({
@@ -50,6 +65,13 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
     status: weeklyLessonPlan.status,
     content: weeklyLessonPlan.content ?? {},
   })
+  useDocumentAutosave(
+    'rppm',
+    weeklyLessonPlan.id,
+    data.content,
+    data.status as 'draft' | 'published',
+    editing
+  )
 
   const handleSave = () => {
     put(`/rppm/${weeklyLessonPlan.id}`, {
@@ -112,8 +134,20 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
               Kelompok {weeklyLessonPlan.schoolClass.name} • Minggu{' '}
               {new Date(weeklyLessonPlan.weekStartDate).toLocaleDateString('id-ID')}
             </p>
+            <DocumentWorkflowMeta
+              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              lastSavedAt={workflow?.lastSavedAt}
+              version={workflow?.version}
+              templateKey={workflow?.templateKey}
+            />
           </div>
           <div className="flex gap-2">
+            <DocumentWorkflowActions
+              type="rppm"
+              id={weeklyLessonPlan.id}
+              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              templateKey={workflow?.templateKey}
+            />
             {editing ? (
               <>
                 <button
@@ -159,34 +193,15 @@ export default function WeeklyLessonPlanShow({ weeklyLessonPlan }: WeeklyLessonP
                   {section.title}
                 </h3>
                 {editing ? (
-                  <textarea
-                    value={draftItems.join('\n')}
-                    onChange={(e) => {
-                      setData('content', {
-                        ...data.content,
-                        [section.key]: e.target.value.split('\n').filter((line) => line.trim()),
-                      })
-                    }}
-                    rows={6}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                    placeholder={`Masukkan ${section.title.toLowerCase()} (satu item per baris)`}
+                  <DocumentSectionEditor
+                    value={draftItems}
+                    onChange={(value) =>
+                      setData('content', { ...data.content, [section.key]: value })
+                    }
+                    placeholder={`Masukkan ${section.title.toLowerCase()}`}
                   />
                 ) : (
-                  <ul className="space-y-2">
-                    {items.length === 0 ? (
-                      <li className="text-neutral-500 dark:text-neutral-400">Belum ada konten</li>
-                    ) : (
-                      items.map((item: string, i: number) => (
-                        <li
-                          key={`${section.key}-${i}`}
-                          className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300"
-                        >
-                          <span className="mt-1 text-emerald-500">•</span>
-                          {item}
-                        </li>
-                      ))
-                    )}
-                  </ul>
+                  <DocumentSectionValue value={items} />
                 )}
               </div>
             )

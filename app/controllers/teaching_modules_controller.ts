@@ -13,6 +13,7 @@ import { normalizeStringArraySections, AiServiceError } from '#services/ai_servi
 import { teachingModulePrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
+import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -53,8 +54,12 @@ export default class TeachingModulesController {
       return response.redirect('/teaching-modules')
     }
 
+    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
+      status: teachingModule.status,
+    })
     return inertia.render('dashboard/teaching-modules/show', {
       teachingModule: teachingModule.toJSON(),
+      workflow: workflow.toJSON(),
     })
   }
 
@@ -122,6 +127,8 @@ export default class TeachingModulesController {
 
     const data = await request.validateUsing(updateTeachingModuleValidator)
     await teachingModule.merge(data).save()
+    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id)
+    await saveDocumentWorkflow(workflow, data.status as 'draft' | 'published' | undefined)
 
     session.flash('success', 'Modul Ajar berhasil diupdate')
     return response.redirect().back()
@@ -195,6 +202,7 @@ export default class TeachingModulesController {
       content,
       status: 'draft',
     })
+    await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, { status: 'draft' })
 
     session.flash('success', 'Modul Ajar berhasil digenerate')
     return response.redirect().toRoute('teaching-modules.show', { id: teachingModule.id })
