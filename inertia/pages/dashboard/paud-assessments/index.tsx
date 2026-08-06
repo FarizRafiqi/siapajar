@@ -246,7 +246,11 @@ export default function PaudAssessmentsIndex({
             </p>
           </div>
         ) : (
-          <div data-tour="assessment-list" className="space-y-3">
+          <div
+            data-tour="assessment-list"
+            data-tour-ready={filteredAssessments.length > 0 ? 'true' : 'false'}
+            className="space-y-3"
+          >
             {filteredAssessments.map((item) => {
               const ItemIcon = TYPE_ICONS[item.type]
               return (

@@ -10,11 +10,20 @@ import type Assessment from '#models/assessment'
 import type PaudAssessment from '#models/paud_assessment'
 import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
 import type User from '#models/user'
-import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
+import { auditService } from '#services/audit_service'
+import { randomUUID } from 'node:crypto'
 
 async function consumePdfExport(user: User) {
-  await assertEntitled(user, 'export_pdf')
-  await recordUsage(user.id, 'export_pdf', 1)
+  const reservationKey = `export:pdf:${user.id}:${randomUUID()}`
+  const reserved = await reserveUsage(user, 'export_pdf', reservationKey, 1, { format: 'pdf' })
+  if (reserved) await commitUsageReservation(reservationKey)
+  await auditService.record({
+    actorId: user.id,
+    action: 'export.pdf',
+    entityType: 'document',
+    metadata: { format: 'pdf' },
+  })
 }
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
@@ -68,6 +77,77 @@ function writeSection(
   doc.moveDown(0.5)
 }
 
+function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
+  const header = exam.header ?? {}
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(15)
+    .text(header.institutionName || user.schoolName || 'Sekolah', { align: 'center' })
+  if (header.institutionAddress)
+    doc.font('Helvetica').fontSize(9).text(header.institutionAddress, { align: 'center' })
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(13)
+    .text(header.examLabel || EXAM_TYPE_LABELS[exam.type] || exam.type, { align: 'center' })
+  doc.font('Helvetica').fontSize(9)
+  for (const [label, value] of [
+    ['Tahun ajaran', header.academicYear],
+    ['Semester', header.semester],
+    ['Kelompok/Kelas', header.groupName],
+    ['Tema/Mata pelajaran', header.subject],
+    ['Nama anak', header.studentName],
+    ['Tanggal', header.date],
+  ]) {
+    if (value) doc.text(`${label}: ${value}`)
+  }
+  doc.moveDown(0.8)
+}
+
+function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, number: number) {
+  const type =
+    q.type === 'multiple_choice' || Array.isArray(q.options)
+      ? 'Pilihan Ganda'
+      : q.type === 'essay'
+        ? 'Uraian'
+        : q.type === 'practical'
+          ? 'Praktik / Performa'
+          : q.type === 'oral'
+            ? 'Lisan'
+            : 'Aktivitas Visual'
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .text(`${number}. ${q.question || 'Pertanyaan belum diisi.'}`)
+  doc.font('Helvetica-Oblique').fontSize(9).text(`Bentuk: ${type}`)
+  if (q.instruction) doc.font('Helvetica').text(`Petunjuk: ${q.instruction}`)
+  if (Array.isArray(q.options)) {
+    doc.font('Helvetica')
+    q.options.forEach((option: unknown, index: number) => {
+      const label =
+        typeof option === 'string'
+          ? String.fromCharCode(65 + index)
+          : (option as any)?.label || String.fromCharCode(65 + index)
+      const text = typeof option === 'string' ? option : (option as any)?.text || ''
+      doc.text(`${label}. ${text}`)
+    })
+  } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
+    doc.font('Helvetica').text('____________________________________________________________')
+    doc.text('____________________________________________________________')
+    doc.text('____________________________________________________________')
+  }
+  if (q.imageUrl?.startsWith('data:image/')) {
+    try {
+      doc.image(Buffer.from(q.imageUrl.split(',')[1], 'base64'), {
+        fit: [360, 220],
+        align: 'center',
+      })
+    } catch {}
+  }
+  if (q.rubric || q.scoringGuide)
+    doc.font('Helvetica').text(`Rubrik: ${q.rubric || q.scoringGuide}`)
+  doc.moveDown(0.6)
+}
+
 export async function exportTeachingModulePdf(teachingModule: TeachingModule, user: User) {
   await consumePdfExport(user)
   const sections: { key: string; title: string }[] = [
@@ -94,21 +174,10 @@ export async function exportTeachingModulePdf(teachingModule: TeachingModule, us
 export async function exportExamPdf(exam: Exam, user: User) {
   await consumePdfExport(user)
   const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, EXAM_TYPE_LABELS[exam.type] ?? exam.type)
+  writeExamHeader(doc, exam, user)
   doc.font('Helvetica-Bold').fontSize(16).text(exam.title)
   doc.moveDown(1)
-
-  doc.font('Helvetica').fontSize(10)
-  exam.questions.forEach((q, i) => {
-    doc.font('Helvetica-Bold').text(`${i + 1}. ${q.question}`)
-    doc.font('Helvetica')
-    if (Array.isArray(q.options)) {
-      for (const opt of q.options) {
-        doc.text(opt)
-      }
-    }
-    doc.moveDown(0.5)
-  })
+  exam.questions.forEach((q, i) => writeExamQuestion(doc, q, i + 1))
 
   doc.addPage()
   doc.font('Helvetica-Bold').fontSize(14).text('Kunci Jawaban')

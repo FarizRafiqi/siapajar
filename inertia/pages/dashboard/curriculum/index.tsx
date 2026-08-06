@@ -175,6 +175,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
         <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
           <div
             data-tour="curriculum-cp"
+            data-tour-ready={cps.length > 0 ? 'true' : 'false'}
             className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
           >
             <h3 className="mb-3 font-semibold text-neutral-900 dark:text-white">Elemen CP</h3>
@@ -205,7 +206,11 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                   {cp.description}
                 </p>
-                <div data-tour="curriculum-tp" className="mt-5 space-y-3">
+                <div
+                  data-tour="curriculum-tp"
+                  data-tour-ready={cp.learningObjectives.length > 0 ? 'true' : 'false'}
+                  className="mt-5 space-y-3"
+                >
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-neutral-900 dark:text-white">
                       Tujuan Pembelajaran
@@ -250,6 +255,9 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             )}
             <div
               data-tour="curriculum-atp"
+              data-tour-ready={
+                sequences.length > 0 || selectedObjectives.length > 0 ? 'true' : 'false'
+              }
               className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
             >
               <div className="flex items-center justify-between">
@@ -291,6 +299,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             </div>
             <div
               data-tour="curriculum-iktp"
+              data-tour-ready={cp ? 'true' : 'false'}
               className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
             >
               <div className="flex items-center justify-between">

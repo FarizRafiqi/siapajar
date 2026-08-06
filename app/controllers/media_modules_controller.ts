@@ -162,7 +162,8 @@ export default class MediaModulesController {
 
     if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
 
-    const buffer = await exportMediaModulePdf(mediaModule, user)
+    const isPreview = request.input('disposition') === 'inline'
+    const buffer = await exportMediaModulePdf(mediaModule, user, !isPreview)
     response.header('Content-Type', 'application/pdf')
     const disposition = request.input('disposition') === 'inline' ? 'inline' : 'attachment'
     response.header(

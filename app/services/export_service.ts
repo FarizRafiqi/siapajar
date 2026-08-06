@@ -1,4 +1,13 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx'
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  PageBreak,
+  ImageRun,
+} from 'docx'
 import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
 import type AnnualPlan from '#models/annual_plan'
@@ -10,11 +19,20 @@ import type Assessment from '#models/assessment'
 import type PaudAssessment from '#models/paud_assessment'
 import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
 import type User from '#models/user'
-import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
+import { auditService } from '#services/audit_service'
+import { randomUUID } from 'node:crypto'
 
 async function consumeExport(user: User) {
-  await assertEntitled(user, 'export_docx')
-  await recordUsage(user.id, 'export_docx', 1)
+  const reservationKey = `export:docx:${user.id}:${randomUUID()}`
+  const reserved = await reserveUsage(user, 'export_docx', reservationKey, 1, { format: 'docx' })
+  if (reserved) await commitUsageReservation(reservationKey)
+  await auditService.record({
+    actorId: user.id,
+    action: 'export.docx',
+    entityType: 'document',
+    metadata: { format: 'docx' },
+  })
 }
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
@@ -91,6 +109,102 @@ function metaParagraphs(meta: Array<[string, unknown]>) {
     .map(([label, value]) => new Paragraph({ text: `${label}: ${String(value)}` }))
 }
 
+function examHeaderParagraphs(exam: Exam, user: User) {
+  const header = exam.header ?? {}
+  return [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: header.institutionName || user.schoolName || 'Sekolah',
+          bold: true,
+          size: 30,
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: header.institutionAddress || '', size: 18 })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: header.examLabel || EXAM_TYPE_LABELS[exam.type] || exam.type,
+          bold: true,
+          size: 24,
+        }),
+      ],
+    }),
+    ...metaParagraphs([
+      ['Tahun ajaran', header.academicYear],
+      ['Semester', header.semester],
+      ['Kelompok/Kelas', header.groupName],
+      ['Tema/Mata pelajaran', header.subject],
+      ['Nama anak', header.studentName],
+      ['Tanggal', header.date],
+    ]),
+    new Paragraph({ text: '' }),
+  ]
+}
+
+function examQuestionType(q: Record<string, any>) {
+  if (q.type === 'multiple_choice' || Array.isArray(q.options)) return 'Pilihan Ganda'
+  if (q.type === 'essay') return 'Uraian'
+  if (q.type === 'practical') return 'Praktik / Performa'
+  if (q.type === 'oral') return 'Lisan'
+  return 'Aktivitas Visual'
+}
+
+function examQuestionParagraphs(q: Record<string, any>, number: number) {
+  const children = [
+    new Paragraph({
+      children: [
+        new TextRun({ text: `${number}. ${q.question || 'Pertanyaan belum diisi.'}`, bold: true }),
+      ],
+    }),
+    new Paragraph({ text: `Bentuk: ${examQuestionType(q)}` }),
+  ]
+  if (q.instruction) children.push(new Paragraph({ text: `Petunjuk: ${q.instruction}` }))
+  if (Array.isArray(q.options)) {
+    for (const [index, option] of q.options.entries()) {
+      const label =
+        typeof option === 'string'
+          ? String.fromCharCode(65 + index)
+          : option.label || String.fromCharCode(65 + index)
+      const text = typeof option === 'string' ? option : option.text || ''
+      children.push(new Paragraph({ text: `${label}. ${text}` }))
+    }
+  } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
+    for (let line = 0; line < 4; line++)
+      children.push(
+        new Paragraph({ text: '____________________________________________________________' })
+      )
+  }
+  if (q.imageUrl?.startsWith('data:image/')) {
+    const encoded = q.imageUrl.split(',')[1]
+    if (encoded) {
+      try {
+        children.push(
+          new Paragraph({
+            children: [
+              new ImageRun({
+                data: Buffer.from(encoded, 'base64'),
+                type: 'png',
+                transformation: { width: 360, height: 220 },
+              }),
+            ],
+          })
+        )
+      } catch {}
+    }
+  }
+  if (q.rubric || q.scoringGuide)
+    children.push(new Paragraph({ text: `Rubrik: ${q.rubric || q.scoringGuide}` }))
+  children.push(new Paragraph({ text: '' }))
+  return children
+}
+
 export async function exportTeachingModule(teachingModule: TeachingModule, user: User) {
   await consumeExport(user)
   const sections: { key: string; title: string }[] = [
@@ -124,20 +238,7 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
 
 export async function exportExam(exam: Exam, user: User) {
   await consumeExport(user)
-  const questionParagraphs = exam.questions.flatMap((q, i) => {
-    const paragraphs = [
-      new Paragraph({
-        children: [new TextRun({ text: `${i + 1}. ${q.question}`, bold: true })],
-      }),
-    ]
-    if (Array.isArray(q.options)) {
-      for (const opt of q.options) {
-        paragraphs.push(new Paragraph({ text: opt }))
-      }
-    }
-    paragraphs.push(new Paragraph({ text: '' }))
-    return paragraphs
-  })
+  const questionParagraphs = exam.questions.flatMap((q, i) => examQuestionParagraphs(q, i + 1))
 
   const answerKeyParagraphs = exam.questions.map(
     (q, i) =>
@@ -148,7 +249,7 @@ export async function exportExam(exam: Exam, user: User) {
     sections: [
       {
         children: [
-          ...kopParagraphs(user, EXAM_TYPE_LABELS[exam.type] ?? exam.type),
+          ...examHeaderParagraphs(exam, user),
           new Paragraph({
             heading: HeadingLevel.HEADING_1,
             children: [new TextRun({ text: exam.title, bold: true })],

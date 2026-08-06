@@ -197,7 +197,9 @@ export default function DashboardTour({
     if (!active || hasStartedRef.current) return
 
     const steps = getSteps(tourName, educationLevel).filter((step) => {
-      return typeof step.element === 'string' && document.querySelector(step.element)
+      if (typeof step.element !== 'string') return false
+      const target = document.querySelector(step.element)
+      return target && target.getAttribute('data-tour-ready') !== 'false'
     })
 
     if (steps.length === 0) return

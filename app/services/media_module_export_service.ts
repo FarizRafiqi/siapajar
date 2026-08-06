@@ -66,8 +66,10 @@ function safeFilename(value: string) {
 async function withExportQuota<T>(
   user: User,
   featureKey: 'export_pptx' | 'export_pdf',
-  work: () => Promise<T>
+  work: () => Promise<T>,
+  charge = true
 ) {
+  if (!charge) return work()
   const reservationKey = `media-export:${user.id}:${featureKey}:${randomUUID()}`
   const reserved = await reserveUsage(user, featureKey, reservationKey, 1, {
     resource: 'media_module',
@@ -316,60 +318,65 @@ function pdfBuffer(doc: PDFKit.PDFDocument) {
   })
 }
 
-export async function exportMediaModulePdf(mediaModule: MediaModule, user: User) {
-  return withExportQuota(user, 'export_pdf', async () => {
-    const doc = new PDFDocument({ size: 'A4', margin: 48, autoFirstPage: false })
-    const slides = (mediaModule.slides || []) as MediaSlide[]
-    const guide = (mediaModule.loosePartsGuide || {}) as LoosePartsGuide
-    const addHeader = (subtitle: string) => {
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(14)
-        .text(user.schoolName || 'Media Ajar', { align: 'center' })
-      doc.font('Helvetica').fontSize(10).text(subtitle, { align: 'center' })
-      doc.moveDown(1)
-    }
-    doc.addPage()
-    addHeader(mediaModule.title)
-    doc.font('Helvetica-Bold').fontSize(22).text(mediaModule.title, { align: 'center' })
-    doc.moveDown(0.5)
-    doc
-      .font('Helvetica')
-      .fontSize(11)
-      .text(`Kelompok ${text(mediaModule.schoolClass?.name)} • Tema ${mediaModule.theme}`, {
-        align: 'center',
-      })
-    for (const [index, item] of slides.entries()) {
-      doc.addPage()
-      addHeader(`Slide ${item.slideNumber || index + 1} • ${mediaModule.theme}`)
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(20)
-        .text(text(item.title, `Kegiatan ${index + 1}`))
-      doc.moveDown(0.7)
-      doc.font('Helvetica-Bold').fontSize(11).text('Visual / ilustrasi')
-      doc.font('Helvetica').fontSize(12).text(text(item.visualDescription))
-      if (item.keyQuestion) {
-        doc.moveDown(0.7)
-        doc.font('Helvetica-Bold').fontSize(11).text('Pertanyaan pemantik')
-        doc.font('Helvetica').fontSize(12).text(item.keyQuestion)
+export async function exportMediaModulePdf(mediaModule: MediaModule, user: User, charge = true) {
+  return withExportQuota(
+    user,
+    'export_pdf',
+    async () => {
+      const doc = new PDFDocument({ size: 'A4', margin: 48, autoFirstPage: false })
+      const slides = (mediaModule.slides || []) as MediaSlide[]
+      const guide = (mediaModule.loosePartsGuide || {}) as LoosePartsGuide
+      const addHeader = (subtitle: string) => {
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(14)
+          .text(user.schoolName || 'Media Ajar', { align: 'center' })
+        doc.font('Helvetica').fontSize(10).text(subtitle, { align: 'center' })
+        doc.moveDown(1)
       }
-      doc.moveDown(0.7)
-      doc.font('Helvetica-Bold').fontSize(11).text('Catatan guru')
-      doc.font('Helvetica').fontSize(11).text(text(item.teacherNotes))
-    }
-    doc.addPage()
-    addHeader('Panduan Loose Parts')
-    doc.font('Helvetica-Bold').fontSize(13).text('Bahan yang disarankan')
-    doc.font('Helvetica').fontSize(11).list(list(guide.materials), { bulletRadius: 2 })
-    doc.moveDown(0.8)
-    doc.font('Helvetica-Bold').fontSize(13).text('Ragam kegiatan')
-    doc.font('Helvetica').fontSize(11).list(list(guide.activities), { bulletRadius: 2 })
-    doc.moveDown(0.8)
-    doc.font('Helvetica-Bold').fontSize(13).text('Catatan keselamatan')
-    doc.font('Helvetica').fontSize(11).text(text(guide.safetyNotes))
-    return pdfBuffer(doc)
-  })
+      doc.addPage()
+      addHeader(mediaModule.title)
+      doc.font('Helvetica-Bold').fontSize(22).text(mediaModule.title, { align: 'center' })
+      doc.moveDown(0.5)
+      doc
+        .font('Helvetica')
+        .fontSize(11)
+        .text(`Kelompok ${text(mediaModule.schoolClass?.name)} • Tema ${mediaModule.theme}`, {
+          align: 'center',
+        })
+      for (const [index, item] of slides.entries()) {
+        doc.addPage()
+        addHeader(`Slide ${item.slideNumber || index + 1} • ${mediaModule.theme}`)
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(20)
+          .text(text(item.title, `Kegiatan ${index + 1}`))
+        doc.moveDown(0.7)
+        doc.font('Helvetica-Bold').fontSize(11).text('Visual / ilustrasi')
+        doc.font('Helvetica').fontSize(12).text(text(item.visualDescription))
+        if (item.keyQuestion) {
+          doc.moveDown(0.7)
+          doc.font('Helvetica-Bold').fontSize(11).text('Pertanyaan pemantik')
+          doc.font('Helvetica').fontSize(12).text(item.keyQuestion)
+        }
+        doc.moveDown(0.7)
+        doc.font('Helvetica-Bold').fontSize(11).text('Catatan guru')
+        doc.font('Helvetica').fontSize(11).text(text(item.teacherNotes))
+      }
+      doc.addPage()
+      addHeader('Panduan Loose Parts')
+      doc.font('Helvetica-Bold').fontSize(13).text('Bahan yang disarankan')
+      doc.font('Helvetica').fontSize(11).list(list(guide.materials), { bulletRadius: 2 })
+      doc.moveDown(0.8)
+      doc.font('Helvetica-Bold').fontSize(13).text('Ragam kegiatan')
+      doc.font('Helvetica').fontSize(11).list(list(guide.activities), { bulletRadius: 2 })
+      doc.moveDown(0.8)
+      doc.font('Helvetica-Bold').fontSize(13).text('Catatan keselamatan')
+      doc.font('Helvetica').fontSize(11).text(text(guide.safetyNotes))
+      return pdfBuffer(doc)
+    },
+    charge
+  )
 }
 
 export { safeFilename }
