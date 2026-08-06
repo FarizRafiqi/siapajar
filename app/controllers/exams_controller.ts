@@ -98,6 +98,7 @@ export default class ExamsController {
       ...data,
       userId: user.id,
       status: 'draft',
+      header: data.header ?? {},
     })
 
     session.flash('success', 'Soal berhasil dibuat')
@@ -152,7 +153,7 @@ export default class ExamsController {
     let questions: Record<string, any>[]
     const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     try {
-      const isPaud = user.isTk
+      const isPaud = user.isTk || user.institutionType === 'ra'
       const prompt = examPrompt({
         subject,
         topic,
@@ -160,6 +161,7 @@ export default class ExamsController {
         questionCount,
         examMode: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
         isPaud,
+        isRa: user.institutionType === 'ra',
       })
       const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
         userId: user.id,
@@ -173,13 +175,28 @@ export default class ExamsController {
         instruction: typeof q.instruction === 'string' ? q.instruction : '',
         visualType: typeof q.visualType === 'string' ? q.visualType : '',
         rubric: typeof q.rubric === 'string' ? q.rubric : '',
+        scoringGuide: typeof q.scoringGuide === 'string' ? q.scoringGuide : '',
+        imagePrompt: typeof q.imagePrompt === 'string' ? q.imagePrompt : '',
+        imageUrl: typeof q.imageUrl === 'string' ? q.imageUrl : '',
         options: Array.isArray(q.options)
-          ? q.options.filter((o: unknown) => typeof o === 'string')
+          ? q.options
+              .map((o: unknown) => {
+                if (typeof o === 'string') return o
+                if (o && typeof o === 'object' && 'text' in o) {
+                  const option = o as { label?: unknown; text?: unknown }
+                  return `${typeof option.label === 'string' ? option.label : ''}. ${typeof option.text === 'string' ? option.text : ''}`.trim()
+                }
+                return null
+              })
+              .filter((o): o is string => Boolean(o))
           : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
-        type: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
+        type:
+          examMode === 'tertulis_visual'
+            ? 'visual'
+            : examMode || (isPaud ? 'visual' : 'multiple_choice'),
         curriculum,
       }))
     } catch (error) {
@@ -196,6 +213,17 @@ export default class ExamsController {
       title: `${EXAM_TYPE_LABELS[type]} ${subject} - ${topic}`,
       type,
       questions,
+      header: {
+        institutionName: user.schoolName || '',
+        institutionAddress: '',
+        academicYear: '',
+        semester: '',
+        groupName: schoolClass.name,
+        subject,
+        examLabel: EXAM_TYPE_LABELS[type],
+        studentName: '',
+        date: '',
+      },
       status: 'draft',
     })
 

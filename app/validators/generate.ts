@@ -22,7 +22,9 @@ export const generateExamValidator = vine.create(
     type: vine.enum(['midterm', 'final', 'daily', 'summative']),
     topic: vine.string().trim().minLength(1).maxLength(200),
     questionCount: vine.number().min(3).max(50),
-    examMode: vine.enum(['lisan', 'tertulis_visual', 'multiple_choice']).optional(),
+    examMode: vine
+      .enum(['lisan', 'tertulis_visual', 'multiple_choice', 'essay', 'practical'])
+      .optional(),
     learningSequenceId: vine.number().positive().optional(),
   })
 )

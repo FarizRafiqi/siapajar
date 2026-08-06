@@ -1,9 +1,16 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Head, useForm, Link } from '@inertiajs/react'
-import { useState } from 'react'
-import { ArrowLeft, Download, Pencil, Save, X, Trash2, Plus } from 'lucide-react'
+import { Head, Link, useForm } from '@inertiajs/react'
+import { ArrowLeft, Download, Pencil, Plus, Save, Trash2, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { cn } from '~/lib/utils'
-import { type ExamType, examTypeLabel } from './index'
+import { examTypeLabel, type ExamType } from './index'
+import { QuestionRenderer } from './question-renderer'
+import {
+  normalizeHeader,
+  normalizeQuestion,
+  type ExamHeader,
+  type ExamQuestion,
+} from './question-types'
 
 interface SchoolClass {
   id: number
@@ -11,24 +18,13 @@ interface SchoolClass {
   gradeLevel: number
 }
 
-interface Question {
-  id: number
-  type: string
-  question: string
-  instruction?: string
-  visualType?: string
-  rubric?: string
-  options?: string[]
-  answer: string
-  explanation?: string
-}
-
 interface Exam {
   id: number
   title: string
   type: ExamType
   status: 'draft' | 'published'
-  questions: Question[]
+  questions: Record<string, unknown>[]
+  header?: Record<string, string>
   createdAt: string
   schoolClass: SchoolClass
 }
@@ -37,84 +33,86 @@ interface ExamShowProps {
   readonly exam: Exam
 }
 
+const headerFields: { key: keyof ExamHeader; label: string; placeholder: string }[] = [
+  { key: 'institutionName', label: 'Nama lembaga', placeholder: 'RA/TK ...' },
+  { key: 'institutionAddress', label: 'Alamat lembaga', placeholder: 'Alamat dan kontak' },
+  { key: 'academicYear', label: 'Tahun ajaran', placeholder: '2025/2026' },
+  { key: 'semester', label: 'Semester', placeholder: '1 / Ganjil' },
+  { key: 'groupName', label: 'Kelompok / kelas', placeholder: 'Kelompok B' },
+  { key: 'subject', label: 'Tema / mata pelajaran', placeholder: 'Tema ...' },
+  { key: 'examLabel', label: 'Label asesmen', placeholder: 'Ulangan Harian' },
+  { key: 'studentName', label: 'Nama anak (opsional)', placeholder: 'Nama lengkap anak' },
+  { key: 'date', label: 'Tanggal (opsional)', placeholder: 'Tanggal pelaksanaan' },
+]
+
+function inputClass() {
+  return 'w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white'
+}
+
 export default function ExamShow({ exam }: ExamShowProps) {
   const [editing, setEditing] = useState(false)
-
-  const { data, setData, put, processing, reset } = useForm({
+  const [showAnswers, setShowAnswers] = useState(false)
+  const initialQuestions = useMemo(
+    () => (exam.questions || []).map(normalizeQuestion),
+    [exam.questions]
+  )
+  const initialHeader = useMemo(
+    () =>
+      normalizeHeader(exam.header, {
+        groupName: exam.schoolClass.name,
+        examLabel: examTypeLabel(exam.type),
+      }),
+    [exam.header, exam.schoolClass.name, exam.type]
+  )
+  const { data, setData, put, processing, reset } = useForm<{
+    title: string
+    type: ExamType
+    status: 'draft' | 'published'
+    questions: ExamQuestion[]
+    header: ExamHeader
+  }>({
     title: exam.title,
     type: exam.type,
     status: exam.status,
-    questions: exam.questions ?? [],
+    questions: initialQuestions,
+    header: initialHeader,
   })
 
-  const handleSave = () => {
-    put(`/exams/${exam.id}`, {
-      onSuccess: () => setEditing(false),
-    })
-  }
+  const questions = editing ? data.questions : initialQuestions
+  const isPublished = exam.status === 'published'
 
-  const handleCancelEdit = () => {
+  const save = () => put(`/exams/${exam.id}`, { onSuccess: () => setEditing(false) })
+  const togglePublish = () => {
+    setData('status', isPublished ? 'draft' : 'published')
+    put(`/exams/${exam.id}`, { onSuccess: () => setEditing(false) })
+  }
+  const cancel = () => {
     reset()
     setEditing(false)
   }
-
-  const handleTogglePublish = () => {
-    const nextStatus = exam.status === 'published' ? 'draft' : 'published'
-    setData('status', nextStatus)
-    put(`/exams/${exam.id}`, { onSuccess: () => setEditing(false) })
-  }
-
-  const handleExport = () => {
-    window.location.href = `/exams/${exam.id}/export`
-  }
-
-  const handleExportPdf = () => {
-    window.location.href = `/exams/${exam.id}/export/pdf`
-  }
-
-  const updateQuestion = (index: number, patch: Partial<Question>) => {
+  const updateQuestion = (index: number, patch: Partial<ExamQuestion>) =>
     setData(
       'questions',
-      data.questions.map((q, i) => (i === index ? { ...q, ...patch } : q))
+      data.questions.map((question, i) => (i === index ? { ...question, ...patch } : question))
     )
-  }
-
-  const updateOption = (questionIndex: number, optionIndex: number, value: string) => {
-    setData(
-      'questions',
-      data.questions.map((q, i) =>
-        i === questionIndex
-          ? { ...q, options: (q.options ?? []).map((o, oi) => (oi === optionIndex ? value : o)) }
-          : q
-      )
-    )
-  }
-
-  const removeQuestion = (index: number) => {
-    setData(
-      'questions',
-      data.questions.filter((_, i) => i !== index)
-    )
-  }
-
-  const addQuestion = () => {
-    const nextId = Math.max(0, ...data.questions.map((q) => q.id)) + 1
+  const updateOption = (questionIndex: number, optionIndex: number, text: string) =>
+    updateQuestion(questionIndex, {
+      options: (data.questions[questionIndex].options || []).map((option, index) =>
+        index === optionIndex ? { ...option, text } : option
+      ),
+    })
+  const addQuestion = () =>
     setData('questions', [
       ...data.questions,
       {
-        id: nextId,
-        type: 'multiple_choice',
+        id: Math.max(0, ...data.questions.map((question) => question.id)) + 1,
+        type: 'essay',
         question: '',
-        options: ['A. ', 'B. ', 'C. ', 'D. '],
-        answer: 'A',
-        explanation: '',
+        instruction: '',
+        answer: '',
+        rubric: '',
       },
     ])
-  }
-
-  const questions = editing ? data.questions : (exam.questions ?? [])
-  const isMajorExam = exam.type === 'midterm' || exam.type === 'final'
-  const isPublished = exam.status === 'published'
 
   return (
     <DashboardWrapper
@@ -126,244 +124,322 @@ export default function ExamShow({ exam }: ExamShowProps) {
       ]}
     >
       <Head title={exam.title} />
-
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/exams"
-            className="rounded-lg border border-neutral-200 p-2 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{exam.title}</h2>
-              <span
-                className={cn(
-                  'rounded-full px-2 py-0.5 text-xs font-medium',
-                  isMajorExam
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                    : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                )}
-              >
-                {examTypeLabel(exam.type)}
-              </span>
-              <button
-                onClick={handleTogglePublish}
-                className={cn(
-                  'rounded-full px-2 py-0.5 text-xs font-medium transition-colors',
-                  isPublished
-                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400'
-                )}
-                title={isPublished ? 'Klik untuk jadikan draf' : 'Klik untuk terbitkan'}
-              >
-                {isPublished ? 'Terbit' : 'Draf'}
-              </button>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex items-start gap-3">
+            <Link
+              href="/exams"
+              aria-label="Kembali ke bank soal"
+              className="mt-1 rounded-xl border border-neutral-200 p-2 text-neutral-600 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {exam.title}
+                </h1>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {examTypeLabel(exam.type)}
+                </span>
+                <button
+                  type="button"
+                  onClick={togglePublish}
+                  className={cn(
+                    'rounded-full px-2.5 py-1 text-xs font-semibold transition',
+                    isPublished
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                      : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+                  )}
+                >
+                  {isPublished ? 'Terbit' : 'Draf'}
+                </button>
+              </div>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                Kelas {exam.schoolClass.name} · {questions.length} butir soal
+              </p>
             </div>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Kelas {exam.schoolClass.name} • {questions.length} soal
-            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={handleExport}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              type="button"
+              onClick={() => setShowAnswers((value) => !value)}
+              className="rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
-              <Download className="h-4 w-4" />
-              Export DOCX
+              {showAnswers ? 'Sembunyikan kunci' : 'Tampilkan kunci'}
             </button>
-            <button
-              onClick={handleExportPdf}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            <a
+              href={`/exams/${exam.id}/export`}
+              className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
-              <Download className="h-4 w-4" />
-              Export PDF
-            </button>
+              <Download className="h-4 w-4" /> DOCX
+            </a>
+            <a
+              href={`/exams/${exam.id}/export/pdf`}
+              className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4" /> PDF
+            </a>
             {editing ? (
               <>
                 <button
-                  onClick={handleCancelEdit}
-                  className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  type="button"
+                  onClick={cancel}
+                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"
                 >
-                  <X className="h-4 w-4" />
-                  Batal
+                  <X className="h-4 w-4" /> Batal
                 </button>
                 <button
-                  onClick={handleSave}
+                  type="button"
+                  onClick={save}
                   disabled={processing}
-                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Save className="h-4 w-4" />
-                  {processing ? 'Menyimpan...' : 'Simpan'}
+                  <Save className="h-4 w-4" /> {processing ? 'Menyimpan...' : 'Simpan'}
                 </button>
               </>
             ) : (
               <button
+                type="button"
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900"
               >
-                <Pencil className="h-4 w-4" />
-                Edit
+                <Pencil className="h-4 w-4" /> Edit naskah
               </button>
             )}
           </div>
         </div>
 
-        {/* Daftar Soal */}
-        <div className="space-y-4">
-          {questions.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
-              <p className="text-neutral-500 dark:text-neutral-400">Belum ada soal</p>
+        <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-neutral-900 dark:text-white">Kop soal</h2>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                Informasi ini akan dicetak pada lembar PDF dan DOCX.
+              </p>
+            </div>
+            {editing && (
+              <span className="text-xs font-medium text-emerald-600">Mode edit aktif</span>
+            )}
+          </div>
+          {editing ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {headerFields.map((field) => (
+                <label
+                  key={field.key}
+                  className={field.key === 'institutionAddress' ? 'sm:col-span-2' : ''}
+                >
+                  <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                    {field.label}
+                  </span>
+                  <input
+                    className={inputClass()}
+                    value={data.header[field.key]}
+                    placeholder={field.placeholder}
+                    onChange={(event) =>
+                      setData('header', { ...data.header, [field.key]: event.target.value })
+                    }
+                  />
+                </label>
+              ))}
             </div>
           ) : (
-            questions.map((question, index) => (
-              <div
-                key={question.id}
-                className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <div className="mb-3 flex items-start gap-3">
-                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    {index + 1}
-                  </span>
-                  {editing ? (
-                    <div className="flex-1 space-y-2">
-                      <textarea
-                        value={question.question}
-                        onChange={(e) => updateQuestion(index, { question: e.target.value })}
-                        rows={2}
-                        className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                        placeholder="Tulis pertanyaan / indikator"
-                      />
-                      {question.instruction !== undefined && (
-                        <input
-                          type="text"
-                          value={question.instruction ?? ''}
-                          onChange={(e) => updateQuestion(index, { instruction: e.target.value })}
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                          placeholder="Instruksi pengerjaan / penyampaian"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex-1 space-y-1">
-                      {question.visualType && (
-                        <span className="inline-block rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
-                          {question.visualType}
-                        </span>
-                      )}
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {question.question}
-                      </p>
-                      {question.instruction && (
-                        <p className="text-xs italic text-neutral-500 dark:text-neutral-400">
-                          Instruksi: {question.instruction}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {editing && (
-                    <button
-                      onClick={() => removeQuestion(index)}
-                      className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      title="Hapus soal ini"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                {question.options && question.options.length > 0 && (
-                  <div className="ml-10 space-y-2">
-                    {question.options.map((option, optionIndex) =>
-                      editing ? (
-                        <input
-                          key={`${question.id}-opt-${optionIndex}`}
-                          type="text"
-                          value={option}
-                          onChange={(e) => updateOption(index, optionIndex, e.target.value)}
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                        />
-                      ) : (
-                        <div
-                          key={`${question.id}-opt-${optionIndex}`}
-                          className={cn(
-                            'rounded-lg border px-3 py-2 text-sm',
-                            option.startsWith(question.answer)
-                              ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
-                              : 'border-neutral-200 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300'
-                          )}
-                        >
-                          {option}
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
-
-                {editing && (
-                  <div className="ml-10 mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor={`answer-${question.id}`}
-                        className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
-                      >
-                        Kunci Jawaban
-                      </label>
-                      <input
-                        id={`answer-${question.id}`}
-                        type="text"
-                        value={question.answer}
-                        onChange={(e) => updateQuestion(index, { answer: e.target.value })}
-                        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                        placeholder="contoh: A"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor={`explanation-${question.id}`}
-                        className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
-                      >
-                        Pembahasan
-                      </label>
-                      <input
-                        id={`explanation-${question.id}`}
-                        type="text"
-                        value={question.explanation}
-                        onChange={(e) => updateQuestion(index, { explanation: e.target.value })}
-                        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                        placeholder="opsional"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {!editing && question.explanation && (
-                  <div className="ml-10 mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                    <strong>Pembahasan:</strong> {question.explanation}
-                  </div>
-                )}
-                {!editing && question.rubric && (
-                  <div className="ml-10 mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
-                    <strong>Rubrik Penilaian Lisan:</strong> {question.rubric}
-                  </div>
-                )}
+            <div className="border-b-2 border-neutral-900 pb-4 text-center dark:border-white">
+              <p className="text-lg font-bold uppercase text-neutral-900 dark:text-white">
+                {data.header.institutionName || 'Nama Lembaga'}
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                {data.header.institutionAddress || 'Alamat lembaga'}
+              </p>
+              <div className="my-3 border-t border-neutral-300 dark:border-neutral-700" />
+              <p className="font-bold uppercase text-neutral-900 dark:text-white">
+                {data.header.examLabel || examTypeLabel(exam.type)}
+              </p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                {data.header.subject || 'Tema / mata pelajaran'} ·{' '}
+                {data.header.groupName || exam.schoolClass.name}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-left text-xs text-neutral-600 dark:text-neutral-400">
+                <span>Tahun ajaran: {data.header.academicYear || '—'}</span>
+                <span>Semester: {data.header.semester || '—'}</span>
+                <span>Nama anak: {data.header.studentName || '—'}</span>
+                <span>Tanggal: {data.header.date || '—'}</span>
               </div>
-            ))
+            </div>
           )}
+        </section>
 
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Naskah soal</h2>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Tampilan mengikuti bentuk soal sebenarnya, bukan daftar teks mentah.
+            </p>
+          </div>
+          {questions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-neutral-300 p-12 text-center dark:border-neutral-700">
+              <p className="text-neutral-500 dark:text-neutral-400">Belum ada soal.</p>
+            </div>
+          ) : (
+            questions.map((question, index) =>
+              editing ? (
+                <EditorCard
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  onUpdate={updateQuestion}
+                  onUpdateOption={updateOption}
+                  onRemove={() =>
+                    setData(
+                      'questions',
+                      data.questions.filter((_, i) => i !== index)
+                    )
+                  }
+                />
+              ) : (
+                <QuestionRenderer
+                  key={question.id}
+                  question={question}
+                  number={index + 1}
+                  showAnswer={showAnswers}
+                />
+              )
+            )
+          )}
           {editing && (
             <button
+              type="button"
               onClick={addQuestion}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-300 py-4 text-sm font-medium text-neutral-600 hover:border-emerald-400 hover:text-emerald-600 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-emerald-600 dark:hover:text-emerald-400"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-neutral-300 py-4 text-sm font-semibold text-neutral-600 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-neutral-700 dark:text-neutral-400"
             >
-              <Plus className="h-4 w-4" />
-              Tambah Soal
+              <Plus className="h-4 w-4" /> Tambah soal
             </button>
           )}
-        </div>
+        </section>
       </div>
     </DashboardWrapper>
+  )
+}
+
+function EditorCard({
+  question,
+  index,
+  onUpdate,
+  onUpdateOption,
+  onRemove,
+}: {
+  question: ExamQuestion
+  index: number
+  onUpdate: (index: number, patch: Partial<ExamQuestion>) => void
+  onUpdateOption: (questionIndex: number, optionIndex: number, value: string) => void
+  onRemove: () => void
+}) {
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-emerald-900 dark:bg-neutral-900">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="font-semibold text-neutral-900 dark:text-white">Soal {index + 1}</span>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Hapus soal"
+          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="grid gap-4">
+        <label>
+          <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+            Bentuk soal
+          </span>
+          <select
+            className={inputClass()}
+            value={question.type}
+            onChange={(event) =>
+              onUpdate(index, { type: event.target.value as ExamQuestion['type'] })
+            }
+          >
+            <option value="multiple_choice">Pilihan ganda</option>
+            <option value="essay">Uraian</option>
+            <option value="visual">Aktivitas visual</option>
+            <option value="practical">Praktik / performa</option>
+            <option value="oral">Lisan</option>
+          </select>
+        </label>
+        <label>
+          <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+            Pertanyaan / tugas
+          </span>
+          <textarea
+            className={inputClass()}
+            rows={3}
+            value={question.question}
+            onChange={(event) => onUpdate(index, { question: event.target.value })}
+          />
+        </label>
+        <label>
+          <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+            Petunjuk
+          </span>
+          <input
+            className={inputClass()}
+            value={question.instruction || ''}
+            onChange={(event) => onUpdate(index, { instruction: event.target.value })}
+          />
+        </label>
+        {question.type === 'multiple_choice' && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(question.options || []).map((option, optionIndex) => (
+              <label key={option.label}>
+                <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                  Opsi {option.label}
+                </span>
+                <input
+                  className={inputClass()}
+                  value={option.text}
+                  onChange={(event) => onUpdateOption(index, optionIndex, event.target.value)}
+                />
+              </label>
+            ))}
+          </div>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+              Kunci / jawaban ideal
+            </span>
+            <input
+              className={inputClass()}
+              value={question.answer || ''}
+              onChange={(event) => onUpdate(index, { answer: event.target.value })}
+            />
+          </label>
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+              Rubrik / panduan skor
+            </span>
+            <textarea
+              className={inputClass()}
+              rows={2}
+              value={question.rubric || question.scoringGuide || ''}
+              onChange={(event) => onUpdate(index, { rubric: event.target.value })}
+            />
+          </label>
+        </div>
+        {question.type === 'visual' && (
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+              Deskripsi ilustrasi
+            </span>
+            <input
+              className={inputClass()}
+              value={question.imagePrompt || ''}
+              onChange={(event) => onUpdate(index, { imagePrompt: event.target.value })}
+              placeholder="Contoh: tiga apel merah bergaya ilustrasi anak"
+            />
+          </label>
+        )}
+      </div>
+    </div>
   )
 }

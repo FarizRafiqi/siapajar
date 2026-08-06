@@ -28,10 +28,30 @@ export function examPrompt(params: {
   topic: string
   type: string
   questionCount: number
-  examMode?: 'lisan' | 'tertulis_visual' | 'multiple_choice'
+  examMode?: 'lisan' | 'tertulis_visual' | 'multiple_choice' | 'essay' | 'practical'
   isPaud?: boolean
   isRa?: boolean
 }): AiPrompt {
+  if (params.examMode === 'essay') {
+    return {
+      system:
+        'Kamu pembuat soal uraian untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
+        '{"questions": [{"question": string, "instruction": string, "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'Buat pertanyaan terbuka, ruang jawaban, kunci ideal, dan rubrik deskriptif yang dapat dinilai guru.',
+      user: `Buatkan ${params.questionCount} soal uraian untuk mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,
+    }
+  }
+
+  if (params.examMode === 'practical') {
+    return {
+      system:
+        'Kamu pembuat instrumen praktik/performa untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
+        '{"questions": [{"question": string, "instruction": string, "answer": string, "rubric": string, "scoringGuide": string}]}. ' +
+        'Setiap instrumen harus memiliki tindakan yang diamati, bukti performa, jawaban/hasil ideal, dan rubrik deskriptif.',
+      user: `Buatkan ${params.questionCount} instrumen praktik untuk tema/topik "${params.topic}" (${params.subject}), jenis ${params.type}.`,
+    }
+  }
+
   if (params.isPaud || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
     if (params.examMode === 'lisan') {
       return {
@@ -47,15 +67,16 @@ export function examPrompt(params: {
       system:
         'Kamu pembuat soal ujian lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
         'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-        '{"questions": [{"question": string, "visualType": string, "instruction": string, "answer": string}]}. ' +
-        'visualType bisa berupa "Menghubungkan Gambar", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda".',
+        '{"questions": [{"question": string, "visualType": string, "instruction": string, "imagePrompt": string, "answer": string, "rubric": string}]}. ' +
+        'visualType bisa berupa "Menghubungkan Gambar", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda". ' +
+        'imagePrompt harus menjelaskan ilustrasi yang perlu dibuat jika aktivitas membutuhkan gambar.',
       user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }
 
   return {
     system:
-      'Kamu pembuat soal ujian SD Indonesia. Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
+      'Kamu pembuat soal pilihan ganda SD Indonesia. Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
       '{"questions": [{"question": string, "options": string[], "answer": string, "explanation": string}]}. ' +
       'options berisi 4 pilihan diawali "A. ", "B. ", "C. ", "D. ". answer isi huruf opsi benar saja (contoh "A").',
     user: `Buatkan ${params.questionCount} soal pilihan ganda mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,

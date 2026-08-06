@@ -2,7 +2,7 @@ import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { FileQuestion, Trash2, Eye, Sparkles } from 'lucide-react'
+import { FileQuestion, Trash2, Sparkles } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 export type ExamType = 'midterm' | 'final' | 'daily' | 'summative'
@@ -56,7 +56,8 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
     classId: classes[0]?.id || 0,
     subject: '',
     type: 'daily' as ExamType,
-    examMode: 'tertulis_visual' as 'tertulis_visual' | 'lisan' | 'multiple_choice',
+    examMode: 'tertulis_visual' as
+      'tertulis_visual' | 'lisan' | 'multiple_choice' | 'essay' | 'practical',
     topic: '',
     questionCount: 10,
   })
@@ -198,12 +199,6 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                     className="flex items-center gap-2"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <Link
-                      href={`/exams/${item.id}`}
-                      className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
                     <button
                       onClick={() => setDeletingExam(item)}
                       className="rounded-lg border border-neutral-200 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
@@ -319,6 +314,8 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                     Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)
                   </option>
                   <option value="multiple_choice">Pilihan Ganda (SD / Umum)</option>
+                  <option value="essay">Uraian / Essay</option>
+                  <option value="practical">Praktik / Performa</option>
                 </select>
               </div>
               <div>
