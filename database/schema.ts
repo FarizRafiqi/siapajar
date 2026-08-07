@@ -142,6 +142,45 @@ export class AnnualPlanSchema extends BaseModel {
   declare userId: number
 }
 
+export class AssessmentAttachmentSchema extends BaseModel {
+  static $columns = [
+    'assessmentId',
+    'createdAt',
+    'displayOrder',
+    'id',
+    'mimeType',
+    'originalName',
+    'size',
+    'storedName',
+    'updatedAt',
+    'url',
+    'userId',
+  ] as const
+  $columns = AssessmentAttachmentSchema.$columns
+  @column()
+  declare assessmentId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare displayOrder: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare mimeType: string
+  @column()
+  declare originalName: string
+  @column()
+  declare size: number
+  @column()
+  declare storedName: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare url: string
+  @column()
+  declare userId: number
+}
+
 export class AssessmentSchema extends BaseModel {
   static $columns = [
     'classId',
@@ -179,6 +218,39 @@ export class AssessmentSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare userId: number
+}
+
+export class AuditLogSchema extends BaseModel {
+  static $columns = [
+    'action',
+    'actorId',
+    'createdAt',
+    'entityId',
+    'entityType',
+    'id',
+    'ipAddress',
+    'metadata',
+    'userAgent',
+  ] as const
+  $columns = AuditLogSchema.$columns
+  @column()
+  declare action: string
+  @column()
+  declare actorId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare entityId: string | null
+  @column()
+  declare entityType: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare ipAddress: string | null
+  @column()
+  declare metadata: any
+  @column()
+  declare userAgent: string | null
 }
 
 export class ClassSchema extends BaseModel {
@@ -280,10 +352,47 @@ export class DailyLessonPlanSchema extends BaseModel {
   declare weeklyLessonPlanId: number | null
 }
 
+export class DocumentWorkflowSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'documentId',
+    'documentType',
+    'id',
+    'lastSavedAt',
+    'status',
+    'templateKey',
+    'updatedAt',
+    'userId',
+    'version',
+  ] as const
+  $columns = DocumentWorkflowSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare documentId: number
+  @column()
+  declare documentType: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare lastSavedAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare templateKey: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+  @column()
+  declare version: number
+}
+
 export class ExamSchema extends BaseModel {
   static $columns = [
     'classId',
     'createdAt',
+    'header',
     'id',
     'questions',
     'status',
@@ -297,6 +406,8 @@ export class ExamSchema extends BaseModel {
   declare classId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare header: any
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -527,6 +638,45 @@ export class PackageEntitlementSchema extends BaseModel {
   declare packageId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class PackageSubscriptionSchema extends BaseModel {
+  static $columns = [
+    'billingCycle',
+    'canceledAt',
+    'createdAt',
+    'endsAt',
+    'id',
+    'metadata',
+    'packageId',
+    'startsAt',
+    'status',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = PackageSubscriptionSchema.$columns
+  @column()
+  declare billingCycle: string
+  @column.dateTime()
+  declare canceledAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.dateTime()
+  declare endsAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: any
+  @column()
+  declare packageId: number | null
+  @column.dateTime()
+  declare startsAt: DateTime
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
 }
 
 export class PackageSchema extends BaseModel {
@@ -869,6 +1019,7 @@ export class UsageEventSchema extends BaseModel {
     'metadata',
     'periodStart',
     'quantity',
+    'reservationKey',
     'updatedAt',
     'userId',
   ] as const
@@ -885,6 +1036,8 @@ export class UsageEventSchema extends BaseModel {
   declare periodStart: DateTime
   @column()
   declare quantity: number
+  @column()
+  declare reservationKey: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()

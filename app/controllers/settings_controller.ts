@@ -1,10 +1,19 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { createSettingsValidator, createAdminSettingsValidator } from '#validators/settings'
 import string from '@adonisjs/core/helpers/string'
+import PackageSubscription from '#models/package_subscription'
+import { DateTime } from 'luxon'
 
 export default class SettingsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
+    await user.load('package')
+    const subscription = await PackageSubscription.query()
+      .where('user_id', user.id)
+      .where('status', 'active')
+      .where((query) => query.whereNull('ends_at').orWhere('ends_at', '>', DateTime.now().toSQL()))
+      .orderBy('starts_at', 'desc')
+      .first()
 
     return inertia.render('dashboard/settings', {
       user: {
@@ -17,6 +26,8 @@ export default class SettingsController {
         role: user.role,
         avatarUrl: user.avatarUrl,
       },
+      package: user.package?.toJSON() ?? null,
+      subscription: subscription?.toJSON() ?? null,
     })
   }
 

@@ -4,8 +4,10 @@
  */
 
 export const controllers = {
+  AccountBilling: () => import('#controllers/account_billing_controller'),
   AdminAcademicYears: () => import('#controllers/admin_academic_years_controller'),
   AdminAiSettings: () => import('#controllers/admin_ai_settings_controller'),
+  AdminEntitlements: () => import('#controllers/admin_entitlements_controller'),
   AdminPackages: () => import('#controllers/admin_packages_controller'),
   AdminSchools: () => import('#controllers/admin_schools_controller'),
   AdminUsers: () => import('#controllers/admin_users_controller'),

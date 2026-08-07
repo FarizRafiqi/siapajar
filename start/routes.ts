@@ -11,12 +11,12 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 import db from '@adonisjs/lucid/services/db'
-import redis from '@adonisjs/redis/services/main'
 
 router.get('/', '#controllers/home_controller.index').as('home')
 router
   .get('/health', async ({ response }) => {
     try {
+      const { default: redis } = await import('@adonisjs/redis/services/main')
       await db.rawQuery('select 1')
       await redis.ping()
       return response.ok({ status: 'ok', database: 'ok', redis: 'ok' })
@@ -66,6 +66,19 @@ router
 
     // Dashboard
     router.get('/dashboard', '#controllers/dashboard_controller.index').as('dashboard')
+
+    router
+      .get('/my-package', '#controllers/account_billing_controller.package')
+      .as('account.package')
+    router.get('/usage', '#controllers/account_billing_controller.usage').as('account.usage')
+    router
+      .get('/subscriptions', '#controllers/account_billing_controller.subscriptions')
+      .as('account.subscriptions')
+
+    // Panduan istilah kurikulum
+    router
+      .get('/glossary', ({ inertia }) => inertia.render('dashboard/glossary/index', {}))
+      .as('glossary.index')
 
     // Kurikulum terkontrol: CP Fase Fondasi, TP, ATP, dan IKTP
     router.get('/curriculum', '#controllers/curriculum_controller.index').as('curriculum.index')
@@ -414,6 +427,15 @@ router
     router
       .delete('/admin/packages/:id', '#controllers/admin_packages_controller.destroy')
       .as('admin.packages.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    router
+      .get('/admin/entitlements', '#controllers/admin_entitlements_controller.index')
+      .as('admin.entitlements.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/entitlements/:id', '#controllers/admin_entitlements_controller.update')
+      .as('admin.entitlements.update')
       .use(middleware.role({ roles: ['admin'] }))
 
     // Admin — Tahun Ajaran
