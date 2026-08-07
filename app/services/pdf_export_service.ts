@@ -79,6 +79,14 @@ function writeSection(
 
 function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
   const header = exam.header ?? {}
+  if (typeof header.logoUrl === 'string' && header.logoUrl.startsWith('data:image/')) {
+    try {
+      doc.image(Buffer.from(header.logoUrl.split(',')[1], 'base64'), {
+        fit: [70, 70],
+        align: 'center',
+      })
+    } catch {}
+  }
   doc
     .font('Helvetica-Bold')
     .fontSize(15)
@@ -101,26 +109,105 @@ function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
     if (value) doc.text(`${label}: ${value}`)
   }
   doc.moveDown(0.8)
+  doc
+    .moveTo(doc.page.margins.left, doc.y)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+    .lineWidth(1)
+    .strokeColor('#333333')
+    .stroke()
+  doc.moveDown(0.8)
+}
+
+function matchingItems(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item: any) => ({
+        label: typeof item === 'string' ? item : item?.label || item?.text || '',
+        imageUrl: typeof item === 'object' ? item?.imageUrl || item?.image : undefined,
+      }))
+    : []
+}
+
+function writeMatchingGrid(doc: PDFKit.PDFDocument, q: Record<string, any>) {
+  const leftItems = matchingItems(q.leftItems)
+  const rightItems = matchingItems(q.rightItems)
+  const rows = Math.max(leftItems.length, rightItems.length, 2)
+  const startX = doc.page.margins.left
+  const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+  const gap = 44
+  const columnWidth = (tableWidth - gap) / 2
+  const rowHeight = 34
+
+  doc.font('Helvetica-Bold').fontSize(8).fillColor('#6b21a8')
+  doc.text('SISI KIRI', startX, doc.y, { width: columnWidth })
+  doc.text('SISI KANAN', startX + columnWidth + gap, doc.y, { width: columnWidth, align: 'right' })
+  doc.moveDown(0.35)
+
+  for (let index = 0; index < rows; index++) {
+    if (doc.y + rowHeight > doc.page.height - doc.page.margins.bottom) doc.addPage()
+    const y = doc.y
+    const left = leftItems[index]
+    const right = rightItems[index]
+    doc
+      .roundedRect(startX, y, columnWidth, rowHeight, 4)
+      .lineWidth(0.7)
+      .strokeColor('#c4b5fd')
+      .stroke()
+    doc
+      .roundedRect(startX + columnWidth + gap, y, columnWidth, rowHeight, 4)
+      .lineWidth(0.7)
+      .strokeColor('#c4b5fd')
+      .stroke()
+    doc
+      .circle(startX + columnWidth - 7, y + rowHeight / 2, 2.5)
+      .fillColor('#a78bfa')
+      .fill()
+    doc
+      .circle(startX + columnWidth + gap + 7, y + rowHeight / 2, 2.5)
+      .fillColor('#a78bfa')
+      .fill()
+    doc.font('Helvetica').fontSize(9).fillColor('#222222')
+    doc.text(left?.label || 'Item kiri', startX + 9, y + 10, { width: columnWidth - 22 })
+    doc.text(right?.label || 'Item kanan', startX + columnWidth + gap + 17, y + 10, {
+      width: columnWidth - 26,
+      align: 'right',
+    })
+    doc.y = y + rowHeight + 6
+  }
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(8)
+    .fillColor('#555555')
+    .text('Hubungkan pasangan yang sesuai dengan garis.')
+  doc.fillColor('#000000')
+  doc.moveDown(0.5)
 }
 
 function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, number: number) {
-  const type =
-    q.type === 'multiple_choice' || Array.isArray(q.options)
+  const isMatching =
+    q.type === 'matching' ||
+    String(q.visualType || '')
+      .toLowerCase()
+      .includes('hubung')
+  const type = isMatching
+    ? 'Hubungkan Garis'
+    : q.type === 'multiple_choice' || (Array.isArray(q.options) && q.options.length > 0)
       ? 'Pilihan Ganda'
       : q.type === 'essay'
         ? 'Uraian'
-        : q.type === 'practical'
-          ? 'Praktik / Performa'
-          : q.type === 'oral'
-            ? 'Lisan'
-            : 'Aktivitas Visual'
+        : q.type === 'matching'
+          ? 'Hubungkan Garis'
+          : q.type === 'practical'
+            ? 'Praktik / Performa'
+            : q.type === 'oral'
+              ? 'Lisan'
+              : 'Aktivitas Visual'
   doc
     .font('Helvetica-Bold')
     .fontSize(10)
     .text(`${number}. ${q.question || 'Pertanyaan belum diisi.'}`)
   doc.font('Helvetica-Oblique').fontSize(9).text(`Bentuk: ${type}`)
   if (q.instruction) doc.font('Helvetica').text(`Petunjuk: ${q.instruction}`)
-  if (Array.isArray(q.options)) {
+  if (!isMatching && Array.isArray(q.options) && q.options.length > 0) {
     doc.font('Helvetica')
     q.options.forEach((option: unknown, index: number) => {
       const label =
@@ -130,6 +217,8 @@ function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, numb
       const text = typeof option === 'string' ? option : (option as any)?.text || ''
       doc.text(`${label}. ${text}`)
     })
+  } else if (isMatching) {
+    writeMatchingGrid(doc, q)
   } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
     doc.font('Helvetica').text('____________________________________________________________')
     doc.text('____________________________________________________________')
