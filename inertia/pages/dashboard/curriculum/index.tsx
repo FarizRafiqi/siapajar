@@ -137,39 +137,43 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               : 'Pilih dan susun tujuan pembelajaran sesuai jenjang sekolah.'}
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/curriculum/export/pdf?disposition=inline"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            Export PDF
-          </a>
-          <a
-            href="/curriculum/export"
-            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            Export DOCX
-          </a>
-          <button
-            type="button"
-            onClick={() => {
-              objectiveForm.setData('cpId', selectedCp)
-              setShowObjectiveModal(true)
-            }}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
-          >
-            Tambah TP Custom
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSequenceModal(true)}
-            disabled={selectedObjectives.length === 0}
-            className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50 dark:text-emerald-300"
-          >
-            Buat ATP ({selectedObjectives.length} TP)
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                objectiveForm.setData('cpId', selectedCp)
+                setShowObjectiveModal(true)
+              }}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
+            >
+              Tambah TP Custom
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSequenceModal(true)}
+              disabled={selectedObjectives.length === 0}
+              className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50 dark:text-emerald-300"
+            >
+              Buat ATP ({selectedObjectives.length} TP)
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/curriculum/export/pdf?disposition=inline"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              Export PDF
+            </a>
+            <a
+              href="/curriculum/export"
+              className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              Export DOCX
+            </a>
+          </div>
         </div>
         <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
           <div
