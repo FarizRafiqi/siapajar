@@ -1,7 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import ExportDownloadButton from '~/components/dashboard/export-download-button'
 import { Head, Link, useForm, usePage } from '@inertiajs/react'
-import { ArrowLeft, Building2, Pencil, Plus, Printer, Save, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Building2, ChevronDown, Download, Eye, Palette, Pencil, Plus, Printer, Save, Trash2, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { cn } from '~/lib/utils'
 import { examTypeLabel, type ExamType } from './index'
@@ -46,6 +45,8 @@ export default function ExamShow({ exam }: ExamShowProps) {
   const [editing, setEditing] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
   const [isKopModalOpen, setIsKopModalOpen] = useState(false)
+  const [colorMode, setColorMode] = useState<'grayscale' | 'color'>('grayscale')
+  const [optionsOpen, setOptionsOpen] = useState(false)
 
   const initialQuestions = useMemo(
     () => (exam.questions || []).map((q, i) => normalizeQuestion(q as Record<string, unknown>, i)),
@@ -82,51 +83,96 @@ export default function ExamShow({ exam }: ExamShowProps) {
   const questions = editing ? data.questions : initialQuestions
   const isPublished = exam.status === 'published'
 
-  const save = () => put(`/exams/${exam.id}`, { onSuccess: () => setEditing(false) })
   const togglePublish = () => {
-    setData('status', isPublished ? 'draft' : 'published')
-    put(`/exams/${exam.id}`, { onSuccess: () => setEditing(false) })
+    const nextStatus = isPublished ? 'draft' : 'published'
+    setData('status', nextStatus)
+    put(`/exams/${exam.id}`, {
+      preserveScroll: true,
+    })
   }
+
   const cancel = () => {
     reset()
     setEditing(false)
+  }
+
+  const save = () => {
+    put(`/exams/${exam.id}`, {
+      onSuccess: () => setEditing(false),
+    })
+  }
+
+  const handlePrint = () => {
+    window.print()
   }
 
   return (
     <DashboardWrapper
       title={exam.title}
       breadcrumbs={[
-        { label: 'Dashboard', href: '/dashboard' },
         { label: 'Bank Soal', href: '/exams' },
         { label: exam.title },
       ]}
     >
       <Head title={exam.title} />
+
+      <style>{String.raw`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 15mm 15mm 15mm 15mm;
+          }
+          *, *::before, *::after, html, body, #app, main, div, section, article, header, footer, .dark, .dark * {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #d4d4d4 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          html, body, #app, main {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+          }
+          article {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 16px !important;
+            border: none !important;
+            padding: 0 !important;
+            background-color: #ffffff !important;
+          }
+          .print\:hidden {
+            display: none !important;
+          }
+        }
+      `}</style>
+
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between print:hidden">
-          <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
+          <div className="flex items-start gap-3 max-w-2xl">
             <Link
               href="/exams"
-              aria-label="Kembali ke bank soal"
-              className="mt-1 rounded-xl border border-neutral-200 p-2 text-neutral-600 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
+              className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 text-neutral-600 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="max-w-xl text-xl font-bold leading-snug text-neutral-900 break-words dark:text-white sm:text-2xl">
                   {exam.title}
                 </h1>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                  {examTypeLabel(exam.type)}
-                </span>
                 <button
                   type="button"
                   onClick={togglePublish}
                   className={cn(
-                    'rounded-full px-2.5 py-1 text-xs font-semibold transition',
+                    'inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold transition',
                     isPublished
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                       : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
                   )}
                 >
@@ -138,44 +184,23 @@ export default function ExamShow({ exam }: ExamShowProps) {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          
+          {/* Unified Action Toolbar */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsKopModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <Building2 className="h-4 w-4 text-emerald-600" /> Edit Kop Surat
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300"
+              onClick={handlePrint}
+              className="h-10 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
             >
               <Printer className="h-4 w-4" /> Cetak (Print)
             </button>
-            <button
-              type="button"
-              onClick={() => setShowAnswers((value) => !value)}
-              className="rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              {showAnswers ? 'Sembunyikan kunci' : 'Tampilkan kunci'}
-            </button>
-            <ExportDownloadButton
-              href={`/exams/${exam.id}/export`}
-              filename={`${exam.title}.docx`}
-              label="DOCX"
-            />
-            <ExportDownloadButton
-              href={`/exams/${exam.id}/export/pdf`}
-              filename={`${exam.title}.pdf`}
-              label="PDF"
-            />
+
             {editing ? (
               <>
                 <button
                   type="button"
                   onClick={cancel}
-                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300"
+                  className="h-10 inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
                 >
                   <X className="h-4 w-4" /> Batal
                 </button>
@@ -183,7 +208,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
                   type="button"
                   onClick={save}
                   disabled={processing}
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-10 inline-flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50 dark:bg-white dark:text-neutral-900"
                 >
                   <Save className="h-4 w-4" /> {processing ? 'Menyimpan...' : 'Simpan'}
                 </button>
@@ -192,27 +217,88 @@ export default function ExamShow({ exam }: ExamShowProps) {
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900"
+                className="h-10 inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
               >
-                <Pencil className="h-4 w-4" /> Edit naskah
+                <Pencil className="h-4 w-4" /> Edit Naskah
               </button>
             )}
-          </div>
-        </div>
 
-        {/* Paper Sheet Preview Area */}
-        <div className="mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:border-none print:shadow-none print:p-0 dark:border-neutral-800 dark:bg-neutral-900">
-          <KopHeader header={data.header} user={authUser} />
+            {/* Expandable Options Dropdown Popover */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOptionsOpen((prev) => !prev)}
+                className="h-10 inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+              >
+                <span>Opsi Naskah</span>
+                <ChevronDown className={cn('h-4 w-4 transition-transform', optionsOpen && 'rotate-180')} />
+              </button>
 
-          <div className="my-6 space-y-6">
-            {questions.map((q, idx) => (
-              <QuestionRenderer
-                key={q.id || idx}
-                question={q}
-                number={idx + 1}
-                showAnswer={showAnswers}
-              />
-            ))}
+              {optionsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-20"
+                    onClick={() => setOptionsOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute right-0 z-30 mt-2 w-56 rounded-2xl border border-neutral-200 bg-white p-1.5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setColorMode((prev) => (prev === 'grayscale' ? 'color' : 'grayscale'))
+                        setOptionsOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    >
+                      <Palette className="h-4 w-4 text-purple-600" />
+                      {colorMode === 'grayscale' ? 'Ubah ke Mode Berwarna' : 'Ubah ke Mode Hitam Putih'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsKopModalOpen(true)
+                        setOptionsOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    >
+                      <Building2 className="h-4 w-4 text-emerald-600" />
+                      Edit Kop Surat & Identitas
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAnswers((prev) => !prev)
+                        setOptionsOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    >
+                      <Eye className="h-4 w-4 text-blue-600" />
+                      {showAnswers ? 'Sembunyikan Kunci Jawaban' : 'Tampilkan Kunci Jawaban'}
+                    </button>
+
+                    <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
+
+                    <a
+                      href={`/exams/${exam.id}/export`}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    >
+                      <Download className="h-4 w-4 text-indigo-600" />
+                      Download DOCX
+                    </a>
+
+                    <a
+                      href={`/exams/${exam.id}/export/pdf`}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    >
+                      <Download className="h-4 w-4 text-rose-600" />
+                      Download PDF
+                    </a>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -226,7 +312,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
         />
 
         {/* Paper Sheet Preview / Editor Area */}
-        <div className="mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:border-none print:shadow-none print:p-0 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:m-0 print:max-w-none print:w-full print:border-none print:p-0 print:shadow-none dark:border-neutral-800 dark:bg-neutral-900 print:dark:bg-white print:dark:text-black">
           <KopHeader header={data.header} user={authUser} />
 
           <div className="my-6 space-y-6">
@@ -275,6 +361,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
                     question={question}
                     number={index + 1}
                     showAnswer={showAnswers}
+                    colorMode={colorMode}
                   />
                 )
               )

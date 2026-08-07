@@ -27,14 +27,14 @@ export function KopHeader({ header, user }: KopHeaderProps) {
   const phone = header.phone || kop.phone || ''
 
   return (
-    <header className="mb-6 w-full font-serif text-black print:mb-4">
+    <div className="kop-header mb-6 w-full font-serif text-neutral-900 dark:text-white print:mb-4 print:text-black">
       {/* Top Kop Surat Grid */}
-      <div className="flex items-center justify-between gap-4 border-b-4 border-double border-black pb-3">
+      <div className="flex items-center justify-between gap-4 border-b-4 border-double border-neutral-900 dark:border-white pb-3 print:border-black">
         <div className="flex shrink-0 items-center justify-center">
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="h-20 w-20 object-contain" />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded border border-dashed border-gray-400 bg-gray-50 text-xs text-gray-500 print:hidden">
+            <div className="flex h-20 w-20 items-center justify-center rounded border border-dashed border-neutral-400 bg-neutral-50 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 print:hidden">
               Logo Sekolah
             </div>
           )}
@@ -78,30 +78,36 @@ export function KopHeader({ header, user }: KopHeaderProps) {
 
         {/* Right Side Nilai & Paraf Table Box */}
         <div className="shrink-0">
-          <table className="w-64 border-collapse border border-black text-center text-xs">
+          <table className="w-64 border-collapse border border-neutral-900 dark:border-white text-center text-xs print:border-black">
             <thead>
-              <tr className="border-b border-black">
-                <th className="w-20 border-r border-black p-1 font-bold">Nilai</th>
+              <tr className="border-b border-neutral-900 dark:border-white print:border-black">
+                <th
+                  rowSpan={2}
+                  className="w-20 border-r border-neutral-900 p-1 align-middle font-bold print:border-black dark:border-white"
+                >
+                  Nilai
+                </th>
                 <th colSpan={2} className="p-1 font-bold">
                   Paraf
                 </th>
               </tr>
-              <tr className="border-b border-black text-[11px]">
-                <th className="border-r border-black p-1 font-semibold"></th>
-                <th className="w-22 border-r border-black p-1 font-semibold">Guru</th>
+              <tr className="border-b border-neutral-900 text-[11px] print:border-black dark:border-white">
+                <th className="w-22 border-r border-neutral-900 p-1 font-semibold print:border-black dark:border-white">
+                  Guru
+                </th>
                 <th className="w-22 p-1 font-semibold">Orang Tua</th>
               </tr>
             </thead>
             <tbody>
               <tr className="h-12">
-                <td className="border-r border-black"></td>
-                <td className="border-r border-black"></td>
+                <td className="border-r border-neutral-900 dark:border-white print:border-black"></td>
+                <td className="border-r border-neutral-900 dark:border-white print:border-black"></td>
                 <td></td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </header>
+    </div>
   )
 }

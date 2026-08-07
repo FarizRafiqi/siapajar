@@ -65,12 +65,14 @@ export function examPrompt(params: {
     }
     return {
       system:
-        'Kamu pembuat soal lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
-        'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
+        'Kamu pembuat soal lembar kerja anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
+        'Balas HANYA JSON valid tanpa teks lain dengan format TOON/JSON ringkas: ' +
         '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
-        'PILIHAN GANDA: Jika type = "multiple_choice", sediakan HANYA 3 pilihan (options = [{"label":"a","text":""},{"label":"b","text":""},{"label":"c","text":""}]). ' +
-        'HUBUNGKAN GARIS: Jika type = "matching", visualType = "Hubungkan Garis", isi leftItems (berisi label dan imagePrompt) dan rightItems (berisi label dan imagePrompt) serta pairs yang cocok. ' +
-        'GAMBAR & MATEMATIKA: Jika type = "fill_blank_image", "vertical_math", "count_and_circle", "tracing", atau "coloring", berikan prompt visual atau baris soal yang mudah dipahami anak usia 4-6 tahun.',
+        'ATURAN PILIHAN GANDA (multiple_choice): ' +
+        '1. Untuk soal teks (seperti Agama, Malaikat, Nabi, Bahasa, Sains): options WAJIB berisi 3 jawaban teks relevan (contoh untuk "Nabi pertama": options=[{"label":"a","text":"Nabi Adam"},{"label":"b","text":"Nabi Nuh"},{"label":"c","text":"Nabi Muhammad"}]). DILARANG KERAS memberikan opsi angka "4" atau "..." jika soalnya tentang nama nabi/malaikat/agama! ' +
+        '2. Hanya untuk soal hitung angka visual (seperti "Berapa jumlah 4 apel"): options boleh angka. ' +
+        'HUBUNGKAN GARIS (matching): leftItems dan rightItems harus berisi nama/label pasangannya secara tepat (seperti "Nabi Nuh" <-> "Kapal"). DILARANG menempelkan ikon bintang pada teks. ' +
+        'MEWARNAI / TRACING / VISUAL: Wajib sertakan "imagePrompt" yang mendeskripsikan gambar line-art hitam-putih sederhana ramah anak.',
       user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }
@@ -162,11 +164,13 @@ export function mediaModulePrompt(params: {
 
   return {
     system:
-      `Kamu pembuat Media Ajar visual untuk anak ${instName} Kurikulum Merdeka. ` +
+      `Kamu pembuat Media Ajar visual (presentation-creator) anak ${instName} Kurikulum Merdeka. ` +
+      'Gunakan kerangka GACTF (Goal, Audience, Content, Tone, Format). ' +
       'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-      '{"slides": [{"slideNumber": number, "title": string, "visualDescription": string, "imagePrompt": string, "teacherNotes": string, "keyQuestion": string}], ' +
+      '{"slides": [{"slideNumber": number, "slideType": "title"|"agenda"|"concept_story"|"loose_parts"|"summary", "title": string, "visualDescription": string, "imagePrompt": string, "teacherNotes": string, "keyQuestion": string}], ' +
       '"loosePartsGuide": {"materials": string[], "activities": string[], "safetyNotes": string}}. ' +
-      'Buatkan 4-5 slide presentasi visual anak yang menarik. imagePrompt wajib menjadi prompt ilustrasi konkret Nano Banana, tanpa teks kecil, watermark, atau logo. Sertakan panduan bahan Loose Parts (batu, daun, balok, kancing, dll).',
+      'Buatkan 5 slide presentasi visual anak (Slide 1: Title, 2: Agenda, 3: Concept Story, 4: Loose Parts, 5: Summary). ' +
+      'imagePrompt WAJIB berformat Nano Banana Line-Art: "Simple, cute, high-contrast black-and-white vector line art illustration for kids, [subject], transparent white background, no text, no watermark, no logo, clean lines".',
     user: `Buatkan outline Media Ajar visual dan panduan Loose Parts untuk tema "${params.theme}"${subthemeText}.`,
   }
 }

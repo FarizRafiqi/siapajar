@@ -229,151 +229,186 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                 Generate Soal dengan AI
               </h3>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="classId"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Kelas
-                </label>
-                <select
-                  id="classId"
-                  value={data.classId}
-                  onChange={(e) => setData('classId', Number(e.target.value))}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  {classes.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      Kelas {item.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
+            {processing ? (
+              <div className="py-6 space-y-4 text-center">
+                <div className="flex justify-center">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-100 p-3 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300 animate-bounce">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+                    Sedang Membuat Naskah Soal AI...
+                  </h4>
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Sistem sedang memproses data dan memformulasikan naskah secara efisien
+                  </p>
+                </div>
+
+                <div className="space-y-2 rounded-xl bg-neutral-50 p-4 text-left dark:bg-neutral-800/50">
+                  <div className="flex items-center gap-2.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white">1</span>
+                    🔍 Meriset kurikulum & menyusun struktur butir soal...
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">2</span>
+                    ✍️ Memformulasikan pertanyaan & kunci jawaban kontekstual...
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">3</span>
+                    🎨 Menyiapkan ilustrasi visual & gambar line-art hitam-putih...
+                  </div>
+                </div>
               </div>
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Mata Pelajaran
-                </label>
-                <select
-                  id="subject"
-                  value={data.subject}
-                  onChange={(e) => setData('subject', e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  <option value="">Pilih mata pelajaran</option>
-                  {subjects.map((s) => (
-                    <option key={s.id} value={s.name}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
-              </div>
-              <div>
-                <label
-                  htmlFor="type"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Jenis Soal
-                </label>
-                <select
-                  id="type"
-                  value={data.type}
-                  onChange={(e) => setData('type', e.target.value as ExamType)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  {EXAM_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
-              </div>
-              <div>
-                <label
-                  htmlFor="examMode"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Bentuk / Format Soal
-                </label>
-                <select
-                  id="examMode"
-                  value={data.examMode}
-                  onChange={(e) => setData('examMode', e.target.value as any)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  <option value="tertulis_visual">
-                    Soal Tertulis & Visual (Menebalkan/Mencocokkan/Melingkari - RA/TK B)
-                  </option>
-                  <option value="lisan">
-                    Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)
-                  </option>
-                  <option value="multiple_choice">Pilihan Ganda (SD / Umum)</option>
-                  <option value="essay">Uraian / Essay</option>
-                  <option value="practical">Praktik / Performa</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="topic"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Topik / Materi
-                </label>
-                <input
-                  id="topic"
-                  type="text"
-                  value={data.topic}
-                  onChange={(e) => setData('topic', e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                  placeholder="contoh: Bilangan Bulat"
-                />
-                {errors.topic && <p className="mt-1 text-sm text-red-500">{errors.topic}</p>}
-              </div>
-              <div>
-                <label
-                  htmlFor="questionCount"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Jumlah Soal
-                </label>
-                <input
-                  id="questionCount"
-                  type="number"
-                  value={data.questionCount}
-                  onChange={(e) => setData('questionCount', Number(e.target.value))}
-                  min={5}
-                  max={50}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                />
-                {errors.questionCount && (
-                  <p className="mt-1 text-sm text-red-500">{errors.questionCount}</p>
-                )}
-              </div>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowGenerateModal(false)
-                  reset()
-                }}
-                className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleGenerate}
-                disabled={processing}
-                className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {processing ? 'Sedang membuat...' : 'Generate'}
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="classId"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Kelas
+                    </label>
+                    <select
+                      id="classId"
+                      value={data.classId}
+                      onChange={(e) => setData('classId', Number(e.target.value))}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    >
+                      {classes.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          Kelas {item.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="subject"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Mata Pelajaran
+                    </label>
+                    <select
+                      id="subject"
+                      value={data.subject}
+                      onChange={(e) => setData('subject', e.target.value)}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    >
+                      <option value="">Pilih mata pelajaran</option>
+                      {subjects.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="type"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Jenis Soal
+                    </label>
+                    <select
+                      id="type"
+                      value={data.type}
+                      onChange={(e) => setData('type', e.target.value as ExamType)}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    >
+                      {EXAM_TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="examMode"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Bentuk / Format Soal
+                    </label>
+                    <select
+                      id="examMode"
+                      value={data.examMode}
+                      onChange={(e) => setData('examMode', e.target.value as any)}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    >
+                      <option value="tertulis_visual">
+                        Soal Tertulis & Visual (Menebalkan/Mencocokkan/Melingkari - RA/TK B)
+                      </option>
+                      <option value="lisan">
+                        Soal Lisan (Hafalan Surah, Doa, & Tanya Jawab - RA/TK)
+                      </option>
+                      <option value="multiple_choice">Pilihan Ganda (SD / Umum)</option>
+                      <option value="essay">Uraian / Essay</option>
+                      <option value="practical">Praktik / Performa</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="topic"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Topik / Materi
+                    </label>
+                    <input
+                      id="topic"
+                      type="text"
+                      value={data.topic}
+                      onChange={(e) => setData('topic', e.target.value)}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                      placeholder="contoh: Bilangan Bulat"
+                    />
+                    {errors.topic && <p className="mt-1 text-sm text-red-500">{errors.topic}</p>}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="questionCount"
+                      className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Jumlah Soal
+                    </label>
+                    <input
+                      id="questionCount"
+                      type="number"
+                      value={data.questionCount}
+                      onChange={(e) => setData('questionCount', Number(e.target.value))}
+                      min={5}
+                      max={50}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    />
+                    {errors.questionCount && (
+                      <p className="mt-1 text-sm text-red-500">{errors.questionCount}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowGenerateModal(false)
+                      reset()
+                    }}
+                    className="flex-1 rounded-lg border border-neutral-300 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleGenerate}
+                    disabled={processing}
+                    className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       )}

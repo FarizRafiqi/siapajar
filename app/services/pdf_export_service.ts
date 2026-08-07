@@ -171,16 +171,20 @@ function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
   const tableH = 50
 
   doc.rect(rightX, tableY, tableW, tableH).lineWidth(1).strokeColor('#000000').stroke()
+  // Vertical dividers: Nilai | Paraf (Guru | Orang Tua)
   doc.moveTo(rightX + 60, tableY).lineTo(rightX + 60, tableY + tableH).lineWidth(1).stroke()
-  doc.moveTo(rightX + 120, tableY + 18).lineTo(rightX + 120, tableY + tableH).lineWidth(1).stroke()
-  doc.moveTo(rightX, tableY + 18).lineTo(rightX + tableW, tableY + 18).lineWidth(1).stroke()
+  doc.moveTo(rightX + 120, tableY + 16).lineTo(rightX + 120, tableY + tableH).lineWidth(1).stroke()
+  // Horizontal divider 1: Paraf sub-header divider (ONLY under Paraf header, not across Nilai)
+  doc.moveTo(rightX + 60, tableY + 16).lineTo(rightX + tableW, tableY + 16).lineWidth(1).stroke()
+  // Horizontal divider 2: Bottom header divider
+  doc.moveTo(rightX, tableY + 30).lineTo(rightX + tableW, tableY + 30).lineWidth(1).stroke()
 
-  doc.font('Helvetica-Bold').fontSize(8)
-  doc.text('Nilai', rightX + 15, tableY + 4)
-  doc.text('Paraf', rightX + 100, tableY + 4)
-  doc.font('Helvetica').fontSize(7)
-  doc.text('Guru', rightX + 75, tableY + 22)
-  doc.text('Orang Tua', rightX + 130, tableY + 22)
+  doc.font('Helvetica-Bold').fontSize(9)
+  doc.text('Nilai', rightX, tableY + 10, { width: 60, align: 'center' })
+  doc.text('Paraf', rightX + 60, tableY + 3, { width: 120, align: 'center' })
+  doc.font('Helvetica').fontSize(7.5)
+  doc.text('Guru', rightX + 60, tableY + 18, { width: 60, align: 'center' })
+  doc.text('Orang Tua', rightX + 120, tableY + 18, { width: 60, align: 'center' })
 
   doc.y = metaY + 62
 }
@@ -239,6 +243,10 @@ function writeMatchingGrid(doc: PDFKit.PDFDocument, q: Record<string, any>) {
 }
 
 function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, number: number) {
+  if (doc.y > doc.page.height - doc.page.margins.bottom - 70) {
+    doc.addPage()
+  }
+
   const isMatching =
     q.type === 'matching' ||
     String(q.visualType || '')

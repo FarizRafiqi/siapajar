@@ -79,7 +79,7 @@ export interface ExamHeader {
   date: string
 }
 
-const QUESTION_KINDS: QuestionKind[] = [
+const QUESTION_KINDS = new Set<QuestionKind>([
   'multiple_choice',
   'essay',
   'visual',
@@ -91,62 +91,112 @@ const QUESTION_KINDS: QuestionKind[] = [
   'count_and_circle',
   'coloring',
   'tracing',
-]
+])
 
 function normalizeOption(value: unknown, index: number): QuestionOption {
-  const fallbackLabel = String.fromCharCode(65 + index)
+  const fallbackLabel = String.fromCodePoint(65 + index)
+
+  if (value && typeof value === 'object') {
+    const valObj = value as Record<string, unknown>
+    const labelStr = typeof valObj.label === 'string' && valObj.label.trim() ? valObj.label.trim() : fallbackLabel
+    let textStr = ''
+    if (typeof valObj.text === 'string' && valObj.text.trim()) {
+      textStr = valObj.text.trim()
+    } else if (typeof valObj.label === 'string' && valObj.label.trim()) {
+      textStr = valObj.label.trim()
+    }
+    return {
+      label: labelStr.toUpperCase(),
+      text: textStr,
+      imageUrl: typeof valObj.imageUrl === 'string' ? valObj.imageUrl : undefined,
+    }
+  }
+
   const raw = typeof value === 'string' ? value.trim() : ''
-  const match = raw.match(/^([A-Z])[.)\-:]?\s*(.*)$/i)
-  return { label: match?.[1]?.toUpperCase() || fallbackLabel, text: match?.[2] || raw }
+  const regex = /^([A-Z])[.)\-:]?\s*(.*)$/i
+  const match = regex.exec(raw)
+  const label = match?.[1]?.toUpperCase() || fallbackLabel
+  const text = match?.[2] && match[2].trim().length > 0 ? match[2].trim() : raw
+
+  return { label, text }
+}
+
+function determineQuestionKind(rawType: string, raw: Record<string, unknown>): QuestionKind {
+  if (QUESTION_KINDS.has(rawType as QuestionKind)) {
+    return rawType as QuestionKind
+  }
+  if (Array.isArray(raw.options) && raw.options.length > 0) {
+    return 'multiple_choice'
+  }
+  if (raw.visualType) {
+    return 'visual'
+  }
+  if (raw.rubric) {
+    return 'practical'
+  }
+  return 'essay'
+}
+
+function normalizeItems(value: unknown, side: 'left' | 'right'): MatchingItem[] {
+  let values: unknown[] = []
+  if (Array.isArray(value)) {
+    values = value
+  } else if (typeof value === 'string') {
+    values = value.split(/\r?\n|;|•/).map((item) => item.trim())
+  }
+
+  return values
+    .map((item, itemIndex) => {
+      const defaultId = `${side}-${itemIndex + 1}`
+      if (typeof item === 'string') {
+        return { id: defaultId, label: item.trim() }
+      }
+
+      const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      let label = ''
+      if (typeof record.label === 'string') {
+        label = record.label
+      } else if (typeof record.text === 'string') {
+        label = record.text
+      }
+
+      let imageUrl: string | undefined
+      if (typeof record.imageUrl === 'string') {
+        imageUrl = record.imageUrl
+      } else if (typeof record.image === 'string') {
+        imageUrl = record.image
+      }
+
+      return {
+        id: typeof record.id === 'string' ? record.id : defaultId,
+        label,
+        imageUrl,
+      }
+    })
+    .filter((item) => item.label || item.imageUrl)
+}
+
+function normalizePairs(rawPairs: unknown): MatchingPair[] {
+  if (!Array.isArray(rawPairs)) return []
+  return rawPairs.flatMap((pair: unknown) => {
+    if (!pair || typeof pair !== 'object') return []
+    const value = pair as Record<string, unknown>
+    return typeof value.leftId === 'string' && typeof value.rightId === 'string'
+      ? [{ leftId: value.leftId, rightId: value.rightId }]
+      : []
+  })
 }
 
 export function normalizeQuestion(raw: Record<string, unknown>, index: number): ExamQuestion {
   const rawType = typeof raw.type === 'string' ? raw.type : ''
-  const type: QuestionKind = QUESTION_KINDS.includes(rawType as QuestionKind)
-    ? (rawType as QuestionKind)
-    : Array.isArray(raw.options) && raw.options.length > 0
-      ? 'multiple_choice'
-      : raw.visualType
-        ? 'visual'
-        : raw.rubric
-          ? 'practical'
-          : 'essay'
+  const type = determineQuestionKind(rawType, raw)
 
   const visualType = typeof raw.visualType === 'string' ? raw.visualType : undefined
   const inferredType = visualType?.toLowerCase().includes('hubung') ? 'matching' : type
-  const normalizeItems = (value: unknown, side: 'left' | 'right'): MatchingItem[] => {
-    const values = Array.isArray(value)
-      ? value
-      : typeof value === 'string'
-        ? value.split(/\r?\n|;|•/).map((item) => item.trim())
-        : []
-
-    return values
-      .map((item, itemIndex) => {
-        if (typeof item === 'string') return { id: `${side}-${itemIndex + 1}`, label: item.trim() }
-        const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
-        const label =
-          typeof record.label === 'string'
-            ? record.label
-            : typeof record.text === 'string'
-              ? record.text
-              : ''
-        return {
-          id: typeof record.id === 'string' ? record.id : `${side}-${itemIndex + 1}`,
-          label,
-          imageUrl:
-            typeof record.imageUrl === 'string'
-              ? record.imageUrl
-              : typeof record.image === 'string'
-                ? record.image
-                : undefined,
-        }
-      })
-      .filter((item) => item.label || item.imageUrl)
-  }
 
   const leftValue = raw.leftItems ?? raw.left ?? raw.leftColumn ?? raw.itemsLeft
   const rightValue = raw.rightItems ?? raw.right ?? raw.rightColumn ?? raw.itemsRight
+  const pairsValue = raw.pairs ?? raw.answerPairs ?? raw.matches
 
   return {
     id: typeof raw.id === 'number' ? raw.id : index + 1,
@@ -156,15 +206,7 @@ export function normalizeQuestion(raw: Record<string, unknown>, index: number): 
     visualType,
     leftItems: normalizeItems(leftValue, 'left'),
     rightItems: normalizeItems(rightValue, 'right'),
-    pairs: Array.isArray(raw.pairs ?? raw.answerPairs ?? raw.matches)
-      ? ((raw.pairs ?? raw.answerPairs ?? raw.matches) as unknown[]).flatMap((pair: unknown) => {
-          if (!pair || typeof pair !== 'object') return []
-          const value = pair as Record<string, unknown>
-          return typeof value.leftId === 'string' && typeof value.rightId === 'string'
-            ? [{ leftId: value.leftId, rightId: value.rightId }]
-            : []
-        })
-      : [],
+    pairs: normalizePairs(pairsValue),
     imagePrompt: typeof raw.imagePrompt === 'string' ? raw.imagePrompt : undefined,
     imageUrl: typeof raw.imageUrl === 'string' ? raw.imageUrl : undefined,
     options: Array.isArray(raw.options)
