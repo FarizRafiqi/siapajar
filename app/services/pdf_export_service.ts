@@ -26,12 +26,7 @@ async function consumePdfExport(user: User) {
   })
 }
 
-const EXAM_TYPE_LABELS: Record<string, string> = {
-  midterm: 'PTS (Penilaian Tengah Semester)',
-  final: 'PAS (Penilaian Akhir Semester)',
-  daily: 'Ulangan Harian',
-  summative: 'Sumatif',
-}
+
 
 function toBuffer(doc: PDFKit.PDFDocument): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -52,19 +47,45 @@ function writeKop(doc: PDFKit.PDFDocument, user: User, subtitle: string) {
   doc.moveDown(1)
 }
 
+function stripTags(html: string): string {
+  let result = ''
+  let inTag = false
+  for (const char of html) {
+    if (char === '<') {
+      inTag = true
+    } else if (char === '>') {
+      inTag = false
+    } else if (!inTag) {
+      result += char
+    }
+  }
+  return result.trim()
+}
+
+function cleanHtmlText(text: string): string {
+  const withNewlines = text
+    .replaceAll('<br>', '\n')
+    .replaceAll('<br/>', '\n')
+    .replaceAll('<br />', '\n')
+    .replaceAll('<BR>', '\n')
+    .replaceAll('<BR/>', '\n')
+    .replaceAll('<BR />', '\n')
+  return stripTags(withNewlines)
+}
+
 function writeSection(
   doc: PDFKit.PDFDocument,
   title: string,
   value: string | string[] | undefined
 ) {
-  const items = (Array.isArray(value) ? value : value ? [value] : [])
-    .map((item) =>
-      item
-        .replace(/<br\s*\/?>(\s*)/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .trim()
-    )
-    .filter(Boolean)
+  let rawList: string[] = []
+  if (Array.isArray(value)) {
+    rawList = value
+  } else if (value) {
+    rawList = [value]
+  }
+
+  const items = rawList.map(cleanHtmlText).filter(Boolean)
   doc.font('Helvetica-Bold').fontSize(12).text(title)
   doc.font('Helvetica').fontSize(10)
   if (items.length === 0) {
@@ -79,43 +100,89 @@ function writeSection(
 
 function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
   const header = exam.header ?? {}
-  if (typeof header.logoUrl === 'string' && header.logoUrl.startsWith('data:image/')) {
+  const kop = user.kopSurat ?? {}
+
+  const logoUrl = header.logoUrl || kop.logoUrl
+  const institutionName = (
+    header.institutionName ||
+    kop.institutionName ||
+    user.schoolName ||
+    'SEKOLAH / TK'
+  ).toUpperCase()
+  const institutionSubName = (header.institutionSubName || kop.institutionSubName || '').toUpperCase()
+  const addressLine1 = header.addressLine1 || header.institutionAddress || kop.addressLine1 || ''
+  const addressLine2 = header.addressLine2 || kop.addressLine2 || ''
+  const phone = header.phone || kop.phone || ''
+
+  const startY = doc.y
+
+  // Render Logo if available
+  if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/')) {
     try {
-      doc.image(Buffer.from(header.logoUrl.split(',')[1], 'base64'), {
-        fit: [70, 70],
-        align: 'center',
-      })
+      doc.image(Buffer.from(logoUrl.split(',')[1], 'base64'), 50, startY, { fit: [55, 55] })
     } catch {}
   }
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(15)
-    .text(header.institutionName || user.schoolName || 'Sekolah', { align: 'center' })
-  if (header.institutionAddress)
-    doc.font('Helvetica').fontSize(9).text(header.institutionAddress, { align: 'center' })
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(13)
-    .text(header.examLabel || EXAM_TYPE_LABELS[exam.type] || exam.type, { align: 'center' })
-  doc.font('Helvetica').fontSize(9)
-  for (const [label, value] of [
-    ['Tahun ajaran', header.academicYear],
-    ['Semester', header.semester],
-    ['Kelompok/Kelas', header.groupName],
-    ['Tema/Mata pelajaran', header.subject],
-    ['Nama anak', header.studentName],
-    ['Tanggal', header.date],
-  ]) {
-    if (value) doc.text(`${label}: ${value}`)
+
+  // Header Title
+  doc.font('Helvetica-Bold').fontSize(14).text(institutionName, { align: 'center' })
+  if (institutionSubName) {
+    doc.font('Helvetica-Bold').fontSize(13).text(`“${institutionSubName}”`, { align: 'center' })
   }
-  doc.moveDown(0.8)
+  doc.font('Helvetica').fontSize(9)
+  if (addressLine1) doc.text(addressLine1, { align: 'center' })
+  if (addressLine2) doc.text(addressLine2, { align: 'center' })
+  if (phone) doc.text(phone, { align: 'center' })
+
+  doc.moveDown(0.5)
+
+  // Double Line Separator
+  const lineY = doc.y
+  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
   doc
-    .moveTo(doc.page.margins.left, doc.y)
-    .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-    .lineWidth(1)
-    .strokeColor('#333333')
+    .moveTo(doc.page.margins.left, lineY)
+    .lineTo(doc.page.margins.left + pageWidth, lineY)
+    .lineWidth(2)
+    .strokeColor('#000000')
     .stroke()
-  doc.moveDown(0.8)
+
+  doc
+    .moveTo(doc.page.margins.left, lineY + 3)
+    .lineTo(doc.page.margins.left + pageWidth, lineY + 3)
+    .lineWidth(0.8)
+    .strokeColor('#000000')
+    .stroke()
+
+  doc.y = lineY + 12
+
+  // Metadata Kiri & Tabel Nilai/Paraf Kanan
+  const metaY = doc.y
+  const leftX = doc.page.margins.left
+  const rightX = doc.page.width - doc.page.margins.right - 180
+
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+  doc.text(`Nama         : ............................................`, leftX, metaY)
+  doc.text(`Kelas          : ${header.groupName || 'B2'}`, leftX, metaY + 14)
+  doc.text(`Hari/Tanggal : ............................................`, leftX, metaY + 28)
+  doc.text(`Bidang Studi : ${header.subject || 'Bahasa'}`, leftX, metaY + 42)
+
+  // Render Table Nilai & Paraf (Right Side)
+  const tableY = metaY
+  const tableW = 180
+  const tableH = 50
+
+  doc.rect(rightX, tableY, tableW, tableH).lineWidth(1).strokeColor('#000000').stroke()
+  doc.moveTo(rightX + 60, tableY).lineTo(rightX + 60, tableY + tableH).lineWidth(1).stroke()
+  doc.moveTo(rightX + 120, tableY + 18).lineTo(rightX + 120, tableY + tableH).lineWidth(1).stroke()
+  doc.moveTo(rightX, tableY + 18).lineTo(rightX + tableW, tableY + 18).lineWidth(1).stroke()
+
+  doc.font('Helvetica-Bold').fontSize(8)
+  doc.text('Nilai', rightX + 15, tableY + 4)
+  doc.text('Paraf', rightX + 100, tableY + 4)
+  doc.font('Helvetica').fontSize(7)
+  doc.text('Guru', rightX + 75, tableY + 22)
+  doc.text('Orang Tua', rightX + 130, tableY + 22)
+
+  doc.y = metaY + 62
 }
 
 function matchingItems(value: unknown) {
@@ -130,56 +197,45 @@ function matchingItems(value: unknown) {
 function writeMatchingGrid(doc: PDFKit.PDFDocument, q: Record<string, any>) {
   const leftItems = matchingItems(q.leftItems)
   const rightItems = matchingItems(q.rightItems)
-  const rows = Math.max(leftItems.length, rightItems.length, 2)
+  const rows = Math.max(leftItems.length, rightItems.length, 3)
   const startX = doc.page.margins.left
-  const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
-  const gap = 44
-  const columnWidth = (tableWidth - gap) / 2
-  const rowHeight = 34
-
-  doc.font('Helvetica-Bold').fontSize(8).fillColor('#6b21a8')
-  doc.text('SISI KIRI', startX, doc.y, { width: columnWidth })
-  doc.text('SISI KANAN', startX + columnWidth + gap, doc.y, { width: columnWidth, align: 'right' })
-  doc.moveDown(0.35)
+  const rowHeight = 32
 
   for (let index = 0; index < rows; index++) {
     if (doc.y + rowHeight > doc.page.height - doc.page.margins.bottom) doc.addPage()
     const y = doc.y
     const left = leftItems[index]
     const right = rightItems[index]
-    doc
-      .roundedRect(startX, y, columnWidth, rowHeight, 4)
-      .lineWidth(0.7)
-      .strokeColor('#c4b5fd')
-      .stroke()
-    doc
-      .roundedRect(startX + columnWidth + gap, y, columnWidth, rowHeight, 4)
-      .lineWidth(0.7)
-      .strokeColor('#c4b5fd')
-      .stroke()
-    doc
-      .circle(startX + columnWidth - 7, y + rowHeight / 2, 2.5)
-      .fillColor('#a78bfa')
-      .fill()
-    doc
-      .circle(startX + columnWidth + gap + 7, y + rowHeight / 2, 2.5)
-      .fillColor('#a78bfa')
-      .fill()
-    doc.font('Helvetica').fontSize(9).fillColor('#222222')
-    doc.text(left?.label || 'Item kiri', startX + 9, y + 10, { width: columnWidth - 22 })
-    doc.text(right?.label || 'Item kanan', startX + columnWidth + gap + 17, y + 10, {
-      width: columnWidth - 26,
-      align: 'right',
-    })
-    doc.y = y + rowHeight + 6
+
+    // 5 Column Matching Row Layout: [Item Kiri: 130pt] [Bullet Kiri: 20pt] [Spacer: 150pt] [Bullet Kanan: 20pt] [Item Kanan: 140pt]
+    const col1X = startX
+    const col2X = startX + 130
+    const col4X = startX + 300
+    const col5X = startX + 325
+
+    // Item Kiri Text / Image
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+    if (left?.imageUrl?.startsWith('data:image/')) {
+      try {
+        doc.image(Buffer.from(left.imageUrl.split(',')[1], 'base64'), col1X, y, { fit: [28, 28] })
+      } catch {}
+    } else {
+      doc.text(left?.label || '', col1X, y + 8, { width: 125 })
+    }
+
+    // Bullet Kiri
+    doc.circle(col2X + 10, y + 12, 3.5).fillColor('#000000').fill()
+
+    // Bullet Kanan
+    doc.circle(col4X + 10, y + 12, 3.5).fillColor('#000000').fill()
+
+    // Item Kanan Text
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+    doc.text(right?.label || '', col5X, y + 8, { width: 135 })
+
+    doc.y = y + rowHeight
   }
-  doc
-    .font('Helvetica-Oblique')
-    .fontSize(8)
-    .fillColor('#555555')
-    .text('Hubungkan pasangan yang sesuai dengan garis.')
-  doc.fillColor('#000000')
-  doc.moveDown(0.5)
+  doc.moveDown(0.4)
 }
 
 function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, number: number) {
@@ -188,41 +244,30 @@ function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, numb
     String(q.visualType || '')
       .toLowerCase()
       .includes('hubung')
-  const type = isMatching
-    ? 'Hubungkan Garis'
-    : q.type === 'multiple_choice' || (Array.isArray(q.options) && q.options.length > 0)
-      ? 'Pilihan Ganda'
-      : q.type === 'essay'
-        ? 'Uraian'
-        : q.type === 'matching'
-          ? 'Hubungkan Garis'
-          : q.type === 'practical'
-            ? 'Praktik / Performa'
-            : q.type === 'oral'
-              ? 'Lisan'
-              : 'Aktivitas Visual'
+
   doc
     .font('Helvetica-Bold')
     .fontSize(10)
     .text(`${number}. ${q.question || 'Pertanyaan belum diisi.'}`)
-  doc.font('Helvetica-Oblique').fontSize(9).text(`Bentuk: ${type}`)
-  if (q.instruction) doc.font('Helvetica').text(`Petunjuk: ${q.instruction}`)
+  if (q.instruction) doc.font('Helvetica-Oblique').fontSize(9).text(`Petunjuk: ${q.instruction}`)
+
   if (!isMatching && Array.isArray(q.options) && q.options.length > 0) {
-    doc.font('Helvetica')
+    doc.font('Helvetica').fontSize(9)
+    let optionsLine = ''
     q.options.forEach((option: unknown, index: number) => {
       const label =
         typeof option === 'string'
-          ? String.fromCharCode(65 + index)
-          : (option as any)?.label || String.fromCharCode(65 + index)
+          ? String.fromCodePoint(97 + index)
+          : (option as any)?.label?.toLowerCase() || String.fromCodePoint(97 + index)
       const text = typeof option === 'string' ? option : (option as any)?.text || ''
-      doc.text(`${label}. ${text}`)
+      optionsLine += `${label}. ${text}            `
     })
+    doc.text(optionsLine)
+    doc.moveDown(0.4)
   } else if (isMatching) {
     writeMatchingGrid(doc, q)
-  } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
-    doc.font('Helvetica').text('____________________________________________________________')
-    doc.text('____________________________________________________________')
-    doc.text('____________________________________________________________')
+  } else if (['essay', 'visual', 'practical', 'oral', 'fill_blank_image'].includes(q.type)) {
+    doc.font('Helvetica').text('........................................................................................................................')
   }
   if (q.imageUrl?.startsWith('data:image/')) {
     try {
@@ -232,9 +277,7 @@ function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, numb
       })
     } catch {}
   }
-  if (q.rubric || q.scoringGuide)
-    doc.font('Helvetica').text(`Rubrik: ${q.rubric || q.scoringGuide}`)
-  doc.moveDown(0.6)
+  doc.moveDown(0.5)
 }
 
 export async function exportTeachingModulePdf(
@@ -277,7 +320,9 @@ export async function exportExamPdf(exam: Exam, user: User, charge = true) {
   doc.moveDown(0.5)
   doc.font('Helvetica').fontSize(10)
   exam.questions.forEach((q, i) => {
-    doc.text(`${i + 1}. ${q.answer}${q.explanation ? ` — ${q.explanation}` : ''}`)
+    const ansText = String(q.answer ?? '')
+    const expText = q.explanation ? ` — ${q.explanation}` : ''
+    doc.text(`${i + 1}. ${ansText}${expText}`)
   })
 
   return toBuffer(doc)
@@ -365,23 +410,37 @@ export async function exportReportCardPdf(
   return toBuffer(doc)
 }
 
+function formatPaudAnecdotal(c: Record<string, unknown>): string {
+  const context = typeof c.context === 'string' ? c.context : '-'
+  const behavior = typeof c.behavior === 'string' ? c.behavior : '-'
+  const analysis = typeof c.analysis === 'string' ? c.analysis : '-'
+  return `Latar: ${context} — Perilaku: ${behavior} — Analisis: ${analysis}`
+}
+
+function formatPaudWorkSample(c: Record<string, unknown>): string {
+  const photo = typeof c.photoDescription === 'string' ? c.photoDescription : '-'
+  const desc = typeof c.description === 'string' ? c.description : ''
+  const analysis = typeof c.analysis === 'string' ? ` (${c.analysis})` : ''
+  return `${photo} — ${desc}${analysis}`
+}
+
+function formatPaudPhotoSeries(c: Record<string, unknown>): string {
+  const act = typeof c.activity === 'string' ? c.activity : '-'
+  const nar = typeof c.narrative === 'string' ? c.narrative : ''
+  return `${act} — ${nar}`
+}
+
 function formatPaudContent(entry: PaudStudentNarrative['entries'][number]) {
   const content = entry.content as Record<string, unknown>
-  switch (entry.type) {
-    case 'checklist': {
-      const indicators = Array.isArray(content.indicators) ? (content.indicators as string[]) : []
-      const note = typeof content.note === 'string' ? content.note : ''
-      return [indicators.join(', '), note].filter(Boolean).join(' — ')
-    }
-    case 'anecdotal_note':
-      return `Latar: ${content.context ?? '-'} — Perilaku: ${content.behavior ?? '-'} — Analisis: ${content.analysis ?? '-'}`
-    case 'work_sample':
-      return `${content.photoDescription ?? '-'} — ${content.description ?? ''}${content.analysis ? ` (${content.analysis})` : ''}`
-    case 'photo_series':
-      return `${content.activity ?? '-'} — ${content.narrative ?? ''}`
-    default:
-      return ''
+  if (entry.type === 'checklist') {
+    const indicators = Array.isArray(content.indicators) ? (content.indicators as string[]) : []
+    const note = typeof content.note === 'string' ? content.note : ''
+    return [indicators.join(', '), note].filter(Boolean).join(' — ')
   }
+  if (entry.type === 'anecdotal_note') return formatPaudAnecdotal(content)
+  if (entry.type === 'work_sample') return formatPaudWorkSample(content)
+  if (entry.type === 'photo_series') return formatPaudPhotoSeries(content)
+  return ''
 }
 
 export async function exportNarrativeReportPdf(
@@ -422,18 +481,38 @@ export async function exportNarrativeReportPdf(
 
 function writeMetadata(doc: PDFKit.PDFDocument, values: Array<[string, unknown]>) {
   doc.font('Helvetica').fontSize(10)
-  for (const [label, value] of values) {
-    if (value !== null && value !== undefined && String(value).trim() !== '') {
-      doc.text(`${label}: ${String(value)}`)
+  for (const [label, rawValue] of values) {
+    if (rawValue !== null && rawValue !== undefined) {
+      let textVal = ''
+      if (typeof rawValue === 'string') {
+        textVal = rawValue
+      } else if (typeof rawValue === 'number' || typeof rawValue === 'boolean') {
+        textVal = String(rawValue)
+      } else {
+        textVal = JSON.stringify(rawValue)
+      }
+      if (textVal.trim() !== '') {
+        doc.text(`${label}: ${textVal}`)
+      }
     }
   }
   doc.moveDown(0.75)
 }
 
+function formatSingleValue(v: unknown): string {
+  if (v === null || v === undefined) return ''
+  if (typeof v === 'string') return v
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+  return JSON.stringify(v)
+}
+
 function writeContentObject(doc: PDFKit.PDFDocument, content: Record<string, unknown>) {
   for (const [key, value] of Object.entries(content)) {
     if (key === 'curriculum' || key === 'tema') continue
-    writeSection(doc, key, Array.isArray(value) ? value.map(String) : String(value ?? ''))
+    const formatted = Array.isArray(value)
+      ? value.map(formatSingleValue)
+      : formatSingleValue(value)
+    writeSection(doc, key, formatted)
   }
 }
 
@@ -550,10 +629,11 @@ export async function exportAssessmentPdf(assessment: Assessment, user: User, ch
   ])
   doc.font('Helvetica-Bold').fontSize(12).text('Daftar Nilai')
   doc.font('Helvetica').fontSize(10)
-  for (const [index, score] of (assessment.scores ?? []).entries())
-    doc.text(
-      `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${score.value ?? '-'}${score.note ? ` — ${score.note}` : ''}`
-    )
+  for (const [index, score] of (assessment.scores ?? []).entries()) {
+    const valText = score.value ?? '-'
+    const noteText = score.note ? ` — ${score.note}` : ''
+    doc.text(`${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${valText}${noteText}`)
+  }
   return toBuffer(doc)
 }
 

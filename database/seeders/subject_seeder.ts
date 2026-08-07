@@ -9,8 +9,17 @@ export default class SubjectSeeder extends BaseSeeder {
 
     for (const user of users) {
       const educationLevel = user.educationLevel as 'tk' | 'sd'
+      const defaults = DEFAULT_SUBJECTS[educationLevel]
 
-      for (const name of DEFAULT_SUBJECTS[educationLevel]) {
+      if (educationLevel === 'tk') {
+        await Subject.query()
+          .where('userId', user.id)
+          .where('educationLevel', 'tk')
+          .whereNotIn('name', defaults)
+          .delete()
+      }
+
+      for (const name of defaults) {
         await Subject.updateOrCreate(
           { userId: user.id, name, educationLevel },
           { userId: user.id, name, educationLevel, gradeLevel: null, isActive: true }

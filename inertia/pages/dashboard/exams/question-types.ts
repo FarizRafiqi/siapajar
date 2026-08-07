@@ -1,20 +1,45 @@
 export type QuestionKind =
-  'multiple_choice' | 'essay' | 'visual' | 'matching' | 'practical' | 'oral'
+  | 'multiple_choice'
+  | 'essay'
+  | 'visual'
+  | 'matching'
+  | 'practical'
+  | 'oral'
+  | 'fill_blank_image'
+  | 'vertical_math'
+  | 'count_and_circle'
+  | 'coloring'
+  | 'tracing'
 
 export interface QuestionOption {
   label: string
   text: string
+  imageUrl?: string
 }
 
 export interface MatchingItem {
   id: string
   label: string
   imageUrl?: string
+  imagePrompt?: string
 }
 
 export interface MatchingPair {
   leftId: string
   rightId: string
+}
+
+export interface VerticalMathProblem {
+  topNumber: number
+  bottomNumber: number
+  operator: '+' | '-'
+}
+
+export interface CountItem {
+  count: number
+  iconName?: string
+  imageUrl?: string
+  options: number[]
 }
 
 export interface ExamQuestion {
@@ -29,6 +54,8 @@ export interface ExamQuestion {
   imagePrompt?: string
   imageUrl?: string
   options?: QuestionOption[]
+  mathProblems?: VerticalMathProblem[]
+  countItems?: CountItem[]
   answer?: string
   explanation?: string
   rubric?: string
@@ -38,7 +65,11 @@ export interface ExamQuestion {
 export interface ExamHeader {
   logoUrl: string
   institutionName: string
+  institutionSubName: string
   institutionAddress: string
+  addressLine1: string
+  addressLine2: string
+  phone: string
   academicYear: string
   semester: string
   groupName: string
@@ -55,6 +86,11 @@ const QUESTION_KINDS: QuestionKind[] = [
   'matching',
   'practical',
   'oral',
+  'fill_blank_image',
+  'vertical_math',
+  'count_and_circle',
+  'coloring',
+  'tracing',
 ]
 
 function normalizeOption(value: unknown, index: number): QuestionOption {
@@ -121,7 +157,7 @@ export function normalizeQuestion(raw: Record<string, unknown>, index: number): 
     leftItems: normalizeItems(leftValue, 'left'),
     rightItems: normalizeItems(rightValue, 'right'),
     pairs: Array.isArray(raw.pairs ?? raw.answerPairs ?? raw.matches)
-      ? (raw.pairs ?? raw.answerPairs ?? raw.matches).flatMap((pair) => {
+      ? ((raw.pairs ?? raw.answerPairs ?? raw.matches) as unknown[]).flatMap((pair: unknown) => {
           if (!pair || typeof pair !== 'object') return []
           const value = pair as Record<string, unknown>
           return typeof value.leftId === 'string' && typeof value.rightId === 'string'
@@ -149,7 +185,11 @@ export function normalizeHeader(raw: unknown, defaults: Partial<ExamHeader> = {}
   return {
     logoUrl: read('logoUrl'),
     institutionName: read('institutionName'),
+    institutionSubName: read('institutionSubName'),
     institutionAddress: read('institutionAddress'),
+    addressLine1: read('addressLine1'),
+    addressLine2: read('addressLine2'),
+    phone: read('phone'),
     academicYear: read('academicYear'),
     semester: read('semester'),
     groupName: read('groupName'),

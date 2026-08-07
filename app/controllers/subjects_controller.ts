@@ -10,9 +10,13 @@ import { createSubjectValidator, updateSubjectValidator } from '#validators/subj
  */
 export const DEFAULT_SUBJECTS: Record<'tk' | 'sd', string[]> = {
   tk: [
-    'Nilai Agama dan Budi Pekerti',
-    'Jati Diri',
-    'Dasar-Dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni',
+    'Bahasa',
+    'Bahasa Inggris',
+    'Moral Agama / P.A.I',
+    'Bahasa Arab',
+    'Kognitif',
+    'Sains',
+    'Mewarnai / Seni',
   ],
   sd: [
     'Bahasa Indonesia',
@@ -72,8 +76,15 @@ export default class SubjectsController {
   async storeDefaults({ response, session, auth }: HttpContext) {
     const user = auth.user!
     const educationLevel = (user.educationLevel || 'sd') as 'tk' | 'sd'
-
     const defaults = DEFAULT_SUBJECTS[educationLevel]
+
+    if (educationLevel === 'tk') {
+      await Subject.query()
+        .where('userId', user.id)
+        .where('educationLevel', 'tk')
+        .whereNotIn('name', defaults)
+        .delete()
+    }
 
     for (const name of defaults) {
       await Subject.updateOrCreate(

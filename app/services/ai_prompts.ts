@@ -52,7 +52,7 @@ export function examPrompt(params: {
     }
   }
 
-  if (params.isPaud || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
+  if (params.isPaud || params.isRa || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
     if (params.examMode === 'lisan') {
       return {
         system:
@@ -65,12 +65,13 @@ export function examPrompt(params: {
     }
     return {
       system:
-        'Kamu pembuat soal ujian lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
+        'Kamu pembuat soal lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
         'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-        '{"questions": [{"type": "visual"|"matching", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imageUrl": string}], "rightItems": [{"id": string, "label": string, "imageUrl": string}], "pairs": [{"leftId": string, "rightId": string}], "answer": string, "rubric": string}]}. ' +
-        'visualType bisa berupa "Menghubungkan Gambar", "Menghubungkan Kata", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda". Untuk aktivitas menghubungkan, wajib isi dua sisi leftItems dan rightItems dengan jumlah seimbang serta pairs yang valid. ' +
-        'Jika aktivitas membutuhkan gambar, imagePrompt wajib berisi prompt ilustrasi konkret yang aman untuk anak, tanpa teks kecil, watermark, atau instruksi yang harus dibaca di dalam gambar. Jika tidak membutuhkan gambar, imagePrompt harus berupa string kosong.',
-      user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis untuk tema/topik "${params.topic}" (${params.subject}).`,
+        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'PILIHAN GANDA: Jika type = "multiple_choice", sediakan HANYA 3 pilihan (options = [{"label":"a","text":""},{"label":"b","text":""},{"label":"c","text":""}]). ' +
+        'HUBUNGKAN GARIS: Jika type = "matching", visualType = "Hubungkan Garis", isi leftItems (berisi label dan imagePrompt) dan rightItems (berisi label dan imagePrompt) serta pairs yang cocok. ' +
+        'GAMBAR & MATEMATIKA: Jika type = "fill_blank_image", "vertical_math", "count_and_circle", "tracing", atau "coloring", berikan prompt visual atau baris soal yang mudah dipahami anak usia 4-6 tahun.',
+      user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }
 

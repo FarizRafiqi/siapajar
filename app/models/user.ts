@@ -1,8 +1,7 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
@@ -60,6 +59,20 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column({ columnName: 'avatar_url' })
   declare avatarUrl: string | null
+
+  @column({
+    columnName: 'kop_surat',
+    prepare: (value: Record<string, any>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
+  declare kopSurat: {
+    logoUrl?: string
+    institutionName?: string
+    institutionSubName?: string
+    addressLine1?: string
+    addressLine2?: string
+    phone?: string
+  }
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

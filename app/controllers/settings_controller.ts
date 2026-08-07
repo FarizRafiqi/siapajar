@@ -25,6 +25,7 @@ export default class SettingsController {
         educationLevel: user.educationLevel,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        kopSurat: user.kopSurat || {},
       },
       package: user.package?.toJSON() ?? null,
       subscription: subscription?.toJSON() ?? null,
@@ -45,6 +46,14 @@ export default class SettingsController {
       user.email = data.email
       user.schoolName = data.schoolName
       user.educationLevel = data.educationLevel
+
+      const currentKop = user.kopSurat || {}
+      const updatedKop = data.kopSurat || {}
+      user.kopSurat = {
+        ...currentKop,
+        ...updatedKop,
+        institutionName: updatedKop.institutionName || data.schoolName || currentKop.institutionName,
+      }
     }
 
     const avatarFile = request.file('avatar', {
@@ -66,6 +75,26 @@ export default class SettingsController {
         }
 
         user.avatarUrl = `/uploads/avatars/${fileName}`
+      }
+    }
+
+    const logoFile = request.file('logo', {
+      size: '2mb',
+      extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    })
+
+    if (logoFile) {
+      const logoFileName = `logo_${string.uuid()}.${logoFile.extname}`
+      await logoFile.move('public/uploads/logos', {
+        name: logoFileName,
+        overwrite: true,
+      })
+
+      if (logoFile.isValid) {
+        user.kopSurat = {
+          ...user.kopSurat,
+          logoUrl: `/uploads/logos/${logoFileName}`,
+        }
       }
     }
 

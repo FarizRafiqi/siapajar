@@ -40,6 +40,7 @@ interface WeeklyLessonPlanShowProps {
     status: 'draft' | 'published' | 'archived'
     lastSavedAt?: string | null
     version?: number
+    templateKey?: string
   }
 }
 
@@ -60,16 +61,20 @@ export default function WeeklyLessonPlanShow({
 }: WeeklyLessonPlanShowProps) {
   const [editing, setEditing] = useState(false)
 
-  const { data, setData, put, processing, reset } = useForm({
+  const { data, setData, put, processing, reset } = useForm<{
+    theme: string
+    status: 'draft' | 'published'
+    content: Record<string, string[]>
+  }>({
     theme: weeklyLessonPlan.theme,
     status: weeklyLessonPlan.status,
-    content: weeklyLessonPlan.content ?? {},
+    content: (weeklyLessonPlan.content as Record<string, string[]>) ?? {},
   })
   useDocumentAutosave(
     'rppm',
     weeklyLessonPlan.id,
     data.content,
-    data.status as 'draft' | 'published',
+    data.status,
     editing
   )
 
@@ -119,6 +124,7 @@ export default function WeeklyLessonPlanShow({
                 {weeklyLessonPlan.theme}
               </h2>
               <button
+                type="button"
                 onClick={handleTogglePublish}
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium transition-colors',
@@ -135,7 +141,7 @@ export default function WeeklyLessonPlanShow({
               {new Date(weeklyLessonPlan.weekStartDate).toLocaleDateString('id-ID')}
             </p>
             <DocumentWorkflowMeta
-              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              status={workflow?.status ?? weeklyLessonPlan.status}
               lastSavedAt={workflow?.lastSavedAt}
               version={workflow?.version}
               templateKey={workflow?.templateKey}
@@ -159,12 +165,13 @@ export default function WeeklyLessonPlanShow({
             <DocumentWorkflowActions
               type="rppm"
               id={weeklyLessonPlan.id}
-              status={workflow?.status ?? (weeklyLessonPlan.status as 'draft' | 'published')}
+              status={workflow?.status ?? weeklyLessonPlan.status}
               templateKey={workflow?.templateKey}
             />
             {editing ? (
               <>
                 <button
+                  type="button"
                   onClick={handleCancelEdit}
                   className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                 >
@@ -172,6 +179,7 @@ export default function WeeklyLessonPlanShow({
                   Batal
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={processing}
                   className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
@@ -182,6 +190,7 @@ export default function WeeklyLessonPlanShow({
               </>
             ) : (
               <button
+                type="button"
                 onClick={() => setEditing(true)}
                 className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
@@ -193,7 +202,7 @@ export default function WeeklyLessonPlanShow({
         </div>
 
         <div className="space-y-4">
-          {SECTIONS.map((section, index) => {
+          {SECTIONS.map((section) => {
             const items = weeklyLessonPlan.content?.[section.key] ?? []
             const draftItems = data.content?.[section.key] ?? []
 
@@ -210,7 +219,10 @@ export default function WeeklyLessonPlanShow({
                   <DocumentSectionEditor
                     value={draftItems}
                     onChange={(value) =>
-                      setData('content', { ...data.content, [section.key]: value })
+                      setData('content', {
+                        ...data.content,
+                        [section.key]: (Array.isArray(value) ? value : [value]) as string[],
+                      })
                     }
                     placeholder={`Masukkan ${section.title.toLowerCase()}`}
                   />
