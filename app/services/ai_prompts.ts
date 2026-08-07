@@ -67,8 +67,8 @@ export function examPrompt(params: {
       system:
         'Kamu pembuat soal ujian lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
         'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-        '{"questions": [{"question": string, "visualType": string, "instruction": string, "imagePrompt": string, "answer": string, "rubric": string}]}. ' +
-        'visualType bisa berupa "Menghubungkan Gambar", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda". ' +
+        '{"questions": [{"type": "visual"|"matching", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imageUrl": string}], "rightItems": [{"id": string, "label": string, "imageUrl": string}], "pairs": [{"leftId": string, "rightId": string}], "answer": string, "rubric": string}]}. ' +
+        'visualType bisa berupa "Menghubungkan Gambar", "Menghubungkan Kata", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda". Untuk aktivitas menghubungkan, wajib isi dua sisi leftItems dan rightItems dengan jumlah seimbang serta pairs yang valid. ' +
         'Jika aktivitas membutuhkan gambar, imagePrompt wajib berisi prompt ilustrasi konkret yang aman untuk anak, tanpa teks kecil, watermark, atau instruksi yang harus dibaca di dalam gambar. Jika tidak membutuhkan gambar, imagePrompt harus berupa string kosong.',
       user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
@@ -163,9 +163,9 @@ export function mediaModulePrompt(params: {
     system:
       `Kamu pembuat Media Ajar visual untuk anak ${instName} Kurikulum Merdeka. ` +
       'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-      '{"slides": [{"slideNumber": number, "title": string, "visualDescription": string, "teacherNotes": string, "keyQuestion": string}], ' +
+      '{"slides": [{"slideNumber": number, "title": string, "visualDescription": string, "imagePrompt": string, "teacherNotes": string, "keyQuestion": string}], ' +
       '"loosePartsGuide": {"materials": string[], "activities": string[], "safetyNotes": string}}. ' +
-      'Buatkan 4-5 slide presentasi visual anak yang menarik dan panduan bahan Loose Parts (batu, daun, balok, kancing, dll).',
+      'Buatkan 4-5 slide presentasi visual anak yang menarik. imagePrompt wajib menjadi prompt ilustrasi konkret Nano Banana, tanpa teks kecil, watermark, atau logo. Sertakan panduan bahan Loose Parts (batu, daun, balok, kancing, dll).',
     user: `Buatkan outline Media Ajar visual dan panduan Loose Parts untuk tema "${params.theme}"${subthemeText}.`,
   }
 }

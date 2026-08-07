@@ -6,16 +6,10 @@ import { createExamValidator, updateExamValidator } from '#validators/exam'
 import { generateExamValidator } from '#validators/generate'
 import { exportExam } from '#services/export_service'
 import { exportExamPdf } from '#services/pdf_export_service'
-import { AiServiceError, generateGeminiImage } from '#services/ai_service'
+import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
-import {
-  commitUsageReservation,
-  releaseUsageReservation,
-  reserveUsage,
-} from '#services/entitlement_service'
-import { randomUUID } from 'node:crypto'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
 const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
@@ -23,6 +17,36 @@ const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', stri
   final: 'PAS',
   daily: 'Ulangan Harian',
   summative: 'Sumatif',
+}
+
+function normalizeMatchingItems(value: unknown, side: 'left' | 'right') {
+  const values = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? value.split(/\r?\n|;|•/).map((item) => item.trim())
+      : []
+
+  return values
+    .map((item, index) => {
+      if (typeof item === 'string') return { id: `${side}-${index + 1}`, label: item }
+      const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      return {
+        id: typeof record.id === 'string' ? record.id : `${side}-${index + 1}`,
+        label:
+          typeof record.label === 'string'
+            ? record.label
+            : typeof record.text === 'string'
+              ? record.text
+              : '',
+        imageUrl:
+          typeof record.imageUrl === 'string'
+            ? record.imageUrl
+            : typeof record.image === 'string'
+              ? record.image
+              : '',
+      }
+    })
+    .filter((item) => item.label || item.imageUrl)
 }
 
 export default class ExamsController {
@@ -207,11 +231,24 @@ export default class ExamsController {
         id: i + 1,
         type:
           typeof q.type === 'string' &&
-          ['multiple_choice', 'essay', 'visual', 'practical', 'oral'].includes(q.type)
+          ['multiple_choice', 'essay', 'visual', 'matching', 'practical', 'oral'].includes(q.type)
             ? q.type
-            : examMode === 'tertulis_visual'
-              ? 'visual'
-              : examMode || (isPaud ? 'visual' : 'multiple_choice'),
+            : typeof q.visualType === 'string' && q.visualType.toLowerCase().includes('hubung')
+              ? 'matching'
+              : examMode === 'tertulis_visual'
+                ? 'visual'
+                : examMode || (isPaud ? 'visual' : 'multiple_choice'),
+        leftItems: normalizeMatchingItems(
+          q.leftItems ?? q.left ?? q.leftColumn ?? q.itemsLeft,
+          'left'
+        ),
+        rightItems: normalizeMatchingItems(
+          q.rightItems ?? q.right ?? q.rightColumn ?? q.itemsRight,
+          'right'
+        ),
+        pairs: Array.isArray(q.pairs ?? q.answerPairs ?? q.matches)
+          ? (q.pairs ?? q.answerPairs ?? q.matches)
+          : [],
         curriculum,
       }))
 
@@ -219,15 +256,13 @@ export default class ExamsController {
       // be created if Gemini image generation is unavailable or fails.
       for (const question of questions) {
         if (!question.imagePrompt || question.imageUrl) continue
-        const reservationKey = `exam-image:${user.id}:${randomUUID()}`
-        const reserved = await reserveUsage(user, 'ai_generation_monthly', reservationKey, 1, {
-          combo: 'siapajar-soal-image',
-        })
         try {
-          question.imageUrl = (await generateGeminiImage(question.imagePrompt)) || ''
-          if (reserved) await commitUsageReservation(reservationKey)
+          question.imageUrl =
+            (await aiQueueService.enqueueAiImage({
+              userId: user.id,
+              prompt: question.imagePrompt,
+            })) || ''
         } catch {
-          if (reserved) await releaseUsageReservation(reservationKey)
           question.imageUrl = ''
         }
       }

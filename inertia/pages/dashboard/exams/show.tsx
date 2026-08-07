@@ -1,6 +1,7 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import ExportDownloadButton from '~/components/dashboard/export-download-button'
 import { Head, Link, useForm } from '@inertiajs/react'
-import { ArrowLeft, Download, Pencil, Plus, Save, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Pencil, Plus, Save, Trash2, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { cn } from '~/lib/utils'
 import { examTypeLabel, type ExamType } from './index'
@@ -34,6 +35,7 @@ interface ExamShowProps {
 }
 
 const headerFields: { key: keyof ExamHeader; label: string; placeholder: string }[] = [
+  { key: 'logoUrl', label: 'URL logo kop (opsional)', placeholder: 'https://.../logo.png' },
   { key: 'institutionName', label: 'Nama lembaga', placeholder: 'RA/TK ...' },
   { key: 'institutionAddress', label: 'Alamat lembaga', placeholder: 'Alamat dan kontak' },
   { key: 'academicYear', label: 'Tahun ajaran', placeholder: '2025/2026' },
@@ -47,6 +49,15 @@ const headerFields: { key: keyof ExamHeader; label: string; placeholder: string 
 
 function inputClass() {
   return 'w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white'
+}
+
+function readImageAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
+    reader.onerror = () => reject(new Error('Logo tidak dapat dibaca'))
+    reader.readAsDataURL(file)
+  })
 }
 
 export default function ExamShow({ exam }: ExamShowProps) {
@@ -168,18 +179,16 @@ export default function ExamShow({ exam }: ExamShowProps) {
             >
               {showAnswers ? 'Sembunyikan kunci' : 'Tampilkan kunci'}
             </button>
-            <a
+            <ExportDownloadButton
               href={`/exams/${exam.id}/export`}
-              className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <Download className="h-4 w-4" /> DOCX
-            </a>
-            <a
+              filename={`${exam.title}.docx`}
+              label="DOCX"
+            />
+            <ExportDownloadButton
               href={`/exams/${exam.id}/export/pdf`}
-              className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <Download className="h-4 w-4" /> PDF
-            </a>
+              filename={`${exam.title}.pdf`}
+              label="PDF"
+            />
             {editing ? (
               <>
                 <button
@@ -227,27 +236,72 @@ export default function ExamShow({ exam }: ExamShowProps) {
               {headerFields.map((field) => (
                 <label
                   key={field.key}
-                  className={field.key === 'institutionAddress' ? 'sm:col-span-2' : ''}
+                  className={
+                    field.key === 'institutionAddress' || field.key === 'logoUrl'
+                      ? 'sm:col-span-2'
+                      : ''
+                  }
                 >
                   <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
                     {field.label}
                   </span>
-                  <input
-                    className={inputClass()}
-                    value={data.header[field.key]}
-                    placeholder={field.placeholder}
-                    onChange={(event) =>
-                      setData('header', { ...data.header, [field.key]: event.target.value })
-                    }
-                  />
+                  {field.key === 'logoUrl' ? (
+                    <div className="space-y-2">
+                      <input
+                        className={inputClass()}
+                        value={data.header[field.key]}
+                        placeholder={field.placeholder}
+                        onChange={(event) =>
+                          setData('header', { ...data.header, [field.key]: event.target.value })
+                        }
+                      />
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="block w-full cursor-pointer text-xs text-neutral-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:font-semibold file:text-emerald-700"
+                        onChange={async (event) => {
+                          const file = event.target.files?.[0]
+                          if (!file || file.size > 2 * 1024 * 1024) return
+                          const logoUrl = await readImageAsDataUrl(file)
+                          setData('header', { ...data.header, logoUrl })
+                        }}
+                      />
+                      <p className="text-xs text-neutral-500">PNG, JPG, atau WebP maksimal 2 MB.</p>
+                    </div>
+                  ) : (
+                    <input
+                      className={inputClass()}
+                      value={data.header[field.key]}
+                      placeholder={field.placeholder}
+                      onChange={(event) =>
+                        setData('header', { ...data.header, [field.key]: event.target.value })
+                      }
+                    />
+                  )}
+                  {field.key === 'logoUrl' && data.header.logoUrl && (
+                    <img
+                      src={data.header.logoUrl}
+                      alt="Logo kop soal"
+                      className="mt-3 h-14 max-w-48 rounded object-contain"
+                    />
+                  )}
                 </label>
               ))}
             </div>
           ) : (
             <div className="border-b-2 border-neutral-900 pb-4 text-center dark:border-white">
-              <p className="text-lg font-bold uppercase text-neutral-900 dark:text-white">
-                {data.header.institutionName || 'Nama Lembaga'}
-              </p>
+              <div className="flex items-center justify-center gap-4">
+                {data.header.logoUrl && (
+                  <img
+                    src={data.header.logoUrl}
+                    alt="Logo lembaga"
+                    className="h-16 w-16 object-contain"
+                  />
+                )}
+                <p className="text-lg font-bold uppercase text-neutral-900 dark:text-white">
+                  {data.header.institutionName || 'Nama Lembaga'}
+                </p>
+              </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 {data.header.institutionAddress || 'Alamat lembaga'}
               </p>
@@ -362,6 +416,7 @@ function EditorCard({
             <option value="multiple_choice">Pilihan ganda</option>
             <option value="essay">Uraian</option>
             <option value="visual">Aktivitas visual</option>
+            <option value="matching">Hubungkan garis</option>
             <option value="practical">Praktik / performa</option>
             <option value="oral">Lisan</option>
           </select>
@@ -438,6 +493,46 @@ function EditorCard({
               placeholder="Contoh: tiga apel merah bergaya ilustrasi anak"
             />
           </label>
+        )}
+        {question.type === 'matching' && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                Sisi kiri (satu item per baris)
+              </span>
+              <textarea
+                className={inputClass()}
+                rows={4}
+                value={(question.leftItems || []).map((item) => item.label).join('\n')}
+                onChange={(event) =>
+                  onUpdate(index, {
+                    leftItems: event.target.value
+                      .split('\n')
+                      .filter(Boolean)
+                      .map((label, i) => ({ id: `left-${i + 1}`, label })),
+                  })
+                }
+              />
+            </label>
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                Sisi kanan (satu item per baris)
+              </span>
+              <textarea
+                className={inputClass()}
+                rows={4}
+                value={(question.rightItems || []).map((item) => item.label).join('\n')}
+                onChange={(event) =>
+                  onUpdate(index, {
+                    rightItems: event.target.value
+                      .split('\n')
+                      .filter(Boolean)
+                      .map((label, i) => ({ id: `right-${i + 1}`, label })),
+                  })
+                }
+              />
+            </label>
+          </div>
         )}
       </div>
     </div>

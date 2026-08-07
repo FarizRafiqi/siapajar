@@ -1,4 +1,12 @@
-import { Image, ListChecks, MessageSquareText, Mic2, PencilLine, Target } from 'lucide-react'
+import {
+  GitCompareArrows,
+  Image,
+  ListChecks,
+  MessageSquareText,
+  Mic2,
+  PencilLine,
+  Target,
+} from 'lucide-react'
 import { cn } from '~/lib/utils'
 import type { ExamQuestion } from './question-types'
 
@@ -6,6 +14,7 @@ const kindMeta = {
   multiple_choice: { label: 'Pilihan ganda', icon: ListChecks },
   essay: { label: 'Uraian', icon: MessageSquareText },
   visual: { label: 'Aktivitas visual', icon: Image },
+  matching: { label: 'Hubungkan garis', icon: GitCompareArrows },
   practical: { label: 'Praktik / performa', icon: Target },
   oral: { label: 'Lisan', icon: Mic2 },
 } as const
@@ -104,6 +113,7 @@ export function QuestionRenderer({
           )}
         </div>
       )}
+      {question.type === 'matching' && <MatchingRenderer question={question} compact={compact} />}
       {(question.type === 'practical' || question.type === 'oral') && (
         <div className="ml-11 mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
           <div className="flex items-center gap-2 font-semibold">
@@ -128,5 +138,73 @@ export function QuestionRenderer({
         </div>
       )}
     </article>
+  )
+}
+
+function MatchingRenderer({ question, compact }: { question: ExamQuestion; compact: boolean }) {
+  const leftItems = question.leftItems || []
+  const rightItems = question.rightItems || []
+  const lineHeight = compact ? 'h-10' : 'h-14'
+  const rowCount = Math.max(leftItems.length, rightItems.length, 2)
+  return (
+    <div className="relative ml-11 mt-4 rounded-xl border-2 border-dashed border-purple-200 bg-purple-50/40 p-4 dark:border-purple-900 dark:bg-purple-900/10">
+      <div className="mb-3 grid grid-cols-[1fr_72px_1fr] gap-3 text-[10px] font-bold uppercase tracking-wide text-purple-600 dark:text-purple-300">
+        <span>Sisi kiri</span>
+        <span className="text-center">Tarik garis</span>
+        <span className="text-right">Sisi kanan</span>
+      </div>
+      <div className="space-y-3">
+        {Array.from({ length: rowCount }, (_, index) => (
+          <div key={index} className="grid grid-cols-[1fr_72px_1fr] items-center gap-3">
+            <MatchingItem
+              item={leftItems[index]}
+              align="left"
+              height={lineHeight}
+              placeholder="Item kiri"
+            />
+            <div className="flex items-center justify-center">
+              <span className="w-full border-t-2 border-dashed border-purple-300 dark:border-purple-700" />
+            </div>
+            <MatchingItem
+              item={rightItems[index]}
+              align="right"
+              height={lineHeight}
+              placeholder="Item kanan"
+            />
+          </div>
+        ))}
+      </div>
+      {leftItems.length === 0 || rightItems.length === 0 ? (
+        <p className="mt-3 text-center text-xs text-purple-700 dark:text-purple-300">
+          Dua sisi belum lengkap. Isi pasangan kiri dan kanan sebelum dicetak.
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function MatchingItem({
+  item,
+  align,
+  height,
+  placeholder,
+}: {
+  item?: { label: string; imageUrl?: string }
+  align: 'left' | 'right'
+  height: string
+  placeholder: string
+}) {
+  return (
+    <div
+      className={`${height} flex items-center gap-2 rounded-lg border border-purple-200 bg-white px-3 text-sm font-medium text-neutral-800 ${align === 'right' ? 'justify-end text-right' : ''} dark:border-purple-900 dark:bg-neutral-900 dark:text-neutral-200`}
+    >
+      {align === 'left' && item?.imageUrl && (
+        <img src={item.imageUrl} alt="" className="h-8 w-8 rounded object-contain" />
+      )}
+      <span className={!item ? 'text-neutral-400' : ''}>{item?.label || placeholder}</span>
+      {align === 'right' && item?.imageUrl && (
+        <img src={item.imageUrl} alt="" className="h-8 w-8 rounded object-contain" />
+      )}
+    </div>
   )
 }
