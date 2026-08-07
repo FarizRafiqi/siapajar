@@ -12,6 +12,7 @@ import {
   Award,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
   Settings,
   Library,
@@ -24,7 +25,7 @@ import {
   Presentation,
   Route,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { cn } from '~/lib/utils'
 
 interface User {
@@ -45,44 +46,154 @@ interface SidebarProps {
   onMobileClose?: () => void
 }
 
-const guruSdNavigation = [
+type NavigationItem = {
+  name: string
+  href: string
+  icon: typeof LayoutDashboard
+  activeHrefs?: string[]
+}
+
+type NavigationEntry =
+  | NavigationItem
+  | {
+      name: string
+      items: NavigationItem[]
+    }
+
+const guruSdNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
   { name: 'Kelas', href: '/classes', icon: Users },
   { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
-  { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
-  { name: 'Bank Soal', href: '/exams', icon: FileQuestion },
-  { name: 'Penilaian', href: '/assessments', icon: ClipboardCheck },
-  { name: 'Rapor & Peringkat', href: '/report-cards', icon: Award },
-  { name: 'Protah', href: '/annual-plans', icon: Calendar },
-  { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
+  {
+    name: 'Perencanaan',
+    items: [
+      { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
+      { name: 'Protah', href: '/annual-plans', icon: Calendar },
+      { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
+    ],
+  },
+  {
+    name: 'Asesmen & Laporan',
+    items: [
+      { name: 'Bank Soal', href: '/exams', icon: FileQuestion },
+      { name: 'Penilaian', href: '/assessments', icon: ClipboardCheck },
+      { name: 'Rapor Perkembangan', href: '/report-cards', icon: Award },
+    ],
+  },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/my-package',
+        icon: Package,
+        activeHrefs: ['/usage', '/subscriptions'],
+      },
+    ],
+  },
 ]
 
-const guruTkNavigation = [
+const guruTkNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
   { name: 'Kelompok', href: '/classes', icon: Users },
-  { name: 'RPPM', href: '/rppm', icon: CalendarRange },
-  { name: 'RPPH', href: '/rpph', icon: CalendarDays },
-  { name: 'LKPD Anak', href: '/lkpd', icon: FileSpreadsheet },
-  { name: 'Media Ajar', href: '/media-modules', icon: Presentation },
-  { name: 'Soal RA/TK', href: '/exams', icon: FileQuestion },
-  { name: 'Asesmen PAUD', href: '/paud-assessments', icon: ClipboardList },
-  { name: 'Rapor & Peringkat', href: '/report-cards', icon: Award },
-  { name: 'Protah', href: '/annual-plans', icon: Calendar },
-  { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
+  {
+    name: 'Perencanaan',
+    items: [
+      { name: 'RPPM', href: '/rppm', icon: CalendarRange },
+      { name: 'RPPH', href: '/rpph', icon: CalendarDays },
+      { name: 'Protah', href: '/annual-plans', icon: Calendar },
+      { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
+    ],
+  },
+  {
+    name: 'Bahan Ajar',
+    items: [
+      { name: 'LKPD Anak', href: '/lkpd', icon: FileSpreadsheet },
+      { name: 'Media Ajar', href: '/media-modules', icon: Presentation },
+    ],
+  },
+  {
+    name: 'Asesmen & Laporan',
+    items: [
+      { name: 'Soal RA/TK', href: '/exams', icon: FileQuestion },
+      { name: 'Asesmen PAUD', href: '/paud-assessments', icon: ClipboardList },
+      { name: 'Rapor Perkembangan', href: '/report-cards', icon: Award },
+    ],
+  },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/my-package',
+        icon: Package,
+        activeHrefs: ['/usage', '/subscriptions'],
+      },
+    ],
+  },
 ]
 
-const adminNavigation = [
+const adminNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Kelola Pengguna', href: '/admin/users', icon: Shield },
-  { name: 'Kelola Paket', href: '/admin/packages', icon: Package },
-  { name: 'Sekolah', href: '/admin/schools', icon: School },
+  {
+    name: 'Pengguna & Sekolah',
+    items: [
+      { name: 'Pengguna', href: '/admin/users', icon: Shield },
+      { name: 'Sekolah', href: '/admin/schools', icon: School },
+    ],
+  },
+  { name: 'Paket', href: '/admin/packages', icon: Package },
+  { name: 'Hak Fitur Paket', href: '/admin/entitlements', icon: Shield },
   { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
   { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
 ]
 
-const principalNavigation = [{ name: 'Dashboard', href: '/principal', icon: LayoutDashboard }]
+const principalNavigation: NavigationEntry[] = [
+  { name: 'Dashboard', href: '/principal', icon: LayoutDashboard },
+]
+
+function isNavigationItemActive(item: NavigationItem, currentUrl: string) {
+  return Boolean(
+    (currentUrl.startsWith(item.href) ||
+      item.activeHrefs?.some((href) => currentUrl.startsWith(href))) &&
+    (item.href === '/dashboard' || item.href === '/principal' ? currentUrl === item.href : true)
+  )
+}
+
+function renderNavigationItem(
+  item: NavigationItem,
+  currentUrl: string,
+  collapsed: boolean,
+  onMobileClose?: () => void
+): ReactElement {
+  const isActive = isNavigationItemActive(item, currentUrl)
+  return (
+    <Link
+      key={item.name}
+      href={item.href}
+      onClick={onMobileClose}
+      className={cn(
+        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+        isActive
+          ? 'bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-900/70 dark:text-emerald-100'
+          : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800/80 dark:hover:text-white'
+      )}
+      title={collapsed ? item.name : undefined}
+    >
+      <item.icon
+        className={cn(
+          'h-5 w-5 flex-shrink-0',
+          isActive
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : 'text-neutral-500 dark:text-neutral-400'
+        )}
+      />
+      <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
+    </Link>
+  )
+}
 
 export default function Sidebar({
   user,
@@ -94,7 +205,7 @@ export default function Sidebar({
   const page = usePage()
   const currentUrl = page.url
   const isAdmin = user.role === 'admin'
-  let navigation = guruSdNavigation
+  let navigation: NavigationEntry[] = guruSdNavigation
   if (isAdmin) {
     navigation = adminNavigation
   } else if (user.role === 'kepala_sekolah') {
@@ -110,7 +221,58 @@ export default function Sidebar({
   }
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return { Akun: true }
+    try {
+      return {
+        Akun: true,
+        ...JSON.parse(window.localStorage.getItem('siapajar:sidebar-groups') ?? '{}'),
+      }
+    } catch {
+      return { Akun: true }
+    }
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const navigationRef = useRef<HTMLElement>(null)
+
+  const activeGroupNames = useMemo(
+    () =>
+      navigation
+        .filter(
+          (entry): entry is Extract<NavigationEntry, { items: NavigationItem[] }> =>
+            'items' in entry
+        )
+        .filter((entry) => entry.items.some((item) => isNavigationItemActive(item, currentUrl)))
+        .map((entry) => entry.name),
+    [navigation, currentUrl]
+  )
+
+  useEffect(() => {
+    if (activeGroupNames.length === 0) return
+    setCollapsedGroups((previous) => {
+      const next = { ...previous }
+      for (const groupName of activeGroupNames) next[groupName] = false
+      return next
+    })
+  }, [activeGroupNames])
+
+  useEffect(() => {
+    window.localStorage.setItem('siapajar:sidebar-groups', JSON.stringify(collapsedGroups))
+  }, [collapsedGroups])
+
+  useEffect(() => {
+    const navigationElement = navigationRef.current
+    if (!navigationElement) return
+
+    const savedScrollTop = window.sessionStorage.getItem('siapajar:sidebar-scroll-top')
+    if (savedScrollTop === null) return
+
+    const restoreScroll = () => {
+      navigationElement.scrollTop = Number(savedScrollTop)
+    }
+    const frame = window.requestAnimationFrame(restoreScroll)
+    return () => window.cancelAnimationFrame(frame)
+  }, [currentUrl, collapsedGroups])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -182,37 +344,60 @@ export default function Sidebar({
 
         {/* Navigation */}
         <nav
+          ref={navigationRef}
+          onScroll={(event) => {
+            window.sessionStorage.setItem(
+              'siapajar:sidebar-scroll-top',
+              String(event.currentTarget.scrollTop)
+            )
+          }}
           className="space-y-1 overflow-y-auto px-3 py-4"
           style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
         >
-          {navigation.map((item) => {
-            const isActive =
-              currentUrl.startsWith(item.href) &&
-              (item.href === '/dashboard' ? currentUrl === '/dashboard' : true)
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={onMobileClose}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-semibold'
-                    : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800/80 dark:hover:text-white'
-                )}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon
-                  className={cn(
-                    'h-5 w-5 flex-shrink-0',
-                    isActive
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-neutral-500 dark:text-neutral-400'
-                  )}
-                />
-                <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
-              </Link>
-            )
+          {navigation.map((entry) => {
+            if ('items' in entry) {
+              const groupIsActive = entry.items.some((item) =>
+                isNavigationItemActive(item, currentUrl)
+              )
+              const groupIsOpen = !collapsedGroups[entry.name]
+              return (
+                <div key={entry.name} className="pt-3 first:pt-0">
+                  <button
+                    type="button"
+                    aria-expanded={groupIsOpen}
+                    aria-controls={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
+                    onClick={() =>
+                      setCollapsedGroups((previous) => ({
+                        ...previous,
+                        [entry.name]: groupIsOpen,
+                      }))
+                    }
+                    className={cn(
+                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:bg-neutral-100 dark:text-neutral-500 dark:hover:bg-neutral-900',
+                      collapsed && 'md:hidden',
+                      groupIsActive && 'text-emerald-600 dark:text-emerald-400'
+                    )}
+                  >
+                    {entry.name}
+                    <ChevronDown
+                      className={cn(
+                        'h-3.5 w-3.5 transition-transform',
+                        !groupIsOpen && '-rotate-90'
+                      )}
+                    />
+                  </button>
+                  <div
+                    id={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
+                    className={cn('space-y-1', !groupIsOpen && 'hidden')}
+                  >
+                    {entry.items.map((item) =>
+                      renderNavigationItem(item, currentUrl, collapsed, onMobileClose)
+                    )}
+                  </div>
+                </div>
+              )
+            }
+            return renderNavigationItem(entry, currentUrl, collapsed, onMobileClose)
           })}
         </nav>
 

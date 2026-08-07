@@ -77,6 +77,20 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
+/* Dashboard contrast: shared across guru and admin pages. */
+.dashboard-shell .border-neutral-100 {
+  border-color: #e5e7eb;
+}
+
+.dashboard-shell .border-neutral-200 {
+  border-color: #d1d5db;
+}
+
+.dark .dashboard-shell .dark\:border-neutral-800,
+.dark .dashboard-shell .dark\:border-neutral-700 {
+  border-color: #404040;
+}
+
 /* Custom styles for forms (login/signup) */
 .form-container {
   @apply flex flex-col justify-center max-w-md mx-auto;

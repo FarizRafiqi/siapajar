@@ -1,5 +1,4 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import CurriculumGlossary from '~/components/dashboard/curriculum-glossary'
 import RichTextEditor from '~/components/ui/rich-text-editor'
 import { Head, useForm } from '@inertiajs/react'
 import { useState } from 'react'
@@ -328,7 +327,6 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             </div>
           </div>
         </div>
-        <CurriculumGlossary />
       </div>
       {showObjectiveModal && (
         <Modal title="Tambah TP Custom" onClose={closeObjective}>
