@@ -144,10 +144,20 @@ const adminNavigation: NavigationEntry[] = [
       { name: 'Sekolah', href: '/admin/schools', icon: School },
     ],
   },
-  { name: 'Paket', href: '/admin/packages', icon: Package },
-  { name: 'Hak Fitur Paket', href: '/admin/entitlements', icon: Shield },
-  { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
-  { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
+  {
+    name: 'Langganan & Akses',
+    items: [
+      { name: 'Paket', href: '/admin/packages', icon: Package },
+      { name: 'Hak Fitur Paket', href: '/admin/entitlements', icon: Shield },
+    ],
+  },
+  {
+    name: 'Konfigurasi Sistem',
+    items: [
+      { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
+      { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
+    ],
+  },
 ]
 
 const principalNavigation: NavigationEntry[] = [
