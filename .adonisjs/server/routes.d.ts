@@ -32,7 +32,10 @@ export type ScannedRoutes = {
     'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'curriculum.sequences.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.seed': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.reset': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
     'classes.store': { paramsTuple?: []; params?: {} }
     'classes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -327,6 +330,8 @@ export type ScannedRoutes = {
     'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
     'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.seed': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.reset': { paramsTuple?: []; params?: {} }
     'classes.store': { paramsTuple?: []; params?: {} }
     'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -377,6 +382,7 @@ export type ScannedRoutes = {
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
+    'curriculum.sequences.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.removeStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
     'teaching-modules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

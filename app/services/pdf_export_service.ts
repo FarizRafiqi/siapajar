@@ -550,6 +550,173 @@ function writeContentObject(doc: PDFKit.PDFDocument, content: Record<string, unk
   }
 }
 
+function formatLabel(str: string | null | undefined): string {
+  if (!str) return ''
+  return str
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function stripHtmlTags(str: string | null | undefined): string {
+  if (!str) return ''
+  return str.split('<').map((part) => part.substring(part.indexOf('>') + 1)).join('')
+}
+
+function renderPdfObjectivesTable(
+  doc: typeof PDFDocument.prototype,
+  objectives: Array<Record<string, any>>,
+  leftX: number,
+  width: number
+) {
+  if (objectives.length === 0) return
+
+  const colW = [70, 240, 205]
+  let tableY = doc.y
+
+  if (tableY > 700) {
+    doc.addPage()
+    tableY = doc.y
+  }
+
+  doc.fillColor('#047857').rect(leftX, tableY, width, 18).fill()
+  doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
+  doc.text('Kode TP', leftX + 5, tableY + 5, { width: colW[0] })
+  doc.text('Tujuan Pembelajaran (TP)', leftX + colW[0] + 5, tableY + 5, { width: colW[1] })
+  doc.text('Indikator Ketercapaian (IKTP)', leftX + colW[0] + colW[1] + 5, tableY + 5, { width: colW[2] })
+
+  tableY += 18
+
+  for (const obj of objectives) {
+    const cleanTitle = stripHtmlTags(obj.title || '')
+    const indicators = Array.isArray(obj.indicators) ? obj.indicators : []
+
+    const iktpLines = indicators.length > 0
+      ? indicators.map((ind: any) => `• ${ind.description} [${formatLabel(ind.evidenceType)}]`).join('\n')
+      : '-'
+
+    doc.font('Helvetica').fontSize(8)
+    const titleHeight = doc.heightOfString(cleanTitle, { width: colW[1] - 10 })
+    doc.font('Helvetica').fontSize(7.5)
+    const iktpHeight = doc.heightOfString(iktpLines, { width: colW[2] - 10 })
+    const rowHeight = Math.max(20, titleHeight + 8, iktpHeight + 8)
+
+    if (tableY + rowHeight > 750) {
+      doc.addPage()
+      tableY = doc.y
+    }
+
+    doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+    doc.moveTo(leftX + colW[0], tableY).lineTo(leftX + colW[0], tableY + rowHeight).stroke()
+    doc.moveTo(leftX + colW[0] + colW[1], tableY).lineTo(leftX + colW[0] + colW[1], tableY + rowHeight).stroke()
+
+    doc.fillColor('#065F46').font('Helvetica-Bold').fontSize(8)
+      .text(obj.code || '-', leftX + 5, tableY + 5, { width: colW[0] - 10 })
+
+    doc.fillColor('#111827').font('Helvetica').fontSize(8)
+      .text(cleanTitle, leftX + colW[0] + 5, tableY + 5, { width: colW[1] - 10 })
+
+    doc.fillColor('#374151').font('Helvetica').fontSize(7.5)
+      .text(iktpLines, leftX + colW[0] + colW[1] + 5, tableY + 5, { width: colW[2] - 10 })
+
+    tableY += rowHeight
+  }
+
+  doc.y = tableY + 10
+}
+
+function renderPdfCpSection(
+  doc: typeof PDFDocument.prototype,
+  cps: Array<Record<string, any>>,
+  leftX: number,
+  width: number
+) {
+  doc.fillColor('#047857').font('Helvetica-Bold').fontSize(12).text('I. MATRIKS CAPAIAN PEMBELAJARAN (CP) & TUJUAN PEMBELAJARAN (TP)')
+  doc.moveDown(0.4)
+
+  for (const cp of cps) {
+    if (doc.y > 700) doc.addPage()
+
+    const cpBoxY = doc.y
+    doc.fillColor('#059669').rect(leftX, cpBoxY, width, 20).fill()
+    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(9)
+      .text(`Elemen: ${cp.element || '-'}  (${cp.code || 'CP'})`, leftX + 10, cpBoxY + 5)
+
+    doc.y = cpBoxY + 25
+
+    doc.fillColor('#1F2937').font('Helvetica-Bold').fontSize(8.5).text('Capaian Pembelajaran (CP):', leftX, doc.y)
+    doc.fillColor('#374151').font('Helvetica').fontSize(8.5).text(stripHtmlTags(cp.description || '-'), { width, align: 'justify' })
+    doc.moveDown(0.4)
+
+    const objectives = Array.isArray(cp.learningObjectives) ? cp.learningObjectives : []
+    renderPdfObjectivesTable(doc, objectives, leftX, width)
+  }
+}
+
+function renderPdfSequenceSection(
+  doc: typeof PDFDocument.prototype,
+  sequences: Array<Record<string, any>>,
+  leftX: number,
+  width: number
+) {
+  if (doc.y > 680) doc.addPage()
+
+  doc.fillColor('#047857').font('Helvetica-Bold').fontSize(12).text('II. MATRIKS ALUR TUJUAN PEMBELAJARAN (ATP) TERSIMPAN')
+  doc.moveDown(0.4)
+
+  for (const seq of sequences) {
+    if (doc.y > 680) doc.addPage()
+
+    const items = Array.isArray(seq.items) ? seq.items : []
+
+    const seqY = doc.y
+    doc.fillColor('#065F46').font('Helvetica-Bold').fontSize(9.5)
+      .text(`${seq.title || 'Alur ATP'} (${items.length} Langkah Pembelajaran)`, leftX, seqY)
+    doc.moveDown(0.3)
+
+    if (items.length > 0) {
+      const colW = [45, 75, 395]
+      let tableY = doc.y
+
+      doc.fillColor('#047857').rect(leftX, tableY, width, 18).fill()
+      doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
+      doc.text('Urutan', leftX + 5, tableY + 5, { width: colW[0], align: 'center' })
+      doc.text('Kode TP', leftX + colW[0] + 5, tableY + 5, { width: colW[1] })
+      doc.text('Tujuan Pembelajaran (TP)', leftX + colW[0] + colW[1] + 5, tableY + 5, { width: colW[2] })
+
+      tableY += 18
+
+      for (const [idx, item] of items.entries()) {
+        const cleanTitle = stripHtmlTags(item.title || '') || `Tujuan Pembelajaran #${item.learningObjectiveId}`
+        doc.font('Helvetica').fontSize(8)
+        const titleHeight = doc.heightOfString(cleanTitle, { width: colW[2] - 10 })
+        const rowHeight = Math.max(18, titleHeight + 6)
+
+        if (tableY + rowHeight > 750) {
+          doc.addPage()
+          tableY = doc.y
+        }
+
+        doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+        doc.moveTo(leftX + colW[0], tableY).lineTo(leftX + colW[0], tableY + rowHeight).stroke()
+        doc.moveTo(leftX + colW[0] + colW[1], tableY).lineTo(leftX + colW[0] + colW[1], tableY + rowHeight).stroke()
+
+        doc.fillColor('#111827').font('Helvetica-Bold').fontSize(8)
+          .text(`${idx + 1}`, leftX + 5, tableY + 4, { width: colW[0] - 10, align: 'center' })
+
+        doc.fillColor('#065F46').font('Helvetica-Bold').fontSize(8)
+          .text(item.code || `TP-${item.learningObjectiveId}`, leftX + colW[0] + 5, tableY + 4, { width: colW[1] - 10 })
+
+        doc.fillColor('#1F2937').font('Helvetica').fontSize(8)
+          .text(cleanTitle, leftX + colW[0] + colW[1] + 5, tableY + 4, { width: colW[2] - 10 })
+
+        tableY += rowHeight
+      }
+
+      doc.y = tableY + 12
+    }
+  }
+}
+
 export async function exportCurriculumPdf(
   cps: Array<Record<string, any>>,
   sequences: Array<Record<string, any>>,
@@ -557,44 +724,46 @@ export async function exportCurriculumPdf(
   charge = true
 ) {
   if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Kurikulum CP, TP, ATP, dan IKTP')
-  doc.font('Helvetica-Bold').fontSize(16).text('Capaian Pembelajaran (CP)')
-  doc.moveDown(0.5)
-  for (const cp of cps) {
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(12)
-      .text(`${cp.code ?? ''} ${cp.title ?? ''}`.trim())
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(`${cp.element ?? ''} • ${cp.phase ?? ''} • ${cp.curriculumVersion ?? ''}`)
-    doc.text(cp.description || '-')
-    for (const objective of cp.learningObjectives ?? []) {
-      doc.text(`• TP ${objective.code ?? ''}: ${objective.title ?? '-'}`)
-      for (const indicator of objective.indicators ?? [])
-        doc.text(`  • IKTP: ${indicator.description ?? '-'}`)
-    }
-    doc.moveDown(0.5)
-  }
-  doc.font('Helvetica-Bold').fontSize(16).text('Alur Tujuan Pembelajaran (ATP)')
-  doc.moveDown(0.5)
-  for (const sequence of sequences) {
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(12)
-      .text(sequence.title || 'ATP')
-    writeMetadata(doc, [
-      ['Profil', sequence.educationLevel],
-      ['Kelompok', sequence.groupContext],
-      ['Versi kurikulum', sequence.curriculumVersion],
-      ['Status', sequence.status],
-    ])
-    for (const [index, item] of (sequence.items ?? []).entries())
-      doc.text(`${index + 1}. ${item.title ?? item.learningObjectiveId ?? '-'}`)
-    doc.moveDown(0.5)
-  }
+  const doc = new PDFDocument({ margin: 40, size: 'A4' })
+
+  writeKop(doc, user, 'DOKUMEN CAPAIAN, TUJUAN & ALUR PEMBELAJARAN (CP, TP & ATP)')
+
+  const leftX = 40
+  const width = doc.page.width - 80
+
+  const startY = doc.y
+  doc.rect(leftX, startY, width, 55).lineWidth(0.8).strokeColor('#059669').stroke()
+  doc.fillColor('#F0FDF4').rect(leftX, startY, width, 55).fill()
+  doc.fillColor('#065F46').font('Helvetica-Bold').fontSize(9)
+
+  const isPaud = user.educationLevel === 'tk'
+  doc.text(`Satuan Pendidikan : ${(user as any).institutionName || user.schoolName || 'TK / Sekolah'}`, leftX + 12, startY + 10)
+  doc.text(`Jenjang / Fase       : ${isPaud ? 'PAUD / TK (Fase Fondasi)' : 'Sekolah Dasar (SD)'}`, leftX + 12, startY + 25)
+  doc.text(`Versi Kurikulum   : ${user.curriculumVersion || 'Kurikulum Merdeka'}`, leftX + 12, startY + 40)
+  doc.text(`Tanggal Cetak      : ${new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}`, leftX + 280, startY + 10)
+
+  doc.y = startY + 68
+
+  renderPdfCpSection(doc, cps, leftX, width)
+  renderPdfSequenceSection(doc, sequences, leftX, width)
+
+  if (doc.y > 660) doc.addPage()
+
+  const sigY = doc.y + 10
+  const sigW = width / 2
+
+  doc.fillColor('#111827').font('Helvetica-Bold').fontSize(8.5)
+  doc.text('Mengetahui,', leftX, sigY)
+  doc.font('Helvetica').text('Kepala Sekolah', leftX, sigY + 12)
+  doc.font('Helvetica-Bold').text('________________________', leftX, sigY + 50)
+  doc.font('Helvetica').text('NIP. ........................................', leftX, sigY + 62)
+
+  doc.font('Helvetica').fontSize(8.5)
+  doc.text(`.................., ${new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}`, leftX + sigW, sigY)
+  doc.text('Penyusun / Guru Kelas,', leftX + sigW, sigY + 12)
+  doc.font('Helvetica-Bold').text(`( ${user.fullName || '........................'} )`, leftX + sigW, sigY + 50)
+  doc.font('Helvetica').text('NIP. ........................................', leftX + sigW, sigY + 62)
+
   return toBuffer(doc)
 }
 

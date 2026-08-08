@@ -174,11 +174,29 @@ const routes = {
     tokens: [{"old":"/curriculum/sequences/:id","type":0,"val":"curriculum","end":""},{"old":"/curriculum/sequences/:id","type":0,"val":"sequences","end":""},{"old":"/curriculum/sequences/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['curriculum.sequences.update']['types'],
   },
+  'curriculum.sequences.destroy': {
+    methods: ["DELETE"],
+    pattern: '/curriculum/sequences/:id',
+    tokens: [{"old":"/curriculum/sequences/:id","type":0,"val":"curriculum","end":""},{"old":"/curriculum/sequences/:id","type":0,"val":"sequences","end":""},{"old":"/curriculum/sequences/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['curriculum.sequences.destroy']['types'],
+  },
   'curriculum.indicators.store': {
     methods: ["POST"],
     pattern: '/curriculum/indicators',
     tokens: [{"old":"/curriculum/indicators","type":0,"val":"curriculum","end":""},{"old":"/curriculum/indicators","type":0,"val":"indicators","end":""}],
     types: placeholder as Registry['curriculum.indicators.store']['types'],
+  },
+  'curriculum.presets.seed': {
+    methods: ["POST"],
+    pattern: '/curriculum/seed-presets',
+    tokens: [{"old":"/curriculum/seed-presets","type":0,"val":"curriculum","end":""},{"old":"/curriculum/seed-presets","type":0,"val":"seed-presets","end":""}],
+    types: placeholder as Registry['curriculum.presets.seed']['types'],
+  },
+  'curriculum.presets.reset': {
+    methods: ["POST"],
+    pattern: '/curriculum/reset-presets',
+    tokens: [{"old":"/curriculum/reset-presets","type":0,"val":"curriculum","end":""},{"old":"/curriculum/reset-presets","type":0,"val":"reset-presets","end":""}],
+    types: placeholder as Registry['curriculum.presets.reset']['types'],
   },
   'classes.index': {
     methods: ["GET","HEAD"],

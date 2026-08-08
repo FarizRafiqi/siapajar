@@ -45,9 +45,14 @@ export interface ApiDefinition {
     sequences: {
       store: typeof routes['curriculum.sequences.store']
       update: typeof routes['curriculum.sequences.update']
+      destroy: typeof routes['curriculum.sequences.destroy']
     }
     indicators: {
       store: typeof routes['curriculum.indicators.store']
+    }
+    presets: {
+      seed: typeof routes['curriculum.presets.seed']
+      reset: typeof routes['curriculum.presets.reset']
     }
   }
   documents: {

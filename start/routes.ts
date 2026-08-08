@@ -110,8 +110,17 @@ router
       .put('/curriculum/sequences/:id', '#controllers/curriculum_controller.updateSequence')
       .as('curriculum.sequences.update')
     router
+      .delete('/curriculum/sequences/:id', '#controllers/curriculum_controller.destroySequence')
+      .as('curriculum.sequences.destroy')
+    router
       .post('/curriculum/indicators', '#controllers/curriculum_controller.storeIndicator')
       .as('curriculum.indicators.store')
+    router
+      .post('/curriculum/seed-presets', '#controllers/curriculum_controller.seedPresets')
+      .as('curriculum.presets.seed')
+    router
+      .post('/curriculum/reset-presets', '#controllers/curriculum_controller.resetPresets')
+      .as('curriculum.presets.reset')
 
     // Classes (Kelas)
     router.get('/classes', '#controllers/classes_controller.index').as('classes.index')

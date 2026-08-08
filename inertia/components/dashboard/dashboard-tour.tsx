@@ -41,58 +41,42 @@ function getSteps(tourName: DashboardTourName, educationLevel: 'tk' | 'sd' | nul
       {
         element: '[data-tour="curriculum-intro"]',
         popover: {
-          title: 'Mulai dari struktur kurikulum',
+          title: 'Alur Kurikulum & Pembelajaran',
           description:
-            'Halaman ini menyusun tujuan pembelajaran secara bertahap. CP menjadi acuan, TP merumuskan tujuan yang lebih spesifik, ATP menyusun urutannya, dan IKTP membantu mengamati ketercapaiannya.',
-        },
-      },
-      {
-        element: '[data-tour="curriculum-flow"]',
-        popover: {
-          title: 'Alur yang saling terhubung',
-          description:
-            'Gunakan alur CP, TP, ATP, dan IKTP sebagai peta. Anda tidak perlu membuat CP baru untuk Kelompok A dan B; pilih konteks kelompok saat menyusun TP atau ATP.',
+            'Halaman ini memandu Anda menyusun alur belajar: CP (Destinasi Akhir) ➔ TP (Pos Tujuan Kecil) ➔ ATP (Peta Rute Alur) ➔ IKTP (Bukti Nyata Ketuntasan).',
         },
       },
       {
         element: '[data-tour="curriculum-cp"]',
         popover: {
-          title: 'Pilih elemen CP',
+          title: '1. Pilih Elemen CP (Destinasi)',
           description:
-            'Pilih salah satu elemen CP untuk melihat tujuan pembelajaran yang tersedia. CP Fase Fondasi PAUD terdiri dari Nilai Agama dan Budi Pekerti, Jati Diri, serta dasar-dasar literasi, matematika, sains, teknologi, rekayasa, dan seni.',
+            'Klik salah satu Elemen CP di sebelah kiri. CP adalah target akhir resmi dari pemerintah, Anda tidak perlu membuatnya dari nol.',
           side: 'right',
         },
       },
       {
         element: '[data-tour="curriculum-tp"]',
         popover: {
-          title: 'Pilih atau buat TP',
+          title: '2. Pilih / Buat TP (Pos Tujuan)',
           description:
-            'Pilih TP yang ingin dimasukkan ke ATP. Jika belum sesuai kebutuhan kelas, gunakan Tambah TP Custom untuk menulis rumusan sendiri.',
+            'Ini adalah tujuan pembelajaran mingguan/bulanan. Klik "+ Masukkan ATP" untuk memilih TP yang ingin Anda jadikan alur belajar.',
         },
       },
       {
         element: '[data-tour="curriculum-atp"]',
         popover: {
-          title: 'Susun ATP',
+          title: '3. Simpan Peta Alur ATP',
           description:
-            'ATP adalah urutan tujuan pembelajaran. Pilih beberapa TP, lalu buat ATP dari tombol ini. Urutan pilihan akan menjadi urutan awal yang bisa Anda simpan.',
+            'Setelah memilih beberapa TP, klik tombol ini untuk menyimpannya sebagai Alur Tujuan Pembelajaran (ATP) yang runtut.',
         },
       },
       {
         element: '[data-tour="curriculum-iktp"]',
         popover: {
-          title: 'Catat IKTP dan bukti',
+          title: '4. Tambah IKTP / Bukti Diamati',
           description:
-            'IKTP adalah indikator perilaku yang dapat diamati. Tambahkan kriteria ketercapaian agar catatan asesmen memiliki bukti yang jelas.',
-        },
-      },
-      {
-        element: '[data-tour="curriculum-glossary"]',
-        popover: {
-          title: 'Buka glossary kapan saja',
-          description:
-            'Gunakan glossary di halaman ini untuk memahami CP, TP, ATP, IKTP, RPM, RPPM, RPPH, Modul Ajar, dan PPM.',
+            'IKTP adalah bukti nyata atau perilaku anak yang bisa Anda amati (misal: "Anak dapat menyebutkan 3 nama ciptaan Allah").',
         },
       },
     ]
