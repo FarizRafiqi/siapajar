@@ -52,7 +52,12 @@ export function examPrompt(params: {
     }
   }
 
-  if (params.isPaud || params.isRa || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
+  if (
+    params.isPaud ||
+    params.isRa ||
+    params.examMode === 'lisan' ||
+    params.examMode === 'tertulis_visual'
+  ) {
     if (params.examMode === 'lisan') {
       return {
         system:

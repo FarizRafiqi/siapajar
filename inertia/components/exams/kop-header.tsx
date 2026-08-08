@@ -100,9 +100,9 @@ export function KopHeader({ header, user }: KopHeaderProps) {
             </thead>
             <tbody>
               <tr className="h-12">
-                <td className="border-r border-neutral-900 dark:border-white print:border-black"></td>
-                <td className="border-r border-neutral-900 dark:border-white print:border-black"></td>
-                <td></td>
+                <td className="border-r border-neutral-900 dark:border-white print:border-black" />
+                <td className="border-r border-neutral-900 dark:border-white print:border-black" />
+                <td />
               </tr>
             </tbody>
           </table>

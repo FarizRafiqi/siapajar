@@ -26,8 +26,6 @@ async function consumePdfExport(user: User) {
   })
 }
 
-
-
 function toBuffer(doc: PDFKit.PDFDocument): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
@@ -109,7 +107,11 @@ function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
     user.schoolName ||
     'SEKOLAH / TK'
   ).toUpperCase()
-  const institutionSubName = (header.institutionSubName || kop.institutionSubName || '').toUpperCase()
+  const institutionSubName = (
+    header.institutionSubName ||
+    kop.institutionSubName ||
+    ''
+  ).toUpperCase()
   const addressLine1 = header.addressLine1 || header.institutionAddress || kop.addressLine1 || ''
   const addressLine2 = header.addressLine2 || kop.addressLine2 || ''
   const phone = header.phone || kop.phone || ''
@@ -172,12 +174,28 @@ function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
 
   doc.rect(rightX, tableY, tableW, tableH).lineWidth(1).strokeColor('#000000').stroke()
   // Vertical dividers: Nilai | Paraf (Guru | Orang Tua)
-  doc.moveTo(rightX + 60, tableY).lineTo(rightX + 60, tableY + tableH).lineWidth(1).stroke()
-  doc.moveTo(rightX + 120, tableY + 16).lineTo(rightX + 120, tableY + tableH).lineWidth(1).stroke()
+  doc
+    .moveTo(rightX + 60, tableY)
+    .lineTo(rightX + 60, tableY + tableH)
+    .lineWidth(1)
+    .stroke()
+  doc
+    .moveTo(rightX + 120, tableY + 16)
+    .lineTo(rightX + 120, tableY + tableH)
+    .lineWidth(1)
+    .stroke()
   // Horizontal divider 1: Paraf sub-header divider (ONLY under Paraf header, not across Nilai)
-  doc.moveTo(rightX + 60, tableY + 16).lineTo(rightX + tableW, tableY + 16).lineWidth(1).stroke()
+  doc
+    .moveTo(rightX + 60, tableY + 16)
+    .lineTo(rightX + tableW, tableY + 16)
+    .lineWidth(1)
+    .stroke()
   // Horizontal divider 2: Bottom header divider
-  doc.moveTo(rightX, tableY + 30).lineTo(rightX + tableW, tableY + 30).lineWidth(1).stroke()
+  doc
+    .moveTo(rightX, tableY + 30)
+    .lineTo(rightX + tableW, tableY + 30)
+    .lineWidth(1)
+    .stroke()
 
   doc.font('Helvetica-Bold').fontSize(9)
   doc.text('Nilai', rightX, tableY + 10, { width: 60, align: 'center' })
@@ -228,10 +246,16 @@ function writeMatchingGrid(doc: PDFKit.PDFDocument, q: Record<string, any>) {
     }
 
     // Bullet Kiri
-    doc.circle(col2X + 10, y + 12, 3.5).fillColor('#000000').fill()
+    doc
+      .circle(col2X + 10, y + 12, 3.5)
+      .fillColor('#000000')
+      .fill()
 
     // Bullet Kanan
-    doc.circle(col4X + 10, y + 12, 3.5).fillColor('#000000').fill()
+    doc
+      .circle(col4X + 10, y + 12, 3.5)
+      .fillColor('#000000')
+      .fill()
 
     // Item Kanan Text
     doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
@@ -275,7 +299,11 @@ function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, numb
   } else if (isMatching) {
     writeMatchingGrid(doc, q)
   } else if (['essay', 'visual', 'practical', 'oral', 'fill_blank_image'].includes(q.type)) {
-    doc.font('Helvetica').text('........................................................................................................................')
+    doc
+      .font('Helvetica')
+      .text(
+        '........................................................................................................................'
+      )
   }
   if (q.imageUrl?.startsWith('data:image/')) {
     try {
@@ -517,9 +545,7 @@ function formatSingleValue(v: unknown): string {
 function writeContentObject(doc: PDFKit.PDFDocument, content: Record<string, unknown>) {
   for (const [key, value] of Object.entries(content)) {
     if (key === 'curriculum' || key === 'tema') continue
-    const formatted = Array.isArray(value)
-      ? value.map(formatSingleValue)
-      : formatSingleValue(value)
+    const formatted = Array.isArray(value) ? value.map(formatSingleValue) : formatSingleValue(value)
     writeSection(doc, key, formatted)
   }
 }
@@ -640,7 +666,9 @@ export async function exportAssessmentPdf(assessment: Assessment, user: User, ch
   for (const [index, score] of (assessment.scores ?? []).entries()) {
     const valText = score.value ?? '-'
     const noteText = score.note ? ` — ${score.note}` : ''
-    doc.text(`${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${valText}${noteText}`)
+    doc.text(
+      `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${valText}${noteText}`
+    )
   }
   return toBuffer(doc)
 }

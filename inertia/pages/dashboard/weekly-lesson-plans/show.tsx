@@ -70,13 +70,7 @@ export default function WeeklyLessonPlanShow({
     status: weeklyLessonPlan.status,
     content: (weeklyLessonPlan.content as Record<string, string[]>) ?? {},
   })
-  useDocumentAutosave(
-    'rppm',
-    weeklyLessonPlan.id,
-    data.content,
-    data.status,
-    editing
-  )
+  useDocumentAutosave('rppm', weeklyLessonPlan.id, data.content, data.status, editing)
 
   const handleSave = () => {
     put(`/rppm/${weeklyLessonPlan.id}`, {

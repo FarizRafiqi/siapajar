@@ -98,7 +98,8 @@ function normalizeOption(value: unknown, index: number): QuestionOption {
 
   if (value && typeof value === 'object') {
     const valObj = value as Record<string, unknown>
-    const labelStr = typeof valObj.label === 'string' && valObj.label.trim() ? valObj.label.trim() : fallbackLabel
+    const labelStr =
+      typeof valObj.label === 'string' && valObj.label.trim() ? valObj.label.trim() : fallbackLabel
     let textStr = ''
     if (typeof valObj.text === 'string' && valObj.text.trim()) {
       textStr = valObj.text.trim()
