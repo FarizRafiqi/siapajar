@@ -10,5 +10,13 @@ echo "=== Running database seeders ==="
 node build/bin/console.js db:seed
 echo "Seed exit code: $?"
 
+# Start the background queue worker (ai, reports, audit queues) — Redis-backed
+# in production per README/CLAUDE.md. With the sync driver jobs run inline
+# inside the web process, so a worker is neither needed nor started.
+if [ "$QUEUE_DRIVER" = "redis" ]; then
+  echo "=== Starting queue worker (ai, reports, audit) ==="
+  node build/bin/console.js queue:work --queue ai,reports,audit &
+fi
+
 echo "=== Starting application server ==="
 exec node build/bin/server.js
