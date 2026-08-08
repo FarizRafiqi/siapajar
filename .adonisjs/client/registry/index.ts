@@ -96,6 +96,30 @@ const routes = {
     tokens: [{"old":"/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['dashboard']['types'],
   },
+  'account.package': {
+    methods: ["GET","HEAD"],
+    pattern: '/my-package',
+    tokens: [{"old":"/my-package","type":0,"val":"my-package","end":""}],
+    types: placeholder as Registry['account.package']['types'],
+  },
+  'account.usage': {
+    methods: ["GET","HEAD"],
+    pattern: '/usage',
+    tokens: [{"old":"/usage","type":0,"val":"usage","end":""}],
+    types: placeholder as Registry['account.usage']['types'],
+  },
+  'account.subscriptions': {
+    methods: ["GET","HEAD"],
+    pattern: '/subscriptions',
+    tokens: [{"old":"/subscriptions","type":0,"val":"subscriptions","end":""}],
+    types: placeholder as Registry['account.subscriptions']['types'],
+  },
+  'glossary.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/glossary',
+    tokens: [{"old":"/glossary","type":0,"val":"glossary","end":""}],
+    types: placeholder as Registry['glossary.index']['types'],
+  },
   'curriculum.index': {
     methods: ["GET","HEAD"],
     pattern: '/curriculum',
@@ -785,6 +809,18 @@ const routes = {
     pattern: '/admin/packages/:id',
     tokens: [{"old":"/admin/packages/:id","type":0,"val":"admin","end":""},{"old":"/admin/packages/:id","type":0,"val":"packages","end":""},{"old":"/admin/packages/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.packages.destroy']['types'],
+  },
+  'admin.entitlements.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/entitlements',
+    tokens: [{"old":"/admin/entitlements","type":0,"val":"admin","end":""},{"old":"/admin/entitlements","type":0,"val":"entitlements","end":""}],
+    types: placeholder as Registry['admin.entitlements.index']['types'],
+  },
+  'admin.entitlements.update': {
+    methods: ["PUT"],
+    pattern: '/admin/entitlements/:id',
+    tokens: [{"old":"/admin/entitlements/:id","type":0,"val":"admin","end":""},{"old":"/admin/entitlements/:id","type":0,"val":"entitlements","end":""},{"old":"/admin/entitlements/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.entitlements.update']['types'],
   },
   'admin.academic-years.index': {
     methods: ["GET","HEAD"],

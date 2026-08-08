@@ -1,6 +1,8 @@
 import app from '@adonisjs/core/services/app'
 import { type HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
+import { EntitlementError } from '#services/entitlement_service'
+import { AiServiceError } from '#services/ai_service'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
@@ -30,6 +32,19 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
+    if (error instanceof EntitlementError || error instanceof AiServiceError) {
+      const message = error.message || 'Permintaan tidak dapat diproses. Coba lagi.'
+      const acceptsJson = ctx.request.header('accept')?.includes('application/json')
+      if (acceptsJson || ctx.request.header('x-requested-with') === 'XMLHttpRequest') {
+        return ctx.response.status(error instanceof EntitlementError ? error.status : 502).json({
+          message,
+          code: error instanceof EntitlementError ? 'QUOTA_EXCEEDED' : 'AI_PROVIDER_ERROR',
+          retryable: error instanceof AiServiceError,
+        })
+      }
+      ctx.session.flash('error', message)
+      return ctx.response.redirect().back()
+    }
     return super.handle(error, ctx)
   }
 

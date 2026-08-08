@@ -19,6 +19,10 @@ export type ScannedRoutes = {
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'account.package': { paramsTuple?: []; params?: {} }
+    'account.usage': { paramsTuple?: []; params?: {} }
+    'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
@@ -134,6 +138,8 @@ export type ScannedRoutes = {
     'admin.packages.store': { paramsTuple?: []; params?: {} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.entitlements.index': { paramsTuple?: []; params?: {} }
+    'admin.entitlements.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.store': { paramsTuple?: []; params?: {} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -162,6 +168,10 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'account.package': { paramsTuple?: []; params?: {} }
+    'account.usage': { paramsTuple?: []; params?: {} }
+    'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
@@ -218,6 +228,7 @@ export type ScannedRoutes = {
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
+    'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
     'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
@@ -237,6 +248,10 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'account.package': { paramsTuple?: []; params?: {} }
+    'account.usage': { paramsTuple?: []; params?: {} }
+    'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
@@ -293,6 +308,7 @@ export type ScannedRoutes = {
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
+    'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
     'admin.schools.index': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.index': { paramsTuple?: []; params?: {} }
@@ -355,6 +371,7 @@ export type ScannedRoutes = {
     'settings.update': { paramsTuple?: []; params?: {} }
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.entitlements.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.schools.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }

@@ -18,6 +18,16 @@ export const createSettingsValidator = (userId: number) =>
       email: uniqueEmail(userId),
       schoolName: vine.string().trim().minLength(2).maxLength(100),
       educationLevel: vine.enum(['tk', 'sd']),
+      kopSurat: vine
+        .object({
+          logoUrl: vine.string().optional(),
+          institutionName: vine.string().optional(),
+          institutionSubName: vine.string().optional(),
+          addressLine1: vine.string().optional(),
+          addressLine2: vine.string().optional(),
+          phone: vine.string().optional(),
+        })
+        .optional(),
     })
   )
 

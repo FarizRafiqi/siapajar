@@ -1,12 +1,13 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Package from '#models/package'
 import School from '#models/school'
+import PackageSubscription from '#models/package_subscription'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -59,6 +60,20 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'avatar_url' })
   declare avatarUrl: string | null
 
+  @column({
+    columnName: 'kop_surat',
+    prepare: (value: Record<string, any>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
+  declare kopSurat: {
+    logoUrl?: string
+    institutionName?: string
+    institutionSubName?: string
+    addressLine1?: string
+    addressLine2?: string
+    phone?: string
+  }
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -70,6 +85,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @belongsTo(() => School, { foreignKey: 'schoolId' })
   declare school: BelongsTo<typeof School>
+
+  @hasMany(() => PackageSubscription, { foreignKey: 'userId' })
+  declare subscriptions: HasMany<typeof PackageSubscription>
 
   get initials() {
     const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@')

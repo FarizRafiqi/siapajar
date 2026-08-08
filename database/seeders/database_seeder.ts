@@ -2,6 +2,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Package from '#models/package'
 import User from '#models/user'
 import CurriculumSeeder from './curriculum_seeder.js'
+import PackageSubscription from '#models/package_subscription'
 
 export default class DatabaseSeeder extends BaseSeeder {
   async run() {
@@ -83,6 +84,7 @@ export default class DatabaseSeeder extends BaseSeeder {
         classes:
           pkg.name === 'free' ? 1 : pkg.name === 'basic' ? 3 : pkg.name === 'pro' ? 10 : null,
         ai_generation_monthly: pkg.name === 'free' ? 5 : pkg.name === 'basic' ? 30 : null,
+        ai_image_generation_monthly: pkg.name === 'free' ? 3 : pkg.name === 'basic' ? 15 : null,
         export_pdf: 1,
         export_docx: pkg.name === 'free' ? 0 : 1,
         custom_atp: pkg.name === 'free' ? 0 : 1,
@@ -95,9 +97,44 @@ export default class DatabaseSeeder extends BaseSeeder {
       }
     }
 
+    // Internal testing package: all quota-controlled features are unlimited.
+    // Keep this package hidden from public pricing and use free account below to test limits.
+    const testingPackage = await Package.updateOrCreate(
+      { name: 'internal_testing_unlimited' },
+      {
+        name: 'internal_testing_unlimited',
+        displayName: 'Internal Testing Unlimited',
+        description: 'Akun internal untuk pengujian fitur tanpa batas kuota',
+        priceMonthly: 0,
+        priceYearly: null,
+        features: ['Semua fitur tanpa batas kuota'],
+        isActive: false,
+        isHighlighted: false,
+        ctaLabel: null,
+        sortOrder: 999,
+      }
+    )
+    const unlimitedFeatureKeys = [
+      'classes',
+      'students',
+      'ai_generation_monthly',
+      'ai_image_generation_monthly',
+      'export_pdf',
+      'export_docx',
+      'export_pptx',
+      'export_xlsx',
+      'custom_atp',
+      'custom_iktp',
+    ]
+    for (const featureKey of unlimitedFeatureKeys) {
+      await testingPackage
+        .related('entitlements')
+        .updateOrCreate({ featureKey }, { featureKey, limitValue: null, isEnabled: true })
+    }
+
     // Get package IDs
+    const freePkg = await Package.findByOrFail('name', 'free')
     const sekolahPkg = await Package.findByOrFail('name', 'sekolah')
-    const proPkg = await Package.findByOrFail('name', 'pro')
 
     const defaultPassword = process.env.DEFAULT_USER_PASSWORD || ['pass', 'word', '123'].join('')
 
@@ -121,7 +158,7 @@ export default class DatabaseSeeder extends BaseSeeder {
         email: 'guru@siapajar.id',
         password: defaultPassword,
         role: 'guru',
-        packageId: proPkg.id,
+        packageId: testingPackage.id,
         schoolName: 'SD Negeri 1 Contoh',
         educationLevel: 'sd',
         curriculumVersion: 'Kurikulum Merdeka',
@@ -136,7 +173,7 @@ export default class DatabaseSeeder extends BaseSeeder {
         email: 'gurutk@siapajar.id',
         password: defaultPassword,
         role: 'guru',
-        packageId: proPkg.id,
+        packageId: testingPackage.id,
         schoolName: 'TK Tunas Bangsa',
         educationLevel: 'tk',
         institutionType: 'tk',
@@ -144,5 +181,39 @@ export default class DatabaseSeeder extends BaseSeeder {
         defaultGroupContext: 'b',
       }
     )
+
+    // Normal teacher account keeps package limits available for quota testing.
+    await User.updateOrCreate(
+      { email: 'guru-normal@siapajar.id' },
+      {
+        fullName: 'Bu Dita',
+        email: 'guru-normal@siapajar.id',
+        password: defaultPassword,
+        role: 'guru',
+        packageId: freePkg.id,
+        schoolName: 'TK Contoh Terbatas',
+        educationLevel: 'tk',
+        institutionType: 'tk',
+        curriculumVersion: 'Kurikulum Merdeka',
+        defaultGroupContext: 'a',
+      }
+    )
+
+    const usersWithPackages = await User.query().whereNotNull('package_id')
+    for (const user of usersWithPackages) {
+      await PackageSubscription.updateOrCreate(
+        { userId: user.id, packageId: user.packageId!, status: 'active' },
+        {
+          userId: user.id,
+          packageId: user.packageId!,
+          status: 'active',
+          billingCycle: 'manual',
+          startsAt: user.createdAt,
+          endsAt: null,
+          canceledAt: null,
+          metadata: { source: 'database_seeder' },
+        }
+      )
+    }
   }
 }

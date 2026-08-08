@@ -34,9 +34,11 @@ interface UserProps {
 
 interface SettingsProps {
   readonly user: UserProps
+  readonly package: { displayName: string; priceMonthly: number } | null
+  readonly subscription: { startsAt: string; endsAt: string | null } | null
 }
 
-export default function Settings({ user }: SettingsProps) {
+export default function Settings({ user, package: packageData, subscription }: SettingsProps) {
   const isAdmin = user.role === 'admin'
   const [showConfirmModal, setShowConfirmModal] = React.useState(false)
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null)
@@ -87,6 +89,30 @@ export default function Settings({ user }: SettingsProps) {
       <Head title="Pengaturan — SiapAjar" />
 
       <div className="max-w-4xl mx-auto space-y-6">
+        {!isAdmin && packageData && (
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                Paket aktif
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
+                {packageData.displayName}
+              </h3>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Berlaku sampai{' '}
+                {subscription?.endsAt
+                  ? new Date(subscription.endsAt).toLocaleDateString('id-ID', { dateStyle: 'long' })
+                  : 'tidak dibatasi'}
+              </p>
+            </div>
+            <a
+              href="/my-package"
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            >
+              Lihat Paket Saya
+            </a>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className={cn('grid gap-6', !isAdmin && 'md:grid-cols-2')}>
             {/* User Profile Card */}

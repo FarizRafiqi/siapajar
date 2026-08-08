@@ -1,10 +1,19 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { createSettingsValidator, createAdminSettingsValidator } from '#validators/settings'
 import string from '@adonisjs/core/helpers/string'
+import PackageSubscription from '#models/package_subscription'
+import { DateTime } from 'luxon'
 
 export default class SettingsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
+    await user.load('package')
+    const subscription = await PackageSubscription.query()
+      .where('user_id', user.id)
+      .where('status', 'active')
+      .where((query) => query.whereNull('ends_at').orWhere('ends_at', '>', DateTime.now().toSQL()))
+      .orderBy('starts_at', 'desc')
+      .first()
 
     return inertia.render('dashboard/settings', {
       user: {
@@ -16,7 +25,10 @@ export default class SettingsController {
         educationLevel: user.educationLevel,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        kopSurat: user.kopSurat || {},
       },
+      package: user.package?.toJSON() ?? null,
+      subscription: subscription?.toJSON() ?? null,
     })
   }
 
@@ -34,6 +46,15 @@ export default class SettingsController {
       user.email = data.email
       user.schoolName = data.schoolName
       user.educationLevel = data.educationLevel
+
+      const currentKop = user.kopSurat || {}
+      const updatedKop = data.kopSurat || {}
+      user.kopSurat = {
+        ...currentKop,
+        ...updatedKop,
+        institutionName:
+          updatedKop.institutionName || data.schoolName || currentKop.institutionName,
+      }
     }
 
     const avatarFile = request.file('avatar', {
@@ -55,6 +76,26 @@ export default class SettingsController {
         }
 
         user.avatarUrl = `/uploads/avatars/${fileName}`
+      }
+    }
+
+    const logoFile = request.file('logo', {
+      size: '2mb',
+      extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    })
+
+    if (logoFile) {
+      const logoFileName = `logo_${string.uuid()}.${logoFile.extname}`
+      await logoFile.move('public/uploads/logos', {
+        name: logoFileName,
+        overwrite: true,
+      })
+
+      if (logoFile.isValid) {
+        user.kopSurat = {
+          ...user.kopSurat,
+          logoUrl: `/uploads/logos/${logoFileName}`,
+        }
       }
     }
 

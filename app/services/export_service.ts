@@ -7,6 +7,10 @@ import {
   AlignmentType,
   PageBreak,
   ImageRun,
+  Table,
+  TableCell,
+  TableRow,
+  WidthType,
 } from 'docx'
 import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
@@ -111,7 +115,7 @@ function metaParagraphs(meta: Array<[string, unknown]>) {
 
 function examHeaderParagraphs(exam: Exam, user: User) {
   const header = exam.header ?? {}
-  return [
+  const paragraphs = [
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [
@@ -146,10 +150,37 @@ function examHeaderParagraphs(exam: Exam, user: User) {
     ]),
     new Paragraph({ text: '' }),
   ]
+  if (typeof header.logoUrl === 'string' && header.logoUrl.startsWith('data:image/')) {
+    const [meta, encoded] = header.logoUrl.split(',')
+    const mime = meta.match(/^data:(image\/(?:png|jpeg));base64$/)?.[1]
+    if (encoded && mime) {
+      paragraphs.unshift(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new ImageRun({
+              data: Buffer.from(encoded, 'base64'),
+              type: mime === 'image/jpeg' ? 'jpg' : 'png',
+              transformation: { width: 72, height: 72 },
+            }),
+          ],
+        })
+      )
+    }
+  }
+  return paragraphs
 }
 
 function examQuestionType(q: Record<string, any>) {
-  if (q.type === 'multiple_choice' || Array.isArray(q.options)) return 'Pilihan Ganda'
+  if (
+    q.type === 'matching' ||
+    String(q.visualType || '')
+      .toLowerCase()
+      .includes('hubung')
+  )
+    return 'Hubungkan Garis'
+  if (q.type === 'multiple_choice' || (Array.isArray(q.options) && q.options.length > 0))
+    return 'Pilihan Ganda'
   if (q.type === 'essay') return 'Uraian'
   if (q.type === 'practical') return 'Praktik / Performa'
   if (q.type === 'oral') return 'Lisan'
@@ -157,7 +188,12 @@ function examQuestionType(q: Record<string, any>) {
 }
 
 function examQuestionParagraphs(q: Record<string, any>, number: number) {
-  const children = [
+  const isMatching =
+    q.type === 'matching' ||
+    String(q.visualType || '')
+      .toLowerCase()
+      .includes('hubung')
+  const children: (Paragraph | Table)[] = [
     new Paragraph({
       children: [
         new TextRun({ text: `${number}. ${q.question || 'Pertanyaan belum diisi.'}`, bold: true }),
@@ -166,7 +202,7 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
     new Paragraph({ text: `Bentuk: ${examQuestionType(q)}` }),
   ]
   if (q.instruction) children.push(new Paragraph({ text: `Petunjuk: ${q.instruction}` }))
-  if (Array.isArray(q.options)) {
+  if (!isMatching && Array.isArray(q.options) && q.options.length > 0) {
     for (const [index, option] of q.options.entries()) {
       const label =
         typeof option === 'string'
@@ -175,6 +211,30 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
       const text = typeof option === 'string' ? option : option.text || ''
       children.push(new Paragraph({ text: `${label}. ${text}` }))
     }
+  } else if (isMatching) {
+    const leftItems = Array.isArray(q.leftItems) ? q.leftItems : []
+    const rightItems = Array.isArray(q.rightItems) ? q.rightItems : []
+    const rowCount = Math.max(leftItems.length, rightItems.length, 2)
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: Array.from({ length: rowCount }, (_, index) => {
+          const left = leftItems[index]
+          const right = rightItems[index]
+          return new TableRow({
+            children: [
+              new TableCell({
+                children: [new Paragraph({ text: `●  ${left?.label || 'Item kiri'}` })],
+              }),
+              new TableCell({
+                children: [new Paragraph({ text: `${right?.label || 'Item kanan'}  ●` })],
+              }),
+            ],
+          })
+        }),
+      })
+    )
+    children.push(new Paragraph({ text: 'Hubungkan pasangan yang sesuai dengan garis.' }))
   } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
     for (let line = 0; line < 4; line++)
       children.push(

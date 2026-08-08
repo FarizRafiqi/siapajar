@@ -27,6 +27,14 @@ export interface ApiDefinition {
     store: typeof routes['onboarding.store']
   }
   dashboard: typeof routes['dashboard']
+  account: {
+    package: typeof routes['account.package']
+    usage: typeof routes['account.usage']
+    subscriptions: typeof routes['account.subscriptions']
+  }
+  glossary: {
+    index: typeof routes['glossary.index']
+  }
   curriculum: {
     index: typeof routes['curriculum.index']
     export: typeof routes['curriculum.export']
@@ -192,6 +200,10 @@ export interface ApiDefinition {
       store: typeof routes['admin.packages.store']
       update: typeof routes['admin.packages.update']
       destroy: typeof routes['admin.packages.destroy']
+    }
+    entitlements: {
+      index: typeof routes['admin.entitlements.index']
+      update: typeof routes['admin.entitlements.update']
     }
     academicYears: {
       index: typeof routes['admin.academic-years.index']
