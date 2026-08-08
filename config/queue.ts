@@ -21,5 +21,8 @@ export default defineConfig({
     maxRetries: env.get('AI_QUEUE_MAX_ATTEMPTS', 3),
     backoff: exponentialBackoff({ baseDelay: '1s', maxDelay: '1m' }),
   },
-  locations: ['./app/jobs/**/*.{ts,js}'],
+  // Dev/CI runs from the source tree (app/jobs/*.ts), production runs from the
+  // AdonisJS build output (build/app/jobs/*.js) — match both so the queue
+  // locator finds the jobs in every environment.
+  locations: ['./app/jobs/**/*.{ts,js}', './build/app/jobs/**/*.js'],
 })
