@@ -10,7 +10,6 @@ export const controllers = {
   AdminSchools: () => import('#controllers/admin_schools_controller'),
   AdminUsers: () => import('#controllers/admin_users_controller'),
   AnnualPlans: () => import('#controllers/annual_plans_controller'),
-  AssessmentAttachments: () => import('#controllers/assessment_attachments_controller'),
   Assessments: () => import('#controllers/assessments_controller'),
   Classes: () => import('#controllers/classes_controller'),
   Curriculum: () => import('#controllers/curriculum_controller'),
@@ -33,4 +32,5 @@ export const controllers = {
   Subjects: () => import('#controllers/subjects_controller'),
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
   WeeklyLessonPlans: () => import('#controllers/weekly_lesson_plans_controller'),
+  AssessmentAttachments: () => import('#controllers/assessment_attachments_controller'),
 }

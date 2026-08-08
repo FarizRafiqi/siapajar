@@ -29,6 +29,8 @@ export interface ApiDefinition {
   dashboard: typeof routes['dashboard']
   curriculum: {
     index: typeof routes['curriculum.index']
+    export: typeof routes['curriculum.export']
+    exportPdf: typeof routes['curriculum.exportPdf']
     objectives: {
       store: typeof routes['curriculum.objectives.store']
     }
@@ -99,6 +101,8 @@ export interface ApiDefinition {
   rppm: {
     index: typeof routes['rppm.index']
     show: typeof routes['rppm.show']
+    export: typeof routes['rppm.export']
+    exportPdf: typeof routes['rppm.exportPdf']
     update: typeof routes['rppm.update']
     destroy: typeof routes['rppm.destroy']
     generate: typeof routes['rppm.generate']
@@ -106,6 +110,8 @@ export interface ApiDefinition {
   rpph: {
     index: typeof routes['rpph.index']
     show: typeof routes['rpph.show']
+    export: typeof routes['rpph.export']
+    exportPdf: typeof routes['rpph.exportPdf']
     update: typeof routes['rpph.update']
     destroy: typeof routes['rpph.destroy']
     generate: typeof routes['rpph.generate']
@@ -113,6 +119,8 @@ export interface ApiDefinition {
   lkpd: {
     index: typeof routes['lkpd.index']
     show: typeof routes['lkpd.show']
+    export: typeof routes['lkpd.export']
+    exportPdf: typeof routes['lkpd.exportPdf']
     destroy: typeof routes['lkpd.destroy']
     generate: typeof routes['lkpd.generate']
   }
@@ -121,12 +129,19 @@ export interface ApiDefinition {
     show: typeof routes['media-modules.show']
     destroy: typeof routes['media-modules.destroy']
     generate: typeof routes['media-modules.generate']
+    exportPptx: typeof routes['media-modules.exportPptx']
+    exportPdf: typeof routes['media-modules.exportPdf']
   }
   paudAssessments: {
     index: typeof routes['paud-assessments.index']
     store: typeof routes['paud-assessments.store']
     update: typeof routes['paud-assessments.update']
     destroy: typeof routes['paud-assessments.destroy']
+    export: typeof routes['paud-assessments.export']
+    exportPdf: typeof routes['paud-assessments.exportPdf']
+    attachments: {
+      show: typeof routes['paud-assessments.attachments.show']
+    }
   }
   assessments: {
     index: typeof routes['assessments.index']
@@ -135,6 +150,8 @@ export interface ApiDefinition {
     updateScores: typeof routes['assessments.updateScores']
     destroy: typeof routes['assessments.destroy']
     export: typeof routes['assessments.export']
+    exportDocx: typeof routes['assessments.exportDocx']
+    exportPdf: typeof routes['assessments.exportPdf']
   }
   principal: {
     index: typeof routes['principal.index']
@@ -144,6 +161,7 @@ export interface ApiDefinition {
     index: typeof routes['report-cards.index']
     show: typeof routes['report-cards.show']
     exportPdf: typeof routes['report-cards.exportPdf']
+    exportDocx: typeof routes['report-cards.exportDocx']
     narratives: {
       save: typeof routes['report-cards.narratives.save']
       generate: typeof routes['report-cards.narratives.generate']
