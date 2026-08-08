@@ -1,5 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import Package from '#models/package'
+import PackageSubscription from '#models/package_subscription'
 import { randomBytes } from 'node:crypto'
 
 export default class GoogleAuthController {
@@ -58,6 +60,21 @@ export default class GoogleAuthController {
         googleId: googleUser.id,
         avatarUrl: googleUser.avatarUrl,
       })
+      const freePackage = await Package.findBy('name', 'free')
+      if (freePackage) {
+        user.packageId = freePackage.id
+        await user.save()
+        await PackageSubscription.create({
+          userId: user.id,
+          packageId: freePackage.id,
+          status: 'active',
+          billingCycle: 'manual',
+          startsAt: user.createdAt,
+          endsAt: null,
+          canceledAt: null,
+          metadata: { source: 'google_signup' },
+        })
+      }
     } else if (!user.googleId) {
       user.googleId = googleUser.id
       user.avatarUrl = user.avatarUrl ?? googleUser.avatarUrl

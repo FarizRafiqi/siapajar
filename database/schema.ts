@@ -23,22 +23,7 @@ export class AcademicYearSchema extends BaseModel {
 }
 
 export class AiJobSchema extends BaseModel {
-  static $columns = [
-    'attempts',
-    'availableAt',
-    'combo',
-    'createdAt',
-    'error',
-    'finishedAt',
-    'id',
-    'jobKey',
-    'payload',
-    'result',
-    'startedAt',
-    'status',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['attempts', 'availableAt', 'combo', 'createdAt', 'error', 'finishedAt', 'id', 'jobKey', 'payload', 'result', 'startedAt', 'status', 'updatedAt', 'userId'] as const
   $columns = AiJobSchema.$columns
   @column()
   declare attempts: number
@@ -71,21 +56,7 @@ export class AiJobSchema extends BaseModel {
 }
 
 export class AiSettingSchema extends BaseModel {
-  static $columns = [
-    'apiKey',
-    'authMode',
-    'baseUrl',
-    'createdAt',
-    'id',
-    'model',
-    'oauthAccessToken',
-    'oauthEmail',
-    'oauthExpiresAt',
-    'oauthProjectId',
-    'oauthRefreshToken',
-    'provider',
-    'updatedAt',
-  ] as const
+  static $columns = ['apiKey', 'authMode', 'baseUrl', 'createdAt', 'id', 'model', 'oauthAccessToken', 'oauthEmail', 'oauthExpiresAt', 'oauthProjectId', 'oauthRefreshToken', 'provider', 'updatedAt'] as const
   $columns = AiSettingSchema.$columns
   @column()
   declare apiKey: string | null
@@ -116,15 +87,7 @@ export class AiSettingSchema extends BaseModel {
 }
 
 export class AnnualPlanSchema extends BaseModel {
-  static $columns = [
-    'academicYearId',
-    'content',
-    'createdAt',
-    'id',
-    'subject',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['academicYearId', 'content', 'createdAt', 'id', 'subject', 'updatedAt', 'userId'] as const
   $columns = AnnualPlanSchema.$columns
   @column()
   declare academicYearId: number
@@ -142,20 +105,35 @@ export class AnnualPlanSchema extends BaseModel {
   declare userId: number
 }
 
+export class AssessmentAttachmentSchema extends BaseModel {
+  static $columns = ['assessmentId', 'createdAt', 'displayOrder', 'id', 'mimeType', 'originalName', 'size', 'storedName', 'updatedAt', 'url', 'userId'] as const
+  $columns = AssessmentAttachmentSchema.$columns
+  @column()
+  declare assessmentId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare displayOrder: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare mimeType: string
+  @column()
+  declare originalName: string
+  @column()
+  declare size: number
+  @column()
+  declare storedName: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare url: string
+  @column()
+  declare userId: number
+}
+
 export class AssessmentSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'createdAt',
-    'date',
-    'id',
-    'learningObjective',
-    'semesterId',
-    'subject',
-    'title',
-    'type',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['classId', 'createdAt', 'date', 'id', 'learningObjective', 'semesterId', 'subject', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = AssessmentSchema.$columns
   @column()
   declare classId: number
@@ -181,17 +159,31 @@ export class AssessmentSchema extends BaseModel {
   declare userId: number
 }
 
+export class AuditLogSchema extends BaseModel {
+  static $columns = ['action', 'actorId', 'createdAt', 'entityId', 'entityType', 'id', 'ipAddress', 'metadata', 'userAgent'] as const
+  $columns = AuditLogSchema.$columns
+  @column()
+  declare action: string
+  @column()
+  declare actorId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare entityId: string | null
+  @column()
+  declare entityType: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare ipAddress: string | null
+  @column()
+  declare metadata: any
+  @column()
+  declare userAgent: string | null
+}
+
 export class ClassSchema extends BaseModel {
-  static $columns = [
-    'academicYearId',
-    'createdAt',
-    'gradeLevel',
-    'groupContext',
-    'id',
-    'name',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['academicYearId', 'createdAt', 'gradeLevel', 'groupContext', 'id', 'name', 'updatedAt', 'userId'] as const
   $columns = ClassSchema.$columns
   @column()
   declare academicYearId: number
@@ -212,18 +204,7 @@ export class ClassSchema extends BaseModel {
 }
 
 export class CurriculumCpSchema extends BaseModel {
-  static $columns = [
-    'code',
-    'createdAt',
-    'curriculumVersion',
-    'description',
-    'element',
-    'id',
-    'isOfficial',
-    'phase',
-    'title',
-    'updatedAt',
-  ] as const
+  static $columns = ['code', 'createdAt', 'curriculumVersion', 'description', 'element', 'id', 'isOfficial', 'phase', 'title', 'updatedAt'] as const
   $columns = CurriculumCpSchema.$columns
   @column()
   declare code: string
@@ -248,17 +229,7 @@ export class CurriculumCpSchema extends BaseModel {
 }
 
 export class DailyLessonPlanSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'content',
-    'createdAt',
-    'date',
-    'id',
-    'status',
-    'updatedAt',
-    'userId',
-    'weeklyLessonPlanId',
-  ] as const
+  static $columns = ['classId', 'content', 'createdAt', 'date', 'id', 'status', 'updatedAt', 'userId', 'weeklyLessonPlanId'] as const
   $columns = DailyLessonPlanSchema.$columns
   @column()
   declare classId: number
@@ -280,23 +251,40 @@ export class DailyLessonPlanSchema extends BaseModel {
   declare weeklyLessonPlanId: number | null
 }
 
+export class DocumentWorkflowSchema extends BaseModel {
+  static $columns = ['createdAt', 'documentId', 'documentType', 'id', 'lastSavedAt', 'status', 'templateKey', 'updatedAt', 'userId', 'version'] as const
+  $columns = DocumentWorkflowSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare documentId: number
+  @column()
+  declare documentType: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare lastSavedAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare templateKey: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+  @column()
+  declare version: number
+}
+
 export class ExamSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'createdAt',
-    'id',
-    'questions',
-    'status',
-    'title',
-    'type',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['classId', 'createdAt', 'header', 'id', 'questions', 'status', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = ExamSchema.$columns
   @column()
   declare classId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare header: any
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -314,17 +302,7 @@ export class ExamSchema extends BaseModel {
 }
 
 export class IktpIndicatorSchema extends BaseModel {
-  static $columns = [
-    'achievementCriteria',
-    'createdAt',
-    'description',
-    'evidenceType',
-    'id',
-    'isActive',
-    'learningObjectiveId',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['achievementCriteria', 'createdAt', 'description', 'evidenceType', 'id', 'isActive', 'learningObjectiveId', 'updatedAt', 'userId'] as const
   $columns = IktpIndicatorSchema.$columns
   @column()
   declare achievementCriteria: string
@@ -347,18 +325,7 @@ export class IktpIndicatorSchema extends BaseModel {
 }
 
 export class LearningObjectiveSchema extends BaseModel {
-  static $columns = [
-    'code',
-    'cpId',
-    'createdAt',
-    'groupContext',
-    'id',
-    'isActive',
-    'source',
-    'title',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['code', 'cpId', 'createdAt', 'groupContext', 'id', 'isActive', 'source', 'title', 'updatedAt', 'userId'] as const
   $columns = LearningObjectiveSchema.$columns
   @column()
   declare code: string
@@ -383,19 +350,7 @@ export class LearningObjectiveSchema extends BaseModel {
 }
 
 export class LearningSequenceSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'curriculumVersion',
-    'educationLevel',
-    'groupContext',
-    'id',
-    'items',
-    'schoolId',
-    'status',
-    'title',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'curriculumVersion', 'educationLevel', 'groupContext', 'id', 'items', 'schoolId', 'status', 'title', 'updatedAt', 'userId'] as const
   $columns = LearningSequenceSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -422,20 +377,7 @@ export class LearningSequenceSchema extends BaseModel {
 }
 
 export class LkpdSchema extends BaseModel {
-  static $columns = [
-    'ageGroup',
-    'classId',
-    'content',
-    'createdAt',
-    'id',
-    'institutionType',
-    'status',
-    'subtheme',
-    'theme',
-    'title',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['ageGroup', 'classId', 'content', 'createdAt', 'id', 'institutionType', 'status', 'subtheme', 'theme', 'title', 'updatedAt', 'userId'] as const
   $columns = LkpdSchema.$columns
   @column()
   declare ageGroup: string | null
@@ -464,19 +406,7 @@ export class LkpdSchema extends BaseModel {
 }
 
 export class MediaModuleSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'createdAt',
-    'id',
-    'loosePartsGuide',
-    'slides',
-    'status',
-    'subtheme',
-    'theme',
-    'title',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['classId', 'createdAt', 'id', 'loosePartsGuide', 'slides', 'status', 'subtheme', 'theme', 'title', 'updatedAt', 'userId'] as const
   $columns = MediaModuleSchema.$columns
   @column()
   declare classId: number
@@ -503,15 +433,7 @@ export class MediaModuleSchema extends BaseModel {
 }
 
 export class PackageEntitlementSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'featureKey',
-    'id',
-    'isEnabled',
-    'limitValue',
-    'packageId',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'featureKey', 'id', 'isEnabled', 'limitValue', 'packageId', 'updatedAt'] as const
   $columns = PackageEntitlementSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -529,22 +451,35 @@ export class PackageEntitlementSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class PackageSubscriptionSchema extends BaseModel {
+  static $columns = ['billingCycle', 'canceledAt', 'createdAt', 'endsAt', 'id', 'metadata', 'packageId', 'startsAt', 'status', 'updatedAt', 'userId'] as const
+  $columns = PackageSubscriptionSchema.$columns
+  @column()
+  declare billingCycle: string
+  @column.dateTime()
+  declare canceledAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.dateTime()
+  declare endsAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: any
+  @column()
+  declare packageId: number | null
+  @column.dateTime()
+  declare startsAt: DateTime
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class PackageSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'ctaLabel',
-    'description',
-    'displayName',
-    'features',
-    'id',
-    'isActive',
-    'isHighlighted',
-    'name',
-    'priceMonthly',
-    'priceYearly',
-    'sortOrder',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'ctaLabel', 'description', 'displayName', 'features', 'id', 'isActive', 'isHighlighted', 'name', 'priceMonthly', 'priceYearly', 'sortOrder', 'updatedAt'] as const
   $columns = PackageSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -575,25 +510,7 @@ export class PackageSchema extends BaseModel {
 }
 
 export class PaudAssessmentSchema extends BaseModel {
-  static $columns = [
-    'achievementStatus',
-    'activity',
-    'classId',
-    'content',
-    'createdAt',
-    'date',
-    'evidenceType',
-    'evidenceUrl',
-    'id',
-    'iktpIndicatorId',
-    'learningObjectiveId',
-    'semesterId',
-    'studentId',
-    'teacherNote',
-    'type',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['achievementStatus', 'activity', 'classId', 'content', 'createdAt', 'date', 'evidenceType', 'evidenceUrl', 'id', 'iktpIndicatorId', 'learningObjectiveId', 'semesterId', 'studentId', 'teacherNote', 'type', 'updatedAt', 'userId'] as const
   $columns = PaudAssessmentSchema.$columns
   @column()
   declare achievementStatus: string | null
@@ -649,19 +566,7 @@ export class RememberMeTokenSchema extends BaseModel {
 }
 
 export class ReportNarrativeSchema extends BaseModel {
-  static $columns = [
-    'approvedAt',
-    'classId',
-    'content',
-    'createdAt',
-    'element',
-    'id',
-    'semesterId',
-    'status',
-    'studentId',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['approvedAt', 'classId', 'content', 'createdAt', 'element', 'id', 'semesterId', 'status', 'studentId', 'updatedAt', 'userId'] as const
   $columns = ReportNarrativeSchema.$columns
   @column.dateTime()
   declare approvedAt: DateTime | null
@@ -703,15 +608,7 @@ export class SchoolSchema extends BaseModel {
 }
 
 export class ScoreSchema extends BaseModel {
-  static $columns = [
-    'assessmentId',
-    'createdAt',
-    'id',
-    'note',
-    'studentId',
-    'updatedAt',
-    'value',
-  ] as const
+  static $columns = ['assessmentId', 'createdAt', 'id', 'note', 'studentId', 'updatedAt', 'value'] as const
   $columns = ScoreSchema.$columns
   @column()
   declare assessmentId: number
@@ -730,16 +627,7 @@ export class ScoreSchema extends BaseModel {
 }
 
 export class SemesterPlanSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'content',
-    'createdAt',
-    'id',
-    'semesterId',
-    'subject',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'semesterId', 'subject', 'updatedAt', 'userId'] as const
   $columns = SemesterPlanSchema.$columns
   @column()
   declare classId: number
@@ -796,16 +684,7 @@ export class StudentSchema extends BaseModel {
 }
 
 export class SubjectSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'educationLevel',
-    'gradeLevel',
-    'id',
-    'isActive',
-    'name',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'educationLevel', 'gradeLevel', 'id', 'isActive', 'name', 'updatedAt', 'userId'] as const
   $columns = SubjectSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -826,18 +705,7 @@ export class SubjectSchema extends BaseModel {
 }
 
 export class TeachingModuleSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'content',
-    'createdAt',
-    'id',
-    'phase',
-    'status',
-    'subject',
-    'title',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'phase', 'status', 'subject', 'title', 'updatedAt', 'userId'] as const
   $columns = TeachingModuleSchema.$columns
   @column()
   declare classId: number
@@ -862,16 +730,7 @@ export class TeachingModuleSchema extends BaseModel {
 }
 
 export class UsageEventSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'eventKey',
-    'id',
-    'metadata',
-    'periodStart',
-    'quantity',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'eventKey', 'id', 'metadata', 'periodStart', 'quantity', 'reservationKey', 'updatedAt', 'userId'] as const
   $columns = UsageEventSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -885,6 +744,8 @@ export class UsageEventSchema extends BaseModel {
   declare periodStart: DateTime
   @column()
   declare quantity: number
+  @column()
+  declare reservationKey: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -892,24 +753,7 @@ export class UsageEventSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'avatarUrl',
-    'createdAt',
-    'curriculumVersion',
-    'defaultGroupContext',
-    'educationLevel',
-    'email',
-    'fullName',
-    'googleId',
-    'id',
-    'institutionType',
-    'packageId',
-    'password',
-    'role',
-    'schoolId',
-    'schoolName',
-    'updatedAt',
-  ] as const
+  static $columns = ['avatarUrl', 'createdAt', 'curriculumVersion', 'defaultGroupContext', 'educationLevel', 'email', 'fullName', 'googleId', 'id', 'institutionType', 'kopSurat', 'packageId', 'password', 'role', 'schoolId', 'schoolName', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -932,6 +776,8 @@ export class UserSchema extends BaseModel {
   @column()
   declare institutionType: string | null
   @column()
+  declare kopSurat: any | null
+  @column()
   declare packageId: number | null
   @column({ serializeAs: null })
   declare password: string | null
@@ -946,17 +792,7 @@ export class UserSchema extends BaseModel {
 }
 
 export class WeeklyLessonPlanSchema extends BaseModel {
-  static $columns = [
-    'classId',
-    'content',
-    'createdAt',
-    'id',
-    'status',
-    'theme',
-    'updatedAt',
-    'userId',
-    'weekStartDate',
-  ] as const
+  static $columns = ['classId', 'content', 'createdAt', 'id', 'status', 'theme', 'updatedAt', 'userId', 'weekStartDate'] as const
   $columns = WeeklyLessonPlanSchema.$columns
   @column()
   declare classId: number

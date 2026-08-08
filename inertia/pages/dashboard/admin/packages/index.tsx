@@ -1,11 +1,11 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm } from '@inertiajs/react'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Plus, Trash2, Pencil, Star } from 'lucide-react'
 import { cn } from '~/lib/utils'
-import RichTextEditor from '~/components/ui/rich-text-editor'
 import { packageFeaturesToHtml, sanitizeRichText } from '~/lib/rich-text'
-import { InputGroup } from '@heroui/react'
+
+const RichTextEditor = lazy(() => import('~/components/ui/rich-text-editor'))
 
 interface Package {
   id: number
@@ -128,74 +128,78 @@ export default function AdminPackagesIndex({ packages }: AdminPackagesIndexProps
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className="flex flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    {pkg.displayName}
-                  </h3>
-                  {pkg.isHighlighted && (
-                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleOpenEdit(pkg)}
-                    className="rounded-lg p-1 text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setDeletingPackage(pkg)}
-                    className="rounded-lg p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                {pkg.description}
-              </p>
-              <p className="mt-2 text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                {pkg.priceMonthly === 0
-                  ? 'Gratis'
-                  : `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`}
-                {pkg.priceMonthly > 0 && (
-                  <span className="text-sm font-normal text-neutral-500">/bulan</span>
-                )}
-              </p>
-              {pkg.features.length === 1 && /<\/?[a-z][^>]*>/i.test(pkg.features[0]) ? (
-                <div
-                  className="rich-text-content prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: sanitizeRichText(pkg.features[0]) }}
-                />
-              ) : pkg.features.length > 0 ? (
-                <ul className="mt-3 flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
-                  {pkg.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-1.5">
-                      <span className="text-emerald-500">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <button
-                onClick={() => handleToggleActive(pkg)}
-                className={cn(
-                  'mt-3 w-full rounded-lg px-3 py-1.5 text-sm font-medium',
-                  pkg.isActive
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                )}
+          {packages.map((pkg) => {
+            const features = Array.isArray(pkg.features) ? pkg.features : []
+
+            return (
+              <div
+                key={pkg.id}
+                className="flex flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
               >
-                {pkg.isActive ? 'Aktif' : 'Nonaktif'}
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-semibold text-neutral-900 dark:text-white">
+                      {pkg.displayName}
+                    </h3>
+                    {pkg.isHighlighted && (
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEdit(pkg)}
+                      className="rounded-lg p-1 text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeletingPackage(pkg)}
+                      className="rounded-lg p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  {pkg.description}
+                </p>
+                <p className="mt-2 text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                  {pkg.priceMonthly === 0
+                    ? 'Gratis'
+                    : `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`}
+                  {pkg.priceMonthly > 0 && (
+                    <span className="text-sm font-normal text-neutral-500">/bulan</span>
+                  )}
+                </p>
+                {features.length === 1 && /<\/?[a-z][^>]*>/i.test(features[0]) ? (
+                  <div
+                    className="rich-text-content prose prose-sm mt-3 max-w-none flex-1 text-neutral-600 dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(features[0]) }}
+                  />
+                ) : features.length > 0 ? (
+                  <ul className="mt-3 flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
+                    {features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-1.5">
+                        <span className="text-emerald-500">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <button
+                  onClick={() => handleToggleActive(pkg)}
+                  className={cn(
+                    'mt-3 w-full rounded-lg px-3 py-1.5 text-sm font-medium',
+                    pkg.isActive
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                  )}
+                >
+                  {pkg.isActive ? 'Aktif' : 'Nonaktif'}
+                </button>
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -354,17 +358,19 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           >
             Harga Bulanan
           </label>
-          <InputGroup fullWidth className="mt-1">
-            <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
-            <InputGroup.Input
-              className="!rounded-none !rounded-r-lg"
+          <div className="mt-1 flex">
+            <span className="inline-flex items-center rounded-l-lg border border-r-0 border-neutral-300 bg-neutral-100 px-3 text-sm font-medium text-neutral-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+              Rp
+            </span>
+            <input
+              className="min-w-0 flex-1 rounded-r-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               id={`${idPrefix}-priceMonthly`}
               type="number"
               value={String(data.priceMonthly)}
               onChange={(e) => setData('priceMonthly', Number(e.target.value))}
               aria-label="Harga bulanan"
             />
-          </InputGroup>
+          </div>
           {errors.priceMonthly && (
             <p className="mt-1 text-sm text-red-500">{errors.priceMonthly}</p>
           )}
@@ -376,17 +382,19 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
           >
             Harga Tahunan
           </label>
-          <InputGroup fullWidth className="mt-1">
-            <InputGroup.Prefix className="!rounded-l-lg !rounded-r-none">Rp</InputGroup.Prefix>
-            <InputGroup.Input
-              className="!rounded-none !rounded-r-lg"
+          <div className="mt-1 flex">
+            <span className="inline-flex items-center rounded-l-lg border border-r-0 border-neutral-300 bg-neutral-100 px-3 text-sm font-medium text-neutral-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+              Rp
+            </span>
+            <input
+              className="min-w-0 flex-1 rounded-r-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               id={`${idPrefix}-priceYearly`}
               type="number"
               value={String(data.priceYearly)}
               onChange={(e) => setData('priceYearly', Number(e.target.value))}
               aria-label="Harga tahunan"
             />
-          </InputGroup>
+          </div>
         </div>
       </div>
       <div>
@@ -396,11 +404,19 @@ function PackageForm({ form, idPrefix, hideName }: PackageFormProps) {
         >
           Benefit / Fitur
         </label>
-        <RichTextEditor
-          value={data.features}
-          onChange={(value) => setData('features', value)}
-          placeholder="Tuliskan benefit paket dengan daftar, penebalan, atau tautan..."
-        />
+        <Suspense
+          fallback={
+            <div className="rounded-lg border border-neutral-300 bg-neutral-50 p-3 text-sm text-neutral-500 dark:border-neutral-600 dark:bg-neutral-800">
+              Memuat editor...
+            </div>
+          }
+        >
+          <RichTextEditor
+            value={data.features}
+            onChange={(value) => setData('features', value)}
+            placeholder="Tuliskan benefit paket dengan daftar, penebalan, atau tautan..."
+          />
+        </Suspense>
         {errors.features && <p className="mt-1 text-sm text-red-500">{errors.features}</p>}
       </div>
       <div>

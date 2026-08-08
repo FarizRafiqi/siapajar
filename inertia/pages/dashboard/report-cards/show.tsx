@@ -195,6 +195,12 @@ export default function ReportCardShow({
                           <Download className="h-3.5 w-3.5" />
                           PDF
                         </a>
+                        <a
+                          href={`/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/export/docx`}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        >
+                          DOCX
+                        </a>
                       </td>
                     </tr>
                   ))}
@@ -226,6 +232,12 @@ export default function ReportCardShow({
                   >
                     <Download className="h-3.5 w-3.5" />
                     PDF
+                  </a>
+                  <a
+                    href={`/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/export/docx`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  >
+                    DOCX
                   </a>
                 </div>
                 {student.entries.length === 0 ? (

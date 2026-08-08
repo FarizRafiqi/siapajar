@@ -7,6 +7,11 @@ import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { mediaModulePrompt } from '#services/ai_prompts'
 import LearningSequence from '#models/learning_sequence'
+import {
+  exportMediaModulePdf,
+  exportMediaModulePptx,
+  safeFilename,
+} from '#services/media_module_export_service'
 
 export default class MediaModulesController {
   async index({ inertia, auth }: HttpContext) {
@@ -93,18 +98,40 @@ export default class MediaModulesController {
     const subTitle = subtheme ? ` - ${subtheme}` : ''
     const title = `Media Ajar & Loose Parts: ${theme}${subTitle}`
 
+    const slides = Array.isArray(result.slides) ? result.slides : []
+    let imageQuotaWarning = false
+    for (const slide of slides) {
+      const imagePrompt = typeof slide.imagePrompt === 'string' ? slide.imagePrompt.trim() : ''
+      if (!imagePrompt) continue
+      try {
+        slide.imageUrl = await aiQueueService.enqueueAiImage({
+          userId: user.id,
+          prompt: imagePrompt,
+        })
+      } catch {
+        imageQuotaWarning = true
+        slide.imageUrl = ''
+      }
+    }
+
     const mediaModule = await MediaModule.create({
       userId: user.id,
       classId,
       title,
       theme,
       subtheme: subtheme || null,
-      slides: Array.isArray(result.slides) ? result.slides : [],
+      slides,
       loosePartsGuide: result.loosePartsGuide || null,
       status: 'draft',
     })
 
-    session.flash('success', 'Media Ajar & Outline Slide berhasil digenerate')
+    session.flash('success', 'Media Ajar berhasil dibuat')
+    if (imageQuotaWarning) {
+      session.flash(
+        'error',
+        'Sebagian ilustrasi belum tersedia karena quota gambar atau provider AI.'
+      )
+    }
     return response.redirect().toRoute('media-modules.show', { id: mediaModule.id })
   }
 
@@ -123,5 +150,50 @@ export default class MediaModulesController {
 
     session.flash('success', 'Media Ajar berhasil dihapus')
     return response.redirect().toRoute('media-modules.index')
+  }
+
+  async exportPptx({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const mediaModule = await MediaModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+
+    if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
+
+    const isPreview = request.input('disposition') === 'inline'
+    const buffer = await exportMediaModulePptx(mediaModule, user, !isPreview)
+    response.header(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    )
+    const disposition = request.input('disposition') === 'inline' ? 'inline' : 'attachment'
+    response.header(
+      'Content-Disposition',
+      `${disposition}; filename="${safeFilename(mediaModule.title)}.pptx"`
+    )
+    return response.send(buffer)
+  }
+
+  async exportPdf({ params, request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const mediaModule = await MediaModule.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('schoolClass')
+      .first()
+
+    if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
+
+    const isPreview = request.input('disposition') === 'inline'
+    const buffer = await exportMediaModulePdf(mediaModule, user, !isPreview)
+    response.header('Content-Type', 'application/pdf')
+    const disposition = request.input('disposition') === 'inline' ? 'inline' : 'attachment'
+    response.header(
+      'Content-Disposition',
+      `${disposition}; filename="${safeFilename(mediaModule.title)}.pdf"`
+    )
+    return response.send(buffer)
   }
 }

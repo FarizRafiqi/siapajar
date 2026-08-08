@@ -111,73 +111,86 @@ export default function AdminUsersIndex({ users, packages, schools }: AdminUsers
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {user.fullName || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {user.email}
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={user.school?.id ?? ''}
-                        onChange={(e) => handleSchoolChange(user, e.target.value)}
-                        className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                      >
-                        <option value="">Belum ditautkan</option>
-                        {schools.map((school) => (
-                          <option key={school.id} value={school.id}>
-                            {school.name}
-                          </option>
-                        ))}
-                      </select>
-                      {user.educationLevel && (
-                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                          {user.educationLevel.toUpperCase()}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user, e.target.value)}
-                        className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                      >
-                        {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                          <option key={value} value={value}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={user.package?.id ?? ''}
-                        onChange={(e) => handlePackageChange(user, e.target.value)}
-                        className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                      >
-                        <option value="">Tanpa paket</option>
-                        {packages.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.displayName}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setDeletingUser(user)}
-                        className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12 text-center">
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        Belum ada pengguna
+                      </p>
+                      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Belum ada akun pengguna yang terdaftar di sistem.
+                      </p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  users.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                        {user.fullName || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        {user.email}
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={user.school?.id ?? ''}
+                          onChange={(e) => handleSchoolChange(user, e.target.value)}
+                          className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        >
+                          <option value="">Belum ditautkan</option>
+                          {schools.map((school) => (
+                            <option key={school.id} value={school.id}>
+                              {school.name}
+                            </option>
+                          ))}
+                        </select>
+                        {user.educationLevel && (
+                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            {user.educationLevel.toUpperCase()}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user, e.target.value)}
+                          className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        >
+                          {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={user.package?.id ?? ''}
+                          onChange={(e) => handlePackageChange(user, e.target.value)}
+                          className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        >
+                          <option value="">Tanpa paket</option>
+                          {packages.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.displayName}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setDeletingUser(user)}
+                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

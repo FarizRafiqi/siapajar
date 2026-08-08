@@ -26,6 +26,10 @@ interface ResolvedProvider {
   oauthProjectId: string | null
 }
 
+const GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-image'
+const MAX_INLINE_IMAGE_BYTES = 8 * 1024 * 1024
+const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
+
 async function resolveProvider(): Promise<ResolvedProvider> {
   const setting = await AiSetting.current()
 
@@ -211,6 +215,89 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
   const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
   return text
+}
+
+/**
+ * Generate a question illustration with the configured Gemini credentials.
+ *
+ * Gemini image responses contain inlineData, so the returned data URL is
+ * self-contained and remains usable when the question is rendered/exported.
+ * This deliberately does not expose credentials or persist provider response
+ * metadata in the question payload.
+ */
+export async function generateGeminiImage(prompt: string): Promise<string | null> {
+  const normalizedPrompt = prompt.trim()
+  if (!normalizedPrompt) return null
+
+  const resolved = await resolveProvider()
+  if (resolved.provider !== 'gemini') return null
+
+  let accessToken: string | null = null
+  if (resolved.authMode === 'oauth') {
+    accessToken = await refreshGeminiAccessToken(resolved)
+    if (!resolved.oauthProjectId) {
+      throw new AiServiceError('Google Cloud Project ID Gemini belum diisi.')
+    }
+  } else if (!resolved.apiKey) {
+    throw new AiServiceError('API key Gemini belum diisi. Atur di halaman Konfigurasi AI.')
+  }
+
+  const baseUrl = resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1'
+  const url = `${trimTrailingSlashes(baseUrl)}/models/${GEMINI_IMAGE_MODEL}:generateContent`
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken
+          ? {
+              'Authorization': `Bearer ${accessToken}`,
+              'x-goog-user-project': resolved.oauthProjectId!,
+            }
+          : { 'x-goog-api-key': resolved.apiKey! }),
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: normalizedPrompt }] }],
+        generationConfig: {
+          responseModalities: ['IMAGE'],
+          imageConfig: { aspectRatio: '4:3', imageSize: '1K' },
+        },
+      }),
+    },
+    90_000
+  )
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new AiServiceError(
+      `Gemini gagal membuat ilustrasi (status ${response.status}). ${body ? body.slice(0, 200) : 'Coba lagi.'}`
+    )
+  }
+
+  const payload = (await response.json()) as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }> }
+    }>
+  }
+  const imagePart = payload.candidates
+    ?.flatMap((candidate) => candidate.content?.parts || [])
+    .find((part) => part.inlineData?.data && part.inlineData.mimeType)?.inlineData
+
+  if (
+    !imagePart?.data ||
+    !imagePart.mimeType ||
+    !ALLOWED_IMAGE_MIME_TYPES.has(imagePart.mimeType)
+  ) {
+    throw new AiServiceError('Gemini tidak mengembalikan format gambar yang didukung.')
+  }
+
+  const imageBytes = Buffer.from(imagePart.data, 'base64')
+  if (!imageBytes.length || imageBytes.length > MAX_INLINE_IMAGE_BYTES) {
+    throw new AiServiceError('Ukuran ilustrasi dari Gemini tidak aman untuk disimpan.')
+  }
+
+  return `data:${imagePart.mimeType};base64,${imageBytes.toString('base64')}`
 }
 
 async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<string> {

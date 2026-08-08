@@ -10,6 +10,14 @@ import {
   updateSequenceValidator,
 } from '#validators/curriculum'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import { exportCurriculum } from '#services/export_service'
+import { exportCurriculumPdf } from '#services/pdf_export_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class CurriculumController {
   async index({ inertia, auth }: HttpContext) {
@@ -32,6 +40,37 @@ export default class CurriculumController {
         defaultGroupContext: user.defaultGroupContext,
       },
     })
+  }
+
+  async export({ response, auth }: HttpContext) {
+    const user = auth.user!
+    const { cps, sequences } = await this.exportData(user.id)
+    const buffer = await exportCurriculum(cps, sequences, user)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(
+        ['Kurikulum', user.institutionType?.toUpperCase() || user.educationLevel],
+        'docx'
+      )
+    )
+  }
+
+  async exportPdf({ request, response, auth }: HttpContext) {
+    const user = auth.user!
+    const { cps, sequences } = await this.exportData(user.id)
+    const buffer = await exportCurriculumPdf(cps, sequences, user, !wantsInlinePreview(request))
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(
+        ['Kurikulum', user.institutionType?.toUpperCase() || user.educationLevel],
+        'pdf'
+      ),
+      { inline: wantsInlinePreview(request) }
+    )
   }
 
   async storeObjective({ request, response, session, auth }: HttpContext) {
@@ -112,5 +151,20 @@ export default class CurriculumController {
       .count('* as total')
     if (Number(count[0].$extras.total) !== new Set(ids).size)
       throw new Error('TP tidak valid atau bukan milik pengguna')
+  }
+
+  private async exportData(userId: number) {
+    const cps = await CurriculumCp.query()
+      .preload('learningObjectives', (query) => {
+        query.where((q) => q.whereNull('user_id').orWhere('user_id', userId)).preload('indicators')
+      })
+      .orderBy('id')
+    const sequences = await LearningSequence.query()
+      .where('user_id', userId)
+      .orderBy('updated_at', 'desc')
+    return {
+      cps: cps.map((cp) => cp.toJSON()),
+      sequences: sequences.map((sequence) => sequence.toJSON()),
+    }
   }
 }

@@ -11,6 +11,12 @@ import { annualPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import LearningSequence from '#models/learning_sequence'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 export default class AnnualPlansController {
   async index({ inertia, auth }: HttpContext) {
@@ -66,18 +72,15 @@ export default class AnnualPlansController {
     }
 
     const buffer = await exportAnnualPlan(annualPlan, user)
-    response.header(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.docx,
+      exportFilename(['Prota', annualPlan.subject], 'docx')
     )
-    response.header(
-      'Content-Disposition',
-      `attachment; filename="Protah ${annualPlan.subject}.docx"`
-    )
-    return response.send(buffer)
   }
 
-  async exportPdf({ params, response, auth }: HttpContext) {
+  async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
     const annualPlan = await AnnualPlan.query()
       .where('id', params.id)
@@ -88,13 +91,14 @@ export default class AnnualPlansController {
       return response.redirect('/annual-plans')
     }
 
-    const buffer = await exportAnnualPlanPdf(annualPlan, user)
-    response.header('Content-Type', 'application/pdf')
-    response.header(
-      'Content-Disposition',
-      `attachment; filename="Protah ${annualPlan.subject}.pdf"`
+    const buffer = await exportAnnualPlanPdf(annualPlan, user, !wantsInlinePreview(request))
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['Prota', annualPlan.subject], 'pdf'),
+      { inline: wantsInlinePreview(request) }
     )
-    return response.send(buffer)
   }
 
   async store({ request, response, session, auth }: HttpContext) {

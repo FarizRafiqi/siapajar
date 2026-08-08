@@ -187,9 +187,81 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'account.package': {
+    methods: ["GET","HEAD"]
+    pattern: '/my-package'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'account.usage': {
+    methods: ["GET","HEAD"]
+    pattern: '/usage'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'account.subscriptions': {
+    methods: ["GET","HEAD"]
+    pattern: '/subscriptions'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'glossary.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/glossary'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'curriculum.index': {
     methods: ["GET","HEAD"]
     pattern: '/curriculum'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/curriculum/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/curriculum/export/pdf'
     types: {
       body: {}
       paramsTuple: []
@@ -799,6 +871,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'rppm.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/rppm/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rppm.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/rppm/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'rppm.update': {
     methods: ["PUT"]
     pattern: '/rppm/:id'
@@ -859,6 +955,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'rpph.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/rpph/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'rpph.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/rpph/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'rpph.update': {
     methods: ["PUT"]
     pattern: '/rpph/:id'
@@ -910,6 +1030,30 @@ export interface Registry {
   'lkpd.show': {
     methods: ["GET","HEAD"]
     pattern: '/lkpd/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lkpd.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lkpd.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd/:id/export/pdf'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -991,6 +1135,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'media-modules.exportPptx': {
+    methods: ["GET","HEAD"]
+    pattern: '/media-modules/:id/export/pptx'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'media-modules.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/media-modules/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'paud-assessments.index': {
     methods: ["GET","HEAD"]
     pattern: '/paud-assessments'
@@ -1034,6 +1202,42 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments/:id/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.attachments.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments/:id/attachments/:attachmentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; attachmentId: ParamValue }
       query: {}
       response: unknown
       errorResponse: unknown
@@ -1111,6 +1315,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'assessments.exportDocx': {
+    methods: ["GET","HEAD"]
+    pattern: '/assessments/:id/export/docx'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'assessments.exportPdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/assessments/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'principal.index': {
     methods: ["GET","HEAD"]
     pattern: '/principal'
@@ -1162,6 +1390,18 @@ export interface Registry {
   'report-cards.exportPdf': {
     methods: ["GET","HEAD"]
     pattern: '/report-cards/:classId/:semesterId/:studentId/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue, ParamValue]
+      params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'report-cards.exportDocx': {
+    methods: ["GET","HEAD"]
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export/docx'
     types: {
       body: {}
       paramsTuple: [ParamValue, ParamValue, ParamValue]
@@ -1366,6 +1606,30 @@ export interface Registry {
   'admin.packages.destroy': {
     methods: ["DELETE"]
     pattern: '/admin/packages/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.entitlements.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/entitlements'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.entitlements.update': {
+    methods: ["PUT"]
+    pattern: '/admin/entitlements/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]

@@ -3,6 +3,8 @@ import User from '#models/user'
 import Package from '#models/package'
 import School from '#models/school'
 import { updateUserRoleValidator } from '#validators/admin'
+import PackageSubscription from '#models/package_subscription'
+import { DateTime } from 'luxon'
 
 export default class AdminUsersController {
   async index({ inertia }: HttpContext) {
@@ -34,6 +36,7 @@ export default class AdminUsersController {
     }
 
     const data = await request.validateUsing(updateUserRoleValidator)
+    const previousPackageId = user.packageId
     user.merge(data)
 
     if (data.schoolId !== undefined) {
@@ -42,6 +45,26 @@ export default class AdminUsersController {
     }
 
     await user.save()
+
+    if (data.packageId !== undefined && data.packageId !== previousPackageId) {
+      await PackageSubscription.query().where('user_id', user.id).where('status', 'active').update({
+        status: 'canceled',
+        canceled_at: DateTime.now().toSQL(),
+        updated_at: DateTime.now().toSQL(),
+      })
+      if (data.packageId) {
+        await PackageSubscription.create({
+          userId: user.id,
+          packageId: data.packageId,
+          status: 'active',
+          billingCycle: 'manual',
+          startsAt: DateTime.now(),
+          endsAt: null,
+          canceledAt: null,
+          metadata: { source: 'admin_assignment' },
+        })
+      }
+    }
 
     session.flash('success', 'User berhasil diupdate')
     return response.redirect().back()

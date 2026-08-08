@@ -29,6 +29,8 @@ yarn-error.log
 # Project-specific
 wa-session/
 storage/exports/
+public/uploads/
+*.tsbuildinfo
 *.log
 
 # Docker volumes

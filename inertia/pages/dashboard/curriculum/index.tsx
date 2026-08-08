@@ -126,39 +126,61 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
     >
       <Head title="CP, TP & ATP" />
       <div className="space-y-6">
-        <div>
+        <div data-tour="curriculum-intro">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             {isPaud ? `Kurikulum ${institutionLabel} · PAUD Fase Fondasi` : 'Kurikulum SD'}
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p data-tour="curriculum-flow" className="text-neutral-600 dark:text-neutral-400">
             Struktur terkontrol: CP → TP → ATP → IKTP/evidence.{' '}
             {isPaud
               ? 'CP Fase Fondasi tetap sama untuk Kelompok A dan B.'
               : 'Pilih dan susun tujuan pembelajaran sesuai jenjang sekolah.'}
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              objectiveForm.setData('cpId', selectedCp)
-              setShowObjectiveModal(true)
-            }}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
-          >
-            Tambah TP Custom
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSequenceModal(true)}
-            disabled={selectedObjectives.length === 0}
-            className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50 dark:text-emerald-300"
-          >
-            Buat ATP ({selectedObjectives.length} TP)
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                objectiveForm.setData('cpId', selectedCp)
+                setShowObjectiveModal(true)
+              }}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
+            >
+              Tambah TP Custom
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSequenceModal(true)}
+              disabled={selectedObjectives.length === 0}
+              className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50 dark:text-emerald-300"
+            >
+              Buat ATP ({selectedObjectives.length} TP)
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/curriculum/export/pdf?disposition=inline"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              Export PDF
+            </a>
+            <a
+              href="/curriculum/export"
+              className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              Export DOCX
+            </a>
+          </div>
         </div>
         <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-          <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <div
+            data-tour="curriculum-cp"
+            data-tour-ready={cps.length > 0 ? 'true' : 'false'}
+            className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+          >
             <h3 className="mb-3 font-semibold text-neutral-900 dark:text-white">Elemen CP</h3>
             {cps.map((item) => (
               <button
@@ -187,7 +209,11 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                   {cp.description}
                 </p>
-                <div className="mt-5 space-y-3">
+                <div
+                  data-tour="curriculum-tp"
+                  data-tour-ready={cp.learningObjectives.length > 0 ? 'true' : 'false'}
+                  className="mt-5 space-y-3"
+                >
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-neutral-900 dark:text-white">
                       Tujuan Pembelajaran
@@ -230,7 +256,13 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 </div>
               </div>
             )}
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div
+              data-tour="curriculum-atp"
+              data-tour-ready={
+                sequences.length > 0 || selectedObjectives.length > 0 ? 'true' : 'false'
+              }
+              className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-neutral-900 dark:text-white">ATP Saya</h3>
@@ -254,7 +286,14 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                   {sequences.map((sequence) => (
                     <div
                       key={sequence.id}
-                      className="cursor-pointer rounded-lg border border-neutral-200 p-3 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-neutral-700 dark:hover:bg-emerald-950/20"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Buka ATP ${sequence.title}`}
+                      onClick={() => setShowSequenceModal(true)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') setShowSequenceModal(true)
+                      }}
+                      className="cursor-pointer rounded-lg border border-neutral-200 p-3 text-left text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50/50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:hover:bg-emerald-950/20"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{sequence.title}</span>
@@ -268,7 +307,11 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div
+              data-tour="curriculum-iktp"
+              data-tour-ready={cp && cp.learningObjectives.length > 0 ? 'true' : 'false'}
+              className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-neutral-900 dark:text-white">IKTP / Evidence</h3>
                 <button

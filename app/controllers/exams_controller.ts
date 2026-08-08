@@ -19,6 +19,36 @@ const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', stri
   summative: 'Sumatif',
 }
 
+function normalizeMatchingItems(value: unknown, side: 'left' | 'right') {
+  const values = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? value.split(/\r?\n|;|•/).map((item) => item.trim())
+      : []
+
+  return values
+    .map((item, index) => {
+      if (typeof item === 'string') return { id: `${side}-${index + 1}`, label: item }
+      const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      return {
+        id: typeof record.id === 'string' ? record.id : `${side}-${index + 1}`,
+        label:
+          typeof record.label === 'string'
+            ? record.label
+            : typeof record.text === 'string'
+              ? record.text
+              : '',
+        imageUrl:
+          typeof record.imageUrl === 'string'
+            ? record.imageUrl
+            : typeof record.image === 'string'
+              ? record.image
+              : '',
+      }
+    })
+    .filter((item) => item.label || item.imageUrl)
+}
+
 export default class ExamsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
@@ -98,6 +128,7 @@ export default class ExamsController {
       ...data,
       userId: user.id,
       status: 'draft',
+      header: data.header ?? {},
     })
 
     session.flash('success', 'Soal berhasil dibuat')
@@ -152,7 +183,7 @@ export default class ExamsController {
     let questions: Record<string, any>[]
     const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     try {
-      const isPaud = user.isTk
+      const isPaud = user.isTk || user.institutionType === 'ra'
       const prompt = examPrompt({
         subject,
         topic,
@@ -160,6 +191,7 @@ export default class ExamsController {
         questionCount,
         examMode: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
         isPaud,
+        isRa: user.institutionType === 'ra',
       })
       const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
         userId: user.id,
@@ -173,15 +205,67 @@ export default class ExamsController {
         instruction: typeof q.instruction === 'string' ? q.instruction : '',
         visualType: typeof q.visualType === 'string' ? q.visualType : '',
         rubric: typeof q.rubric === 'string' ? q.rubric : '',
+        scoringGuide: typeof q.scoringGuide === 'string' ? q.scoringGuide : '',
+        imagePrompt: typeof q.imagePrompt === 'string' ? q.imagePrompt : '',
+        imageUrl: typeof q.imageUrl === 'string' ? q.imageUrl : '',
         options: Array.isArray(q.options)
-          ? q.options.filter((o: unknown) => typeof o === 'string')
+          ? q.options
+              .map((o: unknown) => {
+                if (typeof o === 'string') {
+                  const match = o.trim().match(/^([A-Z])[.)\-:]?\s*(.*)$/i)
+                  return { label: match?.[1]?.toUpperCase() || '', text: match?.[2] || o.trim() }
+                }
+                if (o && typeof o === 'object' && 'text' in o) {
+                  const option = o as { label?: unknown; text?: unknown }
+                  return {
+                    label: typeof option.label === 'string' ? option.label.toUpperCase() : '',
+                    text: typeof option.text === 'string' ? option.text : '',
+                  }
+                }
+                return null
+              })
+              .filter((o) => Boolean(o))
           : [],
         answer: typeof q.answer === 'string' ? q.answer : '',
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
-        type: examMode || (isPaud ? 'tertulis_visual' : 'multiple_choice'),
+        type:
+          typeof q.type === 'string' &&
+          ['multiple_choice', 'essay', 'visual', 'matching', 'practical', 'oral'].includes(q.type)
+            ? q.type
+            : typeof q.visualType === 'string' && q.visualType.toLowerCase().includes('hubung')
+              ? 'matching'
+              : examMode === 'tertulis_visual'
+                ? 'visual'
+                : examMode || (isPaud ? 'visual' : 'multiple_choice'),
+        leftItems: normalizeMatchingItems(
+          q.leftItems ?? q.left ?? q.leftColumn ?? q.itemsLeft,
+          'left'
+        ),
+        rightItems: normalizeMatchingItems(
+          q.rightItems ?? q.right ?? q.rightColumn ?? q.itemsRight,
+          'right'
+        ),
+        pairs: Array.isArray(q.pairs ?? q.answerPairs ?? q.matches)
+          ? (q.pairs ?? q.answerPairs ?? q.matches)
+          : [],
         curriculum,
       }))
+
+      // Illustration generation is best-effort: a text-only exam must still
+      // be created if Gemini image generation is unavailable or fails.
+      for (const question of questions) {
+        if (!question.imagePrompt || question.imageUrl) continue
+        try {
+          question.imageUrl =
+            (await aiQueueService.enqueueAiImage({
+              userId: user.id,
+              prompt: question.imagePrompt,
+            })) || ''
+        } catch {
+          question.imageUrl = ''
+        }
+      }
     } catch (error) {
       session.flash(
         'error',
@@ -196,6 +280,17 @@ export default class ExamsController {
       title: `${EXAM_TYPE_LABELS[type]} ${subject} - ${topic}`,
       type,
       questions,
+      header: {
+        institutionName: user.schoolName || '',
+        institutionAddress: '',
+        academicYear: '',
+        semester: '',
+        groupName: schoolClass.name,
+        subject,
+        examLabel: EXAM_TYPE_LABELS[type],
+        studentName: '',
+        date: '',
+      },
       status: 'draft',
     })
 
