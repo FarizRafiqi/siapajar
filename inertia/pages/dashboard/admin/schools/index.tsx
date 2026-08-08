@@ -79,27 +79,40 @@ export default function AdminSchoolsIndex({ schools }: AdminSchoolsIndexProps) {
                 </tr>
               </thead>
               <tbody>
-                {schools.map((school) => (
-                  <tr
-                    key={school.id}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {school.name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {school.npsn || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setDeletingSchool(school)}
-                        className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                {schools.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-12 text-center">
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        Belum ada sekolah
+                      </p>
+                      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Tambahkan sekolah pertama untuk mulai menautkan guru dan kepala sekolah.
+                      </p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  schools.map((school) => (
+                    <tr
+                      key={school.id}
+                      className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                        {school.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        {school.npsn || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setDeletingSchool(school)}
+                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

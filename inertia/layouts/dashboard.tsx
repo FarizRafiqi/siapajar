@@ -57,31 +57,35 @@ export default function DashboardLayout({
   }, [flash])
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+    <div className="dashboard-shell min-h-screen bg-neutral-50 dark:bg-neutral-900">
       {/* Sidebar */}
-      <Sidebar
-        user={user}
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        mobileOpen={mobileMenuOpen}
-        onMobileClose={() => setMobileMenuOpen(false)}
-      />
+      <div className="print:hidden">
+        <Sidebar
+          user={user}
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          mobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
+        />
+      </div>
 
       {/* Main content */}
       <div
         className={cn(
-          'transition-all duration-300',
+          'transition-all duration-300 print:ml-0 print:p-0',
           sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-64'
         )}
       >
-        <Header
-          title={title}
-          breadcrumbs={breadcrumbs}
-          onMenuClick={() => setMobileMenuOpen(true)}
-          showTour={isTourAvailable}
-          onTourClick={startTour}
-        />
-        <main className="p-4 sm:p-6">{children}</main>
+        <div className="print:hidden">
+          <Header
+            title={title}
+            breadcrumbs={breadcrumbs}
+            onMenuClick={() => setMobileMenuOpen(true)}
+            showTour={isTourAvailable}
+            onTourClick={startTour}
+          />
+        </div>
+        <main className="p-4 sm:p-6 print:p-0 print:m-0">{children}</main>
       </div>
 
       <Toaster position="top-right" closeButton />

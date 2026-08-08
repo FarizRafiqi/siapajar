@@ -83,37 +83,50 @@ export default function AdminAcademicYearsIndex({ academicYears }: AdminAcademic
                 </tr>
               </thead>
               <tbody>
-                {academicYears.map((year) => (
-                  <tr
-                    key={year.id}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {year.name}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleToggleActive(year)}
-                        className={cn(
-                          'rounded-full px-2 py-0.5 text-xs font-medium',
-                          year.isActive
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                        )}
-                      >
-                        {year.isActive ? 'Aktif' : 'Nonaktif'}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setDeletingYear(year)}
-                        className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                {academicYears.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-12 text-center">
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        Belum ada tahun ajaran
+                      </p>
+                      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Tambahkan tahun ajaran agar data pembelajaran dapat dikelola.
+                      </p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  academicYears.map((year) => (
+                    <tr
+                      key={year.id}
+                      className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                        {year.name}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleToggleActive(year)}
+                          className={cn(
+                            'rounded-full px-2 py-0.5 text-xs font-medium',
+                            year.isActive
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                              : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                          )}
+                        >
+                          {year.isActive ? 'Aktif' : 'Nonaktif'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setDeletingYear(year)}
+                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

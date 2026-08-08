@@ -33,4 +33,6 @@ export const controllers = {
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
   WeeklyLessonPlans: () => import('#controllers/weekly_lesson_plans_controller'),
   AssessmentAttachments: () => import('#controllers/assessment_attachments_controller'),
+  AccountBilling: () => import('#controllers/account_billing_controller'),
+  AdminEntitlements: () => import('#controllers/admin_entitlements_controller'),
 }

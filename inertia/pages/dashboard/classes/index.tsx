@@ -1,8 +1,8 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Head, Link, router, useForm } from '@inertiajs/react'
+import { Head, router, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Plus, Users, Pencil, Trash2, Eye } from 'lucide-react'
+import { Plus, Users, Pencil, Trash2 } from 'lucide-react'
 
 interface AcademicYear {
   id: number
@@ -177,14 +177,10 @@ export default function ClassesIndex({
                   </span>
                 </div>
 
-                <div className="flex gap-2" onClick={(event) => event.stopPropagation()}>
-                  <Link
-                    href={`/classes/${item.id}`}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-neutral-200 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Lihat
-                  </Link>
+                <div
+                  className="flex justify-end gap-2"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <button
                     onClick={() => openEditModal(item)}
                     className="flex items-center justify-center rounded-lg border border-neutral-200 px-3 py-2 text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"

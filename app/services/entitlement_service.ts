@@ -8,6 +8,25 @@ export class EntitlementError extends Error {
   status = 402
 }
 
+const FEATURE_LABELS: Record<string, string> = {
+  classes: 'Kelas',
+  ai_generation_monthly: 'Generate AI bulanan',
+  ai_image_generation_monthly: 'Generate gambar AI bulanan',
+  export_pdf: 'Export PDF',
+  export_docx: 'Export DOCX',
+  export_pptx: 'Export PPTX',
+  export_xlsx: 'Export XLSX',
+  custom_atp: 'ATP custom',
+  custom_iktp: 'IKTP custom',
+}
+
+export function getFeatureLabel(featureKey: string) {
+  return (
+    FEATURE_LABELS[featureKey] ??
+    featureKey.replace(/[_-]+/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase())
+  )
+}
+
 export async function assertEntitled(user: User, featureKey: string, amount = 1) {
   if (user.role === 'admin' || !user.packageId) return
   const entitlement = await PackageEntitlement.query()
@@ -17,7 +36,9 @@ export async function assertEntitled(user: User, featureKey: string, amount = 1)
   // Package lama tetap kompatibel sampai admin mengisi entitlement secara eksplisit.
   if (!entitlement) return
   if (!entitlement.isEnabled)
-    throw new EntitlementError(`Fitur ${featureKey} tidak tersedia pada paket Anda`)
+    throw new EntitlementError(
+      `Fitur ${getFeatureLabel(featureKey)} tidak tersedia pada paket Anda`
+    )
   if (entitlement.limitValue === null) return
   const periodStart = DateTime.now().startOf('month')
   const total = await UsageEvent.query()
@@ -26,7 +47,9 @@ export async function assertEntitled(user: User, featureKey: string, amount = 1)
     .where('period_start', periodStart.toISODate()!)
     .sum('quantity as total')
   if (Number(total[0].$extras.total ?? 0) + amount > entitlement.limitValue) {
-    throw new EntitlementError(`Batas fitur ${featureKey} pada paket Anda sudah tercapai`)
+    throw new EntitlementError(
+      `Batas fitur ${getFeatureLabel(featureKey)} pada paket Anda sudah tercapai`
+    )
   }
 }
 
@@ -60,7 +83,9 @@ export async function reserveUsage(
         .where('feature_key', featureKey)
         .first()
       if (entitlement && !entitlement.is_enabled) {
-        throw new EntitlementError(`Fitur ${featureKey} tidak tersedia pada paket Anda`)
+        throw new EntitlementError(
+          `Fitur ${getFeatureLabel(featureKey)} tidak tersedia pada paket Anda`
+        )
       }
       if (entitlement?.limit_value !== null && entitlement?.limit_value !== undefined) {
         const periodStart = DateTime.now().startOf('month').toISODate()!
@@ -71,7 +96,9 @@ export async function reserveUsage(
           .where('period_start', periodStart)
           .sum('quantity as total')
         if (Number(total[0]?.total ?? 0) + quantity > Number(entitlement.limit_value)) {
-          throw new EntitlementError(`Batas fitur ${featureKey} pada paket Anda sudah tercapai`)
+          throw new EntitlementError(
+            `Batas fitur ${getFeatureLabel(featureKey)} pada paket Anda sudah tercapai`
+          )
         }
       }
     }

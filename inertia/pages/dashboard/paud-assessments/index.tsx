@@ -318,17 +318,6 @@ export default function PaudAssessmentsIndex({
                         )}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      aria-label={`Hapus asesmen ${item.student.fullName}`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        setDeletingAssessment(item)
-                      }}
-                      className="cursor-pointer rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-500 dark:border-neutral-700 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                     {item.attachments && item.attachments.length > 0 && (
                       <div className="mt-3 space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
                         <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
@@ -404,6 +393,17 @@ export default function PaudAssessmentsIndex({
                 <X className="h-5 w-5" />
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDeletingAssessment(selectedAssessment)
+                setSelectedAssessment(null)
+              }}
+              className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-500 dark:border-red-900/60 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="h-4 w-4" />
+              Hapus asesmen
+            </button>
             <div className="mt-6 space-y-4 text-sm text-neutral-700 dark:text-neutral-300">
               {selectedAssessment.type === 'checklist' && (
                 <>

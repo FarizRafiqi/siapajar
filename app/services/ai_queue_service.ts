@@ -2,6 +2,7 @@ import env from '#start/env'
 import AiJob from '#models/ai_job'
 import User from '#models/user'
 import GenerateAiJson from '#jobs/generate_ai_json'
+import GenerateAiImage from '#jobs/generate_ai_image'
 import { createHash } from 'node:crypto'
 import { DateTime } from 'luxon'
 import { reserveUsage, releaseUsageReservation } from '#services/entitlement_service'
@@ -78,6 +79,54 @@ class AiQueueService {
       await new Promise((resolve) => setTimeout(resolve, 250))
     }
     throw new Error('AI job is still processing. Please retry from the document status page.')
+  }
+
+  async enqueueAiImage(options: {
+    userId?: number
+    prompt: string
+    timeoutMs?: number
+  }): Promise<string | null> {
+    if (!options.userId) throw new Error('AI image jobs require an authenticated user')
+    const owner = await User.findOrFail(options.userId)
+    const jobKey = createHash('sha256')
+      .update(`${options.userId}:siapajar-image:${options.prompt}`)
+      .digest('hex')
+    const job = await AiJob.firstOrCreate(
+      { jobKey },
+      {
+        jobKey,
+        userId: options.userId,
+        combo: 'siapajar-image',
+        status: 'pending',
+        attempts: 0,
+        payload: { prompt: options.prompt },
+        availableAt: DateTime.now(),
+      }
+    )
+    if (job.status !== 'completed') {
+      const reserved = await reserveUsage(owner, 'ai_image_generation_monthly', jobKey, 1, {
+        combo: 'siapajar-image',
+      })
+      try {
+        await GenerateAiImage.dispatch({
+          jobKey,
+          userId: options.userId,
+          prompt: options.prompt,
+        }).dedup({ id: jobKey, ttl: '5m' })
+      } catch (error) {
+        if (reserved) await releaseUsageReservation(jobKey)
+        throw error
+      }
+    }
+    const deadline = Date.now() + (options.timeoutMs ?? 120_000)
+    while (Date.now() < deadline) {
+      const current = await AiJob.find(job.id)
+      if (current?.status === 'completed')
+        return typeof current.result === 'string' ? current.result : null
+      if (current?.status === 'failed') throw new Error(current.error ?? 'AI image job failed')
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    throw new Error('AI image is still processing. Please retry from the document status page.')
   }
 
   getStats() {

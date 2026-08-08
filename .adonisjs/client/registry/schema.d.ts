@@ -187,6 +187,54 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'account.package': {
+    methods: ["GET","HEAD"]
+    pattern: '/my-package'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'account.usage': {
+    methods: ["GET","HEAD"]
+    pattern: '/usage'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'account.subscriptions': {
+    methods: ["GET","HEAD"]
+    pattern: '/subscriptions'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'glossary.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/glossary'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'curriculum.index': {
     methods: ["GET","HEAD"]
     pattern: '/curriculum'
@@ -1558,6 +1606,30 @@ export interface Registry {
   'admin.packages.destroy': {
     methods: ["DELETE"]
     pattern: '/admin/packages/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.entitlements.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/entitlements'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.entitlements.update': {
+    methods: ["PUT"]
+    pattern: '/admin/entitlements/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]

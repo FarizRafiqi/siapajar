@@ -95,9 +95,9 @@ const tkStatCards = [
 
 const colorMap: Record<string, { bg: string; icon: string; text: string }> = {
   emerald: {
-    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-    icon: 'text-emerald-600 dark:text-emerald-400',
-    text: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-200 dark:bg-emerald-900/60',
+    icon: 'text-emerald-700 dark:text-emerald-300',
+    text: 'text-emerald-700 dark:text-emerald-300',
   },
   blue: {
     bg: 'bg-blue-100 dark:bg-blue-900/30',
@@ -160,22 +160,22 @@ export default function Dashboard({
         {/* Admin Stats */}
         {isAdmin && adminStats && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Total Users
                   </p>
-                  <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                  <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
                     {adminStats.users}
                   </p>
                 </div>
-                <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/30">
-                  <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="rounded-xl bg-emerald-200 p-3 dark:bg-emerald-900/60">
+                  <Users className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
                 </div>
               </div>
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
@@ -190,7 +190,7 @@ export default function Dashboard({
                 </div>
               </div>
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
@@ -205,7 +205,7 @@ export default function Dashboard({
                 </div>
               </div>
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
@@ -236,7 +236,7 @@ export default function Dashboard({
                 <Link
                   key={card.key}
                   href={card.href}
-                  className="block rounded-xl border border-neutral-200 bg-white p-6 transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+                  className="block rounded-xl border border-neutral-300 bg-white p-6 transition-all hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -259,7 +259,7 @@ export default function Dashboard({
         {!isAdmin && (
           <div
             data-tour="quick-actions"
-            className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+            className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900"
           >
             <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
               Aksi Cepat
@@ -267,10 +267,10 @@ export default function Dashboard({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Link
                 href="/classes"
-                className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-emerald-300 hover:bg-emerald-50 dark:border-neutral-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-900/20"
+                className="flex items-center gap-3 rounded-lg border border-neutral-300 p-4 transition-all hover:border-emerald-500 hover:bg-emerald-100 dark:border-neutral-700 dark:hover:border-emerald-400 dark:hover:bg-emerald-900/40"
               >
-                <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                  <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="rounded-lg bg-emerald-200 p-2 dark:bg-emerald-900/60">
+                  <Plus className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                 </div>
                 <div>
                   <p className="font-medium text-neutral-900 dark:text-white">

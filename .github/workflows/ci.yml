@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      QUEUE_DRIVER: sync
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: "6379"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Configure test environment
+        shell: bash
+        run: |
+          {
+            echo "NODE_ENV=test"
+            echo "PORT=3333"
+            echo "HOST=127.0.0.1"
+            echo "LOG_LEVEL=info"
+            echo "APP_KEY=$(openssl rand -hex 32)"
+            echo "SESSION_DRIVER=cookie"
+            echo "DB_HOST=127.0.0.1"
+            echo "DB_PORT=5432"
+            echo "DB_USER=ci"
+            echo "DB_PASSWORD=$(openssl rand -hex 16)"
+            echo "DB_DATABASE=ci"
+          } >> "$GITHUB_ENV"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

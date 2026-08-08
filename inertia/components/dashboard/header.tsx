@@ -1,5 +1,6 @@
+import { Link } from '@inertiajs/react'
 import { CircleHelp, Menu, Moon, Sun } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface HeaderProps {
   title?: string
@@ -19,6 +20,16 @@ export default function Header({
   const [darkMode, setDarkMode] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   )
+  const [helpOpen, setHelpOpen] = useState(false)
+  const helpRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (helpRef.current && !helpRef.current.contains(event.target as Node)) setHelpOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const toggleDarkMode = () => {
     const newMode = !darkMode
@@ -72,17 +83,41 @@ export default function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
-        {showTour && (
+        <div ref={helpRef} className="relative">
           <button
             type="button"
-            onClick={onTourClick}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
-            aria-label="Buka tutorial dashboard"
+            onClick={() => setHelpOpen((previous) => !previous)}
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+            aria-label="Buka menu bantuan"
+            aria-expanded={helpOpen}
           >
             <CircleHelp className="h-5 w-5" />
-            <span className="hidden sm:inline">Lihat tutorial</span>
+            <span className="hidden sm:inline">Bantuan</span>
           </button>
-        )}
+          {helpOpen && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+              {showTour && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHelpOpen(false)
+                    onTourClick?.()
+                  }}
+                  className="flex w-full cursor-pointer items-center px-4 py-2.5 text-left text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                >
+                  Lihat tutorial
+                </button>
+              )}
+              <Link
+                href="/glossary"
+                onClick={() => setHelpOpen(false)}
+                className="flex items-center px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              >
+                Panduan istilah
+              </Link>
+            </div>
+          )}
+        </div>
         <button
           onClick={toggleDarkMode}
           className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"

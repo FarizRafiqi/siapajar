@@ -98,18 +98,40 @@ export default class MediaModulesController {
     const subTitle = subtheme ? ` - ${subtheme}` : ''
     const title = `Media Ajar & Loose Parts: ${theme}${subTitle}`
 
+    const slides = Array.isArray(result.slides) ? result.slides : []
+    let imageQuotaWarning = false
+    for (const slide of slides) {
+      const imagePrompt = typeof slide.imagePrompt === 'string' ? slide.imagePrompt.trim() : ''
+      if (!imagePrompt) continue
+      try {
+        slide.imageUrl = await aiQueueService.enqueueAiImage({
+          userId: user.id,
+          prompt: imagePrompt,
+        })
+      } catch {
+        imageQuotaWarning = true
+        slide.imageUrl = ''
+      }
+    }
+
     const mediaModule = await MediaModule.create({
       userId: user.id,
       classId,
       title,
       theme,
       subtheme: subtheme || null,
-      slides: Array.isArray(result.slides) ? result.slides : [],
+      slides,
       loosePartsGuide: result.loosePartsGuide || null,
       status: 'draft',
     })
 
-    session.flash('success', 'Media Ajar & Outline Slide berhasil digenerate')
+    session.flash('success', 'Media Ajar berhasil dibuat')
+    if (imageQuotaWarning) {
+      session.flash(
+        'error',
+        'Sebagian ilustrasi belum tersedia karena quota gambar atau provider AI.'
+      )
+    }
     return response.redirect().toRoute('media-modules.show', { id: mediaModule.id })
   }
 
@@ -130,7 +152,7 @@ export default class MediaModulesController {
     return response.redirect().toRoute('media-modules.index')
   }
 
-  async exportPptx({ params, response, auth }: HttpContext) {
+  async exportPptx({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
     const mediaModule = await MediaModule.query()
       .where('id', params.id)
@@ -140,14 +162,16 @@ export default class MediaModulesController {
 
     if (!mediaModule) return response.notFound({ message: 'Media Ajar tidak ditemukan' })
 
-    const buffer = await exportMediaModulePptx(mediaModule, user)
+    const isPreview = request.input('disposition') === 'inline'
+    const buffer = await exportMediaModulePptx(mediaModule, user, !isPreview)
     response.header(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation'
     )
+    const disposition = request.input('disposition') === 'inline' ? 'inline' : 'attachment'
     response.header(
       'Content-Disposition',
-      `attachment; filename="${safeFilename(mediaModule.title)}.pptx"`
+      `${disposition}; filename="${safeFilename(mediaModule.title)}.pptx"`
     )
     return response.send(buffer)
   }
