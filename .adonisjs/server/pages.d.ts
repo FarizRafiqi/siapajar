@@ -17,7 +17,6 @@ declare module '@adonisjs/inertia/types' {
     'coming-soon': ExtractProps<(typeof import('../../inertia/pages/coming-soon.tsx'))['default']>
     'dashboard/admin/academic-years/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/academic-years/index.tsx'))['default']>
     'dashboard/admin/ai-settings/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/ai-settings/index.tsx'))['default']>
-    'dashboard/admin/entitlements/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/entitlements/index.tsx'))['default']>
     'dashboard/admin/packages/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/packages/index.tsx'))['default']>
     'dashboard/admin/schools/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/schools/index.tsx'))['default']>
     'dashboard/admin/users/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/index.tsx'))['default']>
@@ -25,9 +24,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/annual-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/annual-plans/show.tsx'))['default']>
     'dashboard/assessments/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/assessments/index.tsx'))['default']>
     'dashboard/assessments/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/assessments/show.tsx'))['default']>
-    'dashboard/billing/package': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/package.tsx'))['default']>
-    'dashboard/billing/subscriptions': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/subscriptions.tsx'))['default']>
-    'dashboard/billing/usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/usage.tsx'))['default']>
     'dashboard/classes/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/index.tsx'))['default']>
     'dashboard/classes/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/show.tsx'))['default']>
     'dashboard/curriculum/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/curriculum/index.tsx'))['default']>
@@ -35,7 +31,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/daily-lesson-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/show.tsx'))['default']>
     'dashboard/exams/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/index.tsx'))['default']>
     'dashboard/exams/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/show.tsx'))['default']>
-    'dashboard/glossary/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/glossary/index.tsx'))['default']>
     'dashboard/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/index.tsx'))['default']>
     'dashboard/lkpd/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/index.tsx'))['default']>
     'dashboard/lkpd/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/show.tsx'))['default']>
@@ -62,5 +57,10 @@ declare module '@adonisjs/inertia/types' {
     'onboarding': ExtractProps<(typeof import('../../inertia/pages/onboarding.tsx'))['default']>
     'dashboard/exams/question-renderer': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/question-renderer.tsx'))['default']>
     'dashboard/exams/question-types': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/question-types.ts'))['default']>
+    'dashboard/admin/entitlements/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/entitlements/index.tsx'))['default']>
+    'dashboard/billing/package': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/package.tsx'))['default']>
+    'dashboard/billing/subscriptions': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/subscriptions.tsx'))['default']>
+    'dashboard/billing/usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/usage.tsx'))['default']>
+    'dashboard/glossary/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/glossary/index.tsx'))['default']>
   }
 }
