@@ -34,3 +34,9 @@
 
 11. **Back Navigation Alignment Standard (Left Alignment Rule)**:
    - Always place 'Back' buttons or parent navigation links (e.g. `← Kembali`, `← Kembali ke Paket Saya`) on the **LEFT side** of the page header (above or directly inline before the main title), NEVER on the far right. Reserve the right side of header bars exclusively for primary action triggers (e.g. `+ Tambah`, `Export`, `Filter`, `Aksi & Opsi ▾`).
+
+12. **Document Layout & Export Standards (PDF & DOCX Standard Rule)**:
+   - **Landscape Orientation for Matrix Tables**: Always default to landscape orientation (`layout: 'landscape'`) for wide curriculum matrices (CP, TP, ATP, IKTP) so tables have ample horizontal room.
+   - **Strict Colon Alignment in Metadata/Kop**: Never pad colons `:` manually with space characters. Always calculate aligned column coordinates (in PDFKit) or use borderless grid tables (in DOCX) with distinct Label (width A), Colon `:` (width B), and Value (width C) columns so colons align in a perfectly straight vertical line.
+   - **Descriptive Export Filenames**: Never use generic filenames like `Dokumen.pdf` or `export.docx`. Always name exported files descriptively, e.g. `Dokumen_CP_TP_ATP_[SatuanPendidikan].pdf` / `.docx`.
+   - **Explicit Left Alignment for Headings**: Section titles and matrix headers must always be explicitly left-aligned, never floating or right-aligned.

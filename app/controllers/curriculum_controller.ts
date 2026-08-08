@@ -52,7 +52,7 @@ export default class CurriculumController {
       buffer,
       EXPORT_CONTENT_TYPES.docx,
       exportFilename(
-        ['Kurikulum', user.institutionType?.toUpperCase() || user.educationLevel],
+        ['Matriks_CP_TP_ATP', (user as any).institutionName || user.schoolName || 'Sekolah'],
         'docx'
       )
     )
@@ -61,16 +61,17 @@ export default class CurriculumController {
   async exportPdf({ request, response, auth }: HttpContext) {
     const user = auth.user!
     const { cps, sequences } = await this.exportData(user.id)
-    const buffer = await exportCurriculumPdf(cps, sequences, user, !wantsInlinePreview(request))
+    const isInline = wantsInlinePreview(request)
+    const buffer = await exportCurriculumPdf(cps, sequences, user, !isInline)
     return sendExport(
       response,
       buffer,
       EXPORT_CONTENT_TYPES.pdf,
       exportFilename(
-        ['Kurikulum', user.institutionType?.toUpperCase() || user.educationLevel],
+        ['Matriks_CP_TP_ATP', (user as any).institutionName || user.schoolName || 'Sekolah'],
         'pdf'
       ),
-      { inline: wantsInlinePreview(request) }
+      { inline: isInline }
     )
   }
 
