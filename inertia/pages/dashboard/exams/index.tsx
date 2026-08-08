@@ -247,15 +247,21 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
 
                 <div className="space-y-2 rounded-xl bg-neutral-50 p-4 text-left dark:bg-neutral-800/50">
                   <div className="flex items-center gap-2.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white">1</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white">
+                      1
+                    </span>
                     🔍 Meriset kurikulum & menyusun struktur butir soal...
                   </div>
                   <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">2</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
+                      2
+                    </span>
                     ✍️ Memformulasikan pertanyaan & kunci jawaban kontekstual...
                   </div>
                   <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">3</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
+                      3
+                    </span>
                     🎨 Menyiapkan ilustrasi visual & gambar line-art hitam-putih...
                   </div>
                 </div>
@@ -282,7 +288,9 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                         </option>
                       ))}
                     </select>
-                    {errors.classId && <p className="mt-1 text-sm text-red-500">{errors.classId}</p>}
+                    {errors.classId && (
+                      <p className="mt-1 text-sm text-red-500">{errors.classId}</p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -304,7 +312,9 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                         </option>
                       ))}
                     </select>
-                    {errors.subject && <p className="mt-1 text-sm text-red-500">{errors.subject}</p>}
+                    {errors.subject && (
+                      <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
+                    )}
                   </div>
                   <div>
                     <label

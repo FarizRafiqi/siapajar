@@ -52,7 +52,8 @@ export default class SettingsController {
       user.kopSurat = {
         ...currentKop,
         ...updatedKop,
-        institutionName: updatedKop.institutionName || data.schoolName || currentKop.institutionName,
+        institutionName:
+          updatedKop.institutionName || data.schoolName || currentKop.institutionName,
       }
     }
 

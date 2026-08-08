@@ -1,6 +1,19 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link, useForm, usePage } from '@inertiajs/react'
-import { ArrowLeft, Building2, ChevronDown, Download, Eye, Palette, Pencil, Plus, Printer, Save, Trash2, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  Building2,
+  ChevronDown,
+  Download,
+  Eye,
+  Palette,
+  Pencil,
+  Plus,
+  Printer,
+  Save,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { cn } from '~/lib/utils'
 import { examTypeLabel, type ExamType } from './index'
@@ -109,10 +122,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
   return (
     <DashboardWrapper
       title={exam.title}
-      breadcrumbs={[
-        { label: 'Bank Soal', href: '/exams' },
-        { label: exam.title },
-      ]}
+      breadcrumbs={[{ label: 'Bank Soal', href: '/exams' }, { label: exam.title }]}
     >
       <Head title={exam.title} />
 
@@ -184,7 +194,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
               </p>
             </div>
           </div>
-          
+
           {/* Unified Action Toolbar */}
           <div className="flex items-center gap-2">
             <button
@@ -231,7 +241,9 @@ export default function ExamShow({ exam }: ExamShowProps) {
                 className="h-10 inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
               >
                 <span>Opsi Naskah</span>
-                <ChevronDown className={cn('h-4 w-4 transition-transform', optionsOpen && 'rotate-180')} />
+                <ChevronDown
+                  className={cn('h-4 w-4 transition-transform', optionsOpen && 'rotate-180')}
+                />
               </button>
 
               {optionsOpen && (
@@ -251,7 +263,9 @@ export default function ExamShow({ exam }: ExamShowProps) {
                       className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
                     >
                       <Palette className="h-4 w-4 text-purple-600" />
-                      {colorMode === 'grayscale' ? 'Ubah ke Mode Berwarna' : 'Ubah ke Mode Hitam Putih'}
+                      {colorMode === 'grayscale'
+                        ? 'Ubah ke Mode Berwarna'
+                        : 'Ubah ke Mode Hitam Putih'}
                     </button>
 
                     <button

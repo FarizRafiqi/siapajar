@@ -96,7 +96,8 @@ export function QuestionRenderer({
 
   const isCountingQuestion =
     (question.type === 'count_and_circle' || question.visualType === 'Hitung') &&
-    (question.question.toLowerCase().includes('hitung') || question.question.toLowerCase().includes('jumlah'))
+    (question.question.toLowerCase().includes('hitung') ||
+      question.question.toLowerCase().includes('jumlah'))
 
   const countVal = detectCountFromText(question.question, 4)
   const iconEmoji = detectObjectIcon(question.question || '', question.icon || question.iconType)
@@ -173,17 +174,24 @@ export function QuestionRenderer({
         </div>
       )}
 
-      {question.type === 'matching' && <MatchingRenderer question={question} isGrayscale={isGrayscale} />}
+      {question.type === 'matching' && (
+        <MatchingRenderer question={question} isGrayscale={isGrayscale} />
+      )}
 
-      {(question.type === 'fill_blank_image' || (question.type === 'visual' && question.visualType?.toLowerCase().includes('tulis'))) && (
+      {(question.type === 'fill_blank_image' ||
+        (question.type === 'visual' && question.visualType?.toLowerCase().includes('tulis'))) && (
         <ImageFillRenderer question={question} isGrayscale={isGrayscale} />
       )}
 
       {question.type === 'vertical_math' && <VerticalMathRenderer question={question} />}
 
-      {question.type === 'count_and_circle' && <CountCircleRenderer question={question} isGrayscale={isGrayscale} />}
+      {question.type === 'count_and_circle' && (
+        <CountCircleRenderer question={question} isGrayscale={isGrayscale} />
+      )}
 
-      {question.type === 'coloring' && <ColoringRenderer question={question} isGrayscale={isGrayscale} />}
+      {question.type === 'coloring' && (
+        <ColoringRenderer question={question} isGrayscale={isGrayscale} />
+      )}
 
       {question.type === 'tracing' && <TracingRenderer question={question} />}
 
@@ -237,7 +245,10 @@ function MatchingRenderer({
           const right = rightItems[index]
 
           return (
-            <div key={`match-row-${left?.id || index}`} className="grid grid-cols-[140px_24px_1fr_24px_160px] items-center gap-2">
+            <div
+              key={`match-row-${left?.id || index}`}
+              className="grid grid-cols-[140px_24px_1fr_24px_160px] items-center gap-2"
+            >
               <div className="flex items-center justify-start min-h-[48px]">
                 {left?.imageUrl ? (
                   <img
@@ -279,7 +290,14 @@ function ImageFillRenderer({
   question,
   isGrayscale,
 }: Readonly<{ question: ExamQuestion; isGrayscale?: boolean }>) {
-  const options = question.leftItems && question.leftItems.length > 0 ? question.leftItems : [{ id: '1', label: 'Apel' }, { id: '2', label: 'Bunga' }, { id: '3', label: 'Ikan' }]
+  const options =
+    question.leftItems && question.leftItems.length > 0
+      ? question.leftItems
+      : [
+          { id: '1', label: 'Apel' },
+          { id: '2', label: 'Bunga' },
+          { id: '3', label: 'Ikan' },
+        ]
   return (
     <div className="ml-8 mt-4 grid grid-cols-3 gap-6 text-center">
       {options.map((item, idx) => {
@@ -287,10 +305,17 @@ function ImageFillRenderer({
         const iconEmoji = detectObjectIcon(itemLabel)
 
         return (
-          <div key={`fill-img-${typeof item === 'object' ? item.id || idx : idx}`} className="flex flex-col items-center gap-3">
+          <div
+            key={`fill-img-${typeof item === 'object' ? item.id || idx : idx}`}
+            className="flex flex-col items-center gap-3"
+          >
             <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 print:border-black dark:border-neutral-800 dark:bg-neutral-800">
               {typeof item === 'object' && item.imageUrl ? (
-                <img src={item.imageUrl} alt="" className={cn('h-16 w-16 object-contain', isGrayscale && 'grayscale')} />
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  className={cn('h-16 w-16 object-contain', isGrayscale && 'grayscale')}
+                />
               ) : (
                 <span className={cn('text-4xl', isGrayscale && 'grayscale')}>{iconEmoji}</span>
               )}
@@ -317,7 +342,10 @@ function VerticalMathRenderer({ question }: Readonly<{ question: ExamQuestion }>
   return (
     <div className="ml-8 mt-4 flex flex-wrap items-center justify-between gap-6 font-mono text-base font-bold text-neutral-900 dark:text-white print:text-black">
       {mathProblems.map((prob, idx) => (
-        <div key={`vmath-${idx}-${prob.topNumber}`} className="flex flex-col items-end border-b-2 border-neutral-900 dark:border-white pb-1 px-2 w-16 print:border-black">
+        <div
+          key={`vmath-${idx}-${prob.topNumber}`}
+          className="flex flex-col items-end border-b-2 border-neutral-900 dark:border-white pb-1 px-2 w-16 print:border-black"
+        >
           <span>{prob.topNumber}</span>
           <span className="flex items-center justify-between w-full">
             <span>{prob.operator}</span>
@@ -344,7 +372,10 @@ function CountCircleRenderer({
         const itemIcon = detectObjectIcon(question.question || '')
 
         return (
-          <div key={`circle-item-${idx}`} className="flex flex-col items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
+          <div
+            key={`circle-item-${idx}`}
+            className="flex flex-col items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4"
+          >
             <div className={cn('flex flex-wrap justify-center gap-2', isGrayscale && 'grayscale')}>
               {Array.from({ length: item.count || 4 }).map((_, i) => (
                 <span key={`cnt-icon-${idx}-${i}`} className="text-2xl">
@@ -354,7 +385,10 @@ function CountCircleRenderer({
             </div>
             <div className="flex gap-4 font-bold text-sm text-neutral-900 dark:text-white">
               {item.options.map((num) => (
-                <span key={`cnt-num-${idx}-${num}`} className="rounded-full px-3 py-1 border border-neutral-300 dark:border-neutral-700">
+                <span
+                  key={`cnt-num-${idx}-${num}`}
+                  className="rounded-full px-3 py-1 border border-neutral-300 dark:border-neutral-700"
+                >
                   {num}
                 </span>
               ))}
@@ -382,8 +416,12 @@ function ColoringRenderer({
         />
       ) : (
         <div className="flex flex-col items-center gap-3 text-neutral-600 dark:text-neutral-300">
-          <span className={cn('text-6xl animate-pulse', isGrayscale && 'grayscale')}>{iconEmoji}</span>
-          <span className="text-xs font-semibold">{question.imagePrompt || `Area Mewarnai (${question.question})`}</span>
+          <span className={cn('text-6xl animate-pulse', isGrayscale && 'grayscale')}>
+            {iconEmoji}
+          </span>
+          <span className="text-xs font-semibold">
+            {question.imagePrompt || `Area Mewarnai (${question.question})`}
+          </span>
         </div>
       )}
     </div>

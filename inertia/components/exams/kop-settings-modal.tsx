@@ -94,35 +94,48 @@ export function KopSettingsModal({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label htmlFor="kop-inst-name" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-inst-name"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Nama Lembaga / Sekolah
               </label>
               <input
                 id="kop-inst-name"
                 type="text"
                 value={formData.institutionName || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, institutionName: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, institutionName: e.target.value }))
+                }
                 placeholder="Contoh: PLAY GROUP / RA / TK ATTAQWA 31"
                 className="mt-1.5 w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
               />
             </div>
 
             <div>
-              <label htmlFor="kop-sub-name" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-sub-name"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Nama Sub / Yayasan / Quotes (“...”)
               </label>
               <input
                 id="kop-sub-name"
                 type="text"
                 value={formData.institutionSubName || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, institutionSubName: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, institutionSubName: e.target.value }))
+                }
                 placeholder="Contoh: AZZUMAR"
                 className="mt-1.5 w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
               />
             </div>
 
             <div>
-              <label htmlFor="kop-phone" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-phone"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Nomor Telepon / Kontak
               </label>
               <input
@@ -136,7 +149,10 @@ export function KopSettingsModal({
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="kop-addr-1" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-addr-1"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Alamat Baris 1
               </label>
               <input
@@ -150,7 +166,10 @@ export function KopSettingsModal({
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="kop-addr-2" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-addr-2"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Alamat Baris 2
               </label>
               <input
@@ -164,7 +183,10 @@ export function KopSettingsModal({
             </div>
 
             <div>
-              <label htmlFor="kop-group-name" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-group-name"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Kelompok / Kelas
               </label>
               <input
@@ -178,7 +200,10 @@ export function KopSettingsModal({
             </div>
 
             <div>
-              <label htmlFor="kop-subject" className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="kop-subject"
+                className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
+              >
                 Bidang Studi / Mata Pelajaran
               </label>
               <input
