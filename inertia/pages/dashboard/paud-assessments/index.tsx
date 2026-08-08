@@ -2,7 +2,19 @@ import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { ClipboardList, Trash2, Plus, CheckSquare, FileText, Palette, Camera } from 'lucide-react'
+import {
+  ClipboardList,
+  Trash2,
+  Plus,
+  CheckSquare,
+  FileText,
+  Palette,
+  Camera,
+  File,
+  FileImage,
+  ExternalLink,
+  X,
+} from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 interface Student {
@@ -27,6 +39,12 @@ interface Assessment {
   schoolClass: SchoolClass
   student: Student
   attachments?: Array<{ id: number; url: string; originalName: string; mimeType: string }>
+}
+
+function AttachmentIcon({ mimeType }: Readonly<{ mimeType: string }>) {
+  if (mimeType.startsWith('image/')) return <FileImage className="h-5 w-5" />
+  if (mimeType === 'application/pdf') return <FileText className="h-5 w-5" />
+  return <File className="h-5 w-5" />
 }
 
 interface CurriculumObjective {
@@ -58,6 +76,7 @@ export default function PaudAssessmentsIndex({
 }: PaudAssessmentsIndexProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingAssessment, setDeletingAssessment] = useState<Assessment | null>(null)
+  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null)
   const [filterType, setFilterType] = useState<AssessmentType | 'all'>('all')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
@@ -141,7 +160,7 @@ export default function PaudAssessmentsIndex({
       <Head title="Asesmen PAUD" />
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div data-tour="assessment-intro" className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Asesmen PAUD</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
@@ -149,9 +168,12 @@ export default function PaudAssessmentsIndex({
             </p>
           </div>
           <button
+            data-tour="assessment-create"
+            data-tour-ready={hasClasses && hasStudents ? 'true' : 'false'}
+            type="button"
             onClick={() => setShowAddModal(true)}
             disabled={!hasClasses || !hasStudents}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             Catat Asesmen
@@ -179,11 +201,12 @@ export default function PaudAssessmentsIndex({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div data-tour="assessment-filters" className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => setFilterType('all')}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              'cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500',
               filterType === 'all'
                 ? 'bg-emerald-600 text-white'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
@@ -196,9 +219,10 @@ export default function PaudAssessmentsIndex({
             return (
               <button
                 key={t}
+                type="button"
                 onClick={() => setFilterType(t)}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500',
                   filterType === t
                     ? 'bg-emerald-600 text-white'
                     : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
@@ -222,13 +246,26 @@ export default function PaudAssessmentsIndex({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div
+            data-tour="assessment-list"
+            data-tour-ready={filteredAssessments.length > 0 ? 'true' : 'false'}
+            className="space-y-3"
+          >
             {filteredAssessments.map((item) => {
               const ItemIcon = TYPE_ICONS[item.type]
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedAssessment(item)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedAssessment(item)
+                    }
+                  }}
+                  className="cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50/30 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/10"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -281,40 +318,32 @@ export default function PaudAssessmentsIndex({
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setDeletingAssessment(item)}
-                      className="rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                     {item.attachments && item.attachments.length > 0 && (
-                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                        {item.attachments.map((attachment) =>
-                          attachment.mimeType === 'application/pdf' ? (
+                      <div className="mt-3 space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                          Lampiran ({item.attachments.length})
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {item.attachments.map((attachment) => (
                             <a
                               key={attachment.id}
-                              href={attachment.url}
+                              href={`${attachment.url}?disposition=inline`}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded border border-neutral-200 p-2 text-xs text-emerald-700 dark:border-neutral-700 dark:text-emerald-300"
+                              className="group flex min-w-0 items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20"
+                              title={`Buka ${attachment.originalName} di tab baru`}
+                              onClick={(event) => event.stopPropagation()}
                             >
-                              {attachment.originalName}
+                              <span className="shrink-0 text-neutral-500 group-hover:text-emerald-600 dark:text-neutral-400 dark:group-hover:text-emerald-400">
+                                <AttachmentIcon mimeType={attachment.mimeType} />
+                              </span>
+                              <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">
+                                {attachment.originalName}
+                              </span>
+                              <ExternalLink className="h-4 w-4 shrink-0 text-neutral-400" />
                             </a>
-                          ) : (
-                            <a
-                              key={attachment.id}
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <img
-                                src={attachment.url}
-                                alt={attachment.originalName}
-                                className="h-20 w-full rounded object-cover"
-                              />
-                            </a>
-                          )
-                        )}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -324,6 +353,137 @@ export default function PaudAssessmentsIndex({
           </div>
         )}
       </div>
+
+      {selectedAssessment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedAssessment(null)
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="paud-assessment-detail-title"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  {typeLabels[selectedAssessment.type]}
+                </p>
+                <h3
+                  id="paud-assessment-detail-title"
+                  className="mt-1 text-xl font-semibold text-neutral-900 dark:text-white"
+                >
+                  {selectedAssessment.student.fullName}
+                </h3>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  Kelompok {selectedAssessment.schoolClass.name} •{' '}
+                  {new Date(selectedAssessment.date).toLocaleDateString('id-ID')}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Tutup detail asesmen"
+                onClick={() => setSelectedAssessment(null)}
+                className="cursor-pointer rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:hover:bg-neutral-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDeletingAssessment(selectedAssessment)
+                setSelectedAssessment(null)
+              }}
+              className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-500 dark:border-red-900/60 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="h-4 w-4" />
+              Hapus asesmen
+            </button>
+            <div className="mt-6 space-y-4 text-sm text-neutral-700 dark:text-neutral-300">
+              {selectedAssessment.type === 'checklist' && (
+                <>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">Indikator</h4>
+                  <ul className="list-inside list-disc space-y-1">
+                    {(selectedAssessment.content.indicators ?? []).map((indicator: string) => (
+                      <li key={indicator}>{indicator}</li>
+                    ))}
+                  </ul>
+                  {selectedAssessment.content.note && (
+                    <p>
+                      <strong>Catatan:</strong> {selectedAssessment.content.note}
+                    </p>
+                  )}
+                </>
+              )}
+              {selectedAssessment.type === 'anecdotal_note' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Latar</dt>
+                    <dd>{selectedAssessment.content.context}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Perilaku</dt>
+                    <dd>{selectedAssessment.content.behavior}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Analisis</dt>
+                    <dd>{selectedAssessment.content.analysis}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.type === 'work_sample' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Deskripsi karya</dt>
+                    <dd>{selectedAssessment.content.description}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Analisis</dt>
+                    <dd>{selectedAssessment.content.analysis}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.type === 'photo_series' && (
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="font-semibold">Kegiatan</dt>
+                    <dd>{selectedAssessment.content.activity}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Narasi</dt>
+                    <dd>{selectedAssessment.content.narrative}</dd>
+                  </div>
+                </dl>
+              )}
+              {selectedAssessment.attachments && selectedAssessment.attachments.length > 0 && (
+                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-800">
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">Lampiran</h4>
+                  <div className="mt-2 space-y-2">
+                    {selectedAssessment.attachments.map((attachment) => (
+                      <a
+                        key={attachment.id}
+                        href={`${attachment.url}?disposition=inline`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 px-3 py-2 hover:border-emerald-400 hover:bg-emerald-50 dark:border-neutral-700 dark:hover:bg-emerald-900/20"
+                      >
+                        <AttachmentIcon mimeType={attachment.mimeType} />
+                        <span className="min-w-0 flex-1 truncate">{attachment.originalName}</span>
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

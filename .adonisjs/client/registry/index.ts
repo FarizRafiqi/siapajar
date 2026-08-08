@@ -96,11 +96,47 @@ const routes = {
     tokens: [{"old":"/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['dashboard']['types'],
   },
+  'account.package': {
+    methods: ["GET","HEAD"],
+    pattern: '/my-package',
+    tokens: [{"old":"/my-package","type":0,"val":"my-package","end":""}],
+    types: placeholder as Registry['account.package']['types'],
+  },
+  'account.usage': {
+    methods: ["GET","HEAD"],
+    pattern: '/usage',
+    tokens: [{"old":"/usage","type":0,"val":"usage","end":""}],
+    types: placeholder as Registry['account.usage']['types'],
+  },
+  'account.subscriptions': {
+    methods: ["GET","HEAD"],
+    pattern: '/subscriptions',
+    tokens: [{"old":"/subscriptions","type":0,"val":"subscriptions","end":""}],
+    types: placeholder as Registry['account.subscriptions']['types'],
+  },
+  'glossary.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/glossary',
+    tokens: [{"old":"/glossary","type":0,"val":"glossary","end":""}],
+    types: placeholder as Registry['glossary.index']['types'],
+  },
   'curriculum.index': {
     methods: ["GET","HEAD"],
     pattern: '/curriculum',
     tokens: [{"old":"/curriculum","type":0,"val":"curriculum","end":""}],
     types: placeholder as Registry['curriculum.index']['types'],
+  },
+  'curriculum.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/curriculum/export',
+    tokens: [{"old":"/curriculum/export","type":0,"val":"curriculum","end":""},{"old":"/curriculum/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['curriculum.export']['types'],
+  },
+  'curriculum.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/curriculum/export/pdf',
+    tokens: [{"old":"/curriculum/export/pdf","type":0,"val":"curriculum","end":""},{"old":"/curriculum/export/pdf","type":0,"val":"export","end":""},{"old":"/curriculum/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['curriculum.exportPdf']['types'],
   },
   'documents.autosave': {
     methods: ["POST"],
@@ -402,6 +438,18 @@ const routes = {
     tokens: [{"old":"/rppm/:id","type":0,"val":"rppm","end":""},{"old":"/rppm/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['rppm.show']['types'],
   },
+  'rppm.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/rppm/:id/export',
+    tokens: [{"old":"/rppm/:id/export","type":0,"val":"rppm","end":""},{"old":"/rppm/:id/export","type":1,"val":"id","end":""},{"old":"/rppm/:id/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['rppm.export']['types'],
+  },
+  'rppm.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/rppm/:id/export/pdf',
+    tokens: [{"old":"/rppm/:id/export/pdf","type":0,"val":"rppm","end":""},{"old":"/rppm/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/rppm/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/rppm/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['rppm.exportPdf']['types'],
+  },
   'rppm.update': {
     methods: ["PUT"],
     pattern: '/rppm/:id',
@@ -432,6 +480,18 @@ const routes = {
     tokens: [{"old":"/rpph/:id","type":0,"val":"rpph","end":""},{"old":"/rpph/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['rpph.show']['types'],
   },
+  'rpph.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/rpph/:id/export',
+    tokens: [{"old":"/rpph/:id/export","type":0,"val":"rpph","end":""},{"old":"/rpph/:id/export","type":1,"val":"id","end":""},{"old":"/rpph/:id/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['rpph.export']['types'],
+  },
+  'rpph.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/rpph/:id/export/pdf',
+    tokens: [{"old":"/rpph/:id/export/pdf","type":0,"val":"rpph","end":""},{"old":"/rpph/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/rpph/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/rpph/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['rpph.exportPdf']['types'],
+  },
   'rpph.update': {
     methods: ["PUT"],
     pattern: '/rpph/:id',
@@ -461,6 +521,18 @@ const routes = {
     pattern: '/lkpd/:id',
     tokens: [{"old":"/lkpd/:id","type":0,"val":"lkpd","end":""},{"old":"/lkpd/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['lkpd.show']['types'],
+  },
+  'lkpd.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/lkpd/:id/export',
+    tokens: [{"old":"/lkpd/:id/export","type":0,"val":"lkpd","end":""},{"old":"/lkpd/:id/export","type":1,"val":"id","end":""},{"old":"/lkpd/:id/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['lkpd.export']['types'],
+  },
+  'lkpd.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/lkpd/:id/export/pdf',
+    tokens: [{"old":"/lkpd/:id/export/pdf","type":0,"val":"lkpd","end":""},{"old":"/lkpd/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/lkpd/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/lkpd/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['lkpd.exportPdf']['types'],
   },
   'lkpd.destroy': {
     methods: ["DELETE"],
@@ -498,6 +570,18 @@ const routes = {
     tokens: [{"old":"/media-modules/generate","type":0,"val":"media-modules","end":""},{"old":"/media-modules/generate","type":0,"val":"generate","end":""}],
     types: placeholder as Registry['media-modules.generate']['types'],
   },
+  'media-modules.exportPptx': {
+    methods: ["GET","HEAD"],
+    pattern: '/media-modules/:id/export/pptx',
+    tokens: [{"old":"/media-modules/:id/export/pptx","type":0,"val":"media-modules","end":""},{"old":"/media-modules/:id/export/pptx","type":1,"val":"id","end":""},{"old":"/media-modules/:id/export/pptx","type":0,"val":"export","end":""},{"old":"/media-modules/:id/export/pptx","type":0,"val":"pptx","end":""}],
+    types: placeholder as Registry['media-modules.exportPptx']['types'],
+  },
+  'media-modules.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/media-modules/:id/export/pdf',
+    tokens: [{"old":"/media-modules/:id/export/pdf","type":0,"val":"media-modules","end":""},{"old":"/media-modules/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/media-modules/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/media-modules/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['media-modules.exportPdf']['types'],
+  },
   'paud-assessments.index': {
     methods: ["GET","HEAD"],
     pattern: '/paud-assessments',
@@ -521,6 +605,24 @@ const routes = {
     pattern: '/paud-assessments/:id',
     tokens: [{"old":"/paud-assessments/:id","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['paud-assessments.destroy']['types'],
+  },
+  'paud-assessments.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/paud-assessments/:id/export',
+    tokens: [{"old":"/paud-assessments/:id/export","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/:id/export","type":1,"val":"id","end":""},{"old":"/paud-assessments/:id/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['paud-assessments.export']['types'],
+  },
+  'paud-assessments.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/paud-assessments/:id/export/pdf',
+    tokens: [{"old":"/paud-assessments/:id/export/pdf","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/paud-assessments/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/paud-assessments/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['paud-assessments.exportPdf']['types'],
+  },
+  'paud-assessments.attachments.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/paud-assessments/:id/attachments/:attachmentId',
+    tokens: [{"old":"/paud-assessments/:id/attachments/:attachmentId","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/:id/attachments/:attachmentId","type":1,"val":"id","end":""},{"old":"/paud-assessments/:id/attachments/:attachmentId","type":0,"val":"attachments","end":""},{"old":"/paud-assessments/:id/attachments/:attachmentId","type":1,"val":"attachmentId","end":""}],
+    types: placeholder as Registry['paud-assessments.attachments.show']['types'],
   },
   'assessments.index': {
     methods: ["GET","HEAD"],
@@ -558,6 +660,18 @@ const routes = {
     tokens: [{"old":"/assessments/:id/export","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export","type":1,"val":"id","end":""},{"old":"/assessments/:id/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['assessments.export']['types'],
   },
+  'assessments.exportDocx': {
+    methods: ["GET","HEAD"],
+    pattern: '/assessments/:id/export/docx',
+    tokens: [{"old":"/assessments/:id/export/docx","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export/docx","type":1,"val":"id","end":""},{"old":"/assessments/:id/export/docx","type":0,"val":"export","end":""},{"old":"/assessments/:id/export/docx","type":0,"val":"docx","end":""}],
+    types: placeholder as Registry['assessments.exportDocx']['types'],
+  },
+  'assessments.exportPdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/assessments/:id/export/pdf',
+    tokens: [{"old":"/assessments/:id/export/pdf","type":0,"val":"assessments","end":""},{"old":"/assessments/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/assessments/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/assessments/:id/export/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['assessments.exportPdf']['types'],
+  },
   'principal.index': {
     methods: ["GET","HEAD"],
     pattern: '/principal',
@@ -587,6 +701,12 @@ const routes = {
     pattern: '/report-cards/:classId/:semesterId/:studentId/export',
     tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['report-cards.exportPdf']['types'],
+  },
+  'report-cards.exportDocx': {
+    methods: ["GET","HEAD"],
+    pattern: '/report-cards/:classId/:semesterId/:studentId/export/docx',
+    tokens: [{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":0,"val":"report-cards","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":1,"val":"classId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":1,"val":"semesterId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":1,"val":"studentId","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":0,"val":"export","end":""},{"old":"/report-cards/:classId/:semesterId/:studentId/export/docx","type":0,"val":"docx","end":""}],
+    types: placeholder as Registry['report-cards.exportDocx']['types'],
   },
   'report-cards.narratives.save': {
     methods: ["POST"],
@@ -689,6 +809,18 @@ const routes = {
     pattern: '/admin/packages/:id',
     tokens: [{"old":"/admin/packages/:id","type":0,"val":"admin","end":""},{"old":"/admin/packages/:id","type":0,"val":"packages","end":""},{"old":"/admin/packages/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.packages.destroy']['types'],
+  },
+  'admin.entitlements.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/entitlements',
+    tokens: [{"old":"/admin/entitlements","type":0,"val":"admin","end":""},{"old":"/admin/entitlements","type":0,"val":"entitlements","end":""}],
+    types: placeholder as Registry['admin.entitlements.index']['types'],
+  },
+  'admin.entitlements.update': {
+    methods: ["PUT"],
+    pattern: '/admin/entitlements/:id',
+    tokens: [{"old":"/admin/entitlements/:id","type":0,"val":"admin","end":""},{"old":"/admin/entitlements/:id","type":0,"val":"entitlements","end":""},{"old":"/admin/entitlements/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.entitlements.update']['types'],
   },
   'admin.academic-years.index': {
     methods: ["GET","HEAD"],

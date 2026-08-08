@@ -1,6 +1,8 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import DocumentPreview from '~/components/dashboard/document-preview'
+import ExportDownloadButton from '~/components/dashboard/export-download-button'
 import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Box, ShieldAlert } from 'lucide-react'
 
 interface SchoolClass {
@@ -13,6 +15,8 @@ interface Slide {
   slideNumber: number
   title: string
   visualDescription: string
+  imagePrompt?: string
+  imageUrl?: string
   teacherNotes: string
   keyQuestion: string
 }
@@ -44,6 +48,7 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
   const guide = mediaModule.loosePartsGuide || {}
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
+  const [previewUnavailable, setPreviewUnavailable] = useState(false)
   const currentSlide = slides[currentSlideIndex]
 
   const handleNext = () => {
@@ -57,6 +62,11 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
       setCurrentSlideIndex(currentSlideIndex - 1)
     }
   }
+
+  const pdfUrl = `/media-modules/${mediaModule.id}/export/pdf?disposition=inline`
+  const handlePreviewStatus = useCallback((status: 'loading' | 'ready' | 'error') => {
+    setPreviewUnavailable(status === 'error')
+  }, [])
 
   return (
     <DashboardWrapper
@@ -88,10 +98,67 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
               </p>
             </div>
           </div>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            {mediaModule.status === 'published' ? 'Terbit' : 'Draf'}
+          </span>
         </div>
 
+        <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
+            <div>
+              <h3 className="font-semibold text-neutral-900 dark:text-white">
+                Pratinjau dokumen presentasi
+              </h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                PDF landscape dipreview langsung di browser. PPTX tetap tersedia untuk diunduh.
+              </p>
+            </div>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="cursor-pointer text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+            >
+              Buka PDF di tab baru
+            </a>
+          </div>
+          <div className="p-4 sm:p-6">
+            <DocumentPreview pdfUrl={pdfUrl} onPreviewStatus={handlePreviewStatus} />
+          </div>
+          {previewUnavailable && (
+            <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-4 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-300">
+              PPTX memakai layout landscape. Gunakan tombol Download PPTX untuk membuka file asli di
+              PowerPoint.
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-neutral-900 dark:text-white">Export dokumen</h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                Simpan versi yang siap dibagikan atau dicetak.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ExportDownloadButton
+                href={`/media-modules/${mediaModule.id}/export/pdf`}
+                filename={`${mediaModule.title}.pdf`}
+                label="Download PDF"
+              />
+              <ExportDownloadButton
+                href={`/media-modules/${mediaModule.id}/export/pptx`}
+                filename={`${mediaModule.title}.pptx`}
+                label="Download PPTX"
+                variant="primary"
+              />
+            </div>
+          </div>
+        </section>
+
         {/* Presentasi Visual Interactive Viewer */}
-        {slides.length > 0 && currentSlide && (
+        {previewUnavailable && slides.length > 0 && currentSlide && (
           <div className="rounded-2xl border border-neutral-200 bg-neutral-900 p-8 text-white shadow-xl dark:border-neutral-800">
             <div className="flex items-center justify-between border-b border-neutral-800 pb-4 text-xs font-semibold text-emerald-400">
               <span className="flex items-center gap-2">
@@ -111,7 +178,15 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
                 <p className="text-sm font-semibold uppercase text-emerald-400">
                   Visual / Ilustrasi Pembuka:
                 </p>
-                <p className="mt-2 text-lg italic">{currentSlide.visualDescription}</p>
+                {currentSlide.imageUrl ? (
+                  <img
+                    src={currentSlide.imageUrl}
+                    alt={currentSlide.title}
+                    className="mx-auto mt-4 max-h-64 rounded-xl object-contain"
+                  />
+                ) : (
+                  <p className="mt-2 text-lg italic">{currentSlide.visualDescription}</p>
+                )}
               </div>
 
               {currentSlide.keyQuestion && (

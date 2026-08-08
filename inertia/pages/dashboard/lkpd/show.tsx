@@ -1,6 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link } from '@inertiajs/react'
-import { ArrowLeft, Printer, FileText, Heart, Sparkles, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Printer, FileText, Heart, Sparkles, CheckCircle2, Download } from 'lucide-react'
 
 interface SchoolClass {
   id: number
@@ -83,6 +83,20 @@ export default function LkpdShow({ lkpd }: LkpdShowProps) {
             </div>
           </div>
           <div className="flex gap-2">
+            <a
+              href={`/lkpd/${lkpd.id}/export/pdf?disposition=inline`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4" /> PDF
+            </a>
+            <a
+              href={`/lkpd/${lkpd.id}/export`}
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              DOCX
+            </a>
             <button
               onClick={handlePrint}
               className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"

@@ -1,11 +1,11 @@
-@import "tailwindcss";
-@import "@heroui/styles";
+@import 'tailwindcss';
+@import '@heroui/styles';
 
 /* Driver.js tutorial theme */
 .driver-popover {
   border-radius: 0.75rem;
   font-family: inherit;
-  max-width:  min(22rem, calc(100vw - 2rem));
+  max-width: min(22rem, calc(100vw - 2rem));
 }
 .driver-popover-title {
   color: #064e3b;
@@ -19,8 +19,12 @@
   background-color: #171717;
   color: #f5f5f5;
 }
-.dark .driver-popover-title { color: #a7f3d0; }
-.dark .driver-popover-description { color: #d4d4d4; }
+.dark .driver-popover-title {
+  color: #a7f3d0;
+}
+.dark .driver-popover-description {
+  color: #d4d4d4;
+}
 
 /* Class-based dark mode for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -56,6 +60,37 @@
   color: #064e3b;
 }
 
+/* Keep interactive affordances consistent across the dashboard. */
+button:not(:disabled),
+a[href],
+[role='button'] {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a[href]:focus-visible,
+[role='button']:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Dashboard contrast: shared across guru and admin pages. */
+.dashboard-shell .border-neutral-100 {
+  border-color: #e5e7eb;
+}
+
+.dashboard-shell .border-neutral-200 {
+  border-color: #d1d5db;
+}
+
+.dark .dashboard-shell .dark\:border-neutral-800,
+.dark .dashboard-shell .dark\:border-neutral-700 {
+  border-color: #404040;
+}
+
 /* Custom styles for forms (login/signup) */
 .form-container {
   @apply flex flex-col justify-center max-w-md mx-auto;
@@ -69,7 +104,7 @@ label {
   @apply block text-sm font-medium mb-1;
 }
 
-input:not([type="checkbox"]):not([type="radio"]),
+input:not([type='checkbox']):not([type='radio']),
 textarea {
   @apply w-full rounded-lg h-10 border border-gray-300 px-4;
   font: inherit;
@@ -97,7 +132,8 @@ textarea[data-invalid='true'] + div {
 
 /* Aurora blob animations */
 @keyframes aurora-1 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   33% {
@@ -109,7 +145,8 @@ textarea[data-invalid='true'] + div {
 }
 
 @keyframes aurora-2 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   33% {
@@ -121,7 +158,8 @@ textarea[data-invalid='true'] + div {
 }
 
 @keyframes aurora-3 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   33% {
@@ -148,7 +186,7 @@ textarea[data-invalid='true'] + div {
   background-size: 24px 24px;
 }
 .dark .bg-dot-grid {
-  background-image: radial-gradient(circle, rgba(16,185,129,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(16, 185, 129, 0.08) 1px, transparent 1px);
 }
 
 .bg-dot-grid-lg {
@@ -156,31 +194,33 @@ textarea[data-invalid='true'] + div {
   background-size: 32px 32px;
 }
 .dark .bg-dot-grid-lg {
-  background-image: radial-gradient(circle, rgba(139,92,246,0.12) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(circle, rgba(139, 92, 246, 0.12) 1.2px, transparent 1.2px);
 }
 
 /* ─── Dark mode glow utility ──────────────────────────── */
 .dark .glow-emerald {
-  box-shadow: 0 0 40px rgba(16, 185, 129, 0.15), 0 0 80px rgba(16, 185, 129, 0.08);
+  box-shadow:
+    0 0 40px rgba(16, 185, 129, 0.15),
+    0 0 80px rgba(16, 185, 129, 0.08);
 }
 
 /* ─── Sonner toast custom theme ───────────────────────── */
-[data-sonner-toaster] [data-type="error"] {
+[data-sonner-toaster] [data-type='error'] {
   background: #fef2f2 !important;
   color: #991b1b !important;
   border: 1px solid #fecaca !important;
 }
-.dark [data-sonner-toaster] [data-type="error"] {
+.dark [data-sonner-toaster] [data-type='error'] {
   background: #450a0a !important;
   color: #fecaca !important;
   border: 1px solid #7f1d1d !important;
 }
-[data-sonner-toaster] [data-type="success"] {
+[data-sonner-toaster] [data-type='success'] {
   background: #f0fdf4 !important;
   color: #166534 !important;
   border: 1px solid #bbf7d0 !important;
 }
-.dark [data-sonner-toaster] [data-type="success"] {
+.dark [data-sonner-toaster] [data-type='success'] {
   background: #052e16 !important;
   color: #bbf7d0 !important;
   border: 1px solid #166534 !important;
@@ -203,4 +243,19 @@ textarea[data-invalid='true'] + div {
 
 .rich-text-content li + li {
   margin-top: 0.25rem;
+}
+
+/* Bordered data tables remain legible in both themes. */
+.dashboard-data-table {
+  border-collapse: collapse;
+}
+
+.dashboard-data-table th,
+.dashboard-data-table td {
+  border: 1px solid rgb(229 231 235);
+}
+
+.dark .dashboard-data-table th,
+.dark .dashboard-data-table td {
+  border-color: rgb(64 64 64);
 }

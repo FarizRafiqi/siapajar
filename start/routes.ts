@@ -11,12 +11,12 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 import db from '@adonisjs/lucid/services/db'
-import redis from '@adonisjs/redis/services/main'
 
 router.get('/', '#controllers/home_controller.index').as('home')
 router
   .get('/health', async ({ response }) => {
     try {
+      const { default: redis } = await import('@adonisjs/redis/services/main')
       await db.rawQuery('select 1')
       await redis.ping()
       return response.ok({ status: 'ok', database: 'ok', redis: 'ok' })
@@ -67,8 +67,27 @@ router
     // Dashboard
     router.get('/dashboard', '#controllers/dashboard_controller.index').as('dashboard')
 
+    router
+      .get('/my-package', '#controllers/account_billing_controller.package')
+      .as('account.package')
+    router.get('/usage', '#controllers/account_billing_controller.usage').as('account.usage')
+    router
+      .get('/subscriptions', '#controllers/account_billing_controller.subscriptions')
+      .as('account.subscriptions')
+
+    // Panduan istilah kurikulum
+    router
+      .get('/glossary', ({ inertia }) => inertia.render('dashboard/glossary/index', {}))
+      .as('glossary.index')
+
     // Kurikulum terkontrol: CP Fase Fondasi, TP, ATP, dan IKTP
     router.get('/curriculum', '#controllers/curriculum_controller.index').as('curriculum.index')
+    router
+      .get('/curriculum/export', '#controllers/curriculum_controller.export')
+      .as('curriculum.export')
+    router
+      .get('/curriculum/export/pdf', '#controllers/curriculum_controller.exportPdf')
+      .as('curriculum.exportPdf')
     router
       .post('/documents/:type/:id/autosave', '#controllers/document_workflows_controller.autosave')
       .as('documents.autosave')
@@ -206,6 +225,12 @@ router
     // RPPM (rencana mingguan TK/PAUD)
     router.get('/rppm', '#controllers/weekly_lesson_plans_controller.index').as('rppm.index')
     router.get('/rppm/:id', '#controllers/weekly_lesson_plans_controller.show').as('rppm.show')
+    router
+      .get('/rppm/:id/export', '#controllers/weekly_lesson_plans_controller.export')
+      .as('rppm.export')
+    router
+      .get('/rppm/:id/export/pdf', '#controllers/weekly_lesson_plans_controller.exportPdf')
+      .as('rppm.exportPdf')
     router.put('/rppm/:id', '#controllers/weekly_lesson_plans_controller.update').as('rppm.update')
     router
       .delete('/rppm/:id', '#controllers/weekly_lesson_plans_controller.destroy')
@@ -217,6 +242,12 @@ router
     // RPPH (rencana harian TK/PAUD)
     router.get('/rpph', '#controllers/daily_lesson_plans_controller.index').as('rpph.index')
     router.get('/rpph/:id', '#controllers/daily_lesson_plans_controller.show').as('rpph.show')
+    router
+      .get('/rpph/:id/export', '#controllers/daily_lesson_plans_controller.export')
+      .as('rpph.export')
+    router
+      .get('/rpph/:id/export/pdf', '#controllers/daily_lesson_plans_controller.exportPdf')
+      .as('rpph.exportPdf')
     router.put('/rpph/:id', '#controllers/daily_lesson_plans_controller.update').as('rpph.update')
     router
       .delete('/rpph/:id', '#controllers/daily_lesson_plans_controller.destroy')
@@ -228,6 +259,10 @@ router
     // LKPD (Lembar Kerja Peserta Didik / Lembar Aktivitas Anak)
     router.get('/lkpd', '#controllers/lkpds_controller.index').as('lkpd.index')
     router.get('/lkpd/:id', '#controllers/lkpds_controller.show').as('lkpd.show')
+    router.get('/lkpd/:id/export', '#controllers/lkpds_controller.export').as('lkpd.export')
+    router
+      .get('/lkpd/:id/export/pdf', '#controllers/lkpds_controller.exportPdf')
+      .as('lkpd.exportPdf')
     router.delete('/lkpd/:id', '#controllers/lkpds_controller.destroy').as('lkpd.destroy')
     router.post('/lkpd/generate', '#controllers/lkpds_controller.generate').as('lkpd.generate')
 
@@ -244,6 +279,12 @@ router
     router
       .post('/media-modules/generate', '#controllers/media_modules_controller.generate')
       .as('media-modules.generate')
+    router
+      .get('/media-modules/:id/export/pptx', '#controllers/media_modules_controller.exportPptx')
+      .as('media-modules.exportPptx')
+    router
+      .get('/media-modules/:id/export/pdf', '#controllers/media_modules_controller.exportPdf')
+      .as('media-modules.exportPdf')
 
     // Asesmen PAUD (ceklis, catatan anekdot, hasil karya, foto berseri)
     router
@@ -258,6 +299,18 @@ router
     router
       .delete('/paud-assessments/:id', '#controllers/paud_assessments_controller.destroy')
       .as('paud-assessments.destroy')
+    router
+      .get('/paud-assessments/:id/export', '#controllers/paud_assessments_controller.export')
+      .as('paud-assessments.export')
+    router
+      .get('/paud-assessments/:id/export/pdf', '#controllers/paud_assessments_controller.exportPdf')
+      .as('paud-assessments.exportPdf')
+    router
+      .get(
+        '/paud-assessments/:id/attachments/:attachmentId',
+        '#controllers/assessment_attachments_controller.show'
+      )
+      .as('paud-assessments.attachments.show')
 
     // Assessments (Penilaian & Nilai)
     router.get('/assessments', '#controllers/assessments_controller.index').as('assessments.index')
@@ -274,6 +327,12 @@ router
     router
       .get('/assessments/:id/export', '#controllers/assessments_controller.export')
       .as('assessments.export')
+    router
+      .get('/assessments/:id/export/docx', '#controllers/assessments_controller.exportDocx')
+      .as('assessments.exportDocx')
+    router
+      .get('/assessments/:id/export/pdf', '#controllers/assessments_controller.exportPdf')
+      .as('assessments.exportPdf')
 
     // Kepala Sekolah — dashboard read-only
     router
@@ -298,6 +357,12 @@ router
         '#controllers/report_cards_controller.exportPdf'
       )
       .as('report-cards.exportPdf')
+    router
+      .get(
+        '/report-cards/:classId/:semesterId/:studentId/export/docx',
+        '#controllers/report_cards_controller.exportDocx'
+      )
+      .as('report-cards.exportDocx')
     router
       .post(
         '/report-cards/:classId/:semesterId/:studentId/narratives',
@@ -362,6 +427,15 @@ router
     router
       .delete('/admin/packages/:id', '#controllers/admin_packages_controller.destroy')
       .as('admin.packages.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    router
+      .get('/admin/entitlements', '#controllers/admin_entitlements_controller.index')
+      .as('admin.entitlements.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/entitlements/:id', '#controllers/admin_entitlements_controller.update')
+      .as('admin.entitlements.update')
       .use(middleware.role({ roles: ['admin'] }))
 
     // Admin — Tahun Ajaran

@@ -34,6 +34,13 @@ export default class Exam extends BaseModel {
   })
   declare questions: Record<string, any>[]
 
+  @column({
+    columnName: 'header',
+    prepare: (value: Record<string, string>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
+  declare header: Record<string, string>
+
   @column()
   declare status: 'draft' | 'published'
 

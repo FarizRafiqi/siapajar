@@ -26,7 +26,10 @@ export function MagicButton({ children, className = '', onClick }: MagicButtonPr
       onMouseLeave={() => setIsHovered(false)}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={cn('relative group', className)}
+      className={cn(
+        'group relative cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500',
+        className
+      )}
       style={{ willChange: 'transform' }}
     >
       {/* Static gradient border — no blur, no animation, GPU-layer */}

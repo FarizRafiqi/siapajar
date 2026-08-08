@@ -28,11 +28,31 @@ export function examPrompt(params: {
   topic: string
   type: string
   questionCount: number
-  examMode?: 'lisan' | 'tertulis_visual' | 'multiple_choice'
+  examMode?: 'lisan' | 'tertulis_visual' | 'multiple_choice' | 'essay' | 'practical'
   isPaud?: boolean
   isRa?: boolean
 }): AiPrompt {
-  if (params.isPaud || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
+  if (params.examMode === 'essay') {
+    return {
+      system:
+        'Kamu pembuat soal uraian untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
+        '{"questions": [{"question": string, "instruction": string, "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'Buat pertanyaan terbuka, ruang jawaban, kunci ideal, dan rubrik deskriptif yang dapat dinilai guru.',
+      user: `Buatkan ${params.questionCount} soal uraian untuk mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,
+    }
+  }
+
+  if (params.examMode === 'practical') {
+    return {
+      system:
+        'Kamu pembuat instrumen praktik/performa untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
+        '{"questions": [{"question": string, "instruction": string, "answer": string, "rubric": string, "scoringGuide": string}]}. ' +
+        'Setiap instrumen harus memiliki tindakan yang diamati, bukti performa, jawaban/hasil ideal, dan rubrik deskriptif.',
+      user: `Buatkan ${params.questionCount} instrumen praktik untuk tema/topik "${params.topic}" (${params.subject}), jenis ${params.type}.`,
+    }
+  }
+
+  if (params.isPaud || params.isRa || params.examMode === 'lisan' || params.examMode === 'tertulis_visual') {
     if (params.examMode === 'lisan') {
       return {
         system:
@@ -45,17 +65,21 @@ export function examPrompt(params: {
     }
     return {
       system:
-        'Kamu pembuat soal ujian lembar kerja visual anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
-        'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-        '{"questions": [{"question": string, "visualType": string, "instruction": string, "answer": string}]}. ' +
-        'visualType bisa berupa "Menghubungkan Gambar", "Menebalkan Kata/Huruf", "Melingkari Gambar", atau "Menghitung Benda".',
-      user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis untuk tema/topik "${params.topic}" (${params.subject}).`,
+        'Kamu pembuat soal lembar kerja anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
+        'Balas HANYA JSON valid tanpa teks lain dengan format TOON/JSON ringkas: ' +
+        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'ATURAN PILIHAN GANDA (multiple_choice): ' +
+        '1. Untuk soal teks (seperti Agama, Malaikat, Nabi, Bahasa, Sains): options WAJIB berisi 3 jawaban teks relevan (contoh untuk "Nabi pertama": options=[{"label":"a","text":"Nabi Adam"},{"label":"b","text":"Nabi Nuh"},{"label":"c","text":"Nabi Muhammad"}]). DILARANG KERAS memberikan opsi angka "4" atau "..." jika soalnya tentang nama nabi/malaikat/agama! ' +
+        '2. Hanya untuk soal hitung angka visual (seperti "Berapa jumlah 4 apel"): options boleh angka. ' +
+        'HUBUNGKAN GARIS (matching): leftItems dan rightItems harus berisi nama/label pasangannya secara tepat (seperti "Nabi Nuh" <-> "Kapal"). DILARANG menempelkan ikon bintang pada teks. ' +
+        'MEWARNAI / TRACING / VISUAL: Wajib sertakan "imagePrompt" yang mendeskripsikan gambar line-art hitam-putih sederhana ramah anak.',
+      user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }
 
   return {
     system:
-      'Kamu pembuat soal ujian SD Indonesia. Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
+      'Kamu pembuat soal pilihan ganda SD Indonesia. Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
       '{"questions": [{"question": string, "options": string[], "answer": string, "explanation": string}]}. ' +
       'options berisi 4 pilihan diawali "A. ", "B. ", "C. ", "D. ". answer isi huruf opsi benar saja (contoh "A").',
     user: `Buatkan ${params.questionCount} soal pilihan ganda mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,
@@ -140,11 +164,13 @@ export function mediaModulePrompt(params: {
 
   return {
     system:
-      `Kamu pembuat Media Ajar visual untuk anak ${instName} Kurikulum Merdeka. ` +
+      `Kamu pembuat Media Ajar visual (presentation-creator) anak ${instName} Kurikulum Merdeka. ` +
+      'Gunakan kerangka GACTF (Goal, Audience, Content, Tone, Format). ' +
       'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
-      '{"slides": [{"slideNumber": number, "title": string, "visualDescription": string, "teacherNotes": string, "keyQuestion": string}], ' +
+      '{"slides": [{"slideNumber": number, "slideType": "title"|"agenda"|"concept_story"|"loose_parts"|"summary", "title": string, "visualDescription": string, "imagePrompt": string, "teacherNotes": string, "keyQuestion": string}], ' +
       '"loosePartsGuide": {"materials": string[], "activities": string[], "safetyNotes": string}}. ' +
-      'Buatkan 4-5 slide presentasi visual anak yang menarik dan panduan bahan Loose Parts (batu, daun, balok, kancing, dll).',
+      'Buatkan 5 slide presentasi visual anak (Slide 1: Title, 2: Agenda, 3: Concept Story, 4: Loose Parts, 5: Summary). ' +
+      'imagePrompt WAJIB berformat Nano Banana Line-Art: "Simple, cute, high-contrast black-and-white vector line art illustration for kids, [subject], transparent white background, no text, no watermark, no logo, clean lines".',
     user: `Buatkan outline Media Ajar visual dan panduan Loose Parts untuk tema "${params.theme}"${subthemeText}.`,
   }
 }

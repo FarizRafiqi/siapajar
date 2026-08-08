@@ -1,9 +1,8 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Head, router, useForm } from '@inertiajs/react'
-import { Link } from '@adonisjs/inertia/react'
+import { Head, Link, router, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Presentation, Trash2, Eye, Sparkles } from 'lucide-react'
+import { Presentation, Trash2, Sparkles } from 'lucide-react'
 import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
@@ -144,12 +143,6 @@ export default function MediaModulesIndex({
                     className="flex items-center gap-2"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <Link
-                      href={`/media-modules/${item.id}`}
-                      className="rounded-lg border border-neutral-200 p-2 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
                     <button
                       onClick={() => setDeletingMedia(item)}
                       className="rounded-lg border border-neutral-200 p-2 text-red-600 hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
