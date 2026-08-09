@@ -6,30 +6,22 @@ import { mcpAuthStorage } from '../../mcp/auth.js'
 export default class McpController {
   private mcpServer = createMcpServer()
 
-  /**
-   * Handle incoming MCP Streamable HTTP requests (POST / GET).
-   */
   async handle({ request, response }: HttpContext) {
     const authHeader = request.header('authorization')
-    let bearerKey: string | undefined
+    let httpKey: string | undefined
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      bearerKey = authHeader.substring(7).trim()
+      httpKey = authHeader.substring(7).trim()
     }
 
-    // Instantiate transport for current request
     const transport = new StreamableHTTPServerTransport()
     await this.mcpServer.connect(transport)
 
-    // Wrap execution context with AsyncLocalStorage to provide Bearer token fallback
-    return mcpAuthStorage.run({ apiKey: bearerKey }, async () => {
+    return mcpAuthStorage.run({ apiKey: httpKey }, async () => {
       await transport.handleRequest(request.request, response.response, request.body())
     })
   }
 
-  /**
-   * Respond to GET /.well-known/mcp for client auto-discovery.
-   */
   async wellKnown({ response }: HttpContext) {
     return response.ok({
       name: 'SiapAjar MCP Server',
