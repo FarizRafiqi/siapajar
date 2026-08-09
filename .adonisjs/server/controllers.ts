@@ -4,12 +4,15 @@
  */
 
 export const controllers = {
+  AccountBilling: () => import('#controllers/account_billing_controller'),
   AdminAcademicYears: () => import('#controllers/admin_academic_years_controller'),
   AdminAiSettings: () => import('#controllers/admin_ai_settings_controller'),
+  AdminEntitlements: () => import('#controllers/admin_entitlements_controller'),
   AdminPackages: () => import('#controllers/admin_packages_controller'),
   AdminSchools: () => import('#controllers/admin_schools_controller'),
   AdminUsers: () => import('#controllers/admin_users_controller'),
   AnnualPlans: () => import('#controllers/annual_plans_controller'),
+  AssessmentAttachments: () => import('#controllers/assessment_attachments_controller'),
   Assessments: () => import('#controllers/assessments_controller'),
   Classes: () => import('#controllers/classes_controller'),
   Curriculum: () => import('#controllers/curriculum_controller'),
@@ -32,7 +35,4 @@ export const controllers = {
   Subjects: () => import('#controllers/subjects_controller'),
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
   WeeklyLessonPlans: () => import('#controllers/weekly_lesson_plans_controller'),
-  AssessmentAttachments: () => import('#controllers/assessment_attachments_controller'),
-  AccountBilling: () => import('#controllers/account_billing_controller'),
-  AdminEntitlements: () => import('#controllers/admin_entitlements_controller'),
 }
