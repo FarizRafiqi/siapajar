@@ -9,7 +9,9 @@
   },
   "scripts": {
     "start": "node bin/server.js",
-    "build": "node ace build",
+    "build": "node ace build && npm run mcp:build",
+    "mcp:build": "tsc --project tsconfig.mcp.json",
+    "mcp:start": "node build/mcp/index.js",
     "dev": "node ace serve --hmr",
     "queue:work": "node ace queue:work",
     "queue:work:ai": "node ace queue:work --queue ai,reports,audit",
@@ -81,6 +83,7 @@
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
     "@inertiajs/react": "^2.3.24",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@tailwindcss/vite": "^4.3.2",
     "@tiptap/extension-link": "^3.20.0",
     "@tiptap/extension-text-align": "^3.20.0",
