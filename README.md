@@ -8,7 +8,7 @@ All-in-one administrasi guru Kurikulum Merdeka. Siap mengajar, siap administrasi
 - **Frontend:** InertiaJS + React 19, HeroUI, Tailwind CSS 4, Framer Motion
 - **Database:** PostgreSQL
 - **AI generation:** 9router / OpenAI / Anthropic (configurable via admin panel)
-- **Export:** DOCX (`docx`) + XLSX (`xlsx`)
+- **Export:** Canonical RA/TK worksheet preview + PDF (Playwright Chromium) + DOCX (`docx`) + XLSX (`xlsx`)
 - **Typed API client:** Tuyau
 
 ### Planned integrations (not yet implemented)
@@ -68,6 +68,14 @@ For local development without a Redis worker, set `QUEUE_DRIVER=sync`. For produ
 ```bash
 node ace queue:work
 ```
+
+Exam PDF export uses Playwright Chromium so print preview, PDF, and DOCX follow the same worksheet contract. On a native Debian/Ubuntu host, install the browser once before starting the app:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+The included Dockerfile installs Chromium and its runtime libraries automatically. This is only the application runtime; PostgreSQL and Redis can remain native services/DBNGIN services as documented above.
 
 ## Project Structure
 
