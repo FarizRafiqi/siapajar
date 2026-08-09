@@ -214,6 +214,107 @@ class CodexAppServerClient {
     if (!responseText.trim()) throw new CodexServiceError('Codex tidak mengembalikan konten.')
     return responseText
   }
+
+  async generateImage(prompt: string, model?: string | null) {
+    await this.ensureStarted()
+    const threadResult = (await this.requestRaw('thread/start', {
+      model: model || undefined,
+      approvalPolicy: 'never',
+      sandbox: 'read-only',
+      ephemeral: true,
+    })) as { thread?: { id?: string } }
+    const threadId = threadResult.thread?.id
+    if (!threadId) throw new CodexServiceError('Codex tidak membuat thread gambar baru.')
+
+    let imageResult: string | undefined
+    let activeTurnId: string | undefined
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    const completed = new Promise<void>((resolve, reject) => {
+      const finish = (callback: () => void) => {
+        if (timeout) clearTimeout(timeout)
+        this.notificationHandlers.delete(handler)
+        callback()
+      }
+      const handler = (message: JsonRpcMessage) => {
+        const params = message.params || {}
+        if (
+          message.method === 'turn/started' &&
+          params.turn?.threadId === threadId &&
+          typeof params.turn?.id === 'string'
+        ) {
+          activeTurnId = params.turn.id
+        }
+        if (message.method === 'item/completed' && params.item?.type === 'image_generation_call') {
+          const result = params.item.result
+          if (typeof result === 'string' && result.trim()) imageResult = result
+        }
+        if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
+          if (params.turn?.status === 'failed') {
+            finish(() =>
+              reject(
+                new CodexServiceError(
+                  params.turn?.error?.message || 'Codex gagal membuat ilustrasi.'
+                )
+              )
+            )
+          } else {
+            finish(resolve)
+          }
+        }
+      }
+      this.notificationHandlers.add(handler)
+      timeout = setTimeout(() => {
+        this.notificationHandlers.delete(handler)
+        reject(new CodexServiceError('Codex tidak menyelesaikan pembuatan ilustrasi.'))
+      }, 120_000)
+    })
+
+    const turnResult = (await this.requestRaw('turn/start', {
+      threadId,
+      model: model || undefined,
+      approvalPolicy: 'never',
+      input: [
+        {
+          type: 'text',
+          text: `Use GPT Image 2 image generation for this request. Return one generated image asset, no explanation: ${prompt}`,
+        },
+      ],
+    })) as { turn?: { id?: string } }
+    activeTurnId = turnResult.turn?.id
+    if (!activeTurnId) throw new CodexServiceError('Codex tidak memulai turn gambar.')
+    await completed
+    if (!imageResult) throw new CodexServiceError('Codex tidak mengembalikan asset gambar.')
+    return normalizeImageResult(imageResult)
+  }
+}
+
+async function normalizeImageResult(result: string) {
+  const value = result.trim()
+  if (value.startsWith('data:image/')) return value
+
+  if (/^https?:\/\//i.test(value)) {
+    const response = await fetch(value)
+    if (!response.ok)
+      throw new CodexServiceError('Codex mengembalikan URL gambar yang tidak dapat diunduh.')
+    const mime = response.headers.get('content-type')?.split(';')[0] || 'image/png'
+    const bytes = Buffer.from(await response.arrayBuffer())
+    if (!bytes.length || bytes.length > 8 * 1024 * 1024) {
+      throw new CodexServiceError('Ukuran ilustrasi dari Codex tidak aman untuk disimpan.')
+    }
+    return `data:${mime};base64,${bytes.toString('base64')}`
+  }
+
+  const encoded = value.replaceAll(/\s/g, '')
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+    throw new CodexServiceError(
+      'Codex mengembalikan asset gambar dalam format yang tidak didukung.'
+    )
+  }
+  const bytes = Buffer.from(encoded, 'base64')
+  if (!bytes.length || bytes.length > 8 * 1024 * 1024) {
+    throw new CodexServiceError('Ukuran ilustrasi dari Codex tidak aman untuk disimpan.')
+  }
+  return `data:image/png;base64,${encoded}`
 }
 
 const client = new CodexAppServerClient()
@@ -232,4 +333,8 @@ export function listCodexModels() {
 
 export function callCodex(systemPrompt: string, userPrompt: string, model?: string | null) {
   return client.generate(systemPrompt, userPrompt, model)
+}
+
+export function generateCodexImage(prompt: string, model?: string | null) {
+  return client.generateImage(prompt, model)
 }

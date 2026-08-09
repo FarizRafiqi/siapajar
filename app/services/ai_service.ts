@@ -1,6 +1,6 @@
 import env from '#start/env'
 import AiSetting from '#models/ai_setting'
-import { callCodex } from '#services/codex_service'
+import { callCodex, generateCodexImage } from '#services/codex_service'
 import { DateTime } from 'luxon'
 
 /** Error yang aman ditampilkan langsung ke guru — bukan stack trace. */
@@ -298,6 +298,57 @@ export async function generateGeminiImage(prompt: string): Promise<string | null
   }
 
   return `data:${imagePart.mimeType};base64,${imageBytes.toString('base64')}`
+}
+
+async function generateOpenAiImage(prompt: string): Promise<string> {
+  const resolved = await resolveProvider()
+  if (resolved.authMode === 'oauth') {
+    return generateCodexImage(prompt, resolved.model)
+  }
+  if (!resolved.apiKey) {
+    throw new AiServiceError('API key OpenAI belum diisi untuk membuat gambar.')
+  }
+
+  const response = await fetchWithTimeout(
+    'https://api.openai.com/v1/images/generations',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resolved.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-2',
+        prompt,
+        size: '1024x1024',
+        quality: 'medium',
+      }),
+    },
+    120_000
+  )
+  if (!response.ok) {
+    throw new AiServiceError(
+      `OpenAI gagal membuat ilustrasi (status ${response.status}). Coba lagi.`
+    )
+  }
+  const payload = (await response.json()) as { data?: Array<{ b64_json?: string }> }
+  const encoded = payload.data?.[0]?.b64_json
+  if (!encoded) throw new AiServiceError('OpenAI tidak mengembalikan asset gambar.')
+  const imageBytes = Buffer.from(encoded, 'base64')
+  if (!imageBytes.length || imageBytes.length > MAX_INLINE_IMAGE_BYTES) {
+    throw new AiServiceError('Ukuran ilustrasi dari OpenAI tidak aman untuk disimpan.')
+  }
+  return `data:image/png;base64,${encoded}`
+}
+
+export async function generateConfiguredImage(prompt: string): Promise<string> {
+  const resolved = await resolveProvider()
+  if (resolved.provider === 'gemini') {
+    const image = await generateGeminiImage(prompt)
+    if (image) return image
+  }
+  if (resolved.provider === 'openai') return generateOpenAiImage(prompt)
+  throw new AiServiceError('Provider AI aktif belum mendukung pembuatan gambar.')
 }
 
 async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<string> {

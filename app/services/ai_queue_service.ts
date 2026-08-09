@@ -113,6 +113,13 @@ class AiQueueService {
           userId: options.userId,
           prompt: options.prompt,
         }).dedup({ id: jobKey, ttl: '5m' })
+        await auditService.record({
+          actorId: options.userId,
+          action: 'ai.generate.image.queued',
+          entityType: 'ai_job',
+          entityId: job.id,
+          metadata: { combo: 'siapajar-image', quotaReserved: reserved },
+        })
       } catch (error) {
         if (reserved) await releaseUsageReservation(jobKey)
         throw error

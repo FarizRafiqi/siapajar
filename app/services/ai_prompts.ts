@@ -72,12 +72,12 @@ export function examPrompt(params: {
       system:
         'Kamu pembuat soal lembar kerja anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
         'Balas HANYA JSON valid tanpa teks lain dengan format TOON/JSON ringkas: ' +
-        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "traceText": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string, "imagePrompt": string}], "mathProblems": [{"topNumber": number, "bottomNumber": number, "operator": "+"|"-"}], "countItems": [{"count": number, "options": number[]}], "answer": string, "explanation": string, "rubric": string}]}. ' +
         'ATURAN PILIHAN GANDA (multiple_choice): ' +
         '1. Untuk soal teks (seperti Agama, Malaikat, Nabi, Bahasa, Sains): options WAJIB berisi 3 jawaban teks relevan (contoh untuk "Nabi pertama": options=[{"label":"a","text":"Nabi Adam"},{"label":"b","text":"Nabi Nuh"},{"label":"c","text":"Nabi Muhammad"}]). DILARANG KERAS memberikan opsi angka "4" atau "..." jika soalnya tentang nama nabi/malaikat/agama! ' +
         '2. Hanya untuk soal hitung angka visual (seperti "Berapa jumlah 4 apel"): options boleh angka. ' +
         'HUBUNGKAN GARIS (matching): leftItems dan rightItems harus berisi nama/label pasangannya secara tepat (seperti "Nabi Nuh" <-> "Kapal"). DILARANG menempelkan ikon bintang pada teks. ' +
-        'MEWARNAI / TRACING / VISUAL: Wajib sertakan "imagePrompt" yang mendeskripsikan gambar line-art hitam-putih sederhana ramah anak.',
+        'MEWARNAI: Wajib sertakan imagePrompt untuk ilustrasi hitam-putih tanpa warna. TRACING TEKS: Wajib sertakan traceText. TRACING GAMBAR: Wajib sertakan imagePrompt untuk line-art putus-putus. Gambar tidak boleh berupa emoji.',
       user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).`,
     }
   }

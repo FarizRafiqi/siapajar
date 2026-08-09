@@ -2,7 +2,7 @@ import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
 import { DateTime } from 'luxon'
 import AiJob from '#models/ai_job'
-import { generateGeminiImage } from '#services/ai_service'
+import { generateConfiguredImage } from '#services/ai_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
 
 export interface GenerateAiImagePayload {
@@ -28,7 +28,7 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
     job.startedAt = DateTime.now()
     await job.save()
     try {
-      job.result = await generateGeminiImage(this.payload.prompt)
+      job.result = await generateConfiguredImage(this.payload.prompt)
       job.status = 'completed'
       job.finishedAt = DateTime.now()
       await job.save()
