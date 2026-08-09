@@ -91,6 +91,23 @@ function generatedImagePrompt(question: Record<string, any>, isRa: boolean) {
   return ''
 }
 
+function matchingItemImagePrompt(label: string, isRa: boolean) {
+  const context = isRa
+    ? 'gentle Islamic values for RA children'
+    : 'a friendly PAUD/TK learning theme'
+  return `Simple black-and-white printable worksheet illustration of ${label}, ${context}, clear thick outlines, centered object, white background, no text, no letters, no watermark.`
+}
+
+function exportErrorResponse(error: unknown, format: string, response: HttpContext['response']) {
+  if (error instanceof EntitlementError) {
+    return response.status(422).json({ message: error.message })
+  }
+
+  return response.status(503).json({
+    message: `${format} belum dapat dibuat. Mesin export sedang tidak siap. Coba lagi setelah konfigurasi server diperbaiki.`,
+  })
+}
+
 export default class ExamsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
@@ -139,7 +156,12 @@ export default class ExamsController {
       return response.redirect('/exams')
     }
 
-    const buffer = await exportExam(exam, user)
+    let buffer: Buffer
+    try {
+      buffer = await exportExam(exam, user)
+    } catch (error) {
+      return exportErrorResponse(error, 'DOCX', response)
+    }
     const safeTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
     const filename = `Naskah_Soal_${safeTitle || 'RA_TK'}.docx`
 
@@ -159,7 +181,12 @@ export default class ExamsController {
       return response.redirect('/exams')
     }
 
-    const buffer = await exportExamPdf(exam, user)
+    let buffer: Buffer
+    try {
+      buffer = await exportExamPdf(exam, user)
+    } catch (error) {
+      return exportErrorResponse(error, 'PDF', response)
+    }
     const safeTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
     const filename = `Naskah_Soal_${safeTitle || 'RA_TK'}.pdf`
 
@@ -333,7 +360,20 @@ export default class ExamsController {
         const fallbackPrompt = generatedImagePrompt(question, user.institutionType === 'ra')
         if (fallbackPrompt && !question.imagePrompt) question.imagePrompt = fallbackPrompt
         const visualRequests: Array<{ target: Record<string, any>; prompt: string }> = []
-        if (question.imagePrompt && !question.imageUrl) {
+        const isMatching = question.type === 'matching'
+        if (isMatching) {
+          for (const side of ['leftItems', 'rightItems'] as const) {
+            for (const item of Array.isArray(question[side]) ? question[side] : []) {
+              if (item?.label && !item.imagePrompt && !item.imageUrl) {
+                item.imagePrompt = matchingItemImagePrompt(
+                  item.label,
+                  user.institutionType === 'ra'
+                )
+              }
+            }
+          }
+        }
+        if (!isMatching && question.imagePrompt && !question.imageUrl) {
           visualRequests.push({ target: question, prompt: question.imagePrompt })
         }
         for (const side of ['leftItems', 'rightItems'] as const) {

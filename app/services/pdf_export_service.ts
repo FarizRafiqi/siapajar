@@ -10,16 +10,29 @@ import type Assessment from '#models/assessment'
 import type PaudAssessment from '#models/paud_assessment'
 import type { StudentReport, PaudStudentNarrative } from '#services/report_card_service'
 import type User from '#models/user'
-import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
+import {
+  commitUsageReservation,
+  releaseUsageReservation,
+  reserveUsage,
+} from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
-import { chromium } from 'playwright'
+import { chromium, type Browser } from 'playwright'
 import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
 
 async function consumePdfExport(user: User) {
+  const reservationKey = await reservePdfExport(user)
+  if (reservationKey) await commitPdfExport(user, reservationKey)
+}
+
+async function reservePdfExport(user: User) {
   const reservationKey = `export:pdf:${user.id}:${randomUUID()}`
   const reserved = await reserveUsage(user, 'export_pdf', reservationKey, 1, { format: 'pdf' })
-  if (reserved) await commitUsageReservation(reservationKey)
+  return reserved ? reservationKey : null
+}
+
+async function commitPdfExport(user: User, reservationKey: string) {
+  await commitUsageReservation(reservationKey)
   await auditService.record({
     actorId: user.id,
     action: 'export.pdf',
@@ -126,9 +139,10 @@ export async function exportTeachingModulePdf(
 }
 
 export async function exportExamPdf(exam: Exam, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const browser = await chromium.launch({ headless: true })
+  const reservationKey = charge ? await reservePdfExport(user) : null
+  let browser: Browser | null = null
   try {
+    browser = await chromium.launch({ headless: true })
     const page = await browser.newPage({
       viewport: { width: 820, height: 1380 },
       deviceScaleFactor: 1,
@@ -136,15 +150,20 @@ export async function exportExamPdf(exam: Exam, user: User, charge = true) {
     await page.setContent(renderExamWorksheetHtml(exam, user), { waitUntil: 'networkidle' })
     await page.waitForFunction("document.documentElement.dataset.worksheetReady === 'true'")
     await page.waitForFunction('Array.from(document.images).every((image) => image.complete)')
-    return await page.pdf({
+    const buffer = await page.pdf({
       width: '8.51in',
       height: '14.34in',
       printBackground: true,
       preferCSSPageSize: true,
       margin: { top: '0', right: '0', bottom: '0', left: '0' },
     })
+    if (reservationKey) await commitPdfExport(user, reservationKey)
+    return buffer
+  } catch (error) {
+    if (reservationKey) await releaseUsageReservation(reservationKey)
+    throw error
   } finally {
-    await browser.close()
+    await browser?.close()
   }
 }
 
