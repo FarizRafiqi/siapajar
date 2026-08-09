@@ -3,6 +3,9 @@ import { defineConfig, drivers, exponentialBackoff } from '@adonisjs/queue'
 
 const isTestEnvironment = env.get('NODE_ENV') === 'test'
 
+// The MCP server runs as a stdio process and must not require Redis.
+const isMcpServer = env.get('MCP_SERVER') === 'true'
+
 /**
  * Official AdonisJS queue configuration.
  *
@@ -14,8 +17,10 @@ export default defineConfig({
   adapters: {
     // Unit tests must stay self-contained. The queue provider resolves every
     // configured adapter during boot, so even a sync default would otherwise
-    // initialize the Redis connection.
-    ...(isTestEnvironment ? {} : { redis: drivers.redis({ connectionName: 'main' }) }),
+    // initialize the Redis connection. Same for the MCP server.
+    ...(isTestEnvironment || isMcpServer
+      ? {}
+      : { redis: drivers.redis({ connectionName: 'main' }) }),
     sync: drivers.sync(),
   },
   worker: {

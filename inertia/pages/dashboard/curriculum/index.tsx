@@ -66,14 +66,15 @@ interface Props {
 
 function formatLabel(str: string | null | undefined): string {
   if (!str) return ''
-  return str
-    .replaceAll('_', ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
+  return str.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function stripHtml(str: string | null | undefined): string {
   if (!str) return ''
-  return str.split('<').map((part) => part.substring(part.indexOf('>') + 1)).join('')
+  return str
+    .split('<')
+    .map((part) => part.substring(part.indexOf('>') + 1))
+    .join('')
 }
 
 function Modal({
@@ -143,7 +144,11 @@ function ObjectiveCard({
                 className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 hover:underline dark:text-purple-300"
               >
                 <span>{indicators.length} IKTP</span>
-                {showInd ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {showInd ? (
+                  <ChevronUp className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                )}
               </button>
             )}
           </div>
@@ -192,9 +197,13 @@ function ObjectiveCard({
               className="flex items-start justify-between gap-3 rounded-lg bg-neutral-100 p-3 dark:bg-neutral-800/80"
             >
               <div>
-                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">• {ind.description}</p>
+                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                  • {ind.description}
+                </p>
                 {ind.achievementCriteria && (
-                  <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mt-0.5">Kriteria: {ind.achievementCriteria}</p>
+                  <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mt-0.5">
+                    Kriteria: {ind.achievementCriteria}
+                  </p>
                 )}
               </div>
               <span className="rounded bg-neutral-300 px-2 py-0.5 text-xs font-bold text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100 shrink-0">
@@ -223,9 +232,7 @@ function SequenceCard({
     <div className="rounded-xl border border-neutral-300 bg-neutral-50 p-5 dark:border-neutral-800 dark:bg-neutral-800/40 space-y-3">
       <div className="flex items-center justify-between border-b border-neutral-200 pb-3 dark:border-neutral-700">
         <div>
-          <h4 className="text-base font-bold text-neutral-900 dark:text-white">
-            {sequence.title}
-          </h4>
+          <h4 className="text-base font-bold text-neutral-900 dark:text-white">{sequence.title}</h4>
           <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
             {sequence.items?.length || 0} Langkah Tujuan Pembelajaran
           </span>
@@ -257,11 +264,15 @@ function SequenceCard({
                 <div className="min-w-0 flex-1">
                   {targetObj ? (
                     <p className="font-semibold text-neutral-900 dark:text-neutral-100">
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400 mr-2">{targetObj.code}</span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400 mr-2">
+                        {targetObj.code}
+                      </span>
                       {stripHtml(targetObj.title)}
                     </p>
                   ) : (
-                    <p className="text-neutral-500">Tujuan Pembelajaran #{item.learningObjectiveId}</p>
+                    <p className="text-neutral-500">
+                      Tujuan Pembelajaran #{item.learningObjectiveId}
+                    </p>
                   )}
                 </div>
               </div>
@@ -291,12 +302,14 @@ function SequenceSaveModal({
 }: Readonly<{
   selectedObjectives: number[]
   sequences: Sequence[]
-  sequenceForm: ReturnType<typeof useForm<{
-    title: string
-    educationLevel: 'tk' | 'sd'
-    groupContext: GroupContextType
-    items: Array<{ learningObjectiveId: number; order: number }>
-  }>>
+  sequenceForm: ReturnType<
+    typeof useForm<{
+      title: string
+      educationLevel: 'tk' | 'sd'
+      groupContext: GroupContextType
+      items: Array<{ learningObjectiveId: number; order: number }>
+    }>
+  >
   onClose: () => void
   onSave: (mode: SaveSequenceMode, targetSequenceId?: number) => void
 }>) {
@@ -350,7 +363,10 @@ function SequenceSaveModal({
 
         {saveSequenceMode === 'new' ? (
           <div>
-            <label htmlFor="sequence-title" className="block font-bold text-neutral-900 dark:text-neutral-100">
+            <label
+              htmlFor="sequence-title"
+              className="block font-bold text-neutral-900 dark:text-neutral-100"
+            >
               Judul Alur ATP Baru
             </label>
             <input
@@ -366,7 +382,10 @@ function SequenceSaveModal({
         ) : (
           <div className="space-y-3">
             <div>
-              <label htmlFor="select-existing-sequence" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="select-existing-sequence"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Pilih Alur ATP Tujuan
               </label>
               <select
@@ -387,8 +406,9 @@ function SequenceSaveModal({
               <div className="rounded-xl bg-indigo-50 dark:bg-indigo-950/40 p-3.5 border border-indigo-200 dark:border-indigo-900/50 text-xs font-medium text-indigo-900 dark:text-indigo-200">
                 <p className="font-bold">Informasi Penambahan TP:</p>
                 <p className="mt-1">
-                  • <strong>{newSelectedIds.length} TP baru</strong> akan ditambahkan ke alur ini.<br />
-                  • <strong>{duplicateSelectedIds.length} TP yang sudah ada</strong> di Alur ATP ini akan dilewati secara otomatis untuk mencegah duplikasi.
+                  • <strong>{newSelectedIds.length} TP baru</strong> akan ditambahkan ke alur ini.
+                  <br />• <strong>{duplicateSelectedIds.length} TP yang sudah ada</strong> di Alur
+                  ATP ini akan dilewati secara otomatis untuk mencegah duplikasi.
                 </p>
               </div>
             )}
@@ -397,7 +417,8 @@ function SequenceSaveModal({
               <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 border border-amber-200 dark:border-amber-900/50 text-xs font-medium text-amber-900 dark:text-amber-200">
                 <p className="font-bold text-amber-800 dark:text-amber-300">Semua TP Sudah Ada!</p>
                 <p className="mt-1">
-                  Seluruh {selectedObjectives.length} TP yang Anda pilih sudah terdaftar di Alur ATP "{targetSeq?.title}". Silakan pilih TP lain atau buat ATP baru.
+                  Seluruh {selectedObjectives.length} TP yang Anda pilih sudah terdaftar di Alur ATP
+                  &quot;{targetSeq?.title}&quot;. Silakan pilih TP lain atau buat ATP baru.
                 </p>
               </div>
             )}
@@ -406,7 +427,9 @@ function SequenceSaveModal({
               <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3.5 border border-emerald-200 dark:border-emerald-900/50 text-xs font-medium text-emerald-900 dark:text-emerald-200">
                 <p className="font-bold">Siap Ditambahkan:</p>
                 <p className="mt-1">
-                  Seluruh {newSelectedIds.length} TP akan ditambahkan ke urutan akhir Alur ATP "{targetSeq?.title}".
+                  Seluruh {newSelectedIds.length} TP akan ditambahkan ke urutan akhir Alur ATP
+                  &quot;
+                  {targetSeq?.title}&quot;.
                 </p>
               </div>
             )}
@@ -520,9 +543,7 @@ function ExploreTab({
                 <span className="text-xs font-extrabold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
                   {cp.code} · FASE FONDASI
                 </span>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
-                  {cp.title}
-                </h3>
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{cp.title}</h3>
               </div>
             </div>
 
@@ -596,7 +617,12 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
   const [sequenceToDelete, setSequenceToDelete] = useState<Sequence | null>(null)
 
-  const objectiveForm = useForm<{ cpId: number; code: string; title: string; groupContext: GroupContextType }>({
+  const objectiveForm = useForm<{
+    cpId: number
+    code: string
+    title: string
+    groupContext: GroupContextType
+  }>({
     cpId: selectedCp,
     code: '',
     title: '',
@@ -738,12 +764,18 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
 
       <div className="space-y-6">
         {/* Minimalist Top Header Bar */}
-        <div data-tour="curriculum-intro" className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-300 pb-4 dark:border-neutral-700">
+        <div
+          data-tour="curriculum-intro"
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-300 pb-4 dark:border-neutral-700"
+        >
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
               {isPaud ? `Kurikulum ${institutionLabel} · PAUD` : 'Kurikulum Sekolah Dasar'}
             </h2>
-            <p data-tour="curriculum-flow" className="mt-1 text-sm text-neutral-700 dark:text-neutral-200">
+            <p
+              data-tour="curriculum-flow"
+              className="mt-1 text-sm text-neutral-700 dark:text-neutral-200"
+            >
               Kelola acuan capaian (CP), tujuan pembelajaran (TP), dan alur pembelajaran (ATP).
             </p>
           </div>
@@ -929,7 +961,8 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 </div>
               ) : (
                 <div className="mt-4 rounded-xl border border-dashed border-neutral-400 p-6 text-center text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                  Belum ada Alur ATP tersimpan. Pilih beberapa TP di tab "Eksplor CP & TP", lalu simpan.
+                  Belum ada Alur ATP tersimpan. Pilih beberapa TP di tab &quot;Eksplor CP &amp;
+                  TP&quot;, lalu simpan.
                 </div>
               )}
             </div>
@@ -947,7 +980,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
         {selectedObjectives.length > 0 && (
           <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex items-center gap-4 rounded-full bg-white text-neutral-900 border border-neutral-300 shadow-2xl backdrop-blur-md dark:bg-neutral-900 dark:text-white dark:border-neutral-700 px-6 py-3.5">
             <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-              <strong className="text-emerald-700 dark:text-emerald-400 font-bold">{selectedObjectives.length} TP</strong> terpilih untuk Alur ATP
+              <strong className="text-emerald-700 dark:text-emerald-400 font-bold">
+                {selectedObjectives.length} TP
+              </strong>{' '}
+              terpilih untuk Alur ATP
             </span>
             <button
               type="button"
@@ -978,7 +1014,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             className="space-y-4 text-sm"
           >
             <div>
-              <label htmlFor="objective-code" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="objective-code"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Kode TP (opsional)
               </label>
               <input
@@ -991,7 +1030,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               />
             </div>
             <div>
-              <label htmlFor="objective-title" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="objective-title"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Rumusan Tujuan Pembelajaran (TP)
               </label>
               <textarea
@@ -1046,7 +1088,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
             className="space-y-4 text-sm"
           >
             <div>
-              <label htmlFor="indicator-description" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="indicator-description"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Deskripsi Perilaku / Bukti Diamati
               </label>
               <textarea
@@ -1060,7 +1105,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               />
             </div>
             <div>
-              <label htmlFor="indicator-evidence-type" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="indicator-evidence-type"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Jenis Bukti Asesmen
               </label>
               <select
@@ -1076,7 +1124,10 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               </select>
             </div>
             <div>
-              <label htmlFor="indicator-criteria" className="block font-bold text-neutral-900 dark:text-neutral-100">
+              <label
+                htmlFor="indicator-criteria"
+                className="block font-bold text-neutral-900 dark:text-neutral-100"
+              >
                 Kriteria Ketuntasan (opsional)
               </label>
               <input
@@ -1113,7 +1164,8 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
         <Modal title="Konfirmasi Hapus Data Contoh" onClose={() => setShowResetConfirmModal(false)}>
           <div className="space-y-5 text-sm">
             <p className="text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed">
-              Apakah Anda yakin ingin menghapus seluruh data contoh? Seluruh data contoh Alur Tujuan Pembelajaran (ATP) dan IKTP yang dimuat akan dihapus dari akun Anda.
+              Apakah Anda yakin ingin menghapus seluruh data contoh? Seluruh data contoh Alur Tujuan
+              Pembelajaran (ATP) dan IKTP yang dimuat akan dihapus dari akun Anda.
             </p>
 
             <div className="flex justify-end gap-2.5 border-t border-neutral-200 dark:border-neutral-800 pt-4">
@@ -1142,7 +1194,12 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
         <Modal title="Hapus Alur ATP" onClose={() => setSequenceToDelete(null)}>
           <div className="space-y-5 text-sm">
             <p className="text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed">
-              Apakah Anda yakin ingin menghapus Alur ATP <strong className="text-neutral-900 dark:text-white">"{sequenceToDelete.title}"</strong>? Susunan Alur Tujuan Pembelajaran ini akan dihapus dari daftar. Langkah TP di dalamnya tidak akan terhapus dari daftar CP/TP.
+              Apakah Anda yakin ingin menghapus Alur ATP{' '}
+              <strong className="text-neutral-900 dark:text-white">
+                &quot;{sequenceToDelete.title}&quot;
+              </strong>
+              ? Susunan Alur Tujuan Pembelajaran ini akan dihapus dari daftar. Langkah TP di
+              dalamnya tidak akan terhapus dari daftar CP/TP.
             </p>
 
             <div className="flex justify-end gap-2.5 border-t border-neutral-200 dark:border-neutral-800 pt-4">

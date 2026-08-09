@@ -9,7 +9,10 @@ interface UsageItem {
   limit: number | null
 }
 
-export default function Usage({ periodLabel, usage }: Readonly<{ periodLabel: string; usage: UsageItem[] }>) {
+export default function Usage({
+  periodLabel,
+  usage,
+}: Readonly<{ periodLabel: string; usage: UsageItem[] }>) {
   return (
     <DashboardWrapper
       title="Penggunaan"
@@ -28,7 +31,9 @@ export default function Usage({ periodLabel, usage }: Readonly<{ periodLabel: st
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Paket Saya
           </Link>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Penggunaan</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
+            Penggunaan
+          </h2>
           <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
             Ringkasan pemakaian fitur untuk {periodLabel}.
           </p>
