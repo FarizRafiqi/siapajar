@@ -1,13 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import {
-  API_KEY_PARAM,
-  checkAuth,
-  authError,
-  okResult,
-  errorResult,
-  getEffectiveUser,
-} from '../auth.js'
+import { API_KEY_PARAM, checkAuthAndAuthorize, authError, okResult, errorResult } from '../auth.js'
+import { applyUserOrSchoolScope } from '../scoping.js'
 import CurriculumCp from '#models/curriculum_cp'
 import LearningObjective from '#models/learning_objective'
 import LearningSequence from '#models/learning_sequence'
@@ -25,8 +19,12 @@ export function registerCurriculumTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'curriculum',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const cps = await CurriculumCp.query()
           .preload('learningObjectives', (q) => q.preload('indicators'))
@@ -46,20 +44,25 @@ export function registerCurriculumTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         cp_id: z.number().int().optional().describe('Filter by CP ID'),
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         limit: z.number().int().min(1).max(200).default(100).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'curriculum',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = LearningObjective.query().preload('cp').preload('indicators')
         if (args.cp_id) query.where('cp_id', args.cp_id)
-        if (args.user_id) {
-          const uid = args.user_id
-          query.where((q) => q.whereNull('user_id').orWhere('user_id', uid))
+
+        if (ctx.role !== 'admin') {
+          query.where((q) => q.whereNull('user_id').orWhere('user_id', ctx.user.id))
         }
+
         const objectives = await query.orderBy('id', 'asc').limit(args.limit)
         return okResult({
           count: objectives.length,
@@ -77,19 +80,22 @@ export function registerCurriculumTools(server: McpServer) {
       description: 'List Learning Sequences (Alur Tujuan Pembelajaran - ATP).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'curriculum',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const sequences = await LearningSequence.query()
-          .where('user_id', user.id)
-          .orderBy('updated_at', 'desc')
-          .limit(args.limit)
+        const query = LearningSequence.query()
+        applyUserOrSchoolScope(query, ctx)
+
+        const sequences = await query.orderBy('updated_at', 'desc').limit(args.limit)
         return okResult({
           count: sequences.length,
           learning_sequences: sequences.map((s) => s.toJSON()),
@@ -107,13 +113,16 @@ export function registerCurriculumTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         learning_objective_id: z.number().int().optional().describe('Filter by TP ID'),
-        sequence_id: z.number().int().optional().describe('Filter by sequence ID'),
         limit: z.number().int().min(1).max(200).default(100).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'curriculum',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const query = IktpIndicator.query().preload('learningObjective')
         if (args.learning_objective_id)
@@ -138,8 +147,12 @@ export function registerCurriculumTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'curriculum',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         let cpCount = 0
         let tpCount = 0

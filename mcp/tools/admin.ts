@@ -1,13 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import {
-  API_KEY_PARAM,
-  checkAuth,
-  authError,
-  okResult,
-  errorResult,
-  getEffectiveUser,
-} from '../auth.js'
+import { API_KEY_PARAM, checkAuthAndAuthorize, authError, okResult, errorResult } from '../auth.js'
+import { applyUserOrSchoolScope } from '../scoping.js'
 import School from '#models/school'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
@@ -35,10 +29,23 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'kepala_sekolah'],
+        group: 'schools',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const schools = await School.query().orderBy('id', 'asc').limit(args.limit)
+        const query = School.query()
+        if (ctx.role === 'kepala_sekolah') {
+          if (ctx.schoolId) {
+            query.where('id', ctx.schoolId)
+          } else {
+            query.whereRaw('1 = 0')
+          }
+        }
+        const schools = await query.orderBy('id', 'asc').limit(args.limit)
         return okResult({ count: schools.length, schools: schools.map((s) => s.toJSON()) })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
@@ -56,8 +63,17 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'kepala_sekolah'],
+        group: 'schools',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      if (ctx.role === 'kepala_sekolah' && ctx.schoolId !== args.id) {
+        return errorResult(`School with ID ${args.id} not found`)
+      }
+
       try {
         const school = await School.query().where('id', args.id).preload('users').first()
         if (!school) return errorResult(`School with ID ${args.id} not found`)
@@ -79,8 +95,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'schools',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const school = await School.create({
           name: args.name,
@@ -105,8 +125,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'schools',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const school = await School.find(args.id)
         if (!school) return errorResult(`School with ID ${args.id} not found`)
@@ -126,21 +150,33 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_list_classes',
     {
-      description: 'List classes with optional filters for user_id or academic_year_id.',
+      description: 'List classes with optional filters.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by teacher user_id'),
+        user_id: z.number().int().optional().describe('Filter by teacher user_id (Admin only)'),
         academic_year_id: z.number().int().optional().describe('Filter by academic_year_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'classes',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = SchoolClass.query().preload('academicYear').preload('user')
-        if (args.user_id) query.where('user_id', args.user_id)
-        if (args.academic_year_id) query.where('academic_year_id', args.academic_year_id)
+        applyUserOrSchoolScope(query, ctx)
+
+        if (ctx.role === 'admin' && args.user_id) {
+          query.where('user_id', args.user_id)
+        }
+        if (args.academic_year_id) {
+          query.where('academic_year_id', args.academic_year_id)
+        }
+
         const classes = await query.orderBy('name', 'asc').limit(args.limit)
         return okResult({ count: classes.length, classes: classes.map((c) => c.toJSON()) })
       } catch (err) {
@@ -159,15 +195,23 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'classes',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const schoolClass = await SchoolClass.query()
+        const query = SchoolClass.query()
           .where('id', args.id)
           .preload('academicYear')
           .preload('user')
           .preload('students')
-          .first()
+
+        applyUserOrSchoolScope(query, ctx)
+        const schoolClass = await query.first()
+
         if (!schoolClass) return errorResult(`Class with ID ${args.id} not found`)
         return okResult(schoolClass.toJSON())
       } catch (err) {
@@ -186,16 +230,21 @@ export function registerAdminTools(server: McpServer) {
         name: z.string().min(1).describe('Class name (e.g. Kelompok A)'),
         grade_level: z.number().int().optional().default(1).describe('Grade level number'),
         group_context: z.enum(['a', 'b']).optional().describe('PAUD group context (a or b)'),
-        user_id: z.number().int().optional().describe('Teacher user_id (defaults to current user)'),
+        user_id: z.number().int().optional().describe('Teacher user_id (Admin only)'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'classes',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const targetUserId = ctx.role === 'admin' && args.user_id ? args.user_id : ctx.user.id
         const schoolClass = await SchoolClass.create({
-          userId: user.id,
+          userId: targetUserId,
           academicYearId: args.academic_year_id,
           name: args.name,
           gradeLevel: args.grade_level ?? 1,
@@ -222,11 +271,21 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'classes',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const schoolClass = await SchoolClass.find(args.id)
         if (!schoolClass) return errorResult(`Class with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && schoolClass.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own classes.')
+        }
+
         if (args.name !== undefined) schoolClass.name = args.name
         if (args.grade_level !== undefined) schoolClass.gradeLevel = args.grade_level
         if (args.group_context !== undefined) schoolClass.groupContext = args.group_context
@@ -246,16 +305,28 @@ export function registerAdminTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Class ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'classes',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const schoolClass = await SchoolClass.find(args.id)
         if (!schoolClass) return errorResult(`Class with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && schoolClass.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await schoolClass.delete()
-        return okResult({ message: `Class ID ${args.id} deleted successfully` })
+        return okResult({ message: `Class ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -277,10 +348,27 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'students',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = Student.query().preload('schoolClass')
+        if (ctx.role === 'guru') {
+          query.whereHas('schoolClass', (cQ) => cQ.where('user_id', ctx.user.id))
+        } else if (ctx.role === 'kepala_sekolah') {
+          if (ctx.schoolId) {
+            query.whereHas('schoolClass', (cQ) =>
+              cQ.whereHas('user', (uQ) => uQ.where('school_id', ctx.schoolId!))
+            )
+          } else {
+            query.whereRaw('1 = 0')
+          }
+        }
+
         if (args.class_id) query.where('class_id', args.class_id)
         if (args.search) {
           query.where((q) => {
@@ -305,10 +393,28 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'students',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const student = await Student.query().where('id', args.id).preload('schoolClass').first()
+        const query = Student.query().where('id', args.id).preload('schoolClass')
+        if (ctx.role === 'guru') {
+          query.whereHas('schoolClass', (cQ) => cQ.where('user_id', ctx.user.id))
+        } else if (ctx.role === 'kepala_sekolah') {
+          if (ctx.schoolId) {
+            query.whereHas('schoolClass', (cQ) =>
+              cQ.whereHas('user', (uQ) => uQ.where('school_id', ctx.schoolId!))
+            )
+          } else {
+            query.whereRaw('1 = 0')
+          }
+        }
+
+        const student = await query.first()
         if (!student) return errorResult(`Student with ID ${args.id} not found`)
         return okResult(student.toJSON())
       } catch (err) {
@@ -330,9 +436,21 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'students',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
+        const schoolClass = await SchoolClass.find(args.class_id)
+        if (!schoolClass) return errorResult(`Class with ID ${args.class_id} not found`)
+
+        if (ctx.role === 'guru' && schoolClass.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only add students to your own classes.')
+        }
+
         const student = await Student.create({
           classId: args.class_id,
           fullName: args.name,
@@ -340,35 +458,6 @@ export function registerAdminTools(server: McpServer) {
           nisn: args.nisn ?? null,
         })
         return okResult({ message: 'Student created', student: student.toJSON() })
-      } catch (err) {
-        return errorResult(err instanceof Error ? err.message : String(err))
-      }
-    }
-  )
-
-  server.registerTool(
-    'siapajar_add_student_to_class',
-    {
-      description: 'Add a student to a class (alias for create_student).',
-      inputSchema: z.object({
-        ...API_KEY_PARAM,
-        class_id: z.number().int().describe('Class ID'),
-        name: z.string().min(1).describe('Student full name'),
-        nis: z.string().optional().describe('Student NIS number'),
-        nisn: z.string().optional().describe('Student NISN number'),
-      }),
-    },
-    async (args) => {
-      const auth = checkAuth(args)
-      if (!auth.ok) return authError(auth.error)
-      try {
-        const student = await Student.create({
-          classId: args.class_id,
-          fullName: args.name,
-          nis: args.nis ?? '',
-          nisn: args.nisn ?? null,
-        })
-        return okResult({ message: 'Student added to class', student: student.toJSON() })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -389,11 +478,21 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'students',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const student = await Student.find(args.id)
+        const student = await Student.query().where('id', args.id).preload('schoolClass').first()
         if (!student) return errorResult(`Student with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && student.schoolClass.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update students in your own classes.')
+        }
+
         if (args.name !== undefined) student.fullName = args.name
         if (args.nis !== undefined) student.nis = args.nis
         if (args.nisn !== undefined) student.nisn = args.nisn
@@ -413,46 +512,28 @@ export function registerAdminTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Student ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'students',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
-      try {
-        const student = await Student.find(args.id)
-        if (!student) return errorResult(`Student with ID ${args.id} not found`)
-        await student.delete()
-        return okResult({ message: `Student ID ${args.id} deleted` })
-      } catch (err) {
-        return errorResult(err instanceof Error ? err.message : String(err))
-      }
-    }
-  )
+      const { ctx } = auth
 
-  server.registerTool(
-    'siapajar_remove_student_from_class',
-    {
-      description: 'Remove a student from a class (delete student record).',
-      inputSchema: z.object({
-        ...API_KEY_PARAM,
-        class_id: z.number().int().describe('Class ID'),
-        student_id: z.number().int().describe('Student ID'),
-      }),
-    },
-    async (args) => {
-      const auth = checkAuth(args)
-      if (!auth.ok) return authError(auth.error)
       try {
-        const student = await Student.query()
-          .where('id', args.student_id)
-          .where('class_id', args.class_id)
-          .first()
-        if (!student)
-          return errorResult(`Student ID ${args.student_id} not found in class ${args.class_id}`)
+        const student = await Student.query().where('id', args.id).preload('schoolClass').first()
+        if (!student) return errorResult(`Student with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && student.schoolClass.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await student.delete()
-        return okResult({
-          message: `Student ID ${args.student_id} removed from class ${args.class_id}`,
-        })
+        return okResult({ message: `Student ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -468,18 +549,30 @@ export function registerAdminTools(server: McpServer) {
       description: 'List subjects.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Teacher user_id'),
+        user_id: z.number().int().optional().describe('Teacher user_id (Admin only)'),
         education_level: z.enum(['tk', 'sd']).optional().describe('Education level'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'subjects',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = Subject.query()
-        if (args.user_id) query.where('user_id', args.user_id)
-        if (args.education_level) query.where('education_level', args.education_level)
+        applyUserOrSchoolScope(query, ctx)
+
+        if (ctx.role === 'admin' && args.user_id) {
+          query.where('user_id', args.user_id)
+        }
+        if (args.education_level) {
+          query.where('education_level', args.education_level)
+        }
+
         const subjects = await query.orderBy('name', 'asc').limit(args.limit)
         return okResult({ count: subjects.length, subjects: subjects.map((s) => s.toJSON()) })
       } catch (err) {
@@ -498,16 +591,21 @@ export function registerAdminTools(server: McpServer) {
         education_level: z.enum(['tk', 'sd']).optional().default('tk').describe('Education level'),
         grade_level: z.number().int().optional().describe('Grade level'),
         is_active: z.boolean().optional().default(true).describe('Active status'),
-        user_id: z.number().int().optional().describe('Owner user_id'),
+        user_id: z.number().int().optional().describe('Owner user_id (Admin only)'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'subjects',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const targetUserId = ctx.role === 'admin' && args.user_id ? args.user_id : ctx.user.id
         const subject = await Subject.create({
-          userId: user.id,
+          userId: targetUserId,
           name: args.name,
           educationLevel: args.education_level ?? 'tk',
           gradeLevel: args.grade_level ?? null,
@@ -534,11 +632,21 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'subjects',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const subject = await Subject.find(args.id)
         if (!subject) return errorResult(`Subject with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && subject.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own subjects.')
+        }
+
         if (args.name !== undefined) subject.name = args.name
         if (args.education_level !== undefined) subject.educationLevel = args.education_level
         if (args.grade_level !== undefined) subject.gradeLevel = args.grade_level
@@ -558,16 +666,28 @@ export function registerAdminTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Subject ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'subjects',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const subject = await Subject.find(args.id)
         if (!subject) return errorResult(`Subject with ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && subject.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await subject.delete()
-        return okResult({ message: `Subject ID ${args.id} deleted` })
+        return okResult({ message: `Subject ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -575,20 +695,24 @@ export function registerAdminTools(server: McpServer) {
   )
 
   // -------------------------------------------------------------------------
-  // Academic Years & Semesters
+  // Academic Years & Semesters (Admin-only)
   // -------------------------------------------------------------------------
   server.registerTool(
     'siapajar_list_academic_years',
     {
-      description: 'List academic years.',
+      description: 'List academic years (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'academic_years',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const years = await AcademicYear.query()
           .preload('semesters')
@@ -612,8 +736,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'academic_years',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         if (args.is_active) {
           await AcademicYear.query().update({ isActive: false })
@@ -632,17 +760,23 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_update_academic_year',
     {
-      description: 'Update academic year status or name (Admin).',
+      description: 'Update academic year status or name (Admin). Requres confirm: true.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Academic year ID'),
         name: z.string().optional().describe('Name'),
         is_active: z.boolean().optional().describe('Active status'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm update'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'academic_years',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const year = await AcademicYear.find(args.id)
         if (!year) return errorResult(`Academic year ID ${args.id} not found`)
@@ -662,15 +796,19 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_list_semesters',
     {
-      description: 'List semesters with optional academic_year_id filter.',
+      description: 'List semesters with optional academic_year_id filter (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         academic_year_id: z.number().int().optional().describe('Filter by academic year ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'semesters',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const query = Semester.query().preload('academicYear')
         if (args.academic_year_id) query.where('academic_year_id', args.academic_year_id)
@@ -685,7 +823,7 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_create_semester',
     {
-      description: 'Create a semester for an academic year.',
+      description: 'Create a semester for an academic year (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         academic_year_id: z.number().int().describe('Academic year ID'),
@@ -694,8 +832,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'semesters',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const semester = await Semester.create({
           academicYearId: args.academic_year_id,
@@ -712,7 +854,7 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_update_semester',
     {
-      description: 'Update a semester.',
+      description: 'Update a semester (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Semester ID'),
@@ -721,8 +863,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'semesters',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const semester = await Semester.find(args.id)
         if (!semester) return errorResult(`Semester ID ${args.id} not found`)
@@ -737,7 +883,7 @@ export function registerAdminTools(server: McpServer) {
   )
 
   // -------------------------------------------------------------------------
-  // Users, Packages, Entitlements
+  // Users, Packages, Entitlements (Admin-only)
   // -------------------------------------------------------------------------
   server.registerTool(
     'siapajar_list_users',
@@ -751,8 +897,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const query = User.query().preload('school').preload('package')
         if (args.role) query.where('role', args.role)
@@ -768,15 +918,19 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_list_packages',
     {
-      description: 'List subscription packages and features.',
+      description: 'List subscription packages and features (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const packages = await Package.query()
           .preload('entitlements')
@@ -792,15 +946,19 @@ export function registerAdminTools(server: McpServer) {
   server.registerTool(
     'siapajar_get_package',
     {
-      description: 'Get package details by ID.',
+      description: 'Get package details by ID (Admin).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Package ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const pkg = await Package.query().where('id', args.id).preload('entitlements').first()
         if (!pkg) return errorResult(`Package ID ${args.id} not found`)
@@ -821,8 +979,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const query = PackageEntitlement.query().preload('package')
         if (args.package_id) query.where('package_id', args.package_id)
@@ -838,7 +1000,7 @@ export function registerAdminTools(server: McpServer) {
   )
 
   // -------------------------------------------------------------------------
-  // AI Settings & Connection Test
+  // AI Settings & Connection Test (Admin-only)
   // -------------------------------------------------------------------------
   server.registerTool(
     'siapajar_get_ai_settings',
@@ -849,8 +1011,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const setting = await AiSetting.current()
         return okResult(setting.toJSON())
@@ -869,8 +1035,12 @@ export function registerAdminTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin'],
+        group: 'admin',
+      })
       if (!auth.ok) return authError(auth.error)
+
       try {
         const setting = await AiSetting.current()
         const apiKey = setting.apiKey || env.get('ROUTER_API_KEY') || ''

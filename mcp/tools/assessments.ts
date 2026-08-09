@@ -1,14 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { DateTime } from 'luxon'
-import {
-  API_KEY_PARAM,
-  checkAuth,
-  authError,
-  okResult,
-  errorResult,
-  getEffectiveUser,
-} from '../auth.js'
+import { API_KEY_PARAM, checkAuthAndAuthorize, authError, okResult, errorResult } from '../auth.js'
+import { applyUserOrSchoolScope, checkAiRateLimit } from '../scoping.js'
 import PaudAssessment from '#models/paud_assessment'
 import ReportNarrative from '#models/report_narrative'
 import Exam from '#models/exam'
@@ -48,18 +42,23 @@ export function registerAssessmentTools(server: McpServer) {
       description: 'List PAUD assessments (ceklis, anekdot, hasil karya, foto berseri).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         student_id: z.number().int().optional().describe('Filter by student_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = PaudAssessment.query().preload('student').preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         if (args.student_id) query.where('student_id', args.student_id)
         const items = await query.orderBy('date', 'desc').limit(args.limit)
@@ -80,15 +79,22 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const item = await PaudAssessment.query()
+        const query = PaudAssessment.query()
           .where('id', args.id)
           .preload('student')
           .preload('schoolClass')
           .preload('attachments')
-          .first()
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`PAUD assessment ID ${args.id} not found`)
         return okResult(item.toJSON())
       } catch (err) {
@@ -115,17 +121,20 @@ export function registerAssessmentTools(server: McpServer) {
           .default({})
           .describe('Assessment payload content'),
         notes: z.string().optional().describe('Teacher notes'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const dateStr = args.date || new Date().toISOString().split('T')[0]
         const item = await PaudAssessment.create({
-          userId: user.id,
+          userId: ctx.user.id,
           classId: args.class_id,
           studentId: args.student_id,
           type: args.type,
@@ -153,11 +162,21 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const item = await PaudAssessment.find(args.id)
         if (!item) return errorResult(`PAUD assessment ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && item.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own PAUD assessments.')
+        }
+
         if (args.date !== undefined) item.date = DateTime.fromISO(args.date)
         if (args.content !== undefined) item.content = args.content
         if (args.notes !== undefined) item.teacherNote = args.notes
@@ -176,16 +195,28 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('PAUD assessment ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'assessments',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const item = await PaudAssessment.find(args.id)
         if (!item) return errorResult(`PAUD assessment ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && item.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await item.delete()
-        return okResult({ message: `PAUD assessment ID ${args.id} deleted` })
+        return okResult({ message: `PAUD assessment ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -199,17 +230,22 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('PAUD assessment ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const item = await PaudAssessment.find(args.id)
+        const query = PaudAssessment.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const item = await query.first()
         if (!item) return errorResult(`PAUD assessment ID ${args.id} not found`)
-        const buffer = await exportPaudAssessment(item, user)
+        const buffer = await exportPaudAssessment(item, ctx.user)
         const filename = exportFilename(['Asesmen PAUD', String(item.id)], 'docx')
         return okResult({
           filename,
@@ -229,17 +265,22 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('PAUD assessment ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const item = await PaudAssessment.find(args.id)
+        const query = PaudAssessment.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const item = await query.first()
         if (!item) return errorResult(`PAUD assessment ID ${args.id} not found`)
-        const buffer = await exportPaudAssessmentPdf(item, user)
+        const buffer = await exportPaudAssessmentPdf(item, ctx.user)
         const filename = exportFilename(['Asesmen PAUD', String(item.id)], 'pdf')
         return okResult({
           filename,
@@ -268,10 +309,17 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = ReportNarrative.query()
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         if (args.semester_id) query.where('semester_id', args.semester_id)
         if (args.student_id) query.where('student_id', args.student_id)
@@ -293,10 +341,18 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const item = await ReportNarrative.find(args.id)
+        const query = ReportNarrative.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`Report narrative ID ${args.id} not found`)
         return okResult(item.toJSON())
       } catch (err) {
@@ -314,14 +370,21 @@ export function registerAssessmentTools(server: McpServer) {
         ...API_KEY_PARAM,
         class_id: z.number().int().describe('Class ID'),
         semester_id: z.number().int().describe('Semester ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -352,14 +415,18 @@ export function registerAssessmentTools(server: McpServer) {
         ...API_KEY_PARAM,
         class_id: z.number().int().describe('Class ID'),
         semester_id: z.number().int().describe('Semester ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -395,14 +462,18 @@ export function registerAssessmentTools(server: McpServer) {
         class_id: z.number().int().describe('Class ID'),
         semester_id: z.number().int().describe('Semester ID'),
         student_id: z.number().int().describe('Student ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         if (user.isTk) {
           const narratives = await compileNarrativeReport(args.class_id, args.semester_id, user.id)
           const studentNarrative = narratives.find((n) => n.studentId === args.student_id)
@@ -435,14 +506,18 @@ export function registerAssessmentTools(server: McpServer) {
         class_id: z.number().int().describe('Class ID'),
         semester_id: z.number().int().describe('Semester ID'),
         student_id: z.number().int().describe('Student ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         const semester = await Semester.query()
           .where('id', args.semester_id)
@@ -508,14 +583,18 @@ export function registerAssessmentTools(server: McpServer) {
         class_id: z.number().int().describe('Class ID'),
         semester_id: z.number().int().describe('Semester ID'),
         student_id: z.number().int().describe('Student ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         const semester = await Semester.query()
           .where('id', args.semester_id)
@@ -580,17 +659,22 @@ export function registerAssessmentTools(server: McpServer) {
       description: 'List exams (soal ujian/ulangan).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = Exam.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const exams = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: exams.length, exams: exams.map((e) => e.toJSON()) })
@@ -610,10 +694,18 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const exam = await Exam.query().where('id', args.id).preload('schoolClass').first()
+        const query = Exam.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const exam = await query.first()
         if (!exam) return errorResult(`Exam ID ${args.id} not found`)
         return okResult(exam.toJSON())
       } catch (err) {
@@ -640,16 +732,19 @@ export function registerAssessmentTools(server: McpServer) {
           .array(z.record(z.string(), z.unknown()))
           .default([])
           .describe('Questions array'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const exam = await Exam.create({
-          userId: user.id,
+          userId: ctx.user.id,
           classId: args.class_id,
           title: args.title,
           type: args.exam_type ?? 'daily',
@@ -684,11 +779,21 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const exam = await Exam.find(args.id)
         if (!exam) return errorResult(`Exam ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && exam.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own exams.')
+        }
+
         if (args.title !== undefined) exam.title = args.title
         if (args.exam_type !== undefined) exam.type = args.exam_type
         if (args.questions !== undefined) exam.questions = args.questions
@@ -710,16 +815,28 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Exam ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'assessments',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const exam = await Exam.find(args.id)
         if (!exam) return errorResult(`Exam ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && exam.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await exam.delete()
-        return okResult({ message: `Exam ID ${args.id} deleted` })
+        return okResult({ message: `Exam ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -741,14 +858,21 @@ export function registerAssessmentTools(server: McpServer) {
           .default('daily')
           .describe('Exam type'),
         total_questions: z.number().int().optional().default(10).describe('Total questions count'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -791,17 +915,22 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Exam ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const exam = await Exam.find(args.id)
+        const query = Exam.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const exam = await query.first()
         if (!exam) return errorResult(`Exam ID ${args.id} not found`)
-        const buffer = await exportExam(exam, user)
+        const buffer = await exportExam(exam, ctx.user)
         const filename = exportFilename(['Soal', exam.title], 'docx')
         return okResult({
           filename,
@@ -821,17 +950,22 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Exam ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const exam = await Exam.find(args.id)
+        const query = Exam.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const exam = await query.first()
         if (!exam) return errorResult(`Exam ID ${args.id} not found`)
-        const buffer = await exportExamPdf(exam, user)
+        const buffer = await exportExamPdf(exam, ctx.user)
         const filename = exportFilename(['Soal', exam.title], 'pdf')
         return okResult({
           filename,
@@ -853,17 +987,22 @@ export function registerAssessmentTools(server: McpServer) {
       description: 'List assessments (gradebook assessments).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = Assessment.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const items = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: items.length, assessments: items.map((i) => i.toJSON()) })
@@ -883,14 +1022,21 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const item = await Assessment.query()
+        const query = Assessment.query()
           .where('id', args.id)
           .preload('schoolClass')
           .preload('scores', (q) => q.preload('student'))
-          .first()
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`Assessment ID ${args.id} not found`)
         return okResult(item.toJSON())
       } catch (err) {
@@ -915,17 +1061,20 @@ export function registerAssessmentTools(server: McpServer) {
           .describe('Assessment type'),
         date: z.string().optional().describe('Date YYYY-MM-DD'),
         semester_id: z.number().int().optional().describe('Semester ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const dateStr = args.date || new Date().toISOString().split('T')[0]
         const item = await Assessment.create({
-          userId: user.id,
+          userId: ctx.user.id,
           classId: args.class_id,
           semesterId: args.semester_id ?? null,
           subject: args.subject,
@@ -959,11 +1108,20 @@ export function registerAssessmentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const assessment = await Assessment.find(args.id)
         if (!assessment) return errorResult(`Assessment ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && assessment.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update scores for your own assessments.')
+        }
 
         for (const item of args.scores) {
           await Score.updateOrCreate(
@@ -992,16 +1150,28 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Assessment ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'assessments',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const item = await Assessment.find(args.id)
         if (!item) return errorResult(`Assessment ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && item.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await item.delete()
-        return okResult({ message: `Assessment ID ${args.id} deleted` })
+        return okResult({ message: `Assessment ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -1015,22 +1185,27 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Assessment ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const item = await Assessment.query()
+        const query = Assessment.query()
           .where('id', args.id)
           .preload('schoolClass')
           .preload('scores', (q) => q.preload('student'))
-          .first()
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`Assessment ID ${args.id} not found`)
 
-        const buffer = await exportAssessmentScores(item, user)
+        const buffer = await exportAssessmentScores(item, ctx.user)
         const filename = exportFilename(['Penilaian', item.title], 'xlsx')
         return okResult({
           filename,
@@ -1050,18 +1225,24 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Assessment ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const item = await Assessment.find(args.id)
+        const query = Assessment.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`Assessment ID ${args.id} not found`)
 
-        const buffer = await exportAssessment(item, user)
+        const buffer = await exportAssessment(item, ctx.user)
         const filename = exportFilename(['Penilaian', item.title], 'docx')
         return okResult({
           filename,
@@ -1081,18 +1262,24 @@ export function registerAssessmentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Assessment ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const item = await Assessment.find(args.id)
+        const query = Assessment.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+
+        const item = await query.first()
         if (!item) return errorResult(`Assessment ID ${args.id} not found`)
 
-        const buffer = await exportAssessmentPdf(item, user)
+        const buffer = await exportAssessmentPdf(item, ctx.user)
         const filename = exportFilename(['Penilaian', item.title], 'pdf')
         return okResult({
           filename,

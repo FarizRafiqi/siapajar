@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { API_KEY_PARAM, checkAuth, authError, okResult } from './auth.js'
+import { API_KEY_PARAM, checkAuthAndAuthorize, authError, okResult } from './auth.js'
 import db from '@adonisjs/lucid/services/db'
 
 import { registerAdminTools } from './tools/admin.js'
@@ -17,7 +17,10 @@ export function registerAllTools(server: McpServer) {
       inputSchema: z.object(API_KEY_PARAM),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'health',
+      })
       if (!auth.ok) return authError(auth.error)
 
       try {

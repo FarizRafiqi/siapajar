@@ -1,14 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { DateTime } from 'luxon'
-import {
-  API_KEY_PARAM,
-  checkAuth,
-  authError,
-  okResult,
-  errorResult,
-  getEffectiveUser,
-} from '../auth.js'
+import { API_KEY_PARAM, checkAuthAndAuthorize, authError, okResult, errorResult } from '../auth.js'
+import { applyUserOrSchoolScope, checkAiRateLimit } from '../scoping.js'
 import AnnualPlan from '#models/annual_plan'
 import SemesterPlan from '#models/semester_plan'
 import WeeklyLessonPlan from '#models/weekly_lesson_plan'
@@ -62,17 +56,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List annual plans (Protah).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         academic_year_id: z.number().int().optional().describe('Filter by academic_year_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = AnnualPlan.query().preload('academicYear').preload('user')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.academic_year_id) query.where('academic_year_id', args.academic_year_id)
         const plans = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: plans.length, annual_plans: plans.map((p) => p.toJSON()) })
@@ -92,14 +91,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const plan = await AnnualPlan.query()
+        const query = AnnualPlan.query()
           .where('id', args.id)
           .preload('academicYear')
           .preload('user')
-          .first()
+
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`Annual plan ID ${args.id} not found`)
         return okResult(plan.toJSON())
       } catch (err) {
@@ -117,16 +123,19 @@ export function registerDocumentTools(server: McpServer) {
         academic_year_id: z.number().int().describe('Academic year ID'),
         subject: z.string().min(1).describe('Subject name'),
         content: z.record(z.string(), z.unknown()).default({}).describe('Document JSON content'),
-        user_id: z.number().int().optional().describe('Owner user_id'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const plan = await AnnualPlan.create({
-          userId: user.id,
+          userId: ctx.user.id,
           academicYearId: args.academic_year_id,
           subject: args.subject,
           content: args.content,
@@ -150,11 +159,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await AnnualPlan.find(args.id)
         if (!plan) return errorResult(`Annual plan ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own annual plans.')
+        }
+
         if (args.subject !== undefined) plan.subject = args.subject
         if (args.content !== undefined) plan.content = args.content
         await plan.save()
@@ -172,16 +191,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Annual plan ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await AnnualPlan.find(args.id)
         if (!plan) return errorResult(`Annual plan ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await plan.delete()
-        return okResult({ message: `Annual plan ID ${args.id} deleted` })
+        return okResult({ message: `Annual plan ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -197,14 +228,21 @@ export function registerDocumentTools(server: McpServer) {
         academic_year_id: z.number().int().describe('Academic year ID'),
         subject: z.string().min(1).describe('Subject name'),
         learning_sequence_id: z.number().int().optional().describe('Optional learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const academicYear = await AcademicYear.find(args.academic_year_id)
         if (!academicYear) return errorResult(`Academic year ID ${args.academic_year_id} not found`)
 
@@ -246,17 +284,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Annual plan ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await AnnualPlan.find(args.id)
+        const query = AnnualPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`Annual plan ID ${args.id} not found`)
-        const buffer = await exportAnnualPlan(plan, user)
+        const buffer = await exportAnnualPlan(plan, ctx.user)
         const filename = exportFilename(['Protah', plan.subject], 'docx')
         return okResult({
           filename,
@@ -276,17 +319,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Annual plan ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await AnnualPlan.find(args.id)
+        const query = AnnualPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`Annual plan ID ${args.id} not found`)
-        const buffer = await exportAnnualPlanPdf(plan, user)
+        const buffer = await exportAnnualPlanPdf(plan, ctx.user)
         const filename = exportFilename(['Protah', plan.subject], 'pdf')
         return okResult({
           filename,
@@ -308,21 +356,26 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List semester plans (Promes).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         semester_id: z.number().int().optional().describe('Filter by semester_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = SemesterPlan.query()
           .preload('schoolClass')
           .preload('semester')
           .preload('user')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         if (args.semester_id) query.where('semester_id', args.semester_id)
         const plans = await query.orderBy('created_at', 'desc').limit(args.limit)
@@ -343,15 +396,22 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const plan = await SemesterPlan.query()
+        const query = SemesterPlan.query()
           .where('id', args.id)
           .preload('schoolClass')
           .preload('semester')
           .preload('user')
-          .first()
+        applyUserOrSchoolScope(query, ctx)
+
+        const plan = await query.first()
         if (!plan) return errorResult(`Semester plan ID ${args.id} not found`)
         return okResult(plan.toJSON())
       } catch (err) {
@@ -370,16 +430,19 @@ export function registerDocumentTools(server: McpServer) {
         semester_id: z.number().int().describe('Semester ID'),
         subject: z.string().min(1).describe('Subject name'),
         content: z.record(z.string(), z.unknown()).default({}).describe('JSON content'),
-        user_id: z.number().int().optional().describe('Owner user_id'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const plan = await SemesterPlan.create({
-          userId: user.id,
+          userId: ctx.user.id,
           classId: args.class_id,
           semesterId: args.semester_id,
           subject: args.subject,
@@ -404,11 +467,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await SemesterPlan.find(args.id)
         if (!plan) return errorResult(`Semester plan ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own semester plans.')
+        }
+
         if (args.subject !== undefined) plan.subject = args.subject
         if (args.content !== undefined) plan.content = args.content
         await plan.save()
@@ -426,16 +499,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Semester plan ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await SemesterPlan.find(args.id)
         if (!plan) return errorResult(`Semester plan ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await plan.delete()
-        return okResult({ message: `Semester plan ID ${args.id} deleted` })
+        return okResult({ message: `Semester plan ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -452,14 +537,21 @@ export function registerDocumentTools(server: McpServer) {
         semester_id: z.number().int().describe('Semester ID'),
         subject: z.string().min(1).describe('Subject name'),
         learning_sequence_id: z.number().int().optional().describe('Optional learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const curriculum = await getCurriculumContext(user.id, args.learning_sequence_id)
         const prompt = semesterPlanPrompt({ subject: args.subject })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
@@ -496,17 +588,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Semester plan ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await SemesterPlan.find(args.id)
+        const query = SemesterPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`Semester plan ID ${args.id} not found`)
-        const buffer = await exportSemesterPlan(plan, user)
+        const buffer = await exportSemesterPlan(plan, ctx.user)
         const filename = exportFilename(['Promes', plan.subject], 'docx')
         return okResult({
           filename,
@@ -526,17 +623,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Semester plan ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await SemesterPlan.find(args.id)
+        const query = SemesterPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`Semester plan ID ${args.id} not found`)
-        const buffer = await exportSemesterPlanPdf(plan, user)
+        const buffer = await exportSemesterPlanPdf(plan, ctx.user)
         const filename = exportFilename(['Promes', plan.subject], 'pdf')
         return okResult({
           filename,
@@ -558,17 +660,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List weekly lesson plans (RPPM).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = WeeklyLessonPlan.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const plans = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: plans.length, weekly_lesson_plans: plans.map((p) => p.toJSON()) })
@@ -588,13 +695,18 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const plan = await WeeklyLessonPlan.query()
-          .where('id', args.id)
-          .preload('schoolClass')
-          .first()
+        const query = WeeklyLessonPlan.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const plan = await query.first()
         if (!plan) return errorResult(`Weekly lesson plan ID ${args.id} not found`)
         return okResult(plan.toJSON())
       } catch (err) {
@@ -615,11 +727,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await WeeklyLessonPlan.find(args.id)
         if (!plan) return errorResult(`Weekly lesson plan ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own weekly lesson plans.')
+        }
+
         if (args.theme !== undefined) plan.theme = args.theme
         if (args.content !== undefined) plan.content = args.content
         await plan.save()
@@ -640,16 +762,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPM ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await WeeklyLessonPlan.find(args.id)
         if (!plan) return errorResult(`RPPM ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await plan.delete()
-        return okResult({ message: `RPPM ID ${args.id} deleted` })
+        return okResult({ message: `RPPM ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -665,14 +799,21 @@ export function registerDocumentTools(server: McpServer) {
         class_id: z.number().int().describe('Class ID'),
         theme: z.string().min(1).describe('Theme name'),
         learning_sequence_id: z.number().int().optional().describe('Learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -715,17 +856,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPM ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await WeeklyLessonPlan.find(args.id)
+        const query = WeeklyLessonPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`RPPM ID ${args.id} not found`)
-        const buffer = await exportWeeklyLessonPlan(plan, user)
+        const buffer = await exportWeeklyLessonPlan(plan, ctx.user)
         const filename = exportFilename(['RPPM', plan.theme], 'docx')
         return okResult({
           filename,
@@ -745,17 +891,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPM ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await WeeklyLessonPlan.find(args.id)
+        const query = WeeklyLessonPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`RPPM ID ${args.id} not found`)
-        const buffer = await exportWeeklyLessonPlanPdf(plan, user)
+        const buffer = await exportWeeklyLessonPlanPdf(plan, ctx.user)
         const filename = exportFilename(['RPPM', plan.theme], 'pdf')
         return okResult({
           filename,
@@ -777,17 +928,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List daily lesson plans (RPPH).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = DailyLessonPlan.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const plans = await query.orderBy('date', 'desc').limit(args.limit)
         return okResult({ count: plans.length, daily_lesson_plans: plans.map((p) => p.toJSON()) })
@@ -807,13 +963,18 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const plan = await DailyLessonPlan.query()
-          .where('id', args.id)
-          .preload('schoolClass')
-          .first()
+        const query = DailyLessonPlan.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const plan = await query.first()
         if (!plan) return errorResult(`RPPH ID ${args.id} not found`)
         return okResult(plan.toJSON())
       } catch (err) {
@@ -834,11 +995,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await DailyLessonPlan.find(args.id)
         if (!plan) return errorResult(`RPPH ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own daily lesson plans.')
+        }
+
         if (args.date !== undefined) plan.date = DateTime.fromISO(args.date)
         if (args.content !== undefined) plan.content = args.content
         await plan.save()
@@ -856,16 +1027,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPH ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const plan = await DailyLessonPlan.find(args.id)
         if (!plan) return errorResult(`RPPH ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && plan.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await plan.delete()
-        return okResult({ message: `RPPH ID ${args.id} deleted` })
+        return okResult({ message: `RPPH ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -882,14 +1065,21 @@ export function registerDocumentTools(server: McpServer) {
         theme: z.string().min(1).describe('Theme name'),
         date: z.string().optional().describe('Date YYYY-MM-DD (defaults to today)'),
         learning_sequence_id: z.number().int().optional().describe('Learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -933,17 +1123,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPH ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await DailyLessonPlan.find(args.id)
+        const query = DailyLessonPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`RPPH ID ${args.id} not found`)
-        const buffer = await exportDailyLessonPlan(plan, user)
+        const buffer = await exportDailyLessonPlan(plan, ctx.user)
         const filename = exportFilename(['RPPH', plan.date.toISODate() || ''], 'docx')
         return okResult({
           filename,
@@ -963,17 +1158,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('RPPH ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const plan = await DailyLessonPlan.find(args.id)
+        const query = DailyLessonPlan.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const plan = await query.first()
         if (!plan) return errorResult(`RPPH ID ${args.id} not found`)
-        const buffer = await exportDailyLessonPlanPdf(plan, user)
+        const buffer = await exportDailyLessonPlanPdf(plan, ctx.user)
         const filename = exportFilename(['RPPH', plan.date.toISODate() || ''], 'pdf')
         return okResult({
           filename,
@@ -995,17 +1195,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List teaching modules.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = TeachingModule.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const modules = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: modules.length, teaching_modules: modules.map((m) => m.toJSON()) })
@@ -1025,13 +1230,18 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const module = await TeachingModule.query()
-          .where('id', args.id)
-          .preload('schoolClass')
-          .first()
+        const query = TeachingModule.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const module = await query.first()
         if (!module) return errorResult(`Teaching module ID ${args.id} not found`)
         return okResult(module.toJSON())
       } catch (err) {
@@ -1051,16 +1261,19 @@ export function registerDocumentTools(server: McpServer) {
         subject: z.string().min(1).describe('Subject name'),
         phase: z.string().optional().default('Fase Fondasi').describe('Curriculum phase'),
         content: z.record(z.string(), z.unknown()).default({}).describe('JSON content'),
-        user_id: z.number().int().optional().describe('Owner user_id'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
         const module = await TeachingModule.create({
-          userId: user.id,
+          userId: ctx.user.id,
           classId: args.class_id,
           title: args.title,
           subject: args.subject,
@@ -1068,7 +1281,7 @@ export function registerDocumentTools(server: McpServer) {
           content: args.content,
           status: 'draft',
         })
-        await ensureDocumentWorkflow(user.id, 'teaching_module', module.id, { status: 'draft' })
+        await ensureDocumentWorkflow(ctx.user.id, 'teaching_module', module.id, { status: 'draft' })
         return okResult({ message: 'Teaching module created', teaching_module: module.toJSON() })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
@@ -1091,11 +1304,21 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const module = await TeachingModule.find(args.id)
         if (!module) return errorResult(`Teaching module ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && module.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only update your own teaching modules.')
+        }
+
         if (args.title !== undefined) module.title = args.title
         if (args.subject !== undefined) module.subject = args.subject
         if (args.phase !== undefined) module.phase = args.phase
@@ -1116,16 +1339,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Teaching module ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const module = await TeachingModule.find(args.id)
         if (!module) return errorResult(`Teaching module ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && module.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await module.delete()
-        return okResult({ message: `Teaching module ID ${args.id} deleted` })
+        return okResult({ message: `Teaching module ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -1143,14 +1378,21 @@ export function registerDocumentTools(server: McpServer) {
         topic: z.string().min(1).describe('Topic name'),
         phase: z.string().optional().default('Fase Fondasi').describe('Phase'),
         learning_sequence_id: z.number().int().optional().describe('Learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -1198,17 +1440,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Teaching module ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const module = await TeachingModule.find(args.id)
+        const query = TeachingModule.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const module = await query.first()
         if (!module) return errorResult(`Teaching module ID ${args.id} not found`)
-        const buffer = await exportTeachingModule(module, user)
+        const buffer = await exportTeachingModule(module, ctx.user)
         const filename = exportFilename(['Modul Ajar', module.title], 'docx')
         return okResult({
           filename,
@@ -1228,17 +1475,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Teaching module ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const module = await TeachingModule.find(args.id)
+        const query = TeachingModule.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const module = await query.first()
         if (!module) return errorResult(`Teaching module ID ${args.id} not found`)
-        const buffer = await exportTeachingModulePdf(module, user)
+        const buffer = await exportTeachingModulePdf(module, ctx.user)
         const filename = exportFilename(['Modul Ajar', module.title], 'pdf')
         return okResult({
           filename,
@@ -1260,17 +1512,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List LKPD documents.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = Lkpd.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const lkpds = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: lkpds.length, lkpds: lkpds.map((l) => l.toJSON()) })
@@ -1290,10 +1547,18 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const lkpd = await Lkpd.query().where('id', args.id).preload('schoolClass').first()
+        const query = Lkpd.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const lkpd = await query.first()
         if (!lkpd) return errorResult(`LKPD ID ${args.id} not found`)
         return okResult(lkpd.toJSON())
       } catch (err) {
@@ -1309,16 +1574,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('LKPD ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const lkpd = await Lkpd.find(args.id)
         if (!lkpd) return errorResult(`LKPD ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && lkpd.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await lkpd.delete()
-        return okResult({ message: `LKPD ID ${args.id} deleted` })
+        return okResult({ message: `LKPD ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -1336,14 +1613,21 @@ export function registerDocumentTools(server: McpServer) {
         subject: z.string().min(1).describe('Subject name'),
         grade_level: z.string().optional().default('TK B').describe('Grade level'),
         learning_sequence_id: z.number().int().optional().describe('Learning sequence ID'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -1390,17 +1674,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('LKPD ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const lkpd = await Lkpd.find(args.id)
+        const query = Lkpd.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const lkpd = await query.first()
         if (!lkpd) return errorResult(`LKPD ID ${args.id} not found`)
-        const buffer = await exportLkpd(lkpd, user)
+        const buffer = await exportLkpd(lkpd, ctx.user)
         const filename = exportFilename(['LKPD', lkpd.title], 'docx')
         return okResult({
           filename,
@@ -1420,17 +1709,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('LKPD ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const lkpd = await Lkpd.find(args.id)
+        const query = Lkpd.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const lkpd = await query.first()
         if (!lkpd) return errorResult(`LKPD ID ${args.id} not found`)
-        const buffer = await exportLkpdPdf(lkpd, user)
+        const buffer = await exportLkpdPdf(lkpd, ctx.user)
         const filename = exportFilename(['LKPD', lkpd.title], 'pdf')
         return okResult({
           filename,
@@ -1452,17 +1746,22 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List media modules (slides & loose parts guides).',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         class_id: z.number().int().optional().describe('Filter by class_id'),
         limit: z.number().int().min(1).max(200).default(50).describe('Max rows'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = MediaModule.query().preload('schoolClass')
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.class_id) query.where('class_id', args.class_id)
         const modules = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: modules.length, media_modules: modules.map((m) => m.toJSON()) })
@@ -1482,10 +1781,18 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const module = await MediaModule.query().where('id', args.id).preload('schoolClass').first()
+        const query = MediaModule.query().where('id', args.id).preload('schoolClass')
+        applyUserOrSchoolScope(query, ctx)
+
+        const module = await query.first()
         if (!module) return errorResult(`Media module ID ${args.id} not found`)
         return okResult(module.toJSON())
       } catch (err) {
@@ -1501,16 +1808,28 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Media module ID'),
+        confirm: z.boolean().default(false).describe('Set to true to confirm deletion'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru'],
+        group: 'documents',
+        destructive: true,
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const module = await MediaModule.find(args.id)
         if (!module) return errorResult(`Media module ID ${args.id} not found`)
+
+        if (ctx.role === 'guru' && module.userId !== ctx.user.id) {
+          return errorResult('Forbidden: You can only delete resources owned by your account.')
+        }
+
         await module.delete()
-        return okResult({ message: `Media module ID ${args.id} deleted` })
+        return okResult({ message: `Media module ID ${args.id} deleted successfully.` })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }
@@ -1531,14 +1850,21 @@ export function registerDocumentTools(server: McpServer) {
           .optional()
           .default('slide_outline')
           .describe('Type of media'),
-        user_id: z.number().int().optional().describe('User ID for AI quota'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      const rateLimit = checkAiRateLimit(ctx.user.id)
+      if (!rateLimit.allowed) return errorResult(rateLimit.error!)
+
       try {
-        const user = await getEffectiveUser(args.user_id)
+        const user = ctx.user
         const schoolClass = await SchoolClass.find(args.class_id)
         if (!schoolClass) return errorResult(`Class ID ${args.class_id} not found`)
 
@@ -1582,17 +1908,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Media module ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const module = await MediaModule.find(args.id)
+        const query = MediaModule.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const module = await query.first()
         if (!module) return errorResult(`Media module ID ${args.id} not found`)
-        const buffer = await exportMediaModulePptx(module, user)
+        const buffer = await exportMediaModulePptx(module, ctx.user)
         const filename = exportFilename(['Media Ajar', module.title], 'pptx')
         return okResult({
           filename,
@@ -1612,17 +1943,22 @@ export function registerDocumentTools(server: McpServer) {
       inputSchema: z.object({
         ...API_KEY_PARAM,
         id: z.number().int().describe('Media module ID'),
-        user_id: z.number().int().optional().describe('User ID'),
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        const user = await getEffectiveUser(args.user_id)
-        const module = await MediaModule.find(args.id)
+        const query = MediaModule.query().where('id', args.id)
+        applyUserOrSchoolScope(query, ctx)
+        const module = await query.first()
         if (!module) return errorResult(`Media module ID ${args.id} not found`)
-        const buffer = await exportMediaModulePdf(module, user)
+        const buffer = await exportMediaModulePdf(module, ctx.user)
         const filename = exportFilename(['Media Ajar', module.title], 'pdf')
         return okResult({
           filename,
@@ -1649,17 +1985,25 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
-        let job: AiJob | null = null
+        let jobQuery = AiJob.query()
+        applyUserOrSchoolScope(jobQuery, ctx)
+
         if (args.id) {
-          job = await AiJob.find(args.id)
+          jobQuery.where('id', args.id)
         } else if (args.job_key) {
-          job = await AiJob.findBy('jobKey', args.job_key)
+          jobQuery.where('jobKey', args.job_key)
         } else {
           return errorResult('Must provide either id or job_key')
         }
+        const job = await jobQuery.first()
         if (!job) return errorResult('AI job not found')
         return okResult(job.toJSON())
       } catch (err) {
@@ -1674,7 +2018,6 @@ export function registerDocumentTools(server: McpServer) {
       description: 'List background AI jobs with optional status filter.',
       inputSchema: z.object({
         ...API_KEY_PARAM,
-        user_id: z.number().int().optional().describe('Filter by user_id'),
         status: z
           .enum(['pending', 'processing', 'completed', 'failed'])
           .optional()
@@ -1683,11 +2026,17 @@ export function registerDocumentTools(server: McpServer) {
       }),
     },
     async (args) => {
-      const auth = checkAuth(args)
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'documents',
+      })
       if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
       try {
         const query = AiJob.query()
-        if (args.user_id) query.where('user_id', args.user_id)
+        applyUserOrSchoolScope(query, ctx)
+
         if (args.status) query.where('status', args.status)
         const jobs = await query.orderBy('created_at', 'desc').limit(args.limit)
         return okResult({ count: jobs.length, jobs: jobs.map((j) => j.toJSON()) })
