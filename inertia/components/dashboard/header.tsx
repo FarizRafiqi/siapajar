@@ -113,7 +113,7 @@ export default function Header({
                 onClick={() => setHelpOpen(false)}
                 className="flex items-center px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
               >
-                Panduan istilah
+                Glosarium
               </Link>
             </div>
           )}

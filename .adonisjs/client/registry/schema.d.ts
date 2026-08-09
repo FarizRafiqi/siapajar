@@ -343,9 +343,45 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'curriculum.sequences.destroy': {
+    methods: ["DELETE"]
+    pattern: '/curriculum/sequences/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'curriculum.indicators.store': {
     methods: ["POST"]
     pattern: '/curriculum/indicators'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.presets.seed': {
+    methods: ["POST"]
+    pattern: '/curriculum/seed-presets'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'curriculum.presets.reset': {
+    methods: ["POST"]
+    pattern: '/curriculum/reset-presets'
     types: {
       body: {}
       paramsTuple: []
