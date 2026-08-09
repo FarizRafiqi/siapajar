@@ -28,6 +28,13 @@ router
 router.get('/privacy', ({ inertia }) => inertia.render('legal/privacy', {})).as('privacy')
 router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('terms')
 
+// MCP Discovery & HTTP Transport Routes
+router.get('/.well-known/mcp', '#controllers/mcp_controller.wellKnown').as('mcp.wellknown')
+router
+  .any('/mcp', '#controllers/mcp_controller.handle')
+  .use(middleware.mcpRateLimit())
+  .as('mcp.handle')
+
 router
   .get('/coming-soon', ({ inertia }) => {
     return inertia.render('coming-soon', {})
