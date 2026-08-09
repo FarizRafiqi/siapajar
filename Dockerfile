@@ -18,11 +18,11 @@ RUN addgroup --system app && adduser --system -G app app
 RUN apk add --no-cache tini
 
 # Copy production deps + build output
-# HUSKY=0: package.json has "prepare": "husky" (devDep) — npm ci --omit=dev
-# would run the prepare script and fail with "husky: not found". HUSKY=0 skips it.
+# package.json has "prepare": "husky" (devDep) — with --omit=dev the husky
+# binary is absent, so npm's prepare script fails with "husky: not found".
+# Delete the script here; hooks are a dev-only concern (HUSKY=0 is belt & braces).
 COPY package*.json ./
-ENV HUSKY=0
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm pkg delete scripts.prepare && npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/build ./build
 # Copy built frontend assets (Vite manifest + bundles) over the source public/
