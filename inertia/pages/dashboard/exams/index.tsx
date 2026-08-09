@@ -393,7 +393,7 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                       type="number"
                       value={data.questionCount}
                       onChange={(e) => setData('questionCount', Number(e.target.value))}
-                      min={5}
+                      min={3}
                       max={50}
                       className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                     />

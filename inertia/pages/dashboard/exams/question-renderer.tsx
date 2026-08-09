@@ -14,18 +14,67 @@ import { cn } from '~/lib/utils'
 import type { ExamQuestion } from './question-types'
 
 const kindMeta = {
-  multiple_choice: { label: 'Pilihan ganda', icon: ListChecks },
+  multiple_choice: { label: 'Pilihan Ganda', icon: ListChecks },
   essay: { label: 'Uraian', icon: MessageSquareText },
-  visual: { label: 'Aktivitas visual', icon: ImageIcon },
-  matching: { label: 'Hubungkan garis', icon: GitCompareArrows },
-  practical: { label: 'Praktik / performa', icon: Target },
+  visual: { label: 'Aktivitas Visual', icon: ImageIcon },
+  matching: { label: 'Hubungkan Garis', icon: GitCompareArrows },
+  practical: { label: 'Praktik / Performa', icon: Target },
   oral: { label: 'Lisan', icon: Mic2 },
-  fill_blank_image: { label: 'Tulis nama gambar', icon: PencilLine },
-  vertical_math: { label: 'Hitung pengurangan / penjumlahan', icon: Sparkles },
-  count_and_circle: { label: 'Hitung & lingkari', icon: Search },
-  coloring: { label: 'Mewarnai gambar', icon: Palette },
-  tracing: { label: 'Menebalkan garis/huruf', icon: PencilLine },
+  fill_blank_image: { label: 'Tulis Nama Gambar', icon: PencilLine },
+  vertical_math: { label: 'Hitung Pengurangan / Penjumlahan', icon: Sparkles },
+  count_and_circle: { label: 'Hitung & Lingkari', icon: Search },
+  coloring: { label: 'Mewarnai Gambar', icon: Palette },
+  tracing: { label: 'Menebalkan Garis/Huruf', icon: PencilLine },
 } as const
+
+function titleCaseLabel(value: string) {
+  return value
+    .replaceAll(/[_-]+/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('id-ID')
+    .replace(/(^|\s)\S/g, (letter) => letter.toLocaleUpperCase('id-ID'))
+}
+
+function visualTypeLabel(value: string) {
+  const normalized = value
+    .toLocaleLowerCase('id-ID')
+    .replaceAll(/[_-]+/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+
+  if (/(line art )?coloring|coloring (line art|by number)|mewarnai/.test(normalized)) {
+    return normalized.includes('number') || normalized.includes('bilangan')
+      ? 'Mewarnai Sesuai Bilangan'
+      : 'Mewarnai Gambar'
+  }
+  if (/(tracing|trace).*(line art|gambar)|line art.*tracing/.test(normalized)) {
+    return 'Menebalkan Gambar'
+  }
+  if (/(tracing|trace).*(number|angka)/.test(normalized)) return 'Menebalkan Angka'
+  if (/(tracing|trace).*(word|text|kata|teks)/.test(normalized)) return 'Menebalkan Kata'
+  if (/count(ing)? and circle|hitung dan lingkari/.test(normalized)) {
+    return 'Hitung dan Lingkari'
+  }
+  if (
+    /multiple choice.*(image|gambar)|image.*multiple choice|pilihan ganda.*gambar/.test(normalized)
+  ) {
+    return 'Pilihan Ganda Bergambar'
+  }
+  if (/fill blank.*image|image.*fill blank/.test(normalized)) return 'Tulis Nama Gambar'
+  if (/matching|connect|draw line/.test(normalized)) return 'Hubungkan Garis'
+  if (/simple islamic symbol|islamic symbol/.test(normalized)) return 'Pilihan Ganda Agama'
+  if (/symbolic light|book and light/.test(normalized)) return 'Ilustrasi Buku dan Cahaya'
+  if (/counting objects|object counting/.test(normalized)) return 'Hitung dan Lingkari'
+  if (/picture addition|addition with objects/.test(normalized)) return 'Hitung Gambar'
+  if (/vertical addition/.test(normalized)) return 'Hitung Bersusun'
+  if (/letter tracing|word tracing/.test(normalized)) return 'Menebalkan Kata'
+  if (/coloring page/.test(normalized)) return 'Mewarnai Gambar'
+  if (/choose good behavior|good behavior/.test(normalized)) return 'Pilih Perilaku Baik'
+  if (/visual|image|illustration/.test(normalized)) return 'Aktivitas Visual'
+
+  return titleCaseLabel(value)
+}
 
 interface QuestionRendererProps {
   question: ExamQuestion & { icon?: string; iconType?: string }
@@ -73,6 +122,23 @@ export function QuestionRenderer({
 
   const countVal = detectCountFromText(question.question, 4)
   const isGrayscale = colorMode === 'grayscale'
+  const isIllustratedChoice =
+    question.type === 'multiple_choice' &&
+    /(gambar|bergambar|ilustrasi|benda)/i.test(question.visualType || question.question || '')
+  const options =
+    question.options && question.options.length > 0
+      ? question.options
+      : isIllustratedChoice
+        ? [
+            { label: 'A', text: 'Gambar opsi belum tersedia', imagePrompt: 'required' },
+            { label: 'B', text: 'Gambar opsi belum tersedia', imagePrompt: 'required' },
+            { label: 'C', text: 'Gambar opsi belum tersedia', imagePrompt: 'required' },
+          ]
+        : [
+            { label: 'a', text: 'Pilihan A' },
+            { label: 'b', text: 'Pilihan B' },
+            { label: 'c', text: 'Pilihan C' },
+          ]
 
   return (
     <article
@@ -92,7 +158,7 @@ export function QuestionRenderer({
             </span>
             {question.visualType && (
               <span className="rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                {question.visualType}
+                {visualTypeLabel(question.visualType)}
               </span>
             )}
           </div>
@@ -119,14 +185,7 @@ export function QuestionRenderer({
 
       {question.type === 'multiple_choice' && (
         <div className="ml-8 mt-3 flex flex-wrap items-center gap-6 text-sm sm:gap-12 print:text-xs">
-          {(question.options && question.options.length > 0
-            ? question.options
-            : [
-                { label: 'a', text: 'Pilihan A' },
-                { label: 'b', text: 'Pilihan B' },
-                { label: 'c', text: 'Pilihan C' },
-              ]
-          ).map((option) => (
+          {options.map((option) => (
             <div
               key={`${question.id || number}-${option.label}`}
               className={cn(
@@ -148,9 +207,11 @@ export function QuestionRenderer({
                   Gambar belum tersedia
                 </span>
               ) : null}
-              <span className="font-semibold text-neutral-900 dark:text-white print:text-black">
-                {option.text}
-              </span>
+              {!isIllustratedChoice && (
+                <span className="font-semibold text-neutral-900 dark:text-white print:text-black">
+                  {option.text}
+                </span>
+              )}
             </div>
           ))}
         </div>
@@ -246,9 +307,11 @@ function MatchingRenderer({
                     )}
                   />
                 ) : null}
-                <span className="text-sm font-semibold text-neutral-900 dark:text-white print:text-black">
-                  {left?.label || ''}
-                </span>
+                {!left?.imageUrl && (
+                  <span className="text-xs italic text-neutral-500 dark:text-neutral-400 print:text-black">
+                    Gambar belum tersedia
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center justify-center">
@@ -266,16 +329,6 @@ function MatchingRenderer({
               </div>
 
               <div className="flex items-center justify-start min-h-[44px]">
-                {right?.imageUrl ? (
-                  <img
-                    src={right.imageUrl}
-                    alt=""
-                    className={cn(
-                      'h-10 w-10 object-contain mr-2 shrink-0',
-                      isGrayscale && 'grayscale'
-                    )}
-                  />
-                ) : null}
                 <span className="text-sm font-semibold text-neutral-900 dark:text-white print:text-black">
                   {right?.label || ''}
                 </span>
@@ -403,13 +456,15 @@ function CountCircleRenderer({
                   {itemImage ? (
                     <img src={itemImage} alt="" className="h-9 w-9 object-contain" />
                   ) : (
-                    <span className="text-2xl text-neutral-800 print:text-black">●</span>
+                    <span className="px-1 text-center text-[10px] font-semibold text-neutral-500 print:text-black">
+                      Gambar belum tersedia
+                    </span>
                   )}
                 </span>
               ))}
             </div>
             <div className="flex gap-4 font-bold text-sm text-neutral-900 dark:text-white">
-              {item.options.map((num) => (
+              {(item.options || [3, 4, 5]).map((num) => (
                 <span
                   key={`cnt-num-${idx}-${num}`}
                   className="rounded-full px-3 py-1 border border-neutral-300 dark:border-neutral-700"
@@ -448,7 +503,8 @@ function ColoringRenderer({
 }
 
 function TracingRenderer({ question }: Readonly<{ question: ExamQuestion }>) {
-  const traceText = question.traceText || question.question
+  const traceText =
+    question.traceText || question.question.match(/\d+(?:\s*[-+]\s*\d+)*/)?.[0] || question.question
   return (
     <div className="ml-8 mt-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-6 text-center dark:border-neutral-700 dark:bg-neutral-800/40">
       {question.imageUrl ? (

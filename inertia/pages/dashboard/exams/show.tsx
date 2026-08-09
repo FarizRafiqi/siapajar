@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Building2,
   ChevronDown,
+  Download,
   Eye,
   Palette,
   Pencil,
@@ -13,14 +14,12 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { useMemo, useState } from 'react'
 import { cn } from '~/lib/utils'
 import { examTypeLabel, type ExamType } from './index'
 import { QuestionRenderer } from './question-renderer'
 import { KopHeader } from '~/components/exams/kop-header'
 import { KopSettingsModal } from '~/components/exams/kop-settings-modal'
-import ExportDownloadButton from '~/components/dashboard/export-download-button'
 import {
   normalizeHeader,
   normalizeQuestion,
@@ -61,8 +60,6 @@ export default function ExamShow({ exam }: ExamShowProps) {
   const [isKopModalOpen, setIsKopModalOpen] = useState(false)
   const [colorMode, setColorMode] = useState<'grayscale' | 'color'>('grayscale')
   const [optionsOpen, setOptionsOpen] = useState(false)
-  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false)
-  const printFrameRef = useRef<HTMLIFrameElement>(null)
 
   const initialQuestions = useMemo(
     () => (exam.questions || []).map((q, i) => normalizeQuestion(q as Record<string, unknown>, i)),
@@ -119,20 +116,8 @@ export default function ExamShow({ exam }: ExamShowProps) {
   }
 
   const handlePrint = () => {
-    setIsPrintPreviewOpen(true)
+    window.print()
   }
-
-  const printPreview = () => {
-    const frameWindow = printFrameRef.current?.contentWindow
-    if (!frameWindow) {
-      toast.error('Pratinjau cetak belum siap. Coba lagi.')
-      return
-    }
-    frameWindow.focus()
-    frameWindow.print()
-  }
-
-  const exportTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
 
   return (
     <DashboardWrapper
@@ -147,24 +132,60 @@ export default function ExamShow({ exam }: ExamShowProps) {
             size: 8.51in 14.34in;
             margin: 0 !important;
           }
-          html, body {
+          html,
+          body {
             margin: 0 !important;
-            padding: 10mm !important;
+            padding: 0 !important;
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #000000 !important;
-            width: 8.51in !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          .print-document-root,
+          .print-document-root * {
+            visibility: visible !important;
+          }
+          .print-document-root,
+          .print-document-root * {
+            font-family: "Times New Roman", Times, serif !important;
+          }
+          .print-document-root {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            box-sizing: border-box !important;
+            width: 8.51in !important;
+            height: 14.34in !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 10mm !important;
+            overflow: hidden !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            color: #000000 !important;
           }
           .paper-sheet-container {
             margin: 0 !important;
             padding: 0 !important;
-            max-width: 100% !important;
+            max-width: none !important;
             width: 100% !important;
             border: none !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
             background-color: #ffffff !important;
+          }
+          .print-document-root.paper-sheet-container {
+            padding: 10mm !important;
           }
           article {
             break-inside: avoid !important;
@@ -312,27 +333,23 @@ export default function ExamShow({ exam }: ExamShowProps) {
 
                     <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
 
-                    <div
-                      id="download-docx"
-                      className="rounded-xl px-1 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    <a
+                      href={`/exams/${exam.id}/export`}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
                     >
-                      <ExportDownloadButton
-                        href={`/exams/${exam.id}/export`}
-                        label="Download DOCX"
-                        filename={`Naskah_Soal_${exportTitle || 'RA_TK'}.docx`}
-                      />
-                    </div>
+                      <Download className="h-4 w-4 text-indigo-600" />
+                      Download DOCX
+                    </a>
 
-                    <div
-                      id="download-pdf"
-                      className="rounded-xl px-1 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    <a
+                      href={`/exams/${exam.id}/export/pdf?disposition=inline`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
                     >
-                      <ExportDownloadButton
-                        href={`/exams/${exam.id}/export/pdf`}
-                        label="Download PDF"
-                        filename={`Naskah_Soal_${exportTitle || 'RA_TK'}.pdf`}
-                      />
-                    </div>
+                      <Download className="h-4 w-4 text-rose-600" />
+                      Download PDF
+                    </a>
                   </div>
                 </>
               )}
@@ -362,55 +379,8 @@ export default function ExamShow({ exam }: ExamShowProps) {
           }}
         />
 
-        {isPrintPreviewOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 print:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="print-preview-title"
-          >
-            <div className="flex h-[min(92vh,980px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-900">
-              <div className="flex items-center justify-between gap-4 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-                <div>
-                  <h2
-                    id="print-preview-title"
-                    className="text-base font-semibold text-neutral-900 dark:text-white"
-                  >
-                    Pratinjau Cetak
-                  </h2>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Periksa naskah sebelum membuka dialog cetak.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={printPreview}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                  >
-                    <Printer className="h-4 w-4" /> Cetak
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsPrintPreviewOpen(false)}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
-                  >
-                    <X className="h-4 w-4" /> Tutup
-                  </button>
-                </div>
-              </div>
-              <iframe
-                ref={printFrameRef}
-                title="Pratinjau naskah soal"
-                src={`/exams/${exam.id}/print-preview`}
-                className="min-h-0 w-full flex-1 border-0 bg-neutral-100 dark:bg-neutral-950"
-              />
-            </div>
-          </div>
-        )}
-
         {/* Paper Sheet Preview / Editor Area */}
-        <div className="paper-sheet-container mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:m-0 print:max-w-none print:w-full print:border-none print:p-0 print:shadow-none dark:border-neutral-800 dark:bg-neutral-900 print:dark:bg-white print:dark:text-black">
+        <div className="print-document-root paper-sheet-container mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:m-0 print:max-w-none print:w-full print:border-none print:p-0 print:shadow-none dark:border-neutral-800 dark:bg-neutral-900 print:dark:bg-white print:dark:text-black">
           <KopHeader header={data.header} user={authUser} />
 
           <div className="my-6 space-y-6">
@@ -535,10 +505,10 @@ function EditorCard({
               onUpdate(index, { type: event.target.value as ExamQuestion['type'] })
             }
           >
-            <option value="multiple_choice">Pilihan ganda</option>
+            <option value="multiple_choice">Pilihan Ganda</option>
             <option value="essay">Uraian</option>
-            <option value="visual">Aktivitas visual</option>
-            <option value="matching">Hubungkan garis</option>
+            <option value="visual">Aktivitas Visual</option>
+            <option value="matching">Hubungkan Garis</option>
             <option value="practical">Praktik / performa</option>
             <option value="oral">Lisan</option>
           </select>
@@ -564,6 +534,26 @@ function EditorCard({
             onChange={(event) => onUpdate(index, { instruction: event.target.value })}
           />
         </label>
+        {(question.imageUrl ||
+          question.imagePrompt ||
+          ['visual', 'fill_blank_image', 'coloring', 'tracing'].includes(question.type)) && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                URL gambar utama
+              </span>
+              <input
+                className={inputClass()}
+                value={question.imageUrl || ''}
+                onChange={(event) => onUpdate(index, { imageUrl: event.target.value })}
+                placeholder="Tempel URL gambar untuk mengganti gambar"
+              />
+            </label>
+            <p className="self-end text-xs text-neutral-500 dark:text-neutral-400">
+              Isi URL baru untuk mengganti gambar pada naskah.
+            </p>
+          </div>
+        )}
         {question.type === 'multiple_choice' && (
           <div className="grid gap-3 sm:grid-cols-2">
             {(question.options || []).map((option, optionIndex) => (
@@ -575,6 +565,20 @@ function EditorCard({
                   className={inputClass()}
                   value={option.text}
                   onChange={(event) => onUpdateOption(index, optionIndex, event.target.value)}
+                />
+                <input
+                  className={`${inputClass()} mt-2`}
+                  value={option.imageUrl || ''}
+                  onChange={(event) =>
+                    onUpdate(index, {
+                      options: (question.options || []).map((currentOption, currentIndex) =>
+                        currentIndex === optionIndex
+                          ? { ...currentOption, imageUrl: event.target.value }
+                          : currentOption
+                      ),
+                    })
+                  }
+                  placeholder="URL gambar opsi (opsional)"
                 />
               </label>
             ))}
@@ -634,6 +638,26 @@ function EditorCard({
                       .map((label, i) => ({ id: `left-${i + 1}`, label })),
                   })
                 }
+              />
+            </label>
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                URL gambar sisi kiri (satu per baris)
+              </span>
+              <textarea
+                className={inputClass()}
+                rows={4}
+                value={(question.leftItems || []).map((item) => item.imageUrl || '').join('\n')}
+                onChange={(event) => {
+                  const urls = event.target.value.split('\n')
+                  onUpdate(index, {
+                    leftItems: (question.leftItems || []).map((item, itemIndex) => ({
+                      ...item,
+                      imageUrl: urls[itemIndex] || '',
+                    })),
+                  })
+                }}
+                placeholder="Tempel URL gambar kiri sesuai urutan item"
               />
             </label>
             <label>

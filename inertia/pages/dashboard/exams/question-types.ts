@@ -134,6 +134,14 @@ function normalizeOption(value: unknown, index: number): QuestionOption {
 }
 
 function determineQuestionKind(rawType: string, raw: Record<string, unknown>): QuestionKind {
+  const visualType = typeof raw.visualType === 'string' ? raw.visualType : ''
+  if (
+    rawType === 'visual' &&
+    Array.isArray(raw.options) &&
+    /pilihan\s*ganda.*gambar|gambar.*pilihan\s*ganda|bergambar/i.test(visualType)
+  ) {
+    return 'multiple_choice'
+  }
   if (QUESTION_KINDS.has(rawType as QuestionKind)) {
     return rawType as QuestionKind
   }

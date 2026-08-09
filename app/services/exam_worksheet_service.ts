@@ -69,13 +69,18 @@ function itemImage(item: unknown): unknown {
   return record.imageUrl || record.image
 }
 
-function renderMatchingItem(item: unknown, missingMessage: string, forceImage = false): string {
+function renderMatchingItem(
+  item: unknown,
+  missingMessage: string,
+  requireImage = false,
+  allowImage = true
+): string {
   const label = itemLabel(item)
-  const image = itemImage(item)
+  const image = allowImage ? itemImage(item) : null
   const hasImageRequest = Boolean(
-    item && typeof item === 'object' && (item as Record<string, unknown>).imagePrompt
+    allowImage && item && typeof item === 'object' && (item as Record<string, unknown>).imagePrompt
   )
-  const expectedImage = image || hasImageRequest || forceImage
+  const expectedImage = requireImage || image || hasImageRequest
   return `<div class="matching-item">${expectedImage ? imageMarkup(image, label || 'Gambar', 'option-image', missingMessage) : `<span>${escapeHtml(label)}</span>`}</div>`
 }
 
@@ -102,8 +107,7 @@ function renderMatching(question: Record<string, any>): string {
   const right = Array.isArray(question.rightItems) ? question.rightItems : []
   const rows = Math.max(left.length, right.length, 3)
   const missingMessage = questionAssetMessage(question)
-  const forceImage = Boolean(text(question.imagePrompt))
-  return `<div class="matching-grid">${Array.from({ length: rows }, (_, index) => `<div class="matching-row"><div>${left[index] ? renderMatchingItem(left[index], missingMessage, forceImage) : ''}</div><span class="connection-dot" aria-hidden="true"></span><div></div><span class="connection-dot" aria-hidden="true"></span><div>${right[index] ? renderMatchingItem(right[index], missingMessage, forceImage) : ''}</div></div>`).join('')}</div>`
+  return `<div class="matching-grid">${Array.from({ length: rows }, (_, index) => `<div class="matching-row"><div>${left[index] ? renderMatchingItem(left[index], missingMessage, true) : ''}</div><span class="connection-dot" aria-hidden="true"></span><div></div><span class="connection-dot" aria-hidden="true"></span><div>${right[index] ? renderMatchingItem(right[index], missingMessage, false, false) : ''}</div></div>`).join('')}</div>`
 }
 
 function renderTracing(question: Record<string, any>): string {

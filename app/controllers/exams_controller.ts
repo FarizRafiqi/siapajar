@@ -12,6 +12,12 @@ import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
 import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
 import { EntitlementError } from '#services/entitlement_service'
+import {
+  EXPORT_CONTENT_TYPES,
+  exportFilename,
+  sendExport,
+  wantsInlinePreview,
+} from '#services/export_file_service'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
 const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
@@ -32,6 +38,16 @@ function normalizeMatchingItems(value: unknown, side: 'left' | 'right') {
     .map((item, index) => {
       if (typeof item === 'string') return { id: `${side}-${index + 1}`, label: item }
       const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      const imageUrl =
+        side === 'left'
+          ? typeof record.imageUrl === 'string'
+            ? record.imageUrl
+            : typeof record.image === 'string'
+              ? record.image
+              : ''
+          : ''
+      const imagePrompt =
+        side === 'left' && typeof record.imagePrompt === 'string' ? record.imagePrompt : ''
       return {
         id: typeof record.id === 'string' ? record.id : `${side}-${index + 1}`,
         label:
@@ -40,13 +56,8 @@ function normalizeMatchingItems(value: unknown, side: 'left' | 'right') {
             : typeof record.text === 'string'
               ? record.text
               : '',
-        imageUrl:
-          typeof record.imageUrl === 'string'
-            ? record.imageUrl
-            : typeof record.image === 'string'
-              ? record.image
-              : '',
-        imagePrompt: typeof record.imagePrompt === 'string' ? record.imagePrompt : '',
+        imageUrl,
+        imagePrompt,
       }
     })
     .filter((item) => item.label || item.imageUrl || item.imagePrompt)
@@ -96,6 +107,30 @@ function matchingItemImagePrompt(label: string, isRa: boolean) {
     ? 'gentle Islamic values for RA children'
     : 'a friendly PAUD/TK learning theme'
   return `Simple black-and-white printable worksheet illustration of ${label}, ${context}, clear thick outlines, centered object, white background, no text, no letters, no watermark.`
+}
+
+function isIllustratedChoice(question: Record<string, any>) {
+  return (
+    question.type === 'multiple_choice' &&
+    /(gambar|bergambar|ilustrasi|benda)/i.test(
+      String(question.visualType || question.question || '')
+    )
+  )
+}
+
+function illustratedChoicePrompt(label: string, isRa: boolean) {
+  const context = isRa
+    ? 'gentle Islamic values for RA children'
+    : 'a friendly PAUD/TK learning theme'
+  return `Simple black-and-white printable worksheet illustration of ${label || 'the correct answer'}, ${context}, clear thick outline, centered object, white background, no text, no letters, no watermark. It must be recognizable by young children.`
+}
+
+function countItemImagePrompt(question: Record<string, any>, isRa: boolean) {
+  const context = isRa
+    ? 'gentle Islamic values for RA children'
+    : 'a friendly PAUD/TK learning theme'
+  const subject = String(question.question || 'the worksheet theme').trim()
+  return `Simple black-and-white printable worksheet illustration for counting, ${subject}, ${context}, one clear repeated object per count item, thick clean outlines, white background, no text, no numbers, no watermark.`
 }
 
 function exportErrorResponse(error: unknown, format: string, response: HttpContext['response']) {
@@ -173,7 +208,7 @@ export default class ExamsController {
     return response.send(buffer)
   }
 
-  async exportPdf({ params, response, auth }: HttpContext) {
+  async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
     const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
 
@@ -182,17 +217,19 @@ export default class ExamsController {
     }
 
     let buffer: Buffer
+    const isInline = wantsInlinePreview(request)
     try {
-      buffer = await exportExamPdf(exam, user)
+      buffer = await exportExamPdf(exam, user, !isInline)
     } catch (error) {
       return exportErrorResponse(error, 'PDF', response)
     }
-    const safeTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
-    const filename = `Naskah_Soal_${safeTitle || 'RA_TK'}.pdf`
-
-    response.header('Content-Type', 'application/pdf')
-    response.header('Content-Disposition', `attachment; filename="${filename}"`)
-    return response.send(buffer)
+    return sendExport(
+      response,
+      buffer,
+      EXPORT_CONTENT_TYPES.pdf,
+      exportFilename(['Naskah Soal', exam.title], 'pdf'),
+      { inline: isInline }
+    )
   }
 
   async printPreview({ params, response, auth }: HttpContext) {
@@ -333,13 +370,29 @@ export default class ExamsController {
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
         type:
-          typeof q.type === 'string' && (PAUD_QUESTION_TYPES as readonly string[]).includes(q.type)
-            ? q.type
-            : typeof q.visualType === 'string' && q.visualType.toLowerCase().includes('hubung')
-              ? 'matching'
-              : examMode === 'tertulis_visual'
-                ? 'visual'
-                : examMode || (isPaud ? 'visual' : 'multiple_choice'),
+          typeof q.type === 'string' &&
+          q.type === 'visual' &&
+          typeof q.visualType === 'string' &&
+          /pilihan\s*ganda.*gambar|gambar.*pilihan\s*ganda|bergambar/i.test(q.visualType)
+            ? 'multiple_choice'
+            : typeof q.type === 'string' &&
+                (PAUD_QUESTION_TYPES as readonly string[]).includes(q.type)
+              ? q.type
+              : typeof q.visualType === 'string' &&
+                  /pilihan\s*ganda.*gambar|gambar.*pilihan\s*ganda|bergambar/i.test(q.visualType)
+                ? 'multiple_choice'
+                : typeof q.visualType === 'string' && /hitung.*lingkari/i.test(q.visualType)
+                  ? 'count_and_circle'
+                  : typeof q.visualType === 'string' && /mewarnai/i.test(q.visualType)
+                    ? 'coloring'
+                    : typeof q.visualType === 'string' && /tebal/i.test(q.visualType)
+                      ? 'tracing'
+                      : typeof q.visualType === 'string' &&
+                          q.visualType.toLowerCase().includes('hubung')
+                        ? 'matching'
+                        : examMode === 'tertulis_visual'
+                          ? 'visual'
+                          : examMode || (isPaud ? 'visual' : 'multiple_choice'),
         leftItems: normalizeMatchingItems(
           q.leftItems ?? q.left ?? q.leftColumn ?? q.itemsLeft,
           'left'
@@ -361,22 +414,41 @@ export default class ExamsController {
         if (fallbackPrompt && !question.imagePrompt) question.imagePrompt = fallbackPrompt
         const visualRequests: Array<{ target: Record<string, any>; prompt: string }> = []
         const isMatching = question.type === 'matching'
+        if (isIllustratedChoice(question)) {
+          for (const option of Array.isArray(question.options) ? question.options : []) {
+            if (option && !option.imagePrompt && !option.imageUrl) {
+              option.imagePrompt = illustratedChoicePrompt(
+                option.text || option.label,
+                user.institutionType === 'ra'
+              )
+            }
+          }
+        }
+        if (question.type === 'count_and_circle') {
+          for (const item of Array.isArray(question.countItems) ? question.countItems : []) {
+            if (item && !item.imagePrompt && !item.imageUrl) {
+              item.imagePrompt = countItemImagePrompt(question, user.institutionType === 'ra')
+            }
+          }
+        }
+        if (question.type === 'tracing' && !question.traceText) {
+          const numberMatch = String(question.question || '').match(/\d+(?:\s*[-+]\s*\d+)*/)
+          if (numberMatch) question.traceText = numberMatch[0]
+        }
         if (isMatching) {
-          for (const side of ['leftItems', 'rightItems'] as const) {
-            for (const item of Array.isArray(question[side]) ? question[side] : []) {
-              if (item?.label && !item.imagePrompt && !item.imageUrl) {
-                item.imagePrompt = matchingItemImagePrompt(
-                  item.label,
-                  user.institutionType === 'ra'
-                )
-              }
+          for (const item of Array.isArray(question.leftItems) ? question.leftItems : []) {
+            if (item?.label && !item.imagePrompt && !item.imageUrl) {
+              item.imagePrompt = matchingItemImagePrompt(item.label, user.institutionType === 'ra')
             }
           }
         }
         if (!isMatching && question.imagePrompt && !question.imageUrl) {
           visualRequests.push({ target: question, prompt: question.imagePrompt })
         }
-        for (const side of ['leftItems', 'rightItems'] as const) {
+        const visualSides = isMatching
+          ? (['leftItems'] as const)
+          : (['leftItems', 'rightItems'] as const)
+        for (const side of visualSides) {
           for (const item of Array.isArray(question[side]) ? question[side] : []) {
             if (item?.imagePrompt && !item.imageUrl) {
               visualRequests.push({ target: item, prompt: item.imagePrompt })

@@ -537,35 +537,36 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
       const leftLabel = typeof left === 'string' ? left : left?.label || left?.text || ''
       const rightLabel = typeof right === 'string' ? right : right?.label || right?.text || ''
       const leftImage = typeof left === 'object' ? left?.imageUrl || left?.image : undefined
-      const rightImage = typeof right === 'object' ? right?.imageUrl || right?.image : undefined
 
       const itemParagraph = (
         label: string,
         image: unknown,
         imagePrompt: unknown,
-        alignment: (typeof AlignmentType)[keyof typeof AlignmentType]
+        alignment: (typeof AlignmentType)[keyof typeof AlignmentType],
+        requireImage = false
       ) => {
         const itemChildren: (TextRun | ImageRun)[] = []
         const imageRun = imageRunFromData(image, 32, 32)
         if (imageRun) itemChildren.push(imageRun)
-        if (!imageRun && imagePrompt) {
+        if (!imageRun && (requireImage || imagePrompt)) {
           itemChildren.push(new TextRun({ text: 'Gambar belum tersedia', italics: true, size: 14 }))
         }
-        if (!imageRun && !imagePrompt) {
+        if (!imageRun && !requireImage && !imagePrompt) {
           itemChildren.push(new TextRun({ text: label || 'Gambar belum tersedia', bold: true }))
         }
         return new Paragraph({ alignment, children: itemChildren })
       }
 
-      const matchingPrompt = q.imagePrompt || left?.imagePrompt
-      const rightMatchingPrompt = q.imagePrompt || right?.imagePrompt
+      const matchingPrompt = left?.imagePrompt
 
       return new TableRow({
         children: [
           new TableCell({
             width: { size: 32, type: WidthType.PERCENTAGE },
             borders: noBorder,
-            children: [itemParagraph(leftLabel, leftImage, matchingPrompt, AlignmentType.RIGHT)],
+            children: [
+              itemParagraph(leftLabel, leftImage, matchingPrompt, AlignmentType.RIGHT, true),
+            ],
           }),
           new TableCell({
             width: { size: 8, type: WidthType.PERCENTAGE },
@@ -595,9 +596,7 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
           new TableCell({
             width: { size: 32, type: WidthType.PERCENTAGE },
             borders: noBorder,
-            children: [
-              itemParagraph(rightLabel, rightImage, rightMatchingPrompt, AlignmentType.LEFT),
-            ],
+            children: [itemParagraph(rightLabel, undefined, undefined, AlignmentType.LEFT)],
           }),
         ],
       })
@@ -752,7 +751,7 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
       : [{ count: 4, options: [3, 4, 5] }]
     for (const item of countItems) {
       const imageRun = imageRunFromData(item.imageUrl, 28, 28)
-      const imagePlaceholder = !imageRun && item.imagePrompt
+      const imagePlaceholder = !imageRun
       children.push(
         new Paragraph({
           alignment: AlignmentType.CENTER,

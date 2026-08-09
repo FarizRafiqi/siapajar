@@ -4,6 +4,7 @@ import { EXAM_WORKSHEET_PAGE, renderExamWorksheetHtml } from '#services/exam_wor
 import { createExamDocument } from '#services/export_service'
 
 const png = 'data:image/png;base64,iVBORw0KGgo='
+const rightOnlyPng = 'data:image/png;base64,right-side-must-not-render='
 
 test.group('RA/TK exam worksheet renderer', () => {
   test('renders the canonical custom paper contract and every supported activity', ({ assert }) => {
@@ -27,8 +28,8 @@ test.group('RA/TK exam worksheet renderer', () => {
           {
             type: 'matching',
             question: 'Hubungkan pasangan yang sesuai',
-            leftItems: [{ label: 'Hujan' }],
-            rightItems: [{ label: 'Payung' }],
+            leftItems: [{ label: 'Hujan', imageUrl: png }],
+            rightItems: [{ label: 'Payung', imageUrl: rightOnlyPng }],
           },
           { type: 'tracing', question: 'Tebalkan kata', traceText: 'Allah' },
           { type: 'coloring', question: 'Warnai buah', assetStatus: 'quota_unavailable' },
@@ -62,6 +63,8 @@ test.group('RA/TK exam worksheet renderer', () => {
     assert.include(html, '8.51in')
     assert.include(html, '14.34in')
     assert.include(html, 'Hubungkan Garis')
+    assert.include(html, 'Payung')
+    assert.notInclude(html, rightOnlyPng)
     assert.include(html, 'Warnai Sesuai Petunjuk')
     assert.include(html, 'trace-text')
     assert.include(html, 'Gambar belum tersedia')
