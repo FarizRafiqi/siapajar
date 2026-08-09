@@ -24,6 +24,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
 
+  // Rate Limiter
+  LIMITER_STORE: Env.schema.enum.optional(['memory', 'redis', 'database'] as const),
+
   // Database (PostgreSQL)
   DB_HOST: Env.schema.string(),
   DB_PORT: Env.schema.number(),
