@@ -1,13 +1,13 @@
 {
   "extends": "@adonisjs/tsconfig/tsconfig.app.json",
   "compilerOptions": {
-    "rootDir": "./mcp",
-    "outDir": "./build/mcp",
+    "outDir": "./build",
     "declaration": false,
     "sourceMap": false,
     "rewriteRelativeImportExtensions": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": false
+    "emitDecoratorMetadata": false,
+    "skipLibCheck": true
   },
-  "include": ["./mcp/**/*"]
+  "include": ["./mcp/**/*", "./commands/mcp_serve.ts"]
 }

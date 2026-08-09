@@ -31,8 +31,13 @@ const loggerConfig = defineConfig({
        */
       transport: {
         targets: targets()
-          .pushIf(!app.inProduction, targets.pretty())
-          .pushIf(app.inProduction, targets.file({ destination: 1 }))
+          .pushIf(!app.inProduction && env.get('MCP_SERVER') !== 'true', targets.pretty())
+          .pushIf(
+            app.inProduction || env.get('MCP_SERVER') === 'true',
+            // MCP speaks JSON-RPC over stdout, so logs must never go there.
+            // Destination 2 = stderr keeps the stdio channel clean.
+            targets.file({ destination: env.get('MCP_SERVER') === 'true' ? 2 : 1 })
+          )
           .toArray(),
       },
     },
