@@ -63,6 +63,7 @@ export default defineConfig({
     () => import('#providers/api_provider'),
     () => import('@adonisjs/redis/redis_provider'),
     () => import('@adonisjs/queue/queue_provider'),
+    () => import('@adonisjs/limiter/limiter_provider'),
   ],
 
   /*
