@@ -18,7 +18,10 @@ RUN addgroup --system app && adduser --system -G app app
 RUN apk add --no-cache tini
 
 # Copy production deps + build output
+# HUSKY=0: package.json has "prepare": "husky" (devDep) — npm ci --omit=dev
+# would run the prepare script and fail with "husky: not found". HUSKY=0 skips it.
 COPY package*.json ./
+ENV HUSKY=0
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/build ./build
