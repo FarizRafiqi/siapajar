@@ -32,6 +32,11 @@ test.group('RA/TK exam worksheet renderer', () => {
           },
           { type: 'tracing', question: 'Tebalkan kata', traceText: 'Allah' },
           { type: 'coloring', question: 'Warnai buah', assetStatus: 'quota_unavailable' },
+          {
+            type: 'visual',
+            visualType: 'line-art coloring',
+            question: 'Warnai gambar bunga',
+          },
           { type: 'fill_blank_image', question: 'Tulis nama gambar', imagePrompt: 'buah' },
           {
             type: 'count_and_circle',
@@ -66,6 +71,7 @@ test.group('RA/TK exam worksheet renderer', () => {
     assert.include(html, 'teacher-observation')
     assert.include(html, 'data:image/png;base64')
     assert.include(html, 'Evaluasi Semester &lt;2&gt;')
+    assert.notInclude(html, 'line-art coloring')
   })
 
   test('serializes the primary DOCX as a worksheet without an appended answer-key page', async ({

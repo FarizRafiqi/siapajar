@@ -69,13 +69,14 @@ function itemImage(item: unknown): unknown {
   return record.imageUrl || record.image
 }
 
-function renderMatchingItem(item: unknown, missingMessage: string): string {
+function renderMatchingItem(item: unknown, missingMessage: string, forceImage = false): string {
   const label = itemLabel(item)
   const image = itemImage(item)
   const hasImageRequest = Boolean(
     item && typeof item === 'object' && (item as Record<string, unknown>).imagePrompt
   )
-  return `<div class="matching-item">${image || hasImageRequest ? imageMarkup(image, label || 'Gambar', 'option-image', missingMessage) : ''}<span>${escapeHtml(label)}</span></div>`
+  const expectedImage = image || hasImageRequest || forceImage
+  return `<div class="matching-item">${expectedImage ? imageMarkup(image, label || 'Gambar', 'option-image', missingMessage) : `<span>${escapeHtml(label)}</span>`}</div>`
 }
 
 function renderOptions(question: Record<string, any>): string {
@@ -101,7 +102,8 @@ function renderMatching(question: Record<string, any>): string {
   const right = Array.isArray(question.rightItems) ? question.rightItems : []
   const rows = Math.max(left.length, right.length, 3)
   const missingMessage = questionAssetMessage(question)
-  return `<div class="matching-grid">${Array.from({ length: rows }, (_, index) => `<div class="matching-row"><div>${left[index] ? renderMatchingItem(left[index], missingMessage) : ''}</div><span class="connection-dot" aria-hidden="true"></span><div></div><span class="connection-dot" aria-hidden="true"></span><div>${right[index] ? renderMatchingItem(right[index], missingMessage) : ''}</div></div>`).join('')}</div>`
+  const forceImage = Boolean(text(question.imagePrompt))
+  return `<div class="matching-grid">${Array.from({ length: rows }, (_, index) => `<div class="matching-row"><div>${left[index] ? renderMatchingItem(left[index], missingMessage, forceImage) : ''}</div><span class="connection-dot" aria-hidden="true"></span><div></div><span class="connection-dot" aria-hidden="true"></span><div>${right[index] ? renderMatchingItem(right[index], missingMessage, forceImage) : ''}</div></div>`).join('')}</div>`
 }
 
 function renderTracing(question: Record<string, any>): string {
@@ -153,13 +155,20 @@ function renderQuestionBody(question: Record<string, any>): string {
 
 function questionSectionLabel(question: Record<string, any>): string {
   const type = text(question.type)
-  if (type === 'multiple_choice') return 'Pilihan Ganda'
-  if (type === 'matching') return 'Hubungkan Garis'
-  if (type === 'coloring') return 'Warnai Sesuai Petunjuk'
-  if (type === 'tracing') return 'Tebalkan'
-  if (type === 'fill_blank_image') return 'Tulis Nama Gambar'
-  if (type === 'essay') return 'Uraian'
-  return text(question.visualType) || 'Aktivitas'
+  const labels: Record<string, string> = {
+    multiple_choice: 'Pilihan Ganda',
+    matching: 'Hubungkan Garis',
+    coloring: 'Warnai Sesuai Petunjuk',
+    tracing: 'Tebalkan',
+    fill_blank_image: 'Tulis Nama Gambar',
+    count_and_circle: 'Hitung dan Lingkari',
+    vertical_math: 'Hitung Bersusun',
+    practical: 'Praktik',
+    oral: 'Kegiatan Lisan',
+    essay: 'Uraian',
+    visual: 'Aktivitas Visual',
+  }
+  return labels[type] || 'Aktivitas'
 }
 
 function renderQuestions(questions: Record<string, any>[]): string {

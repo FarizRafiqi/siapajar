@@ -11,6 +11,7 @@ import {
   TableRow,
   WidthType,
   PageOrientation,
+  TableLayoutType,
   VerticalAlign,
   BorderStyle,
   UnderlineType,
@@ -269,6 +270,8 @@ function examHeaderParagraphs(exam: Exam, user: User) {
 
   const topKopGrid = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: noBorder,
     rows: [
       new TableRow({
         children: [
@@ -304,6 +307,8 @@ function examHeaderParagraphs(exam: Exam, user: User) {
   // 2-Column Section Table: [Metadata Kiri (60%)] [Nilai & Paraf Box Kanan (40%)]
   const metadataTable = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: noBorder,
     rows: [
       ['Nama', ': ............................................'],
       ['Kelas', `: ${header.groupName || 'B2'}`],
@@ -445,6 +450,8 @@ function examHeaderParagraphs(exam: Exam, user: User) {
 
   const headerGrid = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: noBorder,
     rows: [
       new TableRow({
         children: [
@@ -522,6 +529,8 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
 
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: noBorder,
     rows: Array.from({ length: rowCount }, (_, index) => {
       const left = leftItems[index]
       const right = rightItems[index]
@@ -540,20 +549,23 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
         const imageRun = imageRunFromData(image, 32, 32)
         if (imageRun) itemChildren.push(imageRun)
         if (!imageRun && imagePrompt) {
-          itemChildren.push(
-            new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 14 })
-          )
+          itemChildren.push(new TextRun({ text: 'Gambar belum tersedia', italics: true, size: 14 }))
         }
-        itemChildren.push(new TextRun({ text: label || '[Gambar belum tersedia]', bold: true }))
+        if (!imageRun && !imagePrompt) {
+          itemChildren.push(new TextRun({ text: label || 'Gambar belum tersedia', bold: true }))
+        }
         return new Paragraph({ alignment, children: itemChildren })
       }
+
+      const matchingPrompt = q.imagePrompt || left?.imagePrompt
+      const rightMatchingPrompt = q.imagePrompt || right?.imagePrompt
 
       return new TableRow({
         children: [
           new TableCell({
             width: { size: 32, type: WidthType.PERCENTAGE },
             borders: noBorder,
-            children: [itemParagraph(leftLabel, leftImage, left?.imagePrompt, AlignmentType.RIGHT)],
+            children: [itemParagraph(leftLabel, leftImage, matchingPrompt, AlignmentType.RIGHT)],
           }),
           new TableCell({
             width: { size: 8, type: WidthType.PERCENTAGE },
@@ -584,7 +596,7 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
             width: { size: 32, type: WidthType.PERCENTAGE },
             borders: noBorder,
             children: [
-              itemParagraph(rightLabel, rightImage, right?.imagePrompt, AlignmentType.LEFT),
+              itemParagraph(rightLabel, rightImage, rightMatchingPrompt, AlignmentType.LEFT),
             ],
           }),
         ],
@@ -652,6 +664,8 @@ function renderVerticalMathQuestion(q: Record<string, any>, children: (Paragraph
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
+      borders: noBorder,
       rows: [
         new TableRow({
           children: problems.map(
@@ -772,13 +786,20 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
 }
 
 function examQuestionSectionLabel(q: Record<string, any>): string {
-  if (q.type === 'multiple_choice') return 'Pilihan Ganda'
-  if (q.type === 'matching') return 'Hubungkan Garis'
-  if (q.type === 'coloring') return 'Warnai Sesuai Petunjuk'
-  if (q.type === 'tracing') return 'Tebalkan'
-  if (q.type === 'fill_blank_image') return 'Tulis Nama Gambar'
-  if (q.type === 'essay') return 'Uraian'
-  return q.visualType || 'Aktivitas'
+  const labels: Record<string, string> = {
+    multiple_choice: 'Pilihan Ganda',
+    matching: 'Hubungkan Garis',
+    coloring: 'Warnai Sesuai Petunjuk',
+    tracing: 'Tebalkan',
+    fill_blank_image: 'Tulis Nama Gambar',
+    count_and_circle: 'Hitung dan Lingkari',
+    vertical_math: 'Hitung Bersusun',
+    practical: 'Praktik',
+    oral: 'Kegiatan Lisan',
+    essay: 'Uraian',
+    visual: 'Aktivitas Visual',
+  }
+  return labels[q.type] || 'Aktivitas'
 }
 
 function examQuestionParagraphsWithSections(questions: Record<string, any>[]) {
