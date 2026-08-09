@@ -6,6 +6,10 @@ export interface ApiDefinition {
   health: typeof routes['health']
   privacy: typeof routes['privacy']
   terms: typeof routes['terms']
+  mcp: {
+    wellknown: typeof routes['mcp.wellknown']
+    handle: typeof routes['mcp.handle']
+  }
   comingSoon: typeof routes['coming-soon']
   newAccount: {
     create: typeof routes['new_account.create']
@@ -90,6 +94,7 @@ export interface ApiDefinition {
     generate: typeof routes['exams.generate']
     export: typeof routes['exams.export']
     exportPdf: typeof routes['exams.exportPdf']
+    printPreview: typeof routes['exams.printPreview']
   }
   annualPlans: {
     index: typeof routes['annual-plans.index']

@@ -30,6 +30,18 @@ const routes = {
     tokens: [{"old":"/terms","type":0,"val":"terms","end":""}],
     types: placeholder as Registry['terms']['types'],
   },
+  'mcp.wellknown': {
+    methods: ["GET","HEAD"],
+    pattern: '/.well-known/mcp',
+    tokens: [{"old":"/.well-known/mcp","type":0,"val":".well-known","end":""},{"old":"/.well-known/mcp","type":0,"val":"mcp","end":""}],
+    types: placeholder as Registry['mcp.wellknown']['types'],
+  },
+  'mcp.handle': {
+    methods: ["HEAD","OPTIONS","GET","POST","PUT","PATCH","DELETE"],
+    pattern: '/mcp',
+    tokens: [{"old":"/mcp","type":0,"val":"mcp","end":""}],
+    types: placeholder as Registry['mcp.handle']['types'],
+  },
   'coming-soon': {
     methods: ["GET","HEAD"],
     pattern: '/coming-soon',
@@ -347,6 +359,12 @@ const routes = {
     pattern: '/exams/:id/export/pdf',
     tokens: [{"old":"/exams/:id/export/pdf","type":0,"val":"exams","end":""},{"old":"/exams/:id/export/pdf","type":1,"val":"id","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"export","end":""},{"old":"/exams/:id/export/pdf","type":0,"val":"pdf","end":""}],
     types: placeholder as Registry['exams.exportPdf']['types'],
+  },
+  'exams.printPreview': {
+    methods: ["GET","HEAD"],
+    pattern: '/exams/:id/print-preview',
+    tokens: [{"old":"/exams/:id/print-preview","type":0,"val":"exams","end":""},{"old":"/exams/:id/print-preview","type":1,"val":"id","end":""},{"old":"/exams/:id/print-preview","type":0,"val":"print-preview","end":""}],
+    types: placeholder as Registry['exams.printPreview']['types'],
   },
   'annual-plans.index': {
     methods: ["GET","HEAD"],

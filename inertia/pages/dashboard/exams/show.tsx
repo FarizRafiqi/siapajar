@@ -1,5 +1,5 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Head, Link, useForm, usePage } from '@inertiajs/react'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import {
   ArrowLeft,
   Building2,
@@ -116,7 +116,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
   }
 
   const handlePrint = () => {
-    window.print()
+    window.open(`/exams/${exam.id}/print-preview`, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -129,34 +129,37 @@ export default function ExamShow({ exam }: ExamShowProps) {
       <style>{String.raw`
         @media print {
           @page {
-            size: A4 portrait;
-            margin: 15mm 15mm 15mm 15mm;
+            size: 8.51in 14.34in;
+            margin: 0 !important;
           }
-          *, *::before, *::after, html, body, #app, main, div, section, article, header, footer, .dark, .dark * {
+          html, body {
+            margin: 0 !important;
+            padding: 10mm !important;
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #000000 !important;
-            border-color: #d4d4d4 !important;
-            box-shadow: none !important;
-            text-shadow: none !important;
+            width: 8.51in !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          html, body, #app, main {
+          .paper-sheet-container {
             margin: 0 !important;
             padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
             background-color: #ffffff !important;
-            background: #ffffff !important;
           }
           article {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
-            margin-bottom: 16px !important;
+            margin-bottom: 14px !important;
             border: none !important;
             padding: 0 !important;
             background-color: #ffffff !important;
           }
-          .print\:hidden {
+          .print\:hidden, nav, header:not(.kop-header), footer, button, .dashboard-sidebar, aside {
             display: none !important;
           }
         }
@@ -202,7 +205,7 @@ export default function ExamShow({ exam }: ExamShowProps) {
               onClick={handlePrint}
               className="h-10 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
             >
-              <Printer className="h-4 w-4" /> Cetak (Print)
+              <Printer className="h-4 w-4" /> Pratinjau Cetak
             </button>
 
             {editing ? (
@@ -322,11 +325,24 @@ export default function ExamShow({ exam }: ExamShowProps) {
           header={data.header}
           onSaveHeader={(updatedHeader) => {
             setData('header', updatedHeader)
+            router.put(
+              `/exams/${exam.id}`,
+              {
+                title: data.title,
+                type: data.type,
+                status: data.status,
+                questions: data.questions,
+                header: updatedHeader,
+              } as any,
+              {
+                preserveScroll: true,
+              }
+            )
           }}
         />
 
         {/* Paper Sheet Preview / Editor Area */}
-        <div className="mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:m-0 print:max-w-none print:w-full print:border-none print:p-0 print:shadow-none dark:border-neutral-800 dark:bg-neutral-900 print:dark:bg-white print:dark:text-black">
+        <div className="paper-sheet-container mx-auto max-w-[800px] rounded-2xl border border-neutral-200 bg-white p-8 shadow-md print:m-0 print:max-w-none print:w-full print:border-none print:p-0 print:shadow-none dark:border-neutral-800 dark:bg-neutral-900 print:dark:bg-white print:dark:text-black">
           <KopHeader header={data.header} user={authUser} />
 
           <div className="my-6 space-y-6">

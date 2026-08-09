@@ -13,6 +13,8 @@ import type User from '#models/user'
 import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
+import { chromium } from 'playwright'
+import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
 
 async function consumePdfExport(user: User) {
   const reservationKey = `export:pdf:${user.id}:${randomUUID()}`
@@ -96,226 +98,6 @@ function writeSection(
   doc.moveDown(0.5)
 }
 
-function writeExamHeader(doc: PDFKit.PDFDocument, exam: Exam, user: User) {
-  const header = exam.header ?? {}
-  const kop = user.kopSurat ?? {}
-
-  const logoUrl = header.logoUrl || kop.logoUrl
-  const institutionName = (
-    header.institutionName ||
-    kop.institutionName ||
-    user.schoolName ||
-    'SEKOLAH / TK'
-  ).toUpperCase()
-  const institutionSubName = (
-    header.institutionSubName ||
-    kop.institutionSubName ||
-    ''
-  ).toUpperCase()
-  const addressLine1 = header.addressLine1 || header.institutionAddress || kop.addressLine1 || ''
-  const addressLine2 = header.addressLine2 || kop.addressLine2 || ''
-  const phone = header.phone || kop.phone || ''
-
-  const startY = doc.y
-
-  // Render Logo if available
-  if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/')) {
-    try {
-      doc.image(Buffer.from(logoUrl.split(',')[1], 'base64'), 50, startY, { fit: [55, 55] })
-    } catch {}
-  }
-
-  // Header Title
-  doc.font('Helvetica-Bold').fontSize(14).text(institutionName, { align: 'center' })
-  if (institutionSubName) {
-    doc.font('Helvetica-Bold').fontSize(13).text(`“${institutionSubName}”`, { align: 'center' })
-  }
-  doc.font('Helvetica').fontSize(9)
-  if (addressLine1) doc.text(addressLine1, { align: 'center' })
-  if (addressLine2) doc.text(addressLine2, { align: 'center' })
-  if (phone) doc.text(phone, { align: 'center' })
-
-  doc.moveDown(0.5)
-
-  // Double Line Separator
-  const lineY = doc.y
-  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
-  doc
-    .moveTo(doc.page.margins.left, lineY)
-    .lineTo(doc.page.margins.left + pageWidth, lineY)
-    .lineWidth(2)
-    .strokeColor('#000000')
-    .stroke()
-
-  doc
-    .moveTo(doc.page.margins.left, lineY + 3)
-    .lineTo(doc.page.margins.left + pageWidth, lineY + 3)
-    .lineWidth(0.8)
-    .strokeColor('#000000')
-    .stroke()
-
-  doc.y = lineY + 12
-
-  // Metadata Kiri & Tabel Nilai/Paraf Kanan
-  const metaY = doc.y
-  const leftX = doc.page.margins.left
-  const rightX = doc.page.width - doc.page.margins.right - 180
-
-  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-  doc.text(`Nama         : ............................................`, leftX, metaY)
-  doc.text(`Kelas          : ${header.groupName || 'B2'}`, leftX, metaY + 14)
-  doc.text(`Hari/Tanggal : ............................................`, leftX, metaY + 28)
-  doc.text(`Bidang Studi : ${header.subject || 'Bahasa'}`, leftX, metaY + 42)
-
-  // Render Table Nilai & Paraf (Right Side)
-  const tableY = metaY
-  const tableW = 180
-  const tableH = 50
-
-  doc.rect(rightX, tableY, tableW, tableH).lineWidth(1).strokeColor('#000000').stroke()
-  // Vertical dividers: Nilai | Paraf (Guru | Orang Tua)
-  doc
-    .moveTo(rightX + 60, tableY)
-    .lineTo(rightX + 60, tableY + tableH)
-    .lineWidth(1)
-    .stroke()
-  doc
-    .moveTo(rightX + 120, tableY + 16)
-    .lineTo(rightX + 120, tableY + tableH)
-    .lineWidth(1)
-    .stroke()
-  // Horizontal divider 1: Paraf sub-header divider (ONLY under Paraf header, not across Nilai)
-  doc
-    .moveTo(rightX + 60, tableY + 16)
-    .lineTo(rightX + tableW, tableY + 16)
-    .lineWidth(1)
-    .stroke()
-  // Horizontal divider 2: Bottom header divider
-  doc
-    .moveTo(rightX, tableY + 30)
-    .lineTo(rightX + tableW, tableY + 30)
-    .lineWidth(1)
-    .stroke()
-
-  doc.font('Helvetica-Bold').fontSize(9)
-  doc.text('Nilai', rightX, tableY + 10, { width: 60, align: 'center' })
-  doc.text('Paraf', rightX + 60, tableY + 3, { width: 120, align: 'center' })
-  doc.font('Helvetica').fontSize(7.5)
-  doc.text('Guru', rightX + 60, tableY + 18, { width: 60, align: 'center' })
-  doc.text('Orang Tua', rightX + 120, tableY + 18, { width: 60, align: 'center' })
-
-  doc.y = metaY + 62
-}
-
-function matchingItems(value: unknown) {
-  return Array.isArray(value)
-    ? value.map((item: any) => ({
-        label: typeof item === 'string' ? item : item?.label || item?.text || '',
-        imageUrl: typeof item === 'object' ? item?.imageUrl || item?.image : undefined,
-      }))
-    : []
-}
-
-function writeMatchingGrid(doc: PDFKit.PDFDocument, q: Record<string, any>) {
-  const leftItems = matchingItems(q.leftItems)
-  const rightItems = matchingItems(q.rightItems)
-  const rows = Math.max(leftItems.length, rightItems.length, 3)
-  const startX = doc.page.margins.left
-  const rowHeight = 32
-
-  for (let index = 0; index < rows; index++) {
-    if (doc.y + rowHeight > doc.page.height - doc.page.margins.bottom) doc.addPage()
-    const y = doc.y
-    const left = leftItems[index]
-    const right = rightItems[index]
-
-    // 5 Column Matching Row Layout: [Item Kiri: 130pt] [Bullet Kiri: 20pt] [Spacer: 150pt] [Bullet Kanan: 20pt] [Item Kanan: 140pt]
-    const col1X = startX
-    const col2X = startX + 130
-    const col4X = startX + 300
-    const col5X = startX + 325
-
-    // Item Kiri Text / Image
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-    if (left?.imageUrl?.startsWith('data:image/')) {
-      try {
-        doc.image(Buffer.from(left.imageUrl.split(',')[1], 'base64'), col1X, y, { fit: [28, 28] })
-      } catch {}
-    } else {
-      doc.text(left?.label || '', col1X, y + 8, { width: 125 })
-    }
-
-    // Bullet Kiri
-    doc
-      .circle(col2X + 10, y + 12, 3.5)
-      .fillColor('#000000')
-      .fill()
-
-    // Bullet Kanan
-    doc
-      .circle(col4X + 10, y + 12, 3.5)
-      .fillColor('#000000')
-      .fill()
-
-    // Item Kanan Text
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-    doc.text(right?.label || '', col5X, y + 8, { width: 135 })
-
-    doc.y = y + rowHeight
-  }
-  doc.moveDown(0.4)
-}
-
-function writeExamQuestion(doc: PDFKit.PDFDocument, q: Record<string, any>, number: number) {
-  if (doc.y > doc.page.height - doc.page.margins.bottom - 70) {
-    doc.addPage()
-  }
-
-  const isMatching =
-    q.type === 'matching' ||
-    String(q.visualType || '')
-      .toLowerCase()
-      .includes('hubung')
-
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .text(`${number}. ${q.question || 'Pertanyaan belum diisi.'}`)
-  if (q.instruction) doc.font('Helvetica-Oblique').fontSize(9).text(`Petunjuk: ${q.instruction}`)
-
-  if (!isMatching && Array.isArray(q.options) && q.options.length > 0) {
-    doc.font('Helvetica').fontSize(9)
-    let optionsLine = ''
-    q.options.forEach((option: unknown, index: number) => {
-      const label =
-        typeof option === 'string'
-          ? String.fromCodePoint(97 + index)
-          : (option as any)?.label?.toLowerCase() || String.fromCodePoint(97 + index)
-      const text = typeof option === 'string' ? option : (option as any)?.text || ''
-      optionsLine += `${label}. ${text}            `
-    })
-    doc.text(optionsLine)
-    doc.moveDown(0.4)
-  } else if (isMatching) {
-    writeMatchingGrid(doc, q)
-  } else if (['essay', 'visual', 'practical', 'oral', 'fill_blank_image'].includes(q.type)) {
-    doc
-      .font('Helvetica')
-      .text(
-        '........................................................................................................................'
-      )
-  }
-  if (q.imageUrl?.startsWith('data:image/')) {
-    try {
-      doc.image(Buffer.from(q.imageUrl.split(',')[1], 'base64'), {
-        fit: [360, 220],
-        align: 'center',
-      })
-    } catch {}
-  }
-  doc.moveDown(0.5)
-}
-
 export async function exportTeachingModulePdf(
   teachingModule: TeachingModule,
   user: User,
@@ -345,23 +127,25 @@ export async function exportTeachingModulePdf(
 
 export async function exportExamPdf(exam: Exam, user: User, charge = true) {
   if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeExamHeader(doc, exam, user)
-  doc.font('Helvetica-Bold').fontSize(16).text(exam.title)
-  doc.moveDown(1)
-  exam.questions.forEach((q, i) => writeExamQuestion(doc, q, i + 1))
-
-  doc.addPage()
-  doc.font('Helvetica-Bold').fontSize(14).text('Kunci Jawaban')
-  doc.moveDown(0.5)
-  doc.font('Helvetica').fontSize(10)
-  exam.questions.forEach((q, i) => {
-    const ansText = String(q.answer ?? '')
-    const expText = q.explanation ? ` — ${q.explanation}` : ''
-    doc.text(`${i + 1}. ${ansText}${expText}`)
-  })
-
-  return toBuffer(doc)
+  const browser = await chromium.launch({ headless: true })
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 820, height: 1380 },
+      deviceScaleFactor: 1,
+    })
+    await page.setContent(renderExamWorksheetHtml(exam, user), { waitUntil: 'networkidle' })
+    await page.waitForFunction("document.documentElement.dataset.worksheetReady === 'true'")
+    await page.waitForFunction('Array.from(document.images).every((image) => image.complete)')
+    return await page.pdf({
+      width: '8.51in',
+      height: '14.34in',
+      printBackground: true,
+      preferCSSPageSize: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    })
+  } finally {
+    await browser.close()
+  }
 }
 
 export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User, charge = true) {

@@ -22,9 +22,9 @@ export function KopHeader({ header, user }: KopHeaderProps) {
     header.institutionName || kop.institutionName || user?.schoolName || 'NAMA SEKOLAH / TK'
   const institutionSubName = header.institutionSubName || kop.institutionSubName || ''
   const addressLine1 =
-    header.addressLine1 || header.institutionAddress || kop.addressLine1 || 'Alamat Sekolah Line 1'
+    header.addressLine1 || header.institutionAddress || kop.addressLine1 || 'Jl. Pendidikan No. 123'
   const addressLine2 = header.addressLine2 || kop.addressLine2 || ''
-  const phone = header.phone || kop.phone || ''
+  const phone = header.phone || kop.phone || 'Telp. (021) 1234567'
 
   return (
     <div className="kop-header mb-6 w-full font-serif text-neutral-900 dark:text-white print:mb-4 print:text-black">
@@ -34,8 +34,9 @@ export function KopHeader({ header, user }: KopHeaderProps) {
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="h-20 w-20 object-contain" />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded border border-dashed border-neutral-400 bg-neutral-50 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 print:hidden">
-              Logo Sekolah
+            <div className="flex h-20 w-20 flex-col items-center justify-center rounded border border-dashed border-neutral-400 bg-neutral-50 p-2 text-center text-[10px] font-semibold text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 print:border-black print:bg-transparent print:text-black">
+              <span className="text-xs">LOGO</span>
+              <span>SEKOLAH</span>
             </div>
           )}
         </div>

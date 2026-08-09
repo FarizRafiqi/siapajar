@@ -35,45 +35,6 @@ interface QuestionRendererProps {
   colorMode?: 'grayscale' | 'color'
 }
 
-function detectObjectIcon(text: string, aiIcon?: string): string {
-  if (aiIcon) {
-    const aiLower = aiIcon.toLowerCase()
-    if (aiLower.includes('apel') || aiLower.includes('apple')) return '🍎'
-    if (aiLower.includes('balon') || aiLower.includes('balloon')) return '🎈'
-    if (aiLower.includes('bintang') || aiLower.includes('star')) return '⭐'
-    if (aiLower.includes('bunga') || aiLower.includes('flower')) return '🌸'
-    if (aiLower.includes('ikan') || aiLower.includes('fish')) return '🐟'
-    if (aiLower.includes('mobil') || aiLower.includes('car')) return '🚗'
-    if (aiLower.includes('kucing') || aiLower.includes('cat')) return '🐱'
-    if (aiLower.includes('burung') || aiLower.includes('bird')) return '🐦'
-    if (aiLower.includes('daun') || aiLower.includes('leaf')) return '🍃'
-    if (aiLower.includes('bola') || aiLower.includes('ball')) return '⚽'
-    if (aiLower.includes('permen') || aiLower.includes('candy')) return '🍬'
-    if (aiLower.includes('jeruk') || aiLower.includes('orange')) return '🍊'
-    if (aiLower.includes('pisang') || aiLower.includes('banana')) return '🍌'
-    if (aiLower.includes('rumah') || aiLower.includes('house')) return '🏠'
-    if (aiLower.includes('topi') || aiLower.includes('hat')) return '🧢'
-  }
-
-  const lower = text.toLowerCase()
-  if (lower.includes('apel') || lower.includes('apple')) return '🍎'
-  if (lower.includes('balon') || lower.includes('balloon')) return '🎈'
-  if (lower.includes('bintang') || lower.includes('star')) return '⭐'
-  if (lower.includes('bunga') || lower.includes('flower')) return '🌸'
-  if (lower.includes('ikan') || lower.includes('fish')) return '🐟'
-  if (lower.includes('mobil') || lower.includes('car')) return '🚗'
-  if (lower.includes('kucing') || lower.includes('cat')) return '🐱'
-  if (lower.includes('burung') || lower.includes('bird')) return '🐦'
-  if (lower.includes('daun') || lower.includes('leaf')) return '🍃'
-  if (lower.includes('bola') || lower.includes('ball')) return '⚽'
-  if (lower.includes('permen') || lower.includes('candy')) return '🍬'
-  if (lower.includes('jeruk') || lower.includes('orange')) return '🍊'
-  if (lower.includes('pisang') || lower.includes('banana')) return '🍌'
-  if (lower.includes('rumah') || lower.includes('house')) return '🏠'
-  if (lower.includes('topi') || lower.includes('hat')) return '🧢'
-  return '⭐'
-}
-
 function detectCountFromText(text: string, defaultCount: number = 4): number {
   const match = /\b([1-9]|10)\b/.exec(text)
   if (match) {
@@ -81,6 +42,16 @@ function detectCountFromText(text: string, defaultCount: number = 4): number {
     if (!Number.isNaN(parsed) && parsed > 0 && parsed <= 12) return parsed
   }
   return defaultCount
+}
+
+function assetMessage(question: ExamQuestion): string {
+  if (question.assetStatus === 'quota_unavailable') {
+    return 'Ilustrasi tidak dibuat karena kuota generate gambar habis.'
+  }
+  if (question.assetStatus === 'failed') {
+    return 'Ilustrasi belum tersedia. Generate ulang setelah konfigurasi AI diperbaiki.'
+  }
+  return 'Gambar belum tersedia.'
 }
 
 export function QuestionRenderer({
@@ -95,12 +66,12 @@ export function QuestionRenderer({
   const answer = question.answer?.trim().toUpperCase()
 
   const isCountingQuestion =
-    (question.type === 'count_and_circle' || question.visualType === 'Hitung') &&
+    question.type === 'visual' &&
+    (question.visualType === 'Hitung' || question.visualType === 'Menghitung') &&
     (question.question.toLowerCase().includes('hitung') ||
       question.question.toLowerCase().includes('jumlah'))
 
   const countVal = detectCountFromText(question.question, 4)
-  const iconEmoji = detectObjectIcon(question.question || '', question.icon || question.iconType)
   const isGrayscale = colorMode === 'grayscale'
 
   return (
@@ -140,7 +111,7 @@ export function QuestionRenderer({
         >
           {Array.from({ length: countVal }).map((_, idx) => (
             <span key={`obj-${number}-${idx}`} className="text-3xl leading-none select-none">
-              {iconEmoji}
+              ●
             </span>
           ))}
         </div>
@@ -166,6 +137,17 @@ export function QuestionRenderer({
               )}
             >
               <span className="font-semibold">{option.label.toLowerCase()}.</span>
+              {option.imageUrl ? (
+                <img
+                  src={option.imageUrl}
+                  alt=""
+                  className={cn('h-10 w-10 object-contain', isGrayscale && 'grayscale')}
+                />
+              ) : option.imagePrompt ? (
+                <span className="text-xs font-semibold text-neutral-500">
+                  Gambar belum tersedia
+                </span>
+              ) : null}
               <span className="font-semibold text-neutral-900 dark:text-white print:text-black">
                 {option.text}
               </span>
@@ -194,6 +176,10 @@ export function QuestionRenderer({
       )}
 
       {question.type === 'tracing' && <TracingRenderer question={question} />}
+
+      {question.type === 'visual' && !question.visualType?.toLowerCase().includes('tulis') && (
+        <VisualRenderer question={question} isGrayscale={isGrayscale} />
+      )}
 
       {question.type === 'essay' && (
         <div className="ml-8 mt-3 space-y-3">
@@ -247,33 +233,49 @@ function MatchingRenderer({
           return (
             <div
               key={`match-row-${left?.id || index}`}
-              className="grid grid-cols-[140px_24px_1fr_24px_160px] items-center gap-2"
+              className="grid grid-cols-[160px_28px_1fr_28px_160px] items-center gap-2"
             >
-              <div className="flex items-center justify-start min-h-[48px]">
+              <div className="flex items-center justify-start min-h-[44px]">
                 {left?.imageUrl ? (
                   <img
                     src={left.imageUrl}
                     alt=""
-                    className={cn('h-12 w-12 object-contain', isGrayscale && 'grayscale')}
+                    className={cn(
+                      'h-10 w-10 object-contain mr-2 shrink-0',
+                      isGrayscale && 'grayscale'
+                    )}
                   />
-                ) : (
-                  <span className="text-sm font-semibold text-neutral-900 dark:text-white print:text-black">
-                    {left?.label || ''}
-                  </span>
-                )}
+                ) : null}
+                <span className="text-sm font-semibold text-neutral-900 dark:text-white print:text-black">
+                  {left?.label || ''}
+                </span>
               </div>
 
               <div className="flex items-center justify-center">
-                <span className="h-2 w-2 rounded-full bg-neutral-900 dark:bg-white print:bg-black" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-white print:text-black leading-none select-none">
+                  ●
+                </span>
               </div>
 
               <div className="w-full" />
 
               <div className="flex items-center justify-center">
-                <span className="h-2 w-2 rounded-full bg-neutral-900 dark:bg-white print:bg-black" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-white print:text-black leading-none select-none">
+                  ●
+                </span>
               </div>
 
-              <div className="flex items-center justify-start min-h-[48px]">
+              <div className="flex items-center justify-start min-h-[44px]">
+                {right?.imageUrl ? (
+                  <img
+                    src={right.imageUrl}
+                    alt=""
+                    className={cn(
+                      'h-10 w-10 object-contain mr-2 shrink-0',
+                      isGrayscale && 'grayscale'
+                    )}
+                  />
+                ) : null}
                 <span className="text-sm font-semibold text-neutral-900 dark:text-white print:text-black">
                   {right?.label || ''}
                 </span>
@@ -290,6 +292,21 @@ function ImageFillRenderer({
   question,
   isGrayscale,
 }: Readonly<{ question: ExamQuestion; isGrayscale?: boolean }>) {
+  if (question.imageUrl) {
+    return (
+      <div className="ml-8 mt-4 flex flex-col items-center gap-3 text-center">
+        <img
+          src={question.imageUrl}
+          alt="Gambar soal"
+          className={cn('max-h-64 max-w-full object-contain', isGrayscale && 'grayscale')}
+        />
+        <div className="w-64 border-b border-dashed border-neutral-500 text-xs tracking-widest">
+          ...................................
+        </div>
+      </div>
+    )
+  }
+
   const options =
     question.leftItems && question.leftItems.length > 0
       ? question.leftItems
@@ -301,9 +318,6 @@ function ImageFillRenderer({
   return (
     <div className="ml-8 mt-4 grid grid-cols-3 gap-6 text-center">
       {options.map((item, idx) => {
-        const itemLabel = typeof item === 'object' ? item.label || '' : String(item)
-        const iconEmoji = detectObjectIcon(itemLabel)
-
         return (
           <div
             key={`fill-img-${typeof item === 'object' ? item.id || idx : idx}`}
@@ -317,7 +331,11 @@ function ImageFillRenderer({
                   className={cn('h-16 w-16 object-contain', isGrayscale && 'grayscale')}
                 />
               ) : (
-                <span className={cn('text-4xl', isGrayscale && 'grayscale')}>{iconEmoji}</span>
+                <span className="px-2 text-xs font-semibold text-neutral-500">
+                  {question.assetStatus === 'quota_unavailable'
+                    ? 'Kuota gambar habis'
+                    : 'Gambar belum tersedia'}
+                </span>
               )}
             </div>
             <div className="w-full text-xs text-neutral-500 font-mono tracking-widest">
@@ -369,7 +387,7 @@ function CountCircleRenderer({
   return (
     <div className="ml-8 mt-4 grid grid-cols-2 gap-6">
       {countItems.map((item, idx) => {
-        const itemIcon = detectObjectIcon(question.question || '')
+        const itemImage = item.imageUrl
 
         return (
           <div
@@ -378,8 +396,15 @@ function CountCircleRenderer({
           >
             <div className={cn('flex flex-wrap justify-center gap-2', isGrayscale && 'grayscale')}>
               {Array.from({ length: item.count || 4 }).map((_, i) => (
-                <span key={`cnt-icon-${idx}-${i}`} className="text-2xl">
-                  {itemIcon}
+                <span
+                  key={`cnt-icon-${idx}-${i}`}
+                  className="flex h-10 w-10 items-center justify-center"
+                >
+                  {itemImage ? (
+                    <img src={itemImage} alt="" className="h-9 w-9 object-contain" />
+                  ) : (
+                    <span className="text-2xl text-neutral-800 print:text-black">●</span>
+                  )}
                 </span>
               ))}
             </div>
@@ -404,8 +429,6 @@ function ColoringRenderer({
   question,
   isGrayscale,
 }: Readonly<{ question: ExamQuestion; isGrayscale?: boolean }>) {
-  const iconEmoji = detectObjectIcon(question.question || question.imagePrompt || '')
-
   return (
     <div className="ml-8 mt-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 p-6 text-center dark:border-neutral-700">
       {question.imageUrl ? (
@@ -415,13 +438,9 @@ function ColoringRenderer({
           className={cn('max-h-64 object-contain', isGrayscale && 'grayscale')}
         />
       ) : (
-        <div className="flex flex-col items-center gap-3 text-neutral-600 dark:text-neutral-300">
-          <span className={cn('text-6xl animate-pulse', isGrayscale && 'grayscale')}>
-            {iconEmoji}
-          </span>
-          <span className="text-xs font-semibold">
-            {question.imagePrompt || `Area Mewarnai (${question.question})`}
-          </span>
+        <div className="flex min-h-32 w-full max-w-md flex-col items-center justify-center gap-3 border border-dashed border-neutral-400 text-neutral-600 dark:text-neutral-300">
+          <span className="text-sm font-semibold">{assetMessage(question)}</span>
+          <span className="text-xs">Generate ulang ilustrasi untuk lembar mewarnai.</span>
         </div>
       )}
     </div>
@@ -429,14 +448,46 @@ function ColoringRenderer({
 }
 
 function TracingRenderer({ question }: Readonly<{ question: ExamQuestion }>) {
+  const traceText = question.traceText || question.question
   return (
     <div className="ml-8 mt-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-6 text-center dark:border-neutral-700 dark:bg-neutral-800/40">
-      <div className="font-mono text-2xl font-bold tracking-[0.3em] text-neutral-400 border-b-2 border-dashed border-neutral-300 pb-2 dark:border-neutral-700 select-none">
-        {question.question}
-      </div>
+      {question.imageUrl ? (
+        <img
+          src={question.imageUrl}
+          alt="Ilustrasi untuk ditebalkan"
+          className="max-h-64 object-contain grayscale"
+        />
+      ) : question.imagePrompt ? (
+        <div className="min-h-32 w-full max-w-md border border-dashed border-neutral-400 px-3 py-8 text-sm font-semibold text-neutral-500">
+          {assetMessage(question)}
+        </div>
+      ) : (
+        <div className="trace-text-dotted font-mono text-2xl font-bold tracking-[0.3em] text-neutral-500 select-none">
+          {traceText}
+        </div>
+      )}
       <p className="mt-2 text-xs italic text-neutral-500 dark:text-neutral-400">
         (Tebalkan huruf / angka di atas mengikuti garis putus-putus)
       </p>
+    </div>
+  )
+}
+
+function VisualRenderer({
+  question,
+  isGrayscale,
+}: Readonly<{ question: ExamQuestion; isGrayscale?: boolean }>) {
+  return (
+    <div className="ml-8 mt-4 flex min-h-32 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 p-5 text-center dark:border-neutral-700">
+      {question.imageUrl ? (
+        <img
+          src={question.imageUrl}
+          alt="Ilustrasi soal"
+          className={cn('max-h-64 max-w-full object-contain', isGrayscale && 'grayscale')}
+        />
+      ) : (
+        <span className="text-sm font-semibold text-neutral-500">{assetMessage(question)}</span>
+      )}
     </div>
   )
 }

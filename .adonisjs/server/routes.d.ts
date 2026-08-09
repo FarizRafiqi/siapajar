@@ -8,6 +8,8 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'mcp.wellknown': { paramsTuple?: []; params?: {} }
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -61,6 +63,7 @@ export type ScannedRoutes = {
     'exams.generate': { paramsTuple?: []; params?: {} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.printPreview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.store': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -164,6 +167,8 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'mcp.wellknown': { paramsTuple?: []; params?: {} }
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
@@ -188,6 +193,7 @@ export type ScannedRoutes = {
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.printPreview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -244,6 +250,8 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'mcp.wellknown': { paramsTuple?: []; params?: {} }
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
@@ -268,6 +276,7 @@ export type ScannedRoutes = {
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.printPreview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.index': { paramsTuple?: []; params?: {} }
     'annual-plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'annual-plans.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -319,7 +328,11 @@ export type ScannedRoutes = {
     'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
   }
+  OPTIONS: {
+    'mcp.handle': { paramsTuple?: []; params?: {} }
+  }
   POST: {
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
@@ -361,6 +374,7 @@ export type ScannedRoutes = {
     'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
   }
   PUT: {
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.updateStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }
@@ -381,7 +395,11 @@ export type ScannedRoutes = {
     'admin.schools.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
   }
+  PATCH: {
+    'mcp.handle': { paramsTuple?: []; params?: {} }
+  }
   DELETE: {
+    'mcp.handle': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.removeStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }

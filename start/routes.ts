@@ -185,6 +185,9 @@ router
     router
       .get('/exams/:id/export/pdf', '#controllers/exams_controller.exportPdf')
       .as('exams.exportPdf')
+    router
+      .get('/exams/:id/print-preview', '#controllers/exams_controller.printPreview')
+      .as('exams.printPreview')
 
     // Annual Plans (Protah)
     router

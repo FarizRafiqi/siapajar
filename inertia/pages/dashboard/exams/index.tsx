@@ -2,7 +2,7 @@ import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { FileQuestion, Trash2, Sparkles } from 'lucide-react'
+import { FileQuestion, Image as ImageIcon, PenLine, Search, Sparkles, Trash2 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 export type ExamType = 'midterm' | 'final' | 'daily' | 'summative'
@@ -250,19 +250,22 @@ export default function ExamsIndex({ exams, classes, subjects }: ExamsIndexProps
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white">
                       1
                     </span>
-                    🔍 Meriset kurikulum & menyusun struktur butir soal...
+                    <Search className="h-3.5 w-3.5" /> Meriset kurikulum & menyusun struktur butir
+                    soal...
                   </div>
                   <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
                       2
                     </span>
-                    ✍️ Memformulasikan pertanyaan & kunci jawaban kontekstual...
+                    <PenLine className="h-3.5 w-3.5" /> Memformulasikan pertanyaan & kunci jawaban
+                    kontekstual...
                   </div>
                   <div className="flex items-center gap-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 text-[10px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
                       3
                     </span>
-                    🎨 Menyiapkan ilustrasi visual & gambar line-art hitam-putih...
+                    <ImageIcon className="h-3.5 w-3.5" /> Menyiapkan ilustrasi visual & gambar
+                    line-art hitam-putih...
                   </div>
                 </div>
               </div>

@@ -5,7 +5,6 @@ import {
   TextRun,
   HeadingLevel,
   AlignmentType,
-  PageBreak,
   ImageRun,
   Table,
   TableCell,
@@ -14,6 +13,7 @@ import {
   PageOrientation,
   VerticalAlign,
   BorderStyle,
+  UnderlineType,
 } from 'docx'
 import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
@@ -42,7 +42,7 @@ async function consumeExport(user: User) {
   })
 }
 
-const EXAM_TYPE_LABELS: Record<string, string> = {
+export const EXAM_TYPE_LABELS: Record<string, string> = {
   midterm: 'PTS (Penilaian Tengah Semester)',
   final: 'PAS (Penilaian Akhir Semester)',
   daily: 'Ulangan Harian',
@@ -143,85 +143,369 @@ function metaParagraphs(meta: Array<[string, unknown]>) {
 
 function examHeaderParagraphs(exam: Exam, user: User) {
   const header = exam.header ?? {}
-  const paragraphs = [
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({
-          text: header.institutionName || user.schoolName || 'Sekolah',
-          bold: true,
-          size: 30,
-        }),
-      ],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: header.institutionAddress || '', size: 18 })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({
-          text: header.examLabel || EXAM_TYPE_LABELS[exam.type] || exam.type,
-          bold: true,
-          size: 24,
-        }),
-      ],
-    }),
-    ...metaParagraphs([
-      ['Tahun ajaran', header.academicYear],
-      ['Semester', header.semester],
-      ['Kelompok/Kelas', header.groupName],
-      ['Tema/Mata pelajaran', header.subject],
-      ['Nama anak', header.studentName],
-      ['Tanggal', header.date],
-    ]),
-    new Paragraph({ text: '' }),
-  ]
-  if (typeof header.logoUrl === 'string' && header.logoUrl.startsWith('data:image/')) {
-    const [meta, encoded] = header.logoUrl.split(',')
+  const kop = user.kopSurat ?? {}
+
+  const logoUrl = header.logoUrl || kop.logoUrl
+  const institutionName = (
+    header.institutionName ||
+    kop.institutionName ||
+    user.schoolName ||
+    'SEKOLAH / TK'
+  ).toUpperCase()
+  const institutionSubName = (
+    header.institutionSubName ||
+    kop.institutionSubName ||
+    ''
+  ).toUpperCase()
+  const addressLine1 =
+    header.addressLine1 || header.institutionAddress || kop.addressLine1 || 'Jl. Pendidikan No. 123'
+  const addressLine2 = header.addressLine2 || kop.addressLine2 || ''
+  const phone = header.phone || kop.phone || 'Telp. (021) 1234567'
+
+  const noBorder = {
+    top: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    bottom: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    left: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    right: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+  }
+
+  const thinBorder = {
+    style: BorderStyle.SINGLE,
+    size: 6,
+    color: '000000',
+  }
+
+  const paragraphs: (Paragraph | Table)[] = []
+
+  // Top Header Grid Table: [Logo Box (15%)] [Institution Title & Address (85%)]
+  const logoChildren: Paragraph[] = []
+  if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/')) {
+    const [meta, encoded] = logoUrl.split(',')
     const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/.exec(meta)
     const mime = mimeMatch?.[1]
     if (encoded && mime) {
-      paragraphs.unshift(
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
+      try {
+        logoChildren.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new ImageRun({
+                data: Buffer.from(encoded, 'base64'),
+                type: mime === 'image/jpeg' ? 'jpg' : 'png',
+                transformation: { width: 60, height: 60 },
+              }),
+            ],
+          })
+        )
+      } catch {}
+    }
+  }
+
+  if (logoChildren.length === 0) {
+    logoChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: 'LOGO', bold: true, size: 14, color: '666666' })],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: 'SEKOLAH', bold: true, size: 14, color: '666666' })],
+      })
+    )
+  }
+
+  const titleChildren: Paragraph[] = [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: institutionName,
+          bold: true,
+          size: 28,
+        }),
+      ],
+    }),
+  ]
+
+  if (institutionSubName) {
+    titleChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: `“${institutionSubName}”`,
+            bold: true,
+            size: 24,
+          }),
+        ],
+      })
+    )
+  }
+
+  titleChildren.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: addressLine1, size: 18 })],
+    })
+  )
+
+  if (addressLine2) {
+    titleChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: addressLine2, size: 18 })],
+      })
+    )
+  }
+
+  if (phone) {
+    titleChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: phone, size: 18 })],
+      })
+    )
+  }
+
+  const topKopGrid = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 15, type: WidthType.PERCENTAGE },
+            verticalAlign: VerticalAlign.CENTER,
+            borders: noBorder,
+            children: logoChildren,
+          }),
+          new TableCell({
+            width: { size: 85, type: WidthType.PERCENTAGE },
+            verticalAlign: VerticalAlign.CENTER,
+            borders: noBorder,
+            children: titleChildren,
+          }),
+        ],
+      }),
+    ],
+  })
+
+  paragraphs.push(topKopGrid)
+
+  // Double Line Divider
+  paragraphs.push(
+    new Paragraph({
+      border: {
+        bottom: { style: BorderStyle.DOUBLE, size: 18, color: '000000' },
+      },
+      text: '',
+    })
+  )
+
+  // 2-Column Section Table: [Metadata Kiri (60%)] [Nilai & Paraf Box Kanan (40%)]
+  const metadataTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      ['Nama', ': ............................................'],
+      ['Kelas', `: ${header.groupName || 'B2'}`],
+      ['Hari/Tanggal', ': ............................................'],
+      ['Bidang Studi', `: ${header.subject || 'Bahasa'}`],
+    ].map(
+      ([label, val]) =>
+        new TableRow({
           children: [
-            new ImageRun({
-              data: Buffer.from(encoded, 'base64'),
-              type: mime === 'image/jpeg' ? 'jpg' : 'png',
-              transformation: { width: 72, height: 72 },
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders: noBorder,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: label, bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: noBorder,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: val, size: 18 })],
+                }),
+              ],
             }),
           ],
         })
-      )
-    }
-  }
+    ),
+  })
+
+  const nilaiParafBox = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 35, type: WidthType.PERCENTAGE },
+            rowSpan: 2,
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: 'Nilai', bold: true, size: 18 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 65, type: WidthType.PERCENTAGE },
+            columnSpan: 2,
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: 'Paraf', bold: true, size: 18 })],
+              }),
+            ],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 32.5, type: WidthType.PERCENTAGE },
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: 'Guru', size: 16 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 32.5, type: WidthType.PERCENTAGE },
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: 'Orang Tua', size: 16 })],
+              }),
+            ],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [new Paragraph({ text: '\n\n' })],
+          }),
+          new TableCell({
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [new Paragraph({ text: '\n\n' })],
+          }),
+          new TableCell({
+            borders: {
+              top: thinBorder,
+              bottom: thinBorder,
+              left: thinBorder,
+              right: thinBorder,
+            },
+            children: [new Paragraph({ text: '\n\n' })],
+          }),
+        ],
+      }),
+    ],
+  })
+
+  const headerGrid = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 60, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [metadataTable],
+          }),
+          new TableCell({
+            width: { size: 40, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [nilaiParafBox],
+          }),
+        ],
+      }),
+    ],
+  })
+
+  paragraphs.push(headerGrid, new Paragraph({ text: '' }))
+
   return paragraphs
 }
 
-function examQuestionType(q: Record<string, any>) {
-  if (
-    q.type === 'matching' ||
-    String(q.visualType || '')
-      .toLowerCase()
-      .includes('hubung')
+function renderMultipleChoiceQuestion(options: any[], children: (Paragraph | Table)[]) {
+  const runs: Array<TextRun | ImageRun> = []
+  for (const [index, option] of options.entries()) {
+    const defaultLabel = String.fromCodePoint(97 + index)
+    const label =
+      typeof option === 'string' ? defaultLabel : option.label?.toLowerCase() || defaultLabel
+    const text = typeof option === 'string' ? option : option.text || ''
+    runs.push(
+      new TextRun({ text: `${label}. `, bold: true, font: 'Times New Roman' }),
+      ...(imageRunFromData(option?.imageUrl || option?.image, 32, 32)
+        ? [imageRunFromData(option?.imageUrl || option?.image, 32, 32)!]
+        : option?.imagePrompt
+          ? [new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 16 })]
+          : []),
+      new TextRun({ text: `${text}          `, font: 'Times New Roman' })
+    )
+  }
+  children.push(
+    new Paragraph({
+      indent: { left: 360 },
+      children: runs,
+    })
   )
-    return 'Hubungkan Garis'
-  if (q.type === 'multiple_choice' || (Array.isArray(q.options) && q.options.length > 0))
-    return 'Pilihan Ganda'
-  if (q.type === 'essay') return 'Uraian'
-  if (q.type === 'practical') return 'Praktik / Performa'
-  if (q.type === 'oral') return 'Lisan'
-  return 'Aktivitas Visual'
 }
 
-function renderMultipleChoiceQuestion(options: any[], children: (Paragraph | Table)[]) {
-  for (const [index, option] of options.entries()) {
-    const defaultLabel = String.fromCodePoint(65 + index)
-    const label = typeof option === 'string' ? defaultLabel : option.label || defaultLabel
-    const text = typeof option === 'string' ? option : option.text || ''
-    children.push(new Paragraph({ text: `${label}. ${text}` }))
+function imageRunFromData(value: unknown, width: number, height: number): ImageRun | null {
+  if (typeof value !== 'string' || !value.startsWith('data:image/')) return null
+  const [meta, encoded] = value.split(',')
+  const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/.exec(meta)
+  if (!encoded || !mimeMatch?.[1]) return null
+  try {
+    return new ImageRun({
+      data: Buffer.from(encoded, 'base64'),
+      type: mimeMatch[1] === 'image/jpeg' ? 'jpg' : 'png',
+      transformation: { width, height },
+    })
+  } catch {
+    return null
   }
 }
 
@@ -229,48 +513,169 @@ function renderMatchingQuestion(q: Record<string, any>, children: (Paragraph | T
   const leftItems = Array.isArray(q.leftItems) ? q.leftItems : []
   const rightItems = Array.isArray(q.rightItems) ? q.rightItems : []
   const rowCount = Math.max(leftItems.length, rightItems.length, 2)
+  const noBorder = {
+    top: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    bottom: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    left: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    right: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+  }
+
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: Array.from({ length: rowCount }, (_, index) => {
       const left = leftItems[index]
       const right = rightItems[index]
+      const leftLabel = typeof left === 'string' ? left : left?.label || left?.text || ''
+      const rightLabel = typeof right === 'string' ? right : right?.label || right?.text || ''
+      const leftImage = typeof left === 'object' ? left?.imageUrl || left?.image : undefined
+      const rightImage = typeof right === 'object' ? right?.imageUrl || right?.image : undefined
+
+      const itemParagraph = (
+        label: string,
+        image: unknown,
+        imagePrompt: unknown,
+        alignment: (typeof AlignmentType)[keyof typeof AlignmentType]
+      ) => {
+        const itemChildren: (TextRun | ImageRun)[] = []
+        const imageRun = imageRunFromData(image, 32, 32)
+        if (imageRun) itemChildren.push(imageRun)
+        if (!imageRun && imagePrompt) {
+          itemChildren.push(
+            new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 14 })
+          )
+        }
+        itemChildren.push(new TextRun({ text: label || '[Gambar belum tersedia]', bold: true }))
+        return new Paragraph({ alignment, children: itemChildren })
+      }
+
       return new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ text: `●  ${left?.label || 'Item kiri'}` })],
+            width: { size: 32, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [itemParagraph(leftLabel, leftImage, left?.imagePrompt, AlignmentType.RIGHT)],
           }),
           new TableCell({
-            children: [new Paragraph({ text: `${right?.label || 'Item kanan'}  ●` })],
+            width: { size: 8, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: '●', bold: true })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 20, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [new Paragraph({ text: '' })],
+          }),
+          new TableCell({
+            width: { size: 8, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: '●', bold: true })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 32, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [
+              itemParagraph(rightLabel, rightImage, right?.imagePrompt, AlignmentType.LEFT),
+            ],
           }),
         ],
       })
     }),
   })
-  children.push(table, new Paragraph({ text: 'Hubungkan pasangan yang sesuai dengan garis.' }))
+  children.push(table, new Paragraph({ text: '' }))
 }
 
-function renderQuestionImage(imageUrl: unknown, children: (Paragraph | Table)[]) {
-  if (typeof imageUrl !== 'string' || !imageUrl.startsWith('data:image/')) return
-  const [meta, encoded] = imageUrl.split(',')
-  const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/.exec(meta)
-  const mime = mimeMatch?.[1]
-  if (encoded && mime) {
-    try {
-      children.push(
-        new Paragraph({
-          children: [
-            new ImageRun({
-              data: Buffer.from(encoded, 'base64'),
-              type: mime === 'image/jpeg' ? 'jpg' : 'png',
-              transformation: { width: 360, height: 220 },
-            }),
-          ],
-        })
-      )
-    } catch {
-      // ignore image error
-    }
+function examAssetMessage(question: Record<string, any>, fallback: string): string {
+  if (question.assetStatus === 'quota_unavailable') {
+    return 'Ilustrasi tidak dibuat karena kuota generate gambar habis.'
   }
+  if (question.assetStatus === 'failed') {
+    return 'Ilustrasi belum tersedia. Generate ulang setelah konfigurasi AI diperbaiki.'
+  }
+  return fallback
+}
+
+function renderQuestionImage(
+  imageUrl: unknown,
+  children: (Paragraph | Table)[],
+  missingMessage?: string
+) {
+  const imageRun = imageRunFromData(imageUrl, 360, 220)
+  if (imageRun) {
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [imageRun] }))
+  } else if (missingMessage) {
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `[${missingMessage}]`, italics: true, size: 16 })],
+      })
+    )
+  }
+}
+
+function renderAnswerLines(children: (Paragraph | Table)[], count = 3) {
+  for (let line = 0; line < count; line++) {
+    children.push(
+      new Paragraph({
+        indent: { left: 360 },
+        children: [
+          new TextRun({
+            text: '........................................................................................................................',
+          }),
+        ],
+      })
+    )
+  }
+}
+
+function renderVerticalMathQuestion(q: Record<string, any>, children: (Paragraph | Table)[]) {
+  const problems = Array.isArray(q.mathProblems) ? q.mathProblems : []
+  if (problems.length === 0) {
+    renderAnswerLines(children, 2)
+    return
+  }
+  const noBorder = {
+    top: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    bottom: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    left: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+    right: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+  }
+  children.push(
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: problems.map(
+            (problem: Record<string, any>) =>
+              new TableCell({
+                borders: noBorder,
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [
+                      new TextRun({
+                        text: `${problem.topNumber ?? ''}\n${problem.operator ?? '-'} ${problem.bottomNumber ?? ''}\n────────`,
+                        font: 'Courier New',
+                        bold: true,
+                      }),
+                    ],
+                  }),
+                ],
+              })
+          ),
+        }),
+      ],
+    })
+  )
 }
 
 function examQuestionParagraphs(q: Record<string, any>, number: number) {
@@ -285,29 +690,116 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
         new TextRun({ text: `${number}. ${q.question || 'Pertanyaan belum diisi.'}`, bold: true }),
       ],
     }),
-    new Paragraph({ text: `Bentuk: ${examQuestionType(q)}` }),
   ]
-  if (q.instruction) children.push(new Paragraph({ text: `Petunjuk: ${q.instruction}` }))
 
+  if (q.instruction) {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: q.instruction, italics: true, size: 18 })] })
+    )
+  }
+
+  let imageRendered = false
   if (!isMatching && Array.isArray(q.options) && q.options.length > 0) {
     renderMultipleChoiceQuestion(q.options, children)
   } else if (isMatching) {
     renderMatchingQuestion(q, children)
-  } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
-    for (let line = 0; line < 4; line++) {
+  } else if (q.type === 'tracing') {
+    if (q.imageUrl) {
+      renderQuestionImage(q.imageUrl, children, 'Ilustrasi tracing belum tersedia')
+      imageRendered = true
+    } else if (q.imagePrompt) {
+      renderQuestionImage(null, children, examAssetMessage(q, 'Ilustrasi tracing belum tersedia'))
+    } else {
       children.push(
-        new Paragraph({ text: '____________________________________________________________' })
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: q.traceText || q.question || 'Tebalkan',
+              bold: true,
+              size: 32,
+              color: '777777',
+              underline: { type: UnderlineType.DOTTED },
+            }),
+          ],
+        })
       )
     }
+  } else if (q.type === 'coloring') {
+    renderQuestionImage(
+      q.imageUrl,
+      children,
+      examAssetMessage(q, 'Ilustrasi mewarnai belum tersedia')
+    )
+    imageRendered = true
+  } else if (q.type === 'count_and_circle') {
+    const countItems = Array.isArray(q.countItems)
+      ? q.countItems
+      : [{ count: 4, options: [3, 4, 5] }]
+    for (const item of countItems) {
+      const imageRun = imageRunFromData(item.imageUrl, 28, 28)
+      const imagePlaceholder = !imageRun && item.imagePrompt
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            ...(imageRun
+              ? [imageRun]
+              : imagePlaceholder
+                ? [new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 14 })]
+                : []),
+            new TextRun({
+              text: `${imageRun || imagePlaceholder ? '' : `${'● '.repeat(Math.max(1, Number(item.count) || 1))}   `}${(item.options || [3, 4, 5]).join('   ')}`,
+              size: 24,
+            }),
+          ],
+        })
+      )
+    }
+  } else if (q.type === 'vertical_math') {
+    renderVerticalMathQuestion(q, children)
+  } else if (q.type === 'fill_blank_image' || q.type === 'visual') {
+    renderQuestionImage(q.imageUrl, children, examAssetMessage(q, 'Gambar soal belum tersedia'))
+    imageRendered = true
+    renderAnswerLines(children, 1)
+  } else if (['essay', 'visual', 'practical', 'oral'].includes(q.type)) {
+    renderAnswerLines(children)
   }
 
-  renderQuestionImage(q.imageUrl, children)
-
-  if (q.rubric || q.scoringGuide) {
-    children.push(new Paragraph({ text: `Rubrik: ${q.rubric || q.scoringGuide}` }))
-  }
+  if (!imageRendered && q.imageUrl) renderQuestionImage(q.imageUrl, children)
   children.push(new Paragraph({ text: '' }))
   return children
+}
+
+function examQuestionSectionLabel(q: Record<string, any>): string {
+  if (q.type === 'multiple_choice') return 'Pilihan Ganda'
+  if (q.type === 'matching') return 'Hubungkan Garis'
+  if (q.type === 'coloring') return 'Warnai Sesuai Petunjuk'
+  if (q.type === 'tracing') return 'Tebalkan'
+  if (q.type === 'fill_blank_image') return 'Tulis Nama Gambar'
+  if (q.type === 'essay') return 'Uraian'
+  return q.visualType || 'Aktivitas'
+}
+
+function examQuestionParagraphsWithSections(questions: Record<string, any>[]) {
+  let previousSection = ''
+  const paragraphs: (Paragraph | Table)[] = []
+
+  for (const [index, question] of questions.entries()) {
+    const section = examQuestionSectionLabel(question)
+    if (section !== previousSection) {
+      paragraphs.push(
+        new Paragraph({
+          spacing: { before: 120, after: 60 },
+          children: [new TextRun({ text: section, bold: true, size: 20 })],
+        })
+      )
+      previousSection = section
+    }
+    paragraphs.push(...examQuestionParagraphs(question, index + 1))
+  }
+
+  return paragraphs
 }
 
 export async function exportTeachingModule(teachingModule: TeachingModule, user: User) {
@@ -341,39 +833,36 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
   return toBuffer(doc)
 }
 
-export async function exportExam(exam: Exam, user: User) {
-  await consumeExport(user)
-  const questionParagraphs = exam.questions.flatMap((q, i) => examQuestionParagraphs(q, i + 1))
+export function createExamDocument(exam: Exam, user: User) {
+  const questionParagraphs = examQuestionParagraphsWithSections(exam.questions)
 
-  const answerKeyParagraphs = exam.questions.map((q, i) => {
-    const expText = q.explanation ? ' — ' + q.explanation : ''
-    return new Paragraph({ text: `${i + 1}. ${q.answer}${expText}` })
-  })
-
-  const doc = new Document({
+  return new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: 'Times New Roman',
+          },
+        },
+      },
+    },
     sections: [
       {
-        children: [
-          ...examHeaderParagraphs(exam, user),
-          new Paragraph({
-            heading: HeadingLevel.HEADING_1,
-            children: [new TextRun({ text: exam.title, bold: true })],
-          }),
-          new Paragraph({ text: '' }),
-          ...questionParagraphs,
-          new Paragraph({ children: [new PageBreak()] }),
-          new Paragraph({
-            heading: HeadingLevel.HEADING_1,
-            children: [new TextRun({ text: 'Kunci Jawaban', bold: true })],
-          }),
-          new Paragraph({ text: '' }),
-          ...answerKeyParagraphs,
-        ],
+        properties: {
+          page: {
+            size: { width: 12250, height: 20650 },
+            margin: { top: 343, right: 500, bottom: 275, left: 500, header: 708, footer: 708 },
+          },
+        },
+        children: [...examHeaderParagraphs(exam, user), ...questionParagraphs],
       },
     ],
   })
+}
 
-  return toBuffer(doc)
+export async function exportExam(exam: Exam, user: User) {
+  await consumeExport(user)
+  return toBuffer(createExamDocument(exam, user))
 }
 
 export async function exportAnnualPlan(annualPlan: AnnualPlan, user: User) {

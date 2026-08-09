@@ -10,6 +10,8 @@ import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
+import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
+import { EntitlementError } from '#services/entitlement_service'
 
 /** Label Indonesia untuk kode jenis soal yang tersimpan di database. */
 const EXAM_TYPE_LABELS: Record<'midterm' | 'final' | 'daily' | 'summative', string> = {
@@ -44,9 +46,49 @@ function normalizeMatchingItems(value: unknown, side: 'left' | 'right') {
             : typeof record.image === 'string'
               ? record.image
               : '',
+        imagePrompt: typeof record.imagePrompt === 'string' ? record.imagePrompt : '',
       }
     })
-    .filter((item) => item.label || item.imageUrl)
+    .filter((item) => item.label || item.imageUrl || item.imagePrompt)
+}
+
+const PAUD_QUESTION_TYPES = [
+  'multiple_choice',
+  'essay',
+  'visual',
+  'matching',
+  'practical',
+  'oral',
+  'fill_blank_image',
+  'vertical_math',
+  'count_and_circle',
+  'coloring',
+  'tracing',
+] as const
+
+function generatedImagePrompt(question: Record<string, any>, isRa: boolean) {
+  if (typeof question.imagePrompt === 'string' && question.imagePrompt.trim()) {
+    return question.imagePrompt.trim()
+  }
+
+  const context = isRa ? 'nilai Islami yang lembut dan sesuai anak RA' : 'tema PAUD yang ramah anak'
+  const subject = String(question.question || 'aktivitas anak').trim()
+  const type = String(question.type || '').toLowerCase()
+  const visualType = String(question.visualType || '').toLowerCase()
+
+  if (type === 'coloring') {
+    return `Black-and-white printable coloring worksheet line art for children, ${subject}, ${context}, thick clean outlines, white background, no color, no shading, no text, no watermark.`
+  }
+  if (type === 'tracing' && !question.traceText) {
+    return `Black-and-white dotted tracing worksheet illustration for children, ${subject}, ${context}, simple dotted outline, white background, no color, no text, no watermark.`
+  }
+  if (
+    type === 'fill_blank_image' ||
+    (type === 'visual' && /(gambar|ilustrasi|warna|benda)/.test(visualType))
+  ) {
+    return `Simple black-and-white printable worksheet illustration for children, ${subject}, ${context}, clean recognizable outline, white background, no text, no watermark.`
+  }
+  return ''
 }
 
 export default class ExamsController {
@@ -98,11 +140,14 @@ export default class ExamsController {
     }
 
     const buffer = await exportExam(exam, user)
+    const safeTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
+    const filename = `Naskah_Soal_${safeTitle || 'RA_TK'}.docx`
+
     response.header(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
-    response.header('Content-Disposition', `attachment; filename="${exam.title}.docx"`)
+    response.header('Content-Disposition', `attachment; filename="${filename}"`)
     return response.send(buffer)
   }
 
@@ -115,9 +160,22 @@ export default class ExamsController {
     }
 
     const buffer = await exportExamPdf(exam, user)
+    const safeTitle = exam.title.replaceAll(/[^\w\s-]/gi, '').replaceAll(/\s+/g, '_')
+    const filename = `Naskah_Soal_${safeTitle || 'RA_TK'}.pdf`
+
     response.header('Content-Type', 'application/pdf')
-    response.header('Content-Disposition', `attachment; filename="${exam.title}.pdf"`)
+    response.header('Content-Disposition', `attachment; filename="${filename}"`)
     return response.send(buffer)
+  }
+
+  async printPreview({ params, response, auth }: HttpContext) {
+    const user = auth.user!
+    const exam = await Exam.query().where('id', params.id).where('user_id', user.id).first()
+
+    if (!exam) return response.redirect('/exams')
+
+    response.header('Content-Type', 'text/html; charset=utf-8')
+    return response.send(renderExamWorksheetHtml(exam, user))
   }
 
   async store({ request, response, session, auth }: HttpContext) {
@@ -208,6 +266,11 @@ export default class ExamsController {
         scoringGuide: typeof q.scoringGuide === 'string' ? q.scoringGuide : '',
         imagePrompt: typeof q.imagePrompt === 'string' ? q.imagePrompt : '',
         imageUrl: typeof q.imageUrl === 'string' ? q.imageUrl : '',
+        traceText: typeof q.traceText === 'string' ? q.traceText : '',
+        assetStatus: 'ready',
+        assetError: '',
+        mathProblems: Array.isArray(q.mathProblems) ? q.mathProblems : [],
+        countItems: Array.isArray(q.countItems) ? q.countItems : [],
         options: Array.isArray(q.options)
           ? q.options
               .map((o: unknown) => {
@@ -215,11 +278,24 @@ export default class ExamsController {
                   const match = o.trim().match(/^([A-Z])[.)\-:]?\s*(.*)$/i)
                   return { label: match?.[1]?.toUpperCase() || '', text: match?.[2] || o.trim() }
                 }
-                if (o && typeof o === 'object' && 'text' in o) {
-                  const option = o as { label?: unknown; text?: unknown }
+                if (o && typeof o === 'object') {
+                  const option = o as {
+                    label?: unknown
+                    text?: unknown
+                    imageUrl?: unknown
+                    image?: unknown
+                    imagePrompt?: unknown
+                  }
                   return {
                     label: typeof option.label === 'string' ? option.label.toUpperCase() : '',
                     text: typeof option.text === 'string' ? option.text : '',
+                    imageUrl:
+                      typeof option.imageUrl === 'string'
+                        ? option.imageUrl
+                        : typeof option.image === 'string'
+                          ? option.image
+                          : '',
+                    imagePrompt: typeof option.imagePrompt === 'string' ? option.imagePrompt : '',
                   }
                 }
                 return null
@@ -230,8 +306,7 @@ export default class ExamsController {
         explanation: typeof q.explanation === 'string' ? q.explanation : '',
         id: i + 1,
         type:
-          typeof q.type === 'string' &&
-          ['multiple_choice', 'essay', 'visual', 'matching', 'practical', 'oral'].includes(q.type)
+          typeof q.type === 'string' && (PAUD_QUESTION_TYPES as readonly string[]).includes(q.type)
             ? q.type
             : typeof q.visualType === 'string' && q.visualType.toLowerCase().includes('hubung')
               ? 'matching'
@@ -255,15 +330,46 @@ export default class ExamsController {
       // Illustration generation is best-effort: a text-only exam must still
       // be created if Gemini image generation is unavailable or fails.
       for (const question of questions) {
-        if (!question.imagePrompt || question.imageUrl) continue
-        try {
-          question.imageUrl =
-            (await aiQueueService.enqueueAiImage({
-              userId: user.id,
-              prompt: question.imagePrompt,
-            })) || ''
-        } catch {
-          question.imageUrl = ''
+        const fallbackPrompt = generatedImagePrompt(question, user.institutionType === 'ra')
+        if (fallbackPrompt && !question.imagePrompt) question.imagePrompt = fallbackPrompt
+        const visualRequests: Array<{ target: Record<string, any>; prompt: string }> = []
+        if (question.imagePrompt && !question.imageUrl) {
+          visualRequests.push({ target: question, prompt: question.imagePrompt })
+        }
+        for (const side of ['leftItems', 'rightItems'] as const) {
+          for (const item of Array.isArray(question[side]) ? question[side] : []) {
+            if (item?.imagePrompt && !item.imageUrl) {
+              visualRequests.push({ target: item, prompt: item.imagePrompt })
+            }
+          }
+        }
+        for (const option of Array.isArray(question.options) ? question.options : []) {
+          if (option?.imagePrompt && !option.imageUrl) {
+            visualRequests.push({ target: option, prompt: option.imagePrompt })
+          }
+        }
+        for (const item of Array.isArray(question.countItems) ? question.countItems : []) {
+          if (item?.imagePrompt && !item.imageUrl) {
+            visualRequests.push({ target: item, prompt: item.imagePrompt })
+          }
+        }
+        for (const visualRequest of visualRequests) {
+          try {
+            visualRequest.target.imageUrl =
+              (await aiQueueService.enqueueAiImage({
+                userId: user.id,
+                prompt: visualRequest.prompt,
+              })) || ''
+            if (!visualRequest.target.imageUrl) question.assetStatus = 'quota_unavailable'
+          } catch (error) {
+            question.assetStatus =
+              error instanceof EntitlementError ||
+              (error instanceof Error && /batas fitur|kuota/i.test(error.message))
+                ? 'quota_unavailable'
+                : 'failed'
+            question.assetError = error instanceof Error ? error.message : 'Gambar gagal dibuat.'
+            visualRequest.target.imageUrl = ''
+          }
         }
       }
     } catch (error) {
