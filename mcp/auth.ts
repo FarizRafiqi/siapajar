@@ -1,8 +1,19 @@
 import crypto from 'node:crypto'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { DateTime } from 'luxon'
 import { z } from 'zod'
 import McpKey from '#models/mcp_key'
 import type User from '#models/user'
+
+/**
+ * AsyncLocalStorage for passing HTTP Authorization Bearer tokens
+ * down to MCP tool handlers without requiring explicit tool arguments.
+ */
+export const mcpAuthStorage = new AsyncLocalStorage<{ apiKey?: string }>()
+
+export function getHttpMcpApiKey(): string | undefined {
+  return mcpAuthStorage.getStore()?.apiKey
+}
 
 export type McpRole = 'admin' | 'guru' | 'kepala_sekolah'
 
@@ -22,7 +33,12 @@ export type ToolMeta = {
 }
 
 export const API_KEY_PARAM = {
-  api_key: z.string().describe('Per-user MCP API key'),
+  api_key: z
+    .string()
+    .optional()
+    .describe(
+      'Per-user MCP API key (Optional if Authorization Bearer header is provided over HTTP)'
+    ),
 }
 
 export function authError(message: string) {
@@ -108,10 +124,11 @@ export function authorize(
 }
 
 export async function checkAuthAndAuthorize(
-  args: { api_key: string; [key: string]: any },
+  args: { api_key?: string; [key: string]: any },
   meta: ToolMeta
 ): Promise<{ ok: true; ctx: McpContext } | { ok: false; error: string }> {
-  const auth = await resolveMcpContext(args.api_key)
+  const apiKey = args.api_key || getHttpMcpApiKey() || ''
+  const auth = await resolveMcpContext(apiKey)
   if (!auth.ok) {
     return { ok: false, error: auth.error }
   }

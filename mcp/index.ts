@@ -11,7 +11,7 @@ import { registerAllTools } from './registry.js'
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
-    name: 'siapajar',
+    name: 'SiapAjar MCP Server',
     version: '1.0.0',
   })
   registerAllTools(server)

@@ -23,18 +23,17 @@ const corsConfig = defineConfig({
   /**
    * HTTP methods accepted for cross-origin requests.
    */
-  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
   /**
-   * Reflect request headers by default. Use a string array to restrict
-   * allowed headers.
+   * Headers allowed in requests.
    */
-  headers: true,
+  headers: ['Content-Type', 'Authorization', 'MCP-Version', 'Last-Event-ID', 'X-MCP-Session-Id'],
 
   /**
    * Response headers exposed to the browser.
    */
-  exposeHeaders: [],
+  exposeHeaders: ['MCP-Version', 'X-MCP-Session-Id'],
 
   /**
    * Allow cookies/authorization headers on cross-origin requests.

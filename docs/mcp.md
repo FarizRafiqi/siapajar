@@ -1,20 +1,23 @@
 # SiapAjar MCP Server & Security Architecture
 
-The SiapAjar MCP (Model Context Protocol) server exposes application data and services to AI assistants (Hermes, VSCode extensions, Claude Code, etc.) over JSON-RPC over stdio.
+The SiapAjar MCP (Model Context Protocol) server exposes application data and services to AI assistants (Hermes, VSCode extensions, Claude Code, etc.) over dual transports: JSON-RPC over `stdio` and **Streamable HTTP Transport** at `POST /mcp`.
 
 ---
 
 ## 1. Security & Authentication Architecture
 
-- **Per-User API Keys**: Identity is strictly bound to per-user API keys stored as SHA-256 hashes in the `mcp_keys` database table. Global fallback-to-admin (`getEffectiveUser`) is completely removed.
-- **Key Prefix & Format**: API keys use the `sk_mcp_` prefix followed by a 32-byte secure random hex string.
+- **Per-User API Keys**: Identity is strictly bound to per-user API keys stored as SHA-256 hashes in the `mcp_keys` database table.
+- **Key Prefix & Format**: API keys use the `siapajar_mcp_` or `sk_mcp_` prefix followed by a secure hex string.
+- **HTTP Transport Auth**: Supports standard `Authorization: Bearer <api_key>` headers over HTTP (`POST /mcp`). An `AsyncLocalStorage` context automatically binds the Bearer token to MCP tool execution contexts, making the `api_key` argument optional in JSON-RPC tool call payloads over HTTP.
 - **RBAC (Role-Based Access Control)**: Every tool enforces role metadata (`admin`, `guru`, `kepala_sekolah`).
 - **Tenant & Ownership Scoping**:
   - `admin`: Unconstrained system-wide access.
   - `kepala_sekolah`: Scope restricted to school data (`school_id`). Blocked from destructive tool operations.
   - `guru`: Scope restricted to resources created by/owned by the teacher (`user_id`).
 - **Destructive Operation Confirmations**: All 13 resource delete tools + `siapajar_update_academic_year` require an explicit `confirm: true` parameter.
-- **AI Generation Rate Limiting**: All 9 AI generation tools are subject to a sliding window rate limit of **maximum 10 AI generation requests per 10 minutes per user**.
+- **Rate Limiting & Protection**:
+  - **HTTP Endpoint Rate Limiting**: Per-IP throttling of 60 requests/min and per-key throttling of 120 requests/min on `POST /mcp`.
+  - **AI Generation Rate Limiting**: All 9 AI generation tools are subject to a sliding window rate limit of **maximum 10 AI generation requests per 10 minutes per user**.
 
 ---
 
@@ -34,33 +37,93 @@ Soft-revokes the key by setting `revoked_at`.
 
 ---
 
-## 3. Client Configuration Examples
+## 3. Server Discovery & Metadata (`GET /.well-known/mcp`)
 
-### Hermes (`.hermes/config.yaml`)
+Clients can auto-discover endpoint capabilities by sending a GET request:
+
+```bash
+curl -X GET https://siapajar.farizrafiqi.dev/.well-known/mcp
+```
+
+---
+
+## 4. Client Configuration Examples
+
+### 4.1. Hermes (`.hermes/config.yaml`)
+
+**HTTP Transport (Recommended):**
+```yaml
+mcp_servers:
+  siapajar:
+    url: "https://siapajar.farizrafiqi.dev/mcp"
+    transport: "http"
+    headers:
+      Authorization: "Bearer siapajar_mcp_..."
+```
+
+**Stdio Transport:**
 ```yaml
 mcpServers:
   siapajar:
     command: "node"
     args: ["ace", "mcp:serve"]
     env:
-      SIAPAJAR_MCP_API_KEY: "sk_mcp_..."
+      SIAPAJAR_MCP_API_KEY: "siapajar_mcp_..."
       NODE_ENV: "development"
 ```
 
-### Claude Code / VSCode (`.mcp.json`)
+### 4.2. Claude Code CLI
+
+**HTTP Transport (via CLI command):**
+```bash
+claude mcp add siapajar https://siapajar.farizrafiqi.dev/mcp --header "Authorization: Bearer siapajar_mcp_..."
+```
+
+**Config File (`~/.claude.json`):**
 ```json
 {
   "mcpServers": {
     "siapajar": {
-      "command": "node",
-      "args": ["ace", "mcp:serve"],
-      "env": {
-        "SIAPAJAR_MCP_API_KEY": "sk_mcp_...",
-        "NODE_ENV": "development"
+      "url": "https://siapajar.farizrafiqi.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer siapajar_mcp_..."
       }
     }
   }
 }
+```
+
+### 4.3. VSCode / Cursor / Claude Desktop
+
+**HTTP Transport (`claude_desktop_config.json`):**
+```json
+{
+  "mcpServers": {
+    "siapajar-remote": {
+      "url": "https://siapajar.farizrafiqi.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer siapajar_mcp_..."
+      }
+    }
+  }
+}
+```
+
+### 4.4. Raw cURL / JSON-RPC Example
+
+```bash
+curl -X POST https://siapajar.farizrafiqi.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer siapajar_mcp_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "siapajar_health",
+      "arguments": {}
+    }
+  }'
 ```
 
 ---
