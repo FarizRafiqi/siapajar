@@ -4,7 +4,7 @@ import { createMcpServer } from '../../mcp/index.js'
 import { mcpAuthStorage } from '../../mcp/auth.js'
 
 export default class McpController {
-  private mcpServer = createMcpServer()
+  private readonly mcpServer = createMcpServer()
 
   /**
    * Handle incoming MCP Streamable HTTP requests (POST / GET).
@@ -13,7 +13,7 @@ export default class McpController {
     const authHeader = request.header('authorization')
     let bearerKey: string | undefined
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader?.startsWith('Bearer ')) {
       bearerKey = authHeader.substring(7).trim()
     }
 
