@@ -1,0 +1,8 @@
+#!/bin/sh
+# Pre-commit gate: mirror the CI checks that commonly fail so commits
+# are clean before they ever reach GitHub Actions.
+# CI runs lint, typecheck, test, build. Build is deliberately skipped here
+# (slow); lint+typecheck+test catch formatting, entity, and type errors.
+. "$(dirname "$0")/_/husky.sh"
+
+npm run lint && npm run typecheck && npm test
