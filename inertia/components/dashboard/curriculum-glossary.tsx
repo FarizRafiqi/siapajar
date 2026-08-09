@@ -12,55 +12,64 @@ const GLOSSARY_TERMS: TermItem[] = [
   {
     code: 'CP',
     title: 'Capaian Pembelajaran',
-    description: 'Kompetensi pembelajaran yang harus dicapai peserta didik pada akhir setiap fase (misal: akhir Fase Fondasi untuk PAUD/TK). CP merupakan acuan target utama dari pemerintah.',
+    description:
+      'Kompetensi pembelajaran yang harus dicapai peserta didik pada akhir setiap fase (misal: akhir Fase Fondasi untuk PAUD/TK). CP merupakan acuan target utama dari pemerintah.',
     category: 'Struktur Utama',
   },
   {
     code: 'TP',
     title: 'Tujuan Pembelajaran',
-    description: 'Rumusan tujuan yang lebih spesifik yang diturunkan dari CP. TP menjadi sasaran belajar mingguan/bulanan yang direncanakan guru dalam kegiatan kelas.',
+    description:
+      'Rumusan tujuan yang lebih spesifik yang diturunkan dari CP. TP menjadi sasaran belajar mingguan/bulanan yang direncanakan guru dalam kegiatan kelas.',
     category: 'Struktur Utama',
   },
   {
     code: 'ATP',
     title: 'Alur Tujuan Pembelajaran',
-    description: 'Rangkaian Tujuan Pembelajaran (TP) yang disusun secara logis dan runtut dari awal hingga akhir fase. ATP berfungsi sebagai peta jalan (road map) pengajaran.',
+    description:
+      'Rangkaian Tujuan Pembelajaran (TP) yang disusun secara logis dan runtut dari awal hingga akhir fase. ATP berfungsi sebagai peta jalan (road map) pengajaran.',
     category: 'Struktur Utama',
   },
   {
     code: 'IKTP',
     title: 'Indikator Ketercapaian Tujuan Pembelajaran',
-    description: 'Serangkaian kriteria atau indikator perilaku yang dapat diamati dan diukur oleh guru untuk memastikan apakah peserta didik telah mencapai TP tertentu.',
+    description:
+      'Serangkaian kriteria atau indikator perilaku yang dapat diamati dan diukur oleh guru untuk memastikan apakah peserta didik telah mencapai TP tertentu.',
     category: 'Asesmen & Bukti',
   },
   {
     code: 'RPM',
     title: 'Rencana Pembelajaran Mendalam',
-    description: 'Format modul/rencana pembelajaran modern yang memuat pengalaman belajar berkesadaran, bermakna, dan menggembirakan bagi peserta didik.',
+    description:
+      'Format modul/rencana pembelajaran modern yang memuat pengalaman belajar berkesadaran, bermakna, dan menggembirakan bagi peserta didik.',
     category: 'Dokumen Perencanaan',
   },
   {
     code: 'RPPM',
     title: 'Rencana Pelaksanaan Pembelajaran Mingguan',
-    description: 'Dokumen perencanaan kegiatan belajar yang disusun untuk jangka waktu satu minggu, mencakup fokus tema dan sub-tema.',
+    description:
+      'Dokumen perencanaan kegiatan belajar yang disusun untuk jangka waktu satu minggu, mencakup fokus tema dan sub-tema.',
     category: 'Dokumen Perencanaan',
   },
   {
     code: 'RPPH',
     title: 'Rencana Pelaksanaan Pembelajaran Harian',
-    description: 'Rincian langkah-langkah kegiatan belajar mengajar yang akan dilaksanakan guru dalam satu hari kelas.',
+    description:
+      'Rincian langkah-langkah kegiatan belajar mengajar yang akan dilaksanakan guru dalam satu hari kelas.',
     category: 'Dokumen Perencanaan',
   },
   {
     code: 'Modul Ajar',
     title: 'Modul Ajar Kurikulum Merdeka',
-    description: 'Dokumen perencanaan pembelajaran lengkap yang mencakup tujuan pembelajaran, langkah kegiatan, media, serta instrumen asesmen.',
+    description:
+      'Dokumen perencanaan pembelajaran lengkap yang mencakup tujuan pembelajaran, langkah kegiatan, media, serta instrumen asesmen.',
     category: 'Dokumen Perencanaan',
   },
   {
     code: 'PPM',
     title: 'Pengalaman Pembelajaran Mendalam',
-    description: 'Pengalaman nyata anak dalam proses mengalami, memahami, dan merefleksi materi pelajaran melalui aktivitas interaktif dan kontekstual.',
+    description:
+      'Pengalaman nyata anak dalam proses mengalami, memahami, dan merefleksi materi pelajaran melalui aktivitas interaktif dan kontekstual.',
     category: 'Konsep Pembelajaran',
   },
 ]
@@ -107,7 +116,8 @@ export default function CurriculumGlossary() {
               Glosarium Kurikulum
             </h3>
             <p className="mt-0.5 text-sm text-neutral-700 dark:text-neutral-300">
-              Kamus rujukan lengkap pengertian istilah CP, TP, ATP, IKTP, dan dokumen perencanaan SiapAjar.
+              Kamus rujukan lengkap pengertian istilah CP, TP, ATP, IKTP, dan dokumen perencanaan
+              SiapAjar.
             </p>
           </div>
         </div>
@@ -168,7 +178,7 @@ export default function CurriculumGlossary() {
           })
         ) : (
           <div className="col-span-full rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
-            Tidak ada istilah yang cocok dengan kata kunci "{searchQuery}".
+            Tidak ada istilah yang cocok dengan kata kunci &quot;{searchQuery}&quot;.
           </div>
         )}
       </div>

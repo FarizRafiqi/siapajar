@@ -124,7 +124,12 @@ function stringifyValue(val: unknown): string {
   if (val === null || val === undefined) return ''
   if (typeof val === 'object') return JSON.stringify(val)
   if (typeof val === 'string') return val
-  if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'bigint' || typeof val === 'symbol') {
+  if (
+    typeof val === 'number' ||
+    typeof val === 'boolean' ||
+    typeof val === 'bigint' ||
+    typeof val === 'symbol'
+  ) {
     return val.toString()
   }
   return ''
@@ -429,9 +434,7 @@ export async function exportSemesterPlan(semesterPlan: SemesterPlan, user: User)
 
 function formatLabel(str: string | null | undefined): string {
   if (!str) return ''
-  return str
-    .replaceAll('_', ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
+  return str.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function buildDocxCpTable(cp: Record<string, any>): Table | null {
@@ -445,17 +448,34 @@ function buildDocxCpTable(cp: Record<string, any>): Table | null {
         new TableCell({
           width: { size: 18, type: WidthType.PERCENTAGE },
           shading: { fill: '059669' },
-          children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Kode TP', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: 'Kode TP', bold: true, color: 'FFFFFF' })],
+            }),
+          ],
         }),
         new TableCell({
           width: { size: 45, type: WidthType.PERCENTAGE },
           shading: { fill: '059669' },
-          children: [new Paragraph({ children: [new TextRun({ text: 'Tujuan Pembelajaran (TP)', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Tujuan Pembelajaran (TP)', bold: true, color: 'FFFFFF' }),
+              ],
+            }),
+          ],
         }),
         new TableCell({
           width: { size: 37, type: WidthType.PERCENTAGE },
           shading: { fill: '059669' },
-          children: [new Paragraph({ children: [new TextRun({ text: 'Indikator Ketercapaian (IKTP)', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Indikator Ketercapaian (IKTP)', bold: true, color: 'FFFFFF' }),
+              ],
+            }),
+          ],
         }),
       ],
     }),
@@ -463,23 +483,43 @@ function buildDocxCpTable(cp: Record<string, any>): Table | null {
 
   for (const obj of objectives) {
     const indicators = Array.isArray(obj.indicators) ? obj.indicators : []
-    const cleanTitle = (obj.title || '').split('<').map((part: string) => part.substring(part.indexOf('>') + 1)).join('')
+    const cleanTitle = (obj.title || '')
+      .split('<')
+      .map((part: string) => part.substring(part.indexOf('>') + 1))
+      .join('')
 
-    const iktpParagraphs = indicators.length > 0
-      ? indicators.map((ind: any) => new Paragraph({
-          children: [
-            new TextRun({ text: `• ${ind.description || '-'} `, size: 18 }),
-            new TextRun({ text: `[${formatLabel(ind.evidenceType)}]`, bold: true, size: 16, color: '047857' }),
-          ],
-        }))
-      : [new Paragraph({ children: [new TextRun({ text: '-', italics: true, color: '6B7280' })] })]
+    const iktpParagraphs =
+      indicators.length > 0
+        ? indicators.map(
+            (ind: any) =>
+              new Paragraph({
+                children: [
+                  new TextRun({ text: `• ${ind.description || '-'} `, size: 18 }),
+                  new TextRun({
+                    text: `[${formatLabel(ind.evidenceType)}]`,
+                    bold: true,
+                    size: 16,
+                    color: '047857',
+                  }),
+                ],
+              })
+          )
+        : [
+            new Paragraph({
+              children: [new TextRun({ text: '-', italics: true, color: '6B7280' })],
+            }),
+          ]
 
     tableRows.push(
       new TableRow({
         children: [
           new TableCell({
             width: { size: 18, type: WidthType.PERCENTAGE },
-            children: [new Paragraph({ children: [new TextRun({ text: obj.code || '-', bold: true, color: '065F46' })] })],
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: obj.code || '-', bold: true, color: '065F46' })],
+              }),
+            ],
           }),
           new TableCell({
             width: { size: 45, type: WidthType.PERCENTAGE },
@@ -511,34 +551,68 @@ function buildDocxSequenceTable(seq: Record<string, any>): Table | null {
         new TableCell({
           width: { size: 12, type: WidthType.PERCENTAGE },
           shading: { fill: '047857' },
-          children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Urutan', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: 'Urutan', bold: true, color: 'FFFFFF' })],
+            }),
+          ],
         }),
         new TableCell({
           width: { size: 20, type: WidthType.PERCENTAGE },
           shading: { fill: '047857' },
-          children: [new Paragraph({ children: [new TextRun({ text: 'Kode TP', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              children: [new TextRun({ text: 'Kode TP', bold: true, color: 'FFFFFF' })],
+            }),
+          ],
         }),
         new TableCell({
           width: { size: 68, type: WidthType.PERCENTAGE },
           shading: { fill: '047857' },
-          children: [new Paragraph({ children: [new TextRun({ text: 'Tujuan Pembelajaran (TP)', bold: true, color: 'FFFFFF' })] })],
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Tujuan Pembelajaran (TP)', bold: true, color: 'FFFFFF' }),
+              ],
+            }),
+          ],
         }),
       ],
     }),
   ]
 
   for (const [idx, item] of items.entries()) {
-    const cleanTitle = (item.title || '').split('<').map((part: string) => part.substring(part.indexOf('>') + 1)).join('') || `Tujuan Pembelajaran #${item.learningObjectiveId}`
+    const cleanTitle =
+      (item.title || '')
+        .split('<')
+        .map((part: string) => part.substring(part.indexOf('>') + 1))
+        .join('') || `Tujuan Pembelajaran #${item.learningObjectiveId}`
     seqRows.push(
       new TableRow({
         children: [
           new TableCell({
             width: { size: 12, type: WidthType.PERCENTAGE },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `${idx + 1}`, bold: true })] })],
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: `${idx + 1}`, bold: true })],
+              }),
+            ],
           }),
           new TableCell({
             width: { size: 20, type: WidthType.PERCENTAGE },
-            children: [new Paragraph({ children: [new TextRun({ text: item.code || `TP-${item.learningObjectiveId}`, bold: true, color: '047857' })] })],
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: item.code || `TP-${item.learningObjectiveId}`,
+                    bold: true,
+                    color: '047857',
+                  }),
+                ],
+              }),
+            ],
           }),
           new TableCell({
             width: { size: 68, type: WidthType.PERCENTAGE },
@@ -569,21 +643,38 @@ function buildDocxPaudHorizontalGridTable(cp: Record<string, any>): Table | null
         verticalAlign: VerticalAlign.CENTER,
         width: { size: 14, type: WidthType.PERCENTAGE },
         shading: { fill: '047857' },
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Elemen', bold: true, color: 'FFFFFF' })] })],
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: 'Elemen', bold: true, color: 'FFFFFF' })],
+          }),
+        ],
       }),
       new TableCell({
         rowSpan: 2,
         verticalAlign: VerticalAlign.CENTER,
         width: { size: 20, type: WidthType.PERCENTAGE },
         shading: { fill: '047857' },
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Sub-Elemen CP', bold: true, color: 'FFFFFF' })] })],
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: 'Sub-Elemen CP', bold: true, color: 'FFFFFF' })],
+          }),
+        ],
       }),
-      ...Array.from({ length: 4 }, (_, i) =>
-        new TableCell({
-          width: { size: 16.5, type: WidthType.PERCENTAGE },
-          shading: { fill: '047857' },
-          children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `TP ${i + 1}`, bold: true, color: 'FFFFFF' })] })],
-        })
+      ...Array.from(
+        { length: 4 },
+        (_, i) =>
+          new TableCell({
+            width: { size: 16.5, type: WidthType.PERCENTAGE },
+            shading: { fill: '047857' },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: `TP ${i + 1}`, bold: true, color: 'FFFFFF' })],
+              }),
+            ],
+          })
       ),
     ],
   })
@@ -595,7 +686,18 @@ function buildDocxPaudHorizontalGridTable(cp: Record<string, any>): Table | null
         verticalAlign: VerticalAlign.CENTER,
         width: { size: 66, type: WidthType.PERCENTAGE },
         shading: { fill: 'F9FAFB' },
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Usia 4 – 6 Tahun (Kelompok A & Kelompok B)', bold: true, color: '374151' })] })],
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: 'Usia 4 – 6 Tahun (Kelompok A & Kelompok B)',
+                bold: true,
+                color: '374151',
+              }),
+            ],
+          }),
+        ],
       }),
     ],
   })
@@ -603,18 +705,31 @@ function buildDocxPaudHorizontalGridTable(cp: Record<string, any>): Table | null
   const objTitleCells: TableCell[] = [
     new TableCell({
       width: { size: 14, type: WidthType.PERCENTAGE },
-      children: [new Paragraph({ children: [new TextRun({ text: cp.element || 'Elemen CP', bold: true, color: '065F46' })] })],
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text: cp.element || 'Elemen CP', bold: true, color: '065F46' })],
+        }),
+      ],
     }),
     new TableCell({
       width: { size: 20, type: WidthType.PERCENTAGE },
-      children: [new Paragraph({ children: [new TextRun({ text: cp.title || cp.element || '-', bold: true, color: '111827' })] })],
+      children: [
+        new Paragraph({
+          children: [
+            new TextRun({ text: cp.title || cp.element || '-', bold: true, color: '111827' }),
+          ],
+        }),
+      ],
     }),
   ]
 
   for (let i = 0; i < 4; i++) {
     const obj = obj4[i]
     const titleText = obj
-      ? (obj.title || '').split('<').map((part: string) => part.substring(part.indexOf('>') + 1)).join('')
+      ? (obj.title || '')
+          .split('<')
+          .map((part: string) => part.substring(part.indexOf('>') + 1))
+          .join('')
       : '-'
     objTitleCells.push(
       new TableCell({
@@ -633,7 +748,18 @@ function buildDocxPaudHorizontalGridTable(cp: Record<string, any>): Table | null
         verticalAlign: VerticalAlign.CENTER,
         width: { size: 100, type: WidthType.PERCENTAGE },
         shading: { fill: 'F3F4F6' },
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN (IKTP) & BUKTI ASESMEN', bold: true, color: '374151' })] })],
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: 'INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN (IKTP) & BUKTI ASESMEN',
+                bold: true,
+                color: '374151',
+              }),
+            ],
+          }),
+        ],
       }),
     ],
   })
@@ -642,22 +768,39 @@ function buildDocxPaudHorizontalGridTable(cp: Record<string, any>): Table | null
     new TableCell({
       columnSpan: 2,
       width: { size: 34, type: WidthType.PERCENTAGE },
-      children: [new Paragraph({ children: [new TextRun({ text: 'Indikator IKTP', bold: true, color: '4B5563' })] })],
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text: 'Indikator IKTP', bold: true, color: '4B5563' })],
+        }),
+      ],
     }),
   ]
 
   for (let i = 0; i < 4; i++) {
     const obj = obj4[i]
     const indicators = obj && Array.isArray(obj.indicators) ? obj.indicators : []
-    const iktpParagraphs = indicators.length > 0
-      ? indicators.map((ind: any, idx: number) => new Paragraph({
-          spacing: { after: 80 },
-          children: [
-            new TextRun({ text: `${idx + 1}. ${ind.description || '-'} `, size: 16 }),
-            new TextRun({ text: `[${formatLabel(ind.evidenceType)}]`, bold: true, size: 15, color: '047857' }),
-          ],
-        }))
-      : [new Paragraph({ children: [new TextRun({ text: '-', italics: true, color: '6B7280' })] })]
+    const iktpParagraphs =
+      indicators.length > 0
+        ? indicators.map(
+            (ind: any, idx: number) =>
+              new Paragraph({
+                spacing: { after: 80 },
+                children: [
+                  new TextRun({ text: `${idx + 1}. ${ind.description || '-'} `, size: 16 }),
+                  new TextRun({
+                    text: `[${formatLabel(ind.evidenceType)}]`,
+                    bold: true,
+                    size: 15,
+                    color: '047857',
+                  }),
+                ],
+              })
+          )
+        : [
+            new Paragraph({
+              children: [new TextRun({ text: '-', italics: true, color: '6B7280' })],
+            }),
+          ]
 
     iktpCells.push(
       new TableCell({
@@ -687,7 +830,10 @@ export async function exportCurriculum(
     new Paragraph({ text: '' }),
   ]
 
-  const isPaud = user.educationLevel === 'tk' || (user as any).institutionType === 'ra' || (user as any).institutionType === 'paud'
+  const isPaud =
+    user.educationLevel === 'tk' ||
+    (user as any).institutionType === 'ra' ||
+    (user as any).institutionType === 'paud'
 
   children.push(
     new Table({
@@ -698,20 +844,34 @@ export async function exportCurriculum(
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3F4F6' },
-              children: [new Paragraph({ children: [new TextRun({ text: 'Satuan Pendidikan', bold: true })] })],
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Satuan Pendidikan', bold: true })],
+                }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
-              children: [new Paragraph({ text: (user as any).institutionName || user.schoolName || 'TK / Sekolah' })],
+              children: [
+                new Paragraph({
+                  text: (user as any).institutionName || user.schoolName || 'TK / Sekolah',
+                }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3F4F6' },
-              children: [new Paragraph({ children: [new TextRun({ text: 'Tanggal Cetak', bold: true })] })],
+              children: [
+                new Paragraph({ children: [new TextRun({ text: 'Tanggal Cetak', bold: true })] }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
-              children: [new Paragraph({ text: new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }) })],
+              children: [
+                new Paragraph({
+                  text: new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }),
+                }),
+              ],
             }),
           ],
         }),
@@ -720,16 +880,22 @@ export async function exportCurriculum(
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3F4F6' },
-              children: [new Paragraph({ children: [new TextRun({ text: 'Jenjang / Fase', bold: true })] })],
+              children: [
+                new Paragraph({ children: [new TextRun({ text: 'Jenjang / Fase', bold: true })] }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
-              children: [new Paragraph({ text: isPaud ? 'PAUD / TK (Fase Fondasi)' : 'Sekolah Dasar (SD)' })],
+              children: [
+                new Paragraph({ text: isPaud ? 'PAUD / TK (Fase Fondasi)' : 'Sekolah Dasar (SD)' }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3F4F6' },
-              children: [new Paragraph({ children: [new TextRun({ text: 'Versi Kurikulum', bold: true })] })],
+              children: [
+                new Paragraph({ children: [new TextRun({ text: 'Versi Kurikulum', bold: true })] }),
+              ],
             }),
             new TableCell({
               width: { size: 25, type: WidthType.PERCENTAGE },
@@ -742,18 +908,33 @@ export async function exportCurriculum(
     new Paragraph({ text: '' }),
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      children: [new TextRun({ text: isPaud ? 'I. MATRIKS ALUR TUJUAN PEMBELAJARAN (ATP) - RA / TK FASE FONDASI' : 'I. MATRIKS CAPAIAN PEMBELAJARAN (CP) & TUJUAN PEMBELAJARAN (TP)', bold: true, color: '047857' })],
+      children: [
+        new TextRun({
+          text: isPaud
+            ? 'I. MATRIKS ALUR TUJUAN PEMBELAJARAN (ATP) - RA / TK FASE FONDASI'
+            : 'I. MATRIKS CAPAIAN PEMBELAJARAN (CP) & TUJUAN PEMBELAJARAN (TP)',
+          bold: true,
+          color: '047857',
+        }),
+      ],
     }),
     new Paragraph({ text: '' })
   )
 
   for (const cp of cps) {
-    const cleanCpDesc = (cp.description || '-').split('<').map((part: string) => part.substring(part.indexOf('>') + 1)).join('')
+    const cleanCpDesc = (cp.description || '-')
+      .split('<')
+      .map((part: string) => part.substring(part.indexOf('>') + 1))
+      .join('')
     children.push(
       new Paragraph({
         heading: HeadingLevel.HEADING_2,
         children: [
-          new TextRun({ text: `Elemen: ${cp.element || '-'} (${cp.code || 'CP'})`, bold: true, color: '065F46' }),
+          new TextRun({
+            text: `Elemen: ${cp.element || '-'} (${cp.code || 'CP'})`,
+            bold: true,
+            color: '065F46',
+          }),
         ],
       }),
       new Paragraph({
@@ -774,7 +955,13 @@ export async function exportCurriculum(
   children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      children: [new TextRun({ text: 'II. ALUR TUJUAN PEMBELAJARAN (ATP) TERSIMPAN', bold: true, color: '047857' })],
+      children: [
+        new TextRun({
+          text: 'II. ALUR TUJUAN PEMBELAJARAN (ATP) TERSIMPAN',
+          bold: true,
+          color: '047857',
+        }),
+      ],
     }),
     new Paragraph({ text: '' })
   )
@@ -793,7 +980,12 @@ export async function exportCurriculum(
     children.push(
       new Paragraph({
         heading: HeadingLevel.HEADING_2,
-        children: [new TextRun({ text: `${seq.title || 'Alur ATP'} (${items.length} Langkah TP)`, bold: true })],
+        children: [
+          new TextRun({
+            text: `${seq.title || 'Alur ATP'} (${items.length} Langkah TP)`,
+            bold: true,
+          }),
+        ],
       }),
       new Paragraph({ text: '' })
     )
@@ -820,7 +1012,9 @@ export async function exportCurriculum(
                 new Paragraph({ text: 'Kepala Sekolah' }),
                 new Paragraph({ text: '' }),
                 new Paragraph({ text: '' }),
-                new Paragraph({ children: [new TextRun({ text: '________________________', bold: true })] }),
+                new Paragraph({
+                  children: [new TextRun({ text: '________________________', bold: true })],
+                }),
                 new Paragraph({ text: 'NIP. ........................................' }),
               ],
             }),
@@ -832,7 +1026,14 @@ export async function exportCurriculum(
                 new Paragraph({ text: user.fullName || 'Guru Pengampu' }),
                 new Paragraph({ text: '' }),
                 new Paragraph({ text: '' }),
-                new Paragraph({ children: [new TextRun({ text: `( ${user.fullName || '........................'} )`, bold: true })] }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `( ${user.fullName || '........................'} )`,
+                      bold: true,
+                    }),
+                  ],
+                }),
                 new Paragraph({ text: 'NIP. ........................................' }),
               ],
             }),

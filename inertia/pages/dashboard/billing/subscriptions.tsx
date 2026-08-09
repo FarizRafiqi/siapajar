@@ -14,7 +14,9 @@ interface Subscription {
 const formatDate = (value: string | null) =>
   value ? new Date(value).toLocaleDateString('id-ID', { dateStyle: 'long' }) : 'Tidak dibatasi'
 
-export default function Subscriptions({ subscriptions }: Readonly<{ subscriptions: Subscription[] }>) {
+export default function Subscriptions({
+  subscriptions,
+}: Readonly<{ subscriptions: Subscription[] }>) {
   return (
     <DashboardWrapper
       title="Riwayat Langganan"

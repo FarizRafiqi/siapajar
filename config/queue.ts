@@ -18,7 +18,9 @@ export default defineConfig({
     // Unit tests must stay self-contained. The queue provider resolves every
     // configured adapter during boot, so even a sync default would otherwise
     // initialize the Redis connection. Same for the MCP server.
-    ...(isTestEnvironment || isMcpServer ? {} : { redis: drivers.redis({ connectionName: 'main' }) }),
+    ...(isTestEnvironment || isMcpServer
+      ? {}
+      : { redis: drivers.redis({ connectionName: 'main' }) }),
     sync: drivers.sync(),
   },
   worker: {
