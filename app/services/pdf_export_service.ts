@@ -12,6 +12,7 @@ import type { StudentReport, PaudStudentNarrative } from '#services/report_card_
 import type User from '#models/user'
 import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
+import { paudAchievementLabel } from '#services/paud_assessment_labels'
 import { randomUUID } from 'node:crypto'
 
 async function consumePdfExport(user: User) {
@@ -1354,7 +1355,7 @@ export async function exportPaudAssessmentPdf(
     ['Kelompok', assessment.schoolClass?.name],
     ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
     ['Jenis asesmen', assessment.type],
-    ['Status ketercapaian', assessment.achievementStatus],
+    ['Status ketercapaian', paudAchievementLabel(assessment.achievementStatus)],
     ['Kegiatan', assessment.activity],
   ])
   writeSection(doc, 'Catatan Guru', assessment.teacherNote || '')

@@ -23,6 +23,7 @@ export const controllers = {
   GoogleAuth: () => import('#controllers/google_auth_controller'),
   Home: () => import('#controllers/home_controller'),
   Lkpds: () => import('#controllers/lkpds_controller'),
+  Mcp: () => import('#controllers/mcp_controller'),
   MediaModules: () => import('#controllers/media_modules_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
