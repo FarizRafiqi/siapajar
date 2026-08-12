@@ -1158,7 +1158,6 @@ export async function exportPaudAssessment(assessment: PaudAssessment, user: Use
       ['Kelompok', assessment.schoolClass?.name],
       ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
       ['Jenis asesmen', assessment.type],
-      ['Status ketercapaian', assessment.achievementStatus],
       ['Kegiatan', assessment.activity],
     ]),
     ...sectionParagraphs('Catatan Guru', assessment.teacherNote || ''),

@@ -164,7 +164,6 @@ export default class PaudAssessmentsController {
             content,
             learningObjectiveId: data.learningObjectiveId ?? null,
             iktpIndicatorId: data.iktpIndicatorId ?? null,
-            achievementStatus: data.achievementStatus ?? null,
             activity: data.activity ?? null,
             teacherNote: data.teacherNote ?? null,
             evidenceUrl: data.evidenceUrl ?? null,

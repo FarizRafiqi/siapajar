@@ -88,7 +88,6 @@ export default function PaudAssessmentsIndex({
     studentId: classes[0]?.students[0]?.id || 0,
     learningObjectiveId: 0,
     iktpIndicatorId: 0,
-    achievementStatus: '',
     type: 'checklist' as AssessmentType,
     date: '',
     context: '',
@@ -129,7 +128,6 @@ export default function PaudAssessmentsIndex({
     if (data.learningObjectiveId)
       payload.append('learningObjectiveId', String(data.learningObjectiveId))
     if (data.iktpIndicatorId) payload.append('iktpIndicatorId', String(data.iktpIndicatorId))
-    if (data.achievementStatus) payload.append('achievementStatus', data.achievementStatus)
     selectedFiles.forEach((file) => payload.append('attachments', file))
 
     router.post('/paud-assessments', payload, {
@@ -568,26 +566,6 @@ export default function PaudAssessmentsIndex({
                   </select>
                 </div>
               )}
-              <div>
-                <label
-                  htmlFor="achievementStatus"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Status ketercapaian
-                </label>
-                <select
-                  id="achievementStatus"
-                  value={data.achievementStatus}
-                  onChange={(e) => setData('achievementStatus', e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                >
-                  <option value="">Belum dipilih</option>
-                  <option value="belum_terlihat">Belum terlihat</option>
-                  <option value="mulai_berkembang">Mulai berkembang</option>
-                  <option value="berkembang_sesuai_harapan">Berkembang sesuai harapan</option>
-                  <option value="berkembang_sangat_baik">Berkembang sangat baik</option>
-                </select>
-              </div>
               <div>
                 <label
                   htmlFor="classId"

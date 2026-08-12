@@ -1354,7 +1354,6 @@ export async function exportPaudAssessmentPdf(
     ['Kelompok', assessment.schoolClass?.name],
     ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
     ['Jenis asesmen', assessment.type],
-    ['Status ketercapaian', assessment.achievementStatus],
     ['Kegiatan', assessment.activity],
   ])
   writeSection(doc, 'Catatan Guru', assessment.teacherNote || '')
