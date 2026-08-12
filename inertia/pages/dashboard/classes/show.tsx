@@ -8,6 +8,7 @@ interface Student {
   id: number
   nis: string
   fullName: string
+  parentPhone?: string | null
 }
 
 interface AcademicYear {
@@ -43,11 +44,13 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
   const { data, setData, post, processing, errors, reset } = useForm({
     nis: '',
     fullName: '',
+    parentPhone: '',
   })
 
   const editForm = useForm({
     nis: '',
     fullName: '',
+    parentPhone: '',
   })
 
   const handleAddStudent = () => {
@@ -60,7 +63,11 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
   }
 
   const handleOpenEdit = (student: Student) => {
-    editForm.setData({ nis: student.nis, fullName: student.fullName })
+    editForm.setData({
+      nis: student.nis,
+      fullName: student.fullName,
+      parentPhone: student.parentPhone || '',
+    })
     setEditingStudent(student)
   }
 
@@ -185,6 +192,9 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                     <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
                       Nama Lengkap
                     </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                      No. HP Ortu
+                    </th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-neutral-400">
                       Aksi
                     </th>
@@ -204,6 +214,9 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
                         {student.fullName}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        {student.parentPhone || '-'}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -280,6 +293,25 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                 />
                 {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
               </div>
+              <div>
+                <label
+                  htmlFor="parentPhone"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
+                  No. HP Orang Tua/Wali
+                </label>
+                <input
+                  id="parentPhone"
+                  type="text"
+                  value={data.parentPhone}
+                  onChange={(e) => setData('parentPhone', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  placeholder="contoh: 081234567890"
+                />
+                {errors.parentPhone && (
+                  <p className="mt-1 text-sm text-red-500">{errors.parentPhone}</p>
+                )}
+              </div>
             </div>
             <div className="mt-6 flex gap-3">
               <button
@@ -353,6 +385,25 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
                 />
                 {editForm.errors.fullName && (
                   <p className="mt-1 text-sm text-red-500">{editForm.errors.fullName}</p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="editParentPhone"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
+                  No. HP Orang Tua/Wali
+                </label>
+                <input
+                  id="editParentPhone"
+                  type="text"
+                  value={editForm.data.parentPhone}
+                  onChange={(e) => editForm.setData('parentPhone', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  placeholder="contoh: 081234567890"
+                />
+                {editForm.errors.parentPhone && (
+                  <p className="mt-1 text-sm text-red-500">{editForm.errors.parentPhone}</p>
                 )}
               </div>
             </div>

@@ -1,6 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, Link, router } from '@inertiajs/react'
-import { ArrowLeft, Download, Trophy } from 'lucide-react'
+import { ArrowLeft, Download, Trophy, MessageSquare } from 'lucide-react'
 
 interface AcademicYear {
   id: number
@@ -44,6 +44,8 @@ interface PaudStudentNarrative {
   studentId: number
   nis: string
   fullName: string
+  parentPhone: string | null
+  parentReflection: string
   entries: NarrativeEntry[]
   narratives: { element: string; content: string; status: 'draft' | 'approved' }[]
 }
@@ -54,6 +56,7 @@ interface ReportCardShowProps {
   readonly semester: Semester
   readonly report?: { subjects: string[]; students: StudentReport[] }
   readonly narrative?: PaudStudentNarrative[]
+  readonly waPaired?: boolean
 }
 
 function formatEntry(entry: NarrativeEntry) {
@@ -82,6 +85,7 @@ export default function ReportCardShow({
   semester,
   report,
   narrative,
+  waPaired = false,
 }: ReportCardShowProps) {
   const semesterLabel = `${semester.name} ${semester.academicYear.name}`
   const backHref = '/report-cards'
@@ -239,6 +243,33 @@ export default function ReportCardShow({
                   >
                     DOCX
                   </a>
+                  {waPaired ? (
+                    <button
+                      onClick={() =>
+                        router.post(
+                          `/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/send-whatsapp`
+                        )
+                      }
+                      disabled={!student.parentPhone}
+                      title={
+                        !student.parentPhone
+                          ? 'Lengkapi no. HP orang tua di data siswa dulu'
+                          : 'Kirim Rapor PDF via WhatsApp'
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Kirim WA
+                    </button>
+                  ) : (
+                    <Link
+                      href="/whatsapp"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Pairing WA dulu
+                    </Link>
+                  )}
                 </div>
                 {student.entries.length === 0 ? (
                   <p className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
@@ -299,6 +330,32 @@ export default function ReportCardShow({
                       )}
                     </form>
                   ))}
+                </div>
+
+                <div className="mt-5 space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                    Refleksi orang tua
+                  </p>
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      const form = new FormData(event.currentTarget)
+                      router.post(
+                        `/report-cards/${schoolClass.id}/${semester.id}/${student.studentId}/reflection`,
+                        { content: form.get('content') }
+                      )
+                    }}
+                  >
+                    <textarea
+                      name="content"
+                      defaultValue={student.parentReflection}
+                      className="mt-1 min-h-20 w-full rounded-lg border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                      placeholder="Tulis refleksi atau tanggapan dari orang tua/wali siswa..."
+                    />
+                    <button className="mt-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">
+                      Simpan refleksi
+                    </button>
+                  </form>
                 </div>
               </div>
             ))}

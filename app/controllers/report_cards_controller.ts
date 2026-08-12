@@ -11,9 +11,11 @@ import {
   wantsInlinePreview,
 } from '#services/export_file_service'
 import ReportNarrative from '#models/report_narrative'
+import ParentReflection from '#models/parent_reflection'
 import Student from '#models/student'
 import { DateTime } from 'luxon'
 import GenerateNarratives from '#jobs/generate_narratives'
+import { getStatus, sendDocument } from '#services/whatsapp_service'
 
 export default class ReportCardsController {
   async index({ inertia, auth }: HttpContext) {
@@ -59,11 +61,13 @@ export default class ReportCardsController {
 
     if (user.isTk) {
       const narrative = await compileNarrativeReport(classId, semesterId, user.id)
+      const waStatus = getStatus(user.id)
       return inertia.render('dashboard/report-cards/show', {
         mode: 'narrative' as const,
         schoolClass: schoolClass.toJSON(),
         semester: semester.toJSON(),
         narrative,
+        waPaired: waStatus.paired,
       })
     }
 
@@ -264,6 +268,121 @@ export default class ReportCardsController {
     narrative.approvedAt = DateTime.now()
     await narrative.save()
     session.flash('success', 'Narasi disetujui')
+    return response.redirect().back()
+  }
+
+  async saveReflection({ params, request, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const classId = Number(params.classId)
+    const semesterId = Number(params.semesterId)
+    const studentId = Number(params.studentId)
+
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
+    const student = await Student.query().where('id', studentId).where('class_id', classId).first()
+    if (!schoolClass || !student) return response.redirect('/report-cards')
+
+    const payload = request.only(['content'])
+    const content = typeof payload.content === 'string' ? payload.content.trim() : ''
+    if (content.length > 2000) {
+      session.flash('error', 'Refleksi orang tua maksimal 2000 karakter')
+      return response.redirect().back()
+    }
+
+    await ParentReflection.updateOrCreate(
+      { userId: user.id, studentId, semesterId },
+      {
+        userId: user.id,
+        classId,
+        studentId,
+        semesterId,
+        content,
+      }
+    )
+
+    session.flash('success', 'Refleksi orang tua berhasil disimpan')
+    return response.redirect().back()
+  }
+
+  async sendWhatsApp({ params, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const classId = Number(params.classId)
+    const semesterId = Number(params.semesterId)
+    const studentId = Number(params.studentId)
+
+    const schoolClass = await SchoolClass.query()
+      .where('id', classId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!schoolClass) {
+      return response.redirect('/report-cards')
+    }
+
+    const semester = await Semester.query().where('id', semesterId).preload('academicYear').first()
+
+    if (!semester) {
+      return response.redirect('/report-cards')
+    }
+
+    const student = await Student.query().where('id', studentId).where('class_id', classId).first()
+    if (!student) {
+      return response.redirect(`/report-cards/${classId}/${semesterId}`)
+    }
+
+    if (!student.parentPhone || student.parentPhone.trim() === '') {
+      session.flash('error', 'Lengkapi no. HP orang tua di data siswa dulu')
+      return response.redirect().back()
+    }
+
+    const waStatus = getStatus(user.id)
+    if (!waStatus.paired) {
+      session.flash(
+        'error',
+        'WhatsApp belum terhubung. Silakan hubungkan WhatsApp terlebih dahulu.'
+      )
+      return response.redirect('/whatsapp')
+    }
+
+    const narrative = await compileNarrativeReport(classId, semesterId, user.id)
+    const studentNarrative = narrative.find((n) => n.studentId === studentId)
+
+    if (!studentNarrative) {
+      return response.redirect(`/report-cards/${classId}/${semesterId}`)
+    }
+
+    const semesterLabel = `${semester.name} ${semester.academicYear.name}`
+
+    try {
+      const pdfBuffer = await exportNarrativeReportPdf(
+        studentNarrative,
+        user,
+        {
+          className: schoolClass.name,
+          semesterLabel,
+          totalStudents: narrative.length,
+        },
+        false
+      )
+
+      await sendDocument(
+        user.id,
+        student.parentPhone,
+        pdfBuffer,
+        `Rapor ${student.fullName} ${semester.name}.pdf`,
+        `Rapor perkembangan ${student.fullName} - ${semesterLabel}. Terima kasih.`
+      )
+
+      session.flash(
+        'success',
+        `Rapor PDF berhasil dikirim ke WhatsApp orang tua ${student.fullName}`
+      )
+    } catch (error) {
+      session.flash('error', (error as Error).message || 'Gagal mengirim rapor via WhatsApp')
+    }
+
     return response.redirect().back()
   }
 }

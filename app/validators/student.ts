@@ -9,6 +9,7 @@ export const createStudentValidator = vine.create(
       .minLength(1)
       .maxLength(100)
       .regex(/^[a-zA-Z\s.'-]+$/),
+    parentPhone: vine.string().trim().maxLength(20).optional(),
   })
 )
 
@@ -22,5 +23,6 @@ export const updateStudentValidator = vine.create(
       .maxLength(100)
       .regex(/^[a-zA-Z\s.'-]+$/)
       .optional(),
+    parentPhone: vine.string().trim().maxLength(20).optional(),
   })
 )

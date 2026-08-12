@@ -23,6 +23,7 @@ export const controllers = {
   GoogleAuth: () => import('#controllers/google_auth_controller'),
   Home: () => import('#controllers/home_controller'),
   Lkpds: () => import('#controllers/lkpds_controller'),
+  Mcp: () => import('#controllers/mcp_controller'),
   MediaModules: () => import('#controllers/media_modules_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
@@ -35,4 +36,5 @@ export const controllers = {
   Subjects: () => import('#controllers/subjects_controller'),
   TeachingModules: () => import('#controllers/teaching_modules_controller'),
   WeeklyLessonPlans: () => import('#controllers/weekly_lesson_plans_controller'),
+  Whatsapp: () => import('#controllers/whatsapp_controller'),
 }

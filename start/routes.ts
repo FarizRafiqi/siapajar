@@ -397,6 +397,24 @@ router
         '#controllers/report_cards_controller.approveNarrative'
       )
       .as('report-narratives.approve')
+    router
+      .post(
+        '/report-cards/:classId/:semesterId/:studentId/reflection',
+        '#controllers/report_cards_controller.saveReflection'
+      )
+      .as('report-cards.reflection.save')
+    router
+      .post(
+        '/report-cards/:classId/:semesterId/:studentId/send-whatsapp',
+        '#controllers/report_cards_controller.sendWhatsApp'
+      )
+      .as('report-cards.sendWhatsApp')
+
+    // WhatsApp Integration
+    router.get('/whatsapp', '#controllers/whatsapp_controller.index').as('whatsapp.index')
+    router.get('/whatsapp/status', '#controllers/whatsapp_controller.status').as('whatsapp.status')
+    router.post('/whatsapp/pair', '#controllers/whatsapp_controller.pair').as('whatsapp.pair')
+    router.post('/whatsapp/logout', '#controllers/whatsapp_controller.logout').as('whatsapp.logout')
 
     // Subjects (Mata Pelajaran)
     router.get('/subjects', '#controllers/subjects_controller.index').as('subjects.index')
