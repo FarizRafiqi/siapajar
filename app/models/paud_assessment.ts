@@ -31,9 +31,6 @@ export default class PaudAssessment extends BaseModel {
   @column({ columnName: 'iktp_indicator_id' })
   declare iktpIndicatorId: number | null
 
-  @column({ columnName: 'achievement_status' })
-  declare achievementStatus: string | null
-
   @column()
   declare activity: string | null
 

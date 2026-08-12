@@ -726,7 +726,6 @@ export class PackageSchema extends BaseModel {
 
 export class PaudAssessmentSchema extends BaseModel {
   static $columns = [
-    'achievementStatus',
     'activity',
     'classId',
     'content',
@@ -745,8 +744,6 @@ export class PaudAssessmentSchema extends BaseModel {
     'userId',
   ] as const
   $columns = PaudAssessmentSchema.$columns
-  @column()
-  declare achievementStatus: string | null
   @column()
   declare activity: string | null
   @column()

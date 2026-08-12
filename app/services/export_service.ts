@@ -28,7 +28,6 @@ import type { StudentReport, PaudStudentNarrative } from '#services/report_card_
 import type User from '#models/user'
 import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
-import { paudAchievementLabel } from '#services/paud_assessment_labels'
 import { randomUUID } from 'node:crypto'
 
 async function consumeExport(user: User) {
@@ -1159,7 +1158,6 @@ export async function exportPaudAssessment(assessment: PaudAssessment, user: Use
       ['Kelompok', assessment.schoolClass?.name],
       ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
       ['Jenis asesmen', assessment.type],
-      ['Status ketercapaian', paudAchievementLabel(assessment.achievementStatus)],
       ['Kegiatan', assessment.activity],
     ]),
     ...sectionParagraphs('Catatan Guru', assessment.teacherNote || ''),

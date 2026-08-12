@@ -14,45 +14,25 @@ test.group('PAUD assessment validator', () => {
     content: {},
   }
 
-  test('create assessment without achievementStatus passes with undefined status', async ({
-    assert,
-  }) => {
+  test('create assessment without achievementStatus passes', async ({ assert }) => {
     const validated = await createPaudAssessmentValidator.validate(basePayload)
-    assert.isUndefined(validated.achievementStatus)
+    assert.notProperty(validated, 'achievementStatus')
   })
 
-  test('create assessment with all 4 descriptive achievementStatus enums passes', async ({
+  test('create assessment with achievementStatus in payload passes but strips achievementStatus', async ({
     assert,
   }) => {
-    const statuses = [
-      'belum_terlihat',
-      'mulai_berkembang',
-      'berkembang_sesuai_harapan',
-      'berkembang_sangat_baik',
-    ] as const
-
-    for (const status of statuses) {
-      const validated = await createPaudAssessmentValidator.validate({
-        ...basePayload,
-        achievementStatus: status,
-      })
-      assert.equal(validated.achievementStatus, status)
-    }
+    const validated = await createPaudAssessmentValidator.validate({
+      ...basePayload,
+      achievementStatus: 'mulai_berkembang',
+    } as any)
+    assert.notProperty(validated, 'achievementStatus')
   })
 
   test('update assessment without achievementStatus passes', async ({ assert }) => {
     const validated = await updatePaudAssessmentValidator.validate({
       activity: 'Kegiatan Bermain',
     })
-    assert.isUndefined(validated.achievementStatus)
-  })
-
-  test('create assessment with non-enum achievementStatus is rejected', async ({ assert }) => {
-    await assert.rejects(async () => {
-      await createPaudAssessmentValidator.validate({
-        ...basePayload,
-        achievementStatus: 'BSB' as any,
-      })
-    })
+    assert.notProperty(validated, 'achievementStatus')
   })
 })
