@@ -7,7 +7,8 @@ All-in-one administrasi guru Kurikulum Merdeka. Siap mengajar, siap administrasi
 - **Backend:** AdonisJS 7 (Node.js/TypeScript), Lucid ORM
 - **Frontend:** InertiaJS + React 19, HeroUI, Tailwind CSS 4, Framer Motion
 - **Database:** PostgreSQL
-- **AI generation:** 9router / OpenAI / Anthropic (configurable via admin panel)
+- **AI generation:** 9router / OpenAI / Gemini / Anthropic / OpenAI-compatible aggregators (configurable via admin panel)
+- **Visual assets:** Lucide-style outline registry, sanitized SVG generation, and raster image jobs stored in `visual_assets`
 - **Export:** Canonical RA/TK worksheet preview + PDF (Playwright Chromium) + DOCX (`docx`) + XLSX (`xlsx`)
 - **Typed API client:** Tuyau
 
@@ -75,6 +76,8 @@ Exam PDF export uses Playwright Chromium so print preview, PDF, and DOCX follow 
 npx playwright install --with-deps chromium
 ```
 
+If Chromium is managed outside Playwright, set `PDF_BROWSER_EXECUTABLE_PATH` to its executable path. PDF export releases its quota reservation when the browser is unavailable and reports the failure without charging the user.
+
 The included Dockerfile installs Chromium and its runtime libraries automatically. This is only the application runtime; PostgreSQL and Redis can remain native services/DBNGIN services as documented above.
 
 ## Project Structure
@@ -114,6 +117,8 @@ Required:
 Optional (only needed for specific features):
 
 - `ROUTER_API_KEY`, `ROUTER_API_URL` — AI generation only when the 9router card is selected
+- `COMMAND_CODE_API_KEY`, `OPENROUTER_API_KEY`, `OPENCODE_ZEN_API_KEY`, `TOGETHER_API_KEY` — provider-specific aggregator keys; the active gateway is selected in admin AI settings and an admin-saved key takes precedence
+- `AGGREGATOR_API_KEY` — legacy shared fallback for existing deployments; provider-specific keys are recommended
 - `CODEX_CLI_PATH` — optional path to the official Codex CLI for direct OpenAI ChatGPT OAuth
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GEMINI_OAUTH_PROJECT_ID` — direct Gemini Google OAuth; add the callback URL from `.env.example` to the Google OAuth client
 - `XENDIT_KEY` — reserved for payment integration; billing is intentionally outside the beta scope

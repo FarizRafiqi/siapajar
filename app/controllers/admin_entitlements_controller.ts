@@ -7,6 +7,7 @@ const DEFAULT_FEATURES = [
   'classes',
   'ai_generation_monthly',
   'ai_image_generation_monthly',
+  'ai_svg_generation_monthly',
   'export_pdf',
   'export_docx',
   'export_pptx',

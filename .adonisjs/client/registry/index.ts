@@ -324,11 +324,23 @@ const routes = {
     tokens: [{"old":"/exams","type":0,"val":"exams","end":""}],
     types: placeholder as Registry['exams.store']['types'],
   },
+  'exams.generationStatus': {
+    methods: ["GET","HEAD"],
+    pattern: '/exams/:id/generation-status',
+    tokens: [{"old":"/exams/:id/generation-status","type":0,"val":"exams","end":""},{"old":"/exams/:id/generation-status","type":1,"val":"id","end":""},{"old":"/exams/:id/generation-status","type":0,"val":"generation-status","end":""}],
+    types: placeholder as Registry['exams.generationStatus']['types'],
+  },
   'exams.show': {
     methods: ["GET","HEAD"],
     pattern: '/exams/:id',
     tokens: [{"old":"/exams/:id","type":0,"val":"exams","end":""},{"old":"/exams/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['exams.show']['types'],
+  },
+  'exams.uploadImage': {
+    methods: ["POST"],
+    pattern: '/exams/:id/upload-image',
+    tokens: [{"old":"/exams/:id/upload-image","type":0,"val":"exams","end":""},{"old":"/exams/:id/upload-image","type":1,"val":"id","end":""},{"old":"/exams/:id/upload-image","type":0,"val":"upload-image","end":""}],
+    types: placeholder as Registry['exams.uploadImage']['types'],
   },
   'exams.update': {
     methods: ["PUT"],

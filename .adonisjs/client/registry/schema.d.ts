@@ -643,9 +643,33 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'exams.generationStatus': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/generation-status'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'exams.show': {
     methods: ["GET","HEAD"]
     pattern: '/exams/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.uploadImage': {
+    methods: ["POST"]
+    pattern: '/exams/:id/upload-image'
     types: {
       body: {}
       paramsTuple: [ParamValue]

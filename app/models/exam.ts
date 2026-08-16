@@ -44,6 +44,17 @@ export default class Exam extends BaseModel {
   @column()
   declare status: 'draft' | 'published'
 
+  @column({ columnName: 'generation_status' })
+  declare generationStatus:
+    'queued' | 'researching' | 'generating_questions' | 'generating_images' | 'completed' | 'failed'
+
+  @column({
+    columnName: 'generation_progress',
+    prepare: (value: Record<string, unknown>) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : (value ?? {})),
+  })
+  declare generationProgress: Record<string, unknown>
+
   @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 

@@ -57,7 +57,9 @@ export type ScannedRoutes = {
     'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
     'exams.store': { paramsTuple?: []; params?: {} }
+    'exams.generationStatus': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.uploadImage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.generate': { paramsTuple?: []; params?: {} }
@@ -190,6 +192,7 @@ export type ScannedRoutes = {
     'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
+    'exams.generationStatus': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -273,6 +276,7 @@ export type ScannedRoutes = {
     'teaching-modules.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teaching-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.index': { paramsTuple?: []; params?: {} }
+    'exams.generationStatus': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -351,6 +355,7 @@ export type ScannedRoutes = {
     'teaching-modules.store': { paramsTuple?: []; params?: {} }
     'teaching-modules.generate': { paramsTuple?: []; params?: {} }
     'exams.store': { paramsTuple?: []; params?: {} }
+    'exams.uploadImage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exams.generate': { paramsTuple?: []; params?: {} }
     'annual-plans.store': { paramsTuple?: []; params?: {} }
     'annual-plans.generate': { paramsTuple?: []; params?: {} }

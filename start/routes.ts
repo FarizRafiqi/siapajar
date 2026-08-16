@@ -177,7 +177,13 @@ router
     // Exams (Soal)
     router.get('/exams', '#controllers/exams_controller.index').as('exams.index')
     router.post('/exams', '#controllers/exams_controller.store').as('exams.store')
+    router
+      .get('/exams/:id/generation-status', '#controllers/exams_controller.generationStatus')
+      .as('exams.generationStatus')
     router.get('/exams/:id', '#controllers/exams_controller.show').as('exams.show')
+    router
+      .post('/exams/:id/upload-image', '#controllers/exams_controller.uploadImage')
+      .as('exams.uploadImage')
     router.put('/exams/:id', '#controllers/exams_controller.update').as('exams.update')
     router.delete('/exams/:id', '#controllers/exams_controller.destroy').as('exams.destroy')
     router.post('/exams/generate', '#controllers/exams_controller.generate').as('exams.generate')

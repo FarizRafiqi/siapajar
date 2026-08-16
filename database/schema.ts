@@ -76,6 +76,7 @@ export class AiSettingSchema extends BaseModel {
     'authMode',
     'baseUrl',
     'createdAt',
+    'gateway',
     'id',
     'model',
     'oauthAccessToken',
@@ -84,6 +85,7 @@ export class AiSettingSchema extends BaseModel {
     'oauthProjectId',
     'oauthRefreshToken',
     'provider',
+    'reasoningEffort',
     'updatedAt',
   ] as const
   $columns = AiSettingSchema.$columns
@@ -95,6 +97,8 @@ export class AiSettingSchema extends BaseModel {
   declare baseUrl: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare gateway: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -111,6 +115,8 @@ export class AiSettingSchema extends BaseModel {
   declare oauthRefreshToken: string | null
   @column()
   declare provider: string
+  @column()
+  declare reasoningEffort: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -392,6 +398,8 @@ export class ExamSchema extends BaseModel {
   static $columns = [
     'classId',
     'createdAt',
+    'generationProgress',
+    'generationStatus',
     'header',
     'id',
     'questions',
@@ -406,6 +414,10 @@ export class ExamSchema extends BaseModel {
   declare classId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare generationProgress: any
+  @column()
+  declare generationStatus: string
   @column()
   declare header: any
   @column({ isPrimary: true })
@@ -570,6 +582,39 @@ export class LkpdSchema extends BaseModel {
   declare title: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class McpKeySchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'id',
+    'keyHash',
+    'label',
+    'lastUsedAt',
+    'revokedAt',
+    'scopes',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = McpKeySchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare keyHash: string
+  @column()
+  declare label: string
+  @column.dateTime()
+  declare lastUsedAt: DateTime | null
+  @column.dateTime()
+  declare revokedAt: DateTime | null
+  @column()
+  declare scopes: any | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
   @column()
   declare userId: number
 }
@@ -1099,6 +1144,72 @@ export class UserSchema extends BaseModel {
   declare schoolName: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class VisualAssetSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'error',
+    'height',
+    'id',
+    'kind',
+    'metadata',
+    'mimeType',
+    'model',
+    'prompt',
+    'promptHash',
+    'provider',
+    'schoolId',
+    'source',
+    'status',
+    'storagePath',
+    'updatedAt',
+    'url',
+    'userId',
+    'viewBox',
+    'width',
+  ] as const
+  $columns = VisualAssetSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare error: string | null
+  @column()
+  declare height: number | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare kind: string
+  @column()
+  declare metadata: any
+  @column()
+  declare mimeType: string
+  @column()
+  declare model: string | null
+  @column()
+  declare prompt: string | null
+  @column()
+  declare promptHash: string | null
+  @column()
+  declare provider: string | null
+  @column()
+  declare schoolId: number | null
+  @column()
+  declare source: string
+  @column()
+  declare status: string
+  @column()
+  declare storagePath: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare url: string
+  @column()
+  declare userId: number
+  @column()
+  declare viewBox: string | null
+  @column()
+  declare width: number | null
 }
 
 export class WeeklyLessonPlanSchema extends BaseModel {

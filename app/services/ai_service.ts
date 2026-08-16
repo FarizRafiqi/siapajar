@@ -12,7 +12,10 @@ export interface CallAiJsonOptions {
   systemPrompt: string
   userPrompt: string
   timeoutMs?: number
+  reasoningEffort?: 'medium' | 'high' | 'max'
 }
+
+export type AiGateway = 'command_code' | 'openrouter' | 'opencode_zen' | 'together'
 
 interface ResolvedProvider {
   provider: '9router' | 'anthropic' | 'openai' | 'gemini'
@@ -24,29 +27,60 @@ interface ResolvedProvider {
   oauthRefreshToken: string | null
   oauthExpiresAt: DateTime | null
   oauthProjectId: string | null
+  gateway: AiGateway | null
+  reasoningEffort: 'medium' | 'high' | 'max' | null
 }
 
 const GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-image'
 const MAX_INLINE_IMAGE_BYTES = 8 * 1024 * 1024
-const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
+const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg'])
+
+const GATEWAY_DEFAULTS: Record<AiGateway, string> = {
+  command_code: 'https://api.commandcode.ai/provider/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+  opencode_zen: 'https://opencode.ai/zen/v1',
+  together: 'https://api.together.xyz/v1',
+}
+
+/** Resolve the selected gateway's environment key, with legacy fallback. */
+export function getAggregatorApiKey(gateway: AiGateway | null): string | undefined {
+  if (gateway === 'command_code') {
+    return env.get('COMMAND_CODE_API_KEY') || env.get('AGGREGATOR_API_KEY')
+  }
+  if (gateway === 'openrouter') {
+    return env.get('OPENROUTER_API_KEY') || env.get('AGGREGATOR_API_KEY')
+  }
+  if (gateway === 'opencode_zen') {
+    return env.get('OPENCODE_ZEN_API_KEY') || env.get('AGGREGATOR_API_KEY')
+  }
+  if (gateway === 'together') {
+    return env.get('TOGETHER_API_KEY') || env.get('AGGREGATOR_API_KEY')
+  }
+  return env.get('AGGREGATOR_API_KEY')
+}
 
 async function resolveProvider(): Promise<ResolvedProvider> {
   const setting = await AiSetting.current()
 
-  // ROUTER_API_KEY hanya boleh dipakai saat kartu 9router dipilih.
-  // OAuth OpenAI dikelola oleh Codex CLI, bukan oleh 9router.
-  const envFallback = setting.provider === '9router' ? env.get('ROUTER_API_KEY') : undefined
+  // ROUTER_API_KEY hanya dipakai 9router. Aggregator punya key sendiri.
+  const envFallback = setting.gateway
+    ? getAggregatorApiKey(setting.gateway)
+    : setting.provider === '9router'
+      ? env.get('ROUTER_API_KEY')
+      : undefined
 
   return {
     provider: setting.provider,
     authMode: setting.authMode || 'api_key',
     apiKey: setting.apiKey || envFallback || null,
-    baseUrl: setting.provider === '9router' ? setting.baseUrl : null,
+    baseUrl: setting.baseUrl || (setting.gateway ? GATEWAY_DEFAULTS[setting.gateway] : null),
     model: setting.model,
     oauthAccessToken: setting.oauthAccessToken || null,
     oauthRefreshToken: setting.oauthRefreshToken || null,
     oauthExpiresAt: setting.oauthExpiresAt || null,
     oauthProjectId: setting.oauthProjectId || null,
+    gateway: setting.gateway || null,
+    reasoningEffort: setting.reasoningEffort || null,
   }
 }
 
@@ -116,6 +150,80 @@ async function call9router(
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] }
   const text = payload?.choices?.[0]?.message?.content
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
+  return text
+}
+
+function completionUrl(baseUrl: string) {
+  const normalized = trimTrailingSlashes(baseUrl)
+  return normalized.endsWith('/chat/completions') ? normalized : `${normalized}/chat/completions`
+}
+
+function modelListUrl(baseUrl: string) {
+  const normalized = trimTrailingSlashes(baseUrl).replace(/\/chat\/completions$/i, '')
+  return normalized.endsWith('/models') ? normalized : `${normalized}/models`
+}
+
+function aggregatorLabel(gateway: AiGateway | null) {
+  if (gateway === 'command_code') return 'Command Code'
+  if (gateway === 'openrouter') return 'OpenRouter'
+  if (gateway === 'opencode_zen') return 'OpenCode Zen'
+  if (gateway === 'together') return 'Together AI'
+  return 'Aggregator AI'
+}
+
+async function callAggregator(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions
+): Promise<string> {
+  if (!resolved.gateway) throw new AiServiceError('Aggregator AI belum dipilih.')
+  if (!resolved.apiKey) {
+    throw new AiServiceError(`API key ${aggregatorLabel(resolved.gateway)} belum diisi.`)
+  }
+  if (!resolved.model) {
+    throw new AiServiceError(
+      `Pilih model ${aggregatorLabel(resolved.gateway)} terlebih dahulu di Konfigurasi AI.`
+    )
+  }
+  const model = resolved.model
+  const reasoningEffort = options.reasoningEffort || resolved.reasoningEffort || 'high'
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: 'system', content: options.systemPrompt },
+      { role: 'user', content: options.userPrompt },
+    ],
+    response_format: { type: 'json_object' },
+  }
+  if (/^(gpt-5|deepseek-v4)/i.test(model)) body.reasoning_effort = reasoningEffort
+  if (/^gpt-5/i.test(model)) body.max_completion_tokens = 4000
+  else body.max_tokens = 4000
+
+  const response = await fetchWithTimeout(
+    completionUrl(resolved.baseUrl || GATEWAY_DEFAULTS[resolved.gateway]),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resolved.apiKey}`,
+      },
+      body: JSON.stringify(body),
+    },
+    options.timeoutMs ?? 90_000
+  )
+  if (!response.ok) {
+    const responseText = await response.text().catch(() => '')
+    const detail = responseText.slice(0, 200)
+    throw new AiServiceError(
+      `${aggregatorLabel(resolved.gateway)} membalas error (status ${response.status}). ${detail || 'Coba lagi.'}`
+    )
+  }
+  const payload = (await response.json()) as {
+    choices?: { message?: { content?: string | Array<{ text?: string }> } }[]
+  }
+  const content = payload.choices?.[0]?.message?.content
+  const text = Array.isArray(content) ? content.map((part) => part.text || '').join('') : content
+  if (!text)
+    throw new AiServiceError(`${aggregatorLabel(resolved.gateway)} tidak mengembalikan konten.`)
   return text
 }
 
@@ -343,12 +451,40 @@ async function generateOpenAiImage(prompt: string): Promise<string> {
 
 export async function generateConfiguredImage(prompt: string): Promise<string> {
   const resolved = await resolveProvider()
+  if (resolved.gateway) {
+    throw new AiServiceError(
+      `${aggregatorLabel(resolved.gateway)} dipakai untuk SVG/teks. Pilih OpenAI atau Gemini langsung untuk gambar raster.`
+    )
+  }
   if (resolved.provider === 'gemini') {
     const image = await generateGeminiImage(prompt)
     if (image) return image
   }
   if (resolved.provider === 'openai') return generateOpenAiImage(prompt)
   throw new AiServiceError('Provider AI aktif belum mendukung pembuatan gambar.')
+}
+
+export async function generateConfiguredSvg(
+  prompt: string
+): Promise<{ svg: string; viewBox?: string }> {
+  const result = await callAiJson<{ svg?: string; viewBox?: string }>({
+    combo: 'svg-illustration',
+    systemPrompt: [
+      'Kamu generator SVG untuk lembar kerja PAUD/RA/TK.',
+      'Balas hanya JSON valid dengan bentuk {"svg":"...","viewBox":"0 0 512 512"}.',
+      'SVG wajib outline hitam, background transparan/putih, tanpa teks, tanpa watermark.',
+      'Gunakan hanya svg,g,path,circle,ellipse,line,polyline,polygon,rect.',
+      'Jangan gunakan script, style, foreignObject, image, href, URL eksternal, atau event handler.',
+      'Gambar harus sederhana, jelas, dan cocok untuk anak usia 4-6 tahun.',
+    ].join(' '),
+    userPrompt: prompt,
+    reasoningEffort: 'max',
+    timeoutMs: 90_000,
+  })
+  if (!result.svg || typeof result.svg !== 'string') {
+    throw new AiServiceError('Model SVG tidak mengembalikan markup SVG.')
+  }
+  return { svg: result.svg, viewBox: result.viewBox }
 }
 
 async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<string> {
@@ -470,8 +606,9 @@ async function callAnthropic(
 
 /** Daftar model live dari provider — dipakai form Konfigurasi AI, bukan alur generate. */
 export async function listModels(
-  provider: '9router' | 'anthropic' | 'openai' | 'gemini',
-  apiKey: string
+  provider: '9router' | 'anthropic' | 'openai' | 'gemini' | 'aggregator',
+  apiKey: string,
+  options: { gateway?: AiGateway | null; baseUrl?: string | null } = {}
 ): Promise<string[]> {
   if (!apiKey) throw new AiServiceError('API key belum diisi.')
 
@@ -491,6 +628,26 @@ export async function listModels(
     }
     const payload = (await response.json()) as { data?: { id: string }[] }
     return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+  }
+
+  if (provider === 'aggregator') {
+    const gateway = options.gateway
+    if (!gateway) throw new AiServiceError('Pilih aggregator terlebih dahulu.')
+    const response = await fetchWithTimeout(
+      modelListUrl(options.baseUrl || GATEWAY_DEFAULTS[gateway]),
+      { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
+      15_000
+    )
+    if (!response.ok) {
+      throw new AiServiceError(
+        `Gagal ambil daftar model ${aggregatorLabel(gateway)} (status ${response.status}).`
+      )
+    }
+    const payload = (await response.json()) as { data?: Array<{ id?: string }> }
+    return (payload.data || [])
+      .map((model) => model.id || '')
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
   }
 
   if (provider === 'gemini') {
@@ -637,7 +794,9 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
       text = await callGemini(resolved, options)
       break
     default:
-      text = await call9router(resolved, options)
+      text = resolved.gateway
+        ? await callAggregator(resolved, options)
+        : await call9router(resolved, options)
   }
 
   try {

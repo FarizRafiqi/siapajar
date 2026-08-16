@@ -88,7 +88,9 @@ export interface ApiDefinition {
   exams: {
     index: typeof routes['exams.index']
     store: typeof routes['exams.store']
+    generationStatus: typeof routes['exams.generationStatus']
     show: typeof routes['exams.show']
+    uploadImage: typeof routes['exams.uploadImage']
     update: typeof routes['exams.update']
     destroy: typeof routes['exams.destroy']
     generate: typeof routes['exams.generate']

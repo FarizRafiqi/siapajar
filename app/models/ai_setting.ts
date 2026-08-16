@@ -11,6 +11,10 @@ export default class AiSetting extends BaseModel {
   @column()
   declare provider: '9router' | 'anthropic' | 'openai' | 'gemini'
 
+  /** Optional OpenAI-compatible aggregator. Legacy provider remains untouched. */
+  @column()
+  declare gateway: 'command_code' | 'openrouter' | 'opencode_zen' | 'together' | null
+
   @column({ columnName: 'auth_mode' })
   declare authMode: 'api_key' | 'oauth'
 
@@ -56,6 +60,9 @@ export default class AiSetting extends BaseModel {
 
   @column()
   declare model: string | null
+
+  @column({ columnName: 'reasoning_effort' })
+  declare reasoningEffort: 'medium' | 'high' | 'max' | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

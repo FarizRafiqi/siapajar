@@ -9,14 +9,18 @@ function getXsrfToken() {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-type Provider = '9router' | 'anthropic' | 'openai' | 'gemini'
+type Provider = '9router' | 'anthropic' | 'openai' | 'gemini' | 'aggregator'
 type AuthMode = 'api_key' | 'oauth'
+type Gateway = 'command_code' | 'openrouter' | 'opencode_zen' | 'together'
+type ReasoningEffort = 'medium' | 'high' | 'max'
 
 interface Setting {
   provider: Provider
   authMode: AuthMode
   baseUrl: string | null
   model: string | null
+  gateway: Gateway | null
+  reasoningEffort: ReasoningEffort | null
   hasApiKey: boolean
   codexAccount: { email?: string | null; planType?: string | null } | null
   geminiOAuthConnected: boolean
@@ -57,7 +61,57 @@ const PROVIDERS: {
     description: 'API key Gemini atau Google OAuth langsung.',
     modelPlaceholder: 'contoh: gemini-2.0-flash',
   },
+  {
+    value: 'aggregator',
+    label: 'Aggregator AI',
+    description:
+      'Pakai satu endpoint OpenAI-compatible untuk model Command Code, OpenRouter, OpenCode, atau Together.',
+    modelPlaceholder: 'contoh: gpt-5.6-luna',
+  },
 ]
+
+const GATEWAYS: { value: Gateway; label: string; description: string }[] = [
+  {
+    value: 'command_code',
+    label: 'Command Code',
+    description: 'Subscription aggregator dengan endpoint model OpenAI-compatible.',
+  },
+  {
+    value: 'openrouter',
+    label: 'OpenRouter',
+    description: 'Pay-as-you-go dengan banyak provider dan model.',
+  },
+  {
+    value: 'opencode_zen',
+    label: 'OpenCode Zen',
+    description: 'Gateway model OpenCode untuk development dan pengujian.',
+  },
+  {
+    value: 'together',
+    label: 'Together AI',
+    description: 'Provider pay-as-you-go untuk model open dan multimodal.',
+  },
+]
+
+const FALLBACK_MODELS: Record<string, string[]> = {
+  '9router': ['flash', 'pro', 'max'],
+  'anthropic': ['claude-sonnet-5', 'claude-opus-5'],
+  'openai': ['gpt-5.6-luna', 'gpt-5.1-codex'],
+  'gemini': ['gemini-3.5-flash', 'gemini-3.1-flash-image'],
+  'command_code': ['gpt-5.6-luna', 'gemini-3.5-flash', 'deepseek-v4-flash', 'qwen3.7-plus'],
+  'openrouter': [
+    'openai/gpt-5.6-luna',
+    'google/gemini-3.5-flash',
+    'deepseek/deepseek-v4-flash',
+    'qwen/qwen3.7-plus',
+  ],
+  'opencode_zen': ['gpt-5.6-luna', 'deepseek-v4-flash', 'qwen3.7-plus'],
+  'together': ['Qwen/Qwen3.7-Plus', 'deepseek-ai/DeepSeek-V4-Flash'],
+}
+
+function fallbackModels(provider: Provider, gateway: Gateway) {
+  return FALLBACK_MODELS[provider === 'aggregator' ? gateway : provider] || []
+}
 
 export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexProps) {
   const { data, setData, put, processing, errors } = useForm({
@@ -66,6 +120,8 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
     apiKey: '',
     baseUrl: setting.baseUrl || '',
     model: setting.model || '',
+    gateway: setting.gateway || 'command_code',
+    reasoningEffort: setting.reasoningEffort || 'high',
   })
 
   const [models, setModels] = useState<string[]>([])
@@ -108,12 +164,18 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
           provider: data.provider,
           authMode: data.authMode,
           apiKey: data.apiKey,
+          gateway: data.gateway,
+          baseUrl: data.baseUrl,
         }),
       })
       const json = await res.json()
       if (!res.ok) {
-        setModelsError(json.message || 'Gagal muat daftar model.')
-        setModels([])
+        const suggestions = fallbackModels(data.provider, data.gateway)
+        setModels(suggestions)
+        if (suggestions.length && !data.model) setData('model', suggestions[0])
+        setModelsError(
+          `${json.message || 'Gagal muat daftar model.'} Menampilkan rekomendasi model; pastikan ID ini tersedia di gateway Anda.`
+        )
         return
       }
       setModels(json.models || [])
@@ -121,7 +183,12 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
         setData('model', json.models[0])
       }
     } catch {
-      setModelsError('Gagal terhubung ke server.')
+      const suggestions = fallbackModels(data.provider, data.gateway)
+      setModels(suggestions)
+      if (suggestions.length && !data.model) setData('model', suggestions[0])
+      setModelsError(
+        'Gagal terhubung ke server. Menampilkan rekomendasi model; pastikan ID ini tersedia di gateway Anda.'
+      )
     } finally {
       setLoadingModels(false)
     }
@@ -259,6 +326,12 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 Konfigurasi koneksi dan akun OAuth 9router dilakukan dari dashboard 9router.
               </div>
             )}
+            {data.provider === 'aggregator' && (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                Aggregator hanya memakai API key gateway. OAuth ChatGPT/Gemini tetap dikonfigurasi
+                pada kartu OpenAI atau Gemini langsung, bukan melalui aggregator.
+              </div>
+            )}
             <div className="space-y-4">
               {!(
                 data.authMode === 'oauth' &&
@@ -286,23 +359,74 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 </div>
               )}
 
-              {data.provider === '9router' && (
+              {data.provider === 'aggregator' && (
+                <div>
+                  <label
+                    htmlFor="gateway"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Gateway aggregator
+                  </label>
+                  <select
+                    id="gateway"
+                    value={data.gateway}
+                    onChange={(e) => setData('gateway', e.target.value as Gateway)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  >
+                    {GATEWAYS.map((gateway) => (
+                      <option key={gateway.value} value={gateway.value}>
+                        {gateway.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    {GATEWAYS.find((gateway) => gateway.value === data.gateway)?.description}
+                  </p>
+                </div>
+              )}
+
+              {(data.provider === '9router' || data.provider === 'aggregator') && (
                 <div>
                   <label
                     htmlFor="baseUrl"
                     className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                   >
-                    Base URL (opsional — kosongkan untuk pakai default dari .env)
+                    Base URL (opsional — kosongkan untuk memakai endpoint default)
                   </label>
                   <input
                     id="baseUrl"
                     type="text"
                     value={data.baseUrl}
                     onChange={(e) => setData('baseUrl', e.target.value)}
-                    placeholder="http://localhost:20128/v1/chat/completions"
+                    placeholder={
+                      data.provider === 'aggregator'
+                        ? 'https://api.commandcode.ai/provider/v1'
+                        : 'http://localhost:20128/v1/chat/completions'
+                    }
                     className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   />
                   {errors.baseUrl && <p className="mt-1 text-sm text-red-500">{errors.baseUrl}</p>}
+                </div>
+              )}
+
+              {data.provider === 'aggregator' && (
+                <div>
+                  <label
+                    htmlFor="reasoningEffort"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Tingkat penalaran
+                  </label>
+                  <select
+                    id="reasoningEffort"
+                    value={data.reasoningEffort}
+                    onChange={(e) => setData('reasoningEffort', e.target.value as ReasoningEffort)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  >
+                    <option value="medium">Sedang — lebih cepat dan hemat</option>
+                    <option value="high">Tinggi — seimbang</option>
+                    <option value="max">Maksimal — paling teliti</option>
+                  </select>
                 </div>
               )}
 
