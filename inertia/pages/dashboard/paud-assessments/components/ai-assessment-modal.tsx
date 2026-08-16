@@ -43,6 +43,11 @@ interface AiAssessmentModalProps {
   readonly initialType?: AssessmentType
 }
 
+function getXsrfToken() {
+  const match = /XSRF-TOKEN=([^;]+)/.exec(document.cookie)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
 export default function AiAssessmentModal({
   isOpen,
   onClose,
@@ -149,9 +154,20 @@ export default function AiAssessmentModal({
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-XSRF-TOKEN': getXsrfToken(),
         },
         body: JSON.stringify(payload),
       })
+
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        const text = await res.text()
+        throw new Error(
+          res.status === 403
+            ? 'Sesi atau token keamanan kadaluarsa. Silakan muat ulang halaman.'
+            : `Gagal memproses AI (${res.status}): ${text.slice(0, 120)}`
+        )
+      }
 
       const json = await res.json()
       if (!res.ok || !json.success) {
