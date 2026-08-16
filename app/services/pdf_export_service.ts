@@ -1156,28 +1156,19 @@ export async function exportPaudAssessmentPdf(
   charge = true
 ) {
   if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Catatan Asesmen PAUD')
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(16)
-    .text(assessment.student?.fullName || 'Asesmen PAUD')
-  writeMetadata(doc, [
-    ['Kelompok', assessment.schoolClass?.name],
-    ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
-    ['Jenis asesmen', assessment.type],
-    ['Status ketercapaian', assessment.achievementStatus],
-    ['Kegiatan', assessment.activity],
-  ])
-  writeSection(doc, 'Catatan Guru', assessment.teacherNote || '')
-  writeContentObject(doc, assessment.content ?? {})
-  if (assessment.attachments?.length)
-    writeSection(
-      doc,
-      'Evidence',
-      assessment.attachments.map((file) => file.originalName)
-    )
-  return toBuffer(doc)
+  const { buildPaudAssessmentPdf } = await import('#services/paud_assessment_export_service')
+  return buildPaudAssessmentPdf(assessment, user)
+}
+
+export async function exportPaudAssessmentBundlePdf(
+  assessments: PaudAssessment[],
+  user: User,
+  themeTitle = 'Kenalkan',
+  charge = true
+) {
+  if (charge) await consumePdfExport(user)
+  const { buildPaudAssessmentBundlePdf } = await import('#services/paud_assessment_export_service')
+  return buildPaudAssessmentBundlePdf(assessments, user, themeTitle)
 }
 
 export async function exportStudentReportDocPdf(
