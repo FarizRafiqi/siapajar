@@ -7,6 +7,7 @@ import {
   releaseUsageReservation,
   reserveUsage,
 } from '#services/entitlement_service'
+import { rasterizeSvgSync, readRasterAssetSync } from '#services/visual_asset_service'
 import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 
@@ -70,6 +71,29 @@ function decodeDataImage(value: unknown) {
   } catch {
     return null
   }
+}
+
+function imageDataUrl(value: unknown) {
+  if (typeof value !== 'string' || !value.trim()) return null
+  const normalized = value.trim()
+
+  if (normalized.startsWith('data:image/')) return normalized
+
+  try {
+    const raster =
+      normalized.startsWith('<svg') || /\.svg(?:\?.*)?$/i.test(normalized)
+        ? { data: rasterizeSvgSync(normalized, 1600), type: 'png' as const }
+        : readRasterAssetSync(normalized)
+    const mimeType = raster.type === 'jpg' ? 'jpeg' : raster.type
+    return `data:image/${mimeType};base64,${raster.data.toString('base64')}`
+  } catch {
+    return null
+  }
+}
+
+function imageBuffer(value: unknown) {
+  const dataUrl = imageDataUrl(value)
+  return dataUrl ? decodeDataImage(dataUrl) : null
 }
 
 function safeFilename(value: string) {
@@ -244,8 +268,9 @@ export async function exportMediaModulePptx(mediaModule: MediaModule, user: User
           italic: true,
           fit: 'shrink',
         })
-        if (item.imageUrl?.startsWith('data:image/') && decodeDataImage(item.imageUrl)) {
-          slide.addImage?.({ data: item.imageUrl, x: 8.55, y: 2.2, w: 3.45, h: 1.15 })
+        const image = imageDataUrl(item.imageUrl)
+        if (image && decodeDataImage(image)) {
+          slide.addImage?.({ data: image, x: 8.55, y: 2.2, w: 3.45, h: 1.15 })
         }
         if (item.keyQuestion) {
           slide.addShape(pptx.ShapeType.roundRect, {
@@ -386,9 +411,9 @@ export async function exportMediaModulePdf(mediaModule: MediaModule, user: User,
         doc.moveDown(0.7)
         doc.font('Helvetica-Bold').fontSize(11).text('Visual / ilustrasi')
         doc.font('Helvetica').fontSize(12).text(text(item.visualDescription))
-        const imageBuffer = decodeDataImage(item.imageUrl)
-        if (imageBuffer) {
-          doc.image(imageBuffer, {
+        const image = imageBuffer(item.imageUrl)
+        if (image) {
+          doc.image(image, {
             fit: [260, 140],
             align: 'center',
           })

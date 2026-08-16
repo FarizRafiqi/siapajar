@@ -1,5 +1,6 @@
 import type Exam from '#models/exam'
 import type User from '#models/user'
+import { groupWorksheetQuestions } from '#services/exam_worksheet_layout_service'
 
 /**
  * Single printable worksheet contract. Preview and PDF both consume this
@@ -133,6 +134,14 @@ function renderQuestionBody(question: Record<string, any>): string {
   }
   if (type === 'tracing') return renderTracing(question)
   if (type === 'coloring') return renderColoring(question)
+  if (type === 'number_writing') {
+    const values = (text(question.traceText) || text(question.answer) || text(question.question))
+      .split(/[,;\n]+/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, 5)
+    return `<div class="number-writing">${values.map((value) => `<span class="trace-text">${escapeHtml(value)}</span>`).join('')}</div>`
+  }
   if (type === 'fill_blank_image' || type === 'visual') {
     return `<div class="visual-answer">${imageMarkup(question.imageUrl, 'Gambar soal', 'question-image', questionAssetMessage(question))}<div class="answer-line"></div></div>`
   }
@@ -141,10 +150,20 @@ function renderQuestionBody(question: Record<string, any>): string {
       ? question.countItems
       : [{ count: 4, options: [3, 4, 5] }]
     return `<div class="count-grid">${countItems
-      .map(
-        (item: Record<string, any>) =>
-          `<div class="count-item"><div class="count-dots">${'● '.repeat(Math.max(1, Number(item.count) || 4))}</div><div class="count-options">${(Array.isArray(item.options) ? item.options : [3, 4, 5]).map((option: unknown) => `<span>${escapeHtml(option)}</span>`).join('')}</div></div>`
-      )
+      .slice(0, 5)
+      .map((item: Record<string, any>, index: number) => {
+        const count = Math.max(1, Number(item.count) || index + 1)
+        const options = Array.isArray(item.options) ? item.options.slice(0, 4) : [3, 4, 5]
+        const images = Array.from({ length: count }, () =>
+          imageMarkup(
+            item.imageUrl,
+            'Ilustrasi hitung',
+            'count-image',
+            questionAssetMessage(question)
+          )
+        ).join('')
+        return `<div class="count-item"><strong class="count-item-label">${escapeHtml(item.sectionItemLetter || String.fromCharCode(97 + index))}.</strong><div class="count-images">${images}</div><div class="count-options">${options.map((option: unknown) => `<span>${escapeHtml(option)}</span>`).join('')}</div></div>`
+      })
       .join('')}</div>`
   }
   if (type === 'vertical_math') {
@@ -157,41 +176,24 @@ function renderQuestionBody(question: Record<string, any>): string {
   return `<div class="essay-lines"><span></span><span></span><span></span></div>`
 }
 
-function questionSectionLabel(question: Record<string, any>): string {
-  const type = text(question.type)
-  const labels: Record<string, string> = {
-    multiple_choice: 'Pilihan Ganda',
-    matching: 'Hubungkan Garis',
-    coloring: 'Warnai Sesuai Petunjuk',
-    tracing: 'Tebalkan',
-    fill_blank_image: 'Tulis Nama Gambar',
-    count_and_circle: 'Hitung dan Lingkari',
-    vertical_math: 'Hitung Bersusun',
-    practical: 'Praktik',
-    oral: 'Kegiatan Lisan',
-    essay: 'Uraian',
-    visual: 'Aktivitas Visual',
-  }
-  return labels[type] || 'Aktivitas'
-}
-
 function renderQuestions(questions: Record<string, any>[]): string {
-  let previousSection = ''
-  return questions
-    .map((question, index) => {
-      const section = questionSectionLabel(question)
-      const heading =
-        section !== previousSection ? `<h2 class="section-title">${escapeHtml(section)}</h2>` : ''
-      previousSection = section
-      const instruction = text(question.instruction)
-      const image =
-        question.type !== 'coloring' &&
-        question.type !== 'fill_blank_image' &&
-        question.type !== 'visual'
-          ? imageSource(question.imageUrl)
-          : null
-      return `${heading}<article class="question"><div class="question-heading"><span class="question-number">${index + 1}.</span><div><p class="question-text">${escapeHtml(text(question.question, 'Pertanyaan belum diisi.'))}</p>${instruction ? `<p class="instruction">${escapeHtml(instruction)}</p>` : ''}</div></div>${renderQuestionBody(question)}${image ? `<div class="question-image-wrap">${imageMarkup(image, 'Gambar soal')}</div>` : ''}</article>`
-    })
+  return groupWorksheetQuestions(questions)
+    .map(
+      (group) =>
+        `<h2 class="section-title">${escapeHtml(group.letter)}. ${escapeHtml(group.title)}</h2>${group.questions
+          .map((question, index) => {
+            const instruction = text(question.instruction)
+            const image =
+              question.type !== 'coloring' &&
+              question.type !== 'fill_blank_image' &&
+              question.type !== 'visual' &&
+              question.type !== 'number_writing'
+                ? imageSource(question.imageUrl)
+                : null
+            return `<article class="question"><div class="question-heading"><span class="question-number">${escapeHtml(question.sectionQuestionNumber || index + 1)}.</span><div><p class="question-text">${escapeHtml(text(question.question, 'Pertanyaan belum diisi.'))}</p>${instruction ? `<p class="instruction">${escapeHtml(instruction)}</p>` : ''}</div></div>${renderQuestionBody(question)}${image ? `<div class="question-image-wrap">${imageMarkup(image, 'Gambar soal')}</div>` : ''}</article>`
+          })
+          .join('')}`
+    )
     .join('')
 }
 
@@ -224,7 +226,7 @@ export function renderExamWorksheetHtml(exam: Exam, user: User): string {
     .logo img{width:100%;height:100%;object-fit:contain;border:0}
     .institution{text-align:center}.institution-name{font-size:14pt;font-weight:bold;text-transform:uppercase;margin:0 0 1mm}.institution-sub{font-size:12pt;font-weight:bold;text-transform:uppercase;margin:0 0 1mm}.institution-address,.institution-phone{font-size:9pt;margin:0}
     .meta-score{display:grid;grid-template-columns:58% 42%;gap:4mm;margin-top:4mm;align-items:start}.meta{font-size:9pt;line-height:1.55}.meta-row{display:grid;grid-template-columns:27mm 4mm 1fr}.meta-label{font-weight:bold}.score{border:1px solid #000;display:grid;grid-template-columns:35% 65%;font-size:8pt;text-align:center}.score .nilai{grid-row:span 2;display:flex;align-items:center;justify-content:center;border-right:1px solid #000;font-weight:bold}.score .paraf{grid-column:2;border-bottom:1px solid #000;padding:1mm;font-weight:bold}.score .sign{display:grid;grid-template-columns:1fr 1fr;min-height:12mm}.score .sign span{padding:1mm;border-right:1px solid #000}.score .sign span:last-child{border-right:0}
-    .section-title{font-size:11pt;margin:4mm 0 2mm;font-weight:bold}.question{font-size:10pt;margin:0 0 3mm;break-inside:avoid}.question-heading{display:grid;grid-template-columns:7mm 1fr;gap:1mm}.question-number{font-weight:bold}.question-text{font-weight:bold;margin:0;line-height:1.25}.instruction{font-style:italic;font-size:9pt;margin:1mm 0 0}.options{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:1.5mm 0 0 8mm}.option{display:flex;align-items:center;gap:1mm;min-width:0}.option span{overflow-wrap:anywhere}.option-image{width:12mm;height:12mm;object-fit:contain}.matching-grid{margin:2mm 0 0 8mm}.matching-row{display:grid;grid-template-columns:32% 5% 26% 5% 32%;align-items:center;min-height:10mm}.matching-item{display:flex;align-items:center;gap:2mm;font-weight:bold}.matching-item img{width:10mm;height:10mm;object-fit:contain}.matching-row>div:first-child .matching-item{justify-content:flex-end;text-align:right}.connection-dot{width:3mm;height:3mm;border:1px solid #000;border-radius:50%;justify-self:center}.visual-answer{margin:2mm 0 0 8mm;text-align:center}.question-image,.coloring-image,.tracing-image{display:block;max-width:100%;max-height:38mm;width:auto;height:auto;object-fit:contain;margin:0 auto}.answer-line{border-bottom:1px dotted #000;width:65%;margin:3mm auto 0}.coloring-box{margin:2mm 0 0 8mm;border:1px solid #000;padding:2mm;text-align:center}.coloring-image{max-height:48mm;filter:grayscale(1)}.tracing-box{margin:2mm 0 0 8mm;border:1px dashed #555;padding:4mm;text-align:center}.tracing-image{max-height:52mm;filter:grayscale(1) contrast(1.4)}.trace-text{font-size:24pt;font-weight:bold;color:transparent;background:radial-gradient(circle,#444 1px,transparent 1.2px) 0 0/4px 4px;background-clip:text;-webkit-background-clip:text;-webkit-text-stroke:.25px #555;letter-spacing:2px}.essay-lines{margin:2mm 0 0 8mm;display:grid;gap:3mm}.essay-lines span{height:5mm;border-bottom:1px dotted #000}.math-grid{margin:2mm 0 0 8mm;display:flex;gap:10mm}.math-problem{display:grid;gap:1mm;text-align:right;border-bottom:1px solid #000;min-width:18mm;font-family:monospace}.count-grid{margin:2mm 0 0 8mm;display:grid;grid-template-columns:repeat(2,1fr);gap:4mm}.count-item{text-align:center}.count-dots{font-size:17pt;letter-spacing:1mm}.count-options{display:flex;justify-content:center;gap:5mm;font-weight:bold}.count-options span{border:1px solid #000;border-radius:50%;padding:1mm 3mm}.teacher-observation{margin:2mm 0 0 8mm;border:1px dashed #555;padding:3mm;font-size:9pt}.asset-placeholder{min-height:20mm;border:1px dashed #777;display:flex;align-items:center;justify-content:center;color:#555;font-size:8pt;margin:2mm auto;max-width:70mm;text-align:center;padding:2mm}.question-image-wrap{margin:2mm 0 0 8mm;text-align:center}
+    .section-title{font-size:11pt;margin:4mm 0 2mm;font-weight:bold}.question{font-size:10pt;margin:0 0 3mm;break-inside:avoid}.question-heading{display:grid;grid-template-columns:7mm 1fr;gap:1mm}.question-number{font-weight:bold}.question-text{font-weight:bold;margin:0;line-height:1.25}.instruction{font-style:italic;font-size:9pt;margin:1mm 0 0}.options{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:1.5mm 0 0 8mm}.option{display:flex;align-items:center;gap:1mm;min-width:0}.option span{overflow-wrap:anywhere}.option-image{width:12mm;height:12mm;object-fit:contain}.matching-grid{margin:2mm 0 0 8mm}.matching-row{display:grid;grid-template-columns:32% 5% 26% 5% 32%;align-items:center;min-height:10mm}.matching-item{display:flex;align-items:center;gap:2mm;font-weight:bold}.matching-item img{width:10mm;height:10mm;object-fit:contain}.matching-row>div:first-child .matching-item{justify-content:flex-end;text-align:right}.connection-dot{width:3mm;height:3mm;border:1px solid #000;border-radius:50%;justify-self:center}.visual-answer{margin:2mm 0 0 8mm;text-align:center}.question-image,.coloring-image,.tracing-image{display:block;max-width:100%;max-height:38mm;width:auto;height:auto;object-fit:contain;margin:0 auto}.answer-line{border-bottom:1px dotted #000;width:65%;margin:3mm auto 0}.coloring-box{margin:2mm 0 0 8mm;border:1px solid #000;padding:2mm;text-align:center}.coloring-image{max-height:48mm;filter:grayscale(1)}.tracing-box{margin:2mm 0 0 8mm;border:1px dashed #555;padding:4mm;text-align:center}.tracing-image{max-height:52mm;filter:grayscale(1) contrast(1.4)}.trace-text{font-size:24pt;font-weight:bold;color:transparent;background:radial-gradient(circle,#444 1px,transparent 1.2px) 0 0/4px 4px;background-clip:text;-webkit-background-clip:text;-webkit-text-stroke:.25px #555;letter-spacing:2px}.number-writing{margin:2mm 0 0 8mm;display:flex;flex-wrap:wrap;justify-content:space-around;gap:4mm}.essay-lines{margin:2mm 0 0 8mm;display:grid;gap:3mm}.essay-lines span{height:5mm;border-bottom:1px dotted #000}.math-grid{margin:2mm 0 0 8mm;display:flex;gap:10mm}.math-problem{display:grid;gap:1mm;text-align:right;border-bottom:1px solid #000;min-width:18mm;font-family:monospace}.count-grid{margin:2mm 0 0 8mm;display:grid;grid-template-columns:repeat(2,1fr);gap:4mm}.count-item{text-align:center;break-inside:avoid}.count-item-label{display:block;text-align:left}.count-images{display:flex;flex-wrap:wrap;justify-content:center;gap:1mm;min-height:13mm}.count-image{width:11mm;height:11mm;object-fit:contain}.count-options{display:flex;justify-content:center;gap:5mm;font-weight:bold;margin-top:2mm}.count-options span{width:9mm;height:9mm;border:1px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center}.teacher-observation{margin:2mm 0 0 8mm;border:1px dashed #555;padding:3mm;font-size:9pt}.asset-placeholder{min-height:20mm;border:1px dashed #777;display:flex;align-items:center;justify-content:center;color:#555;font-size:8pt;margin:2mm auto;max-width:70mm;text-align:center;padding:2mm}.question-image-wrap{margin:2mm 0 0 8mm;text-align:center}
     @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.sheet{height:${EXAM_WORKSHEET_PAGE.heightInches}in}}
   </style></head><body><main class="sheet"><div class="sheet-content"><header class="kop"><div class="logo">${logo ? `<img src="${escapeHtml(logo)}" alt="Logo sekolah"/>` : 'LOGO<br/>SEKOLAH'}</div><div class="institution"><p class="institution-name">${escapeHtml(institutionName)}</p>${institutionSubName ? `<p class="institution-sub">${escapeHtml(institutionSubName)}</p>` : ''}<p class="institution-address">${escapeHtml(addressLine1)}</p>${addressLine2 ? `<p class="institution-address">${escapeHtml(addressLine2)}</p>` : ''}${phone ? `<p class="institution-phone">${escapeHtml(phone)}</p>` : ''}</div></header><section class="meta-score"><div class="meta"><div class="meta-row"><span class="meta-label">Nama</span><span>:</span><span>........................................</span></div><div class="meta-row"><span class="meta-label">Kelas</span><span>:</span><span>${escapeHtml(text(header.groupName, 'B2'))}</span></div><div class="meta-row"><span class="meta-label">Hari/Tanggal</span><span>:</span><span>........................................</span></div><div class="meta-row"><span class="meta-label">Bidang Studi</span><span>:</span><span>${escapeHtml(text(header.subject, 'Bahasa'))}</span></div></div><div class="score"><div class="nilai">Nilai</div><div class="paraf">Paraf</div><div class="sign"><span>Guru</span><span>Orang Tua</span></div></div></section><section class="questions">${renderQuestions(questions)}</section></div></main><script>document.fonts.ready.then(function(){var s=document.querySelector('.sheet'),c=document.querySelector('.sheet-content');if(!s||!c)return;var available=s.clientHeight-2;var scale=1;for(var i=0;i<8;i++){c.style.setProperty('--worksheet-scale',String(scale));var ratio=available/c.scrollHeight;if(ratio>=.995)break;scale=Math.max(.35,scale*ratio);if(scale===.35)break;}s.style.setProperty('--worksheet-scale',String(scale));document.documentElement.dataset.worksheetReady='true';});</script></body></html>`
 }

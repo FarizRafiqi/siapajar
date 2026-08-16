@@ -30,6 +30,8 @@ import type User from '#models/user'
 import { commitUsageReservation, reserveUsage } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
+import { groupWorksheetQuestions } from '#services/exam_worksheet_layout_service'
+import { rasterizeSvgSync, readRasterAssetSync } from '#services/visual_asset_service'
 
 async function consumeExport(user: User) {
   const reservationKey = `export:docx:${user.id}:${randomUUID()}`
@@ -180,26 +182,14 @@ function examHeaderParagraphs(exam: Exam, user: User) {
 
   // Top Header Grid Table: [Logo Box (15%)] [Institution Title & Address (85%)]
   const logoChildren: Paragraph[] = []
-  if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/')) {
-    const [meta, encoded] = logoUrl.split(',')
-    const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/.exec(meta)
-    const mime = mimeMatch?.[1]
-    if (encoded && mime) {
-      try {
-        logoChildren.push(
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new ImageRun({
-                data: Buffer.from(encoded, 'base64'),
-                type: mime === 'image/jpeg' ? 'jpg' : 'png',
-                transformation: { width: 60, height: 60 },
-              }),
-            ],
-          })
-        )
-      } catch {}
-    }
+  const logoImage = imageRunFromData(logoUrl, 60, 60)
+  if (logoImage) {
+    logoChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [logoImage],
+      })
+    )
   }
 
   if (logoChildren.length === 0) {
@@ -482,15 +472,13 @@ function renderMultipleChoiceQuestion(options: any[], children: (Paragraph | Tab
     const label =
       typeof option === 'string' ? defaultLabel : option.label?.toLowerCase() || defaultLabel
     const text = typeof option === 'string' ? option : option.text || ''
-    runs.push(
-      new TextRun({ text: `${label}. `, bold: true, font: 'Times New Roman' }),
-      ...(imageRunFromData(option?.imageUrl || option?.image, 32, 32)
-        ? [imageRunFromData(option?.imageUrl || option?.image, 32, 32)!]
-        : option?.imagePrompt
-          ? [new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 16 })]
-          : []),
-      new TextRun({ text: `${text}          `, font: 'Times New Roman' })
-    )
+    const imageRun = imageRunFromData(option?.imageUrl || option?.image, 32, 32)
+    runs.push(new TextRun({ text: `${label}. `, bold: true, font: 'Times New Roman' }))
+    if (imageRun) runs.push(imageRun)
+    else if (option?.imagePrompt) {
+      runs.push(new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 16 }))
+    }
+    runs.push(new TextRun({ text: `${text}          `, font: 'Times New Roman' }))
   }
   children.push(
     new Paragraph({
@@ -501,9 +489,39 @@ function renderMultipleChoiceQuestion(options: any[], children: (Paragraph | Tab
 }
 
 function imageRunFromData(value: unknown, width: number, height: number): ImageRun | null {
-  if (typeof value !== 'string' || !value.startsWith('data:image/')) return null
+  if (typeof value !== 'string') return null
+  if (value.startsWith('/') && /\.(?:svg|png|jpe?g)(?:$|\?)/i.test(value)) {
+    try {
+      const isSvg = /\.svg(?:$|\?)/i.test(value)
+      const raster = isSvg ? null : readRasterAssetSync(value)
+      return new ImageRun({
+        data: raster ? raster.data : rasterizeSvgSync(value, width, height),
+        type: raster?.type || 'png',
+        transformation: { width, height },
+      })
+    } catch {
+      return null
+    }
+  }
+  if (value.startsWith('data:image/svg+xml')) {
+    try {
+      const [meta, encoded] = value.split(',', 2)
+      if (!encoded) return null
+      const svg = /;base64/i.test(meta)
+        ? Buffer.from(encoded, 'base64').toString('utf8')
+        : decodeURIComponent(encoded)
+      return new ImageRun({
+        data: rasterizeSvgSync(svg, width, height),
+        type: 'png',
+        transformation: { width, height },
+      })
+    } catch {
+      return null
+    }
+  }
+  if (!value.startsWith('data:image/')) return null
   const [meta, encoded] = value.split(',')
-  const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/.exec(meta)
+  const mimeMatch = /^data:(image\/(?:png|jpeg));base64$/i.exec(meta)
   if (!encoded || !mimeMatch?.[1]) return null
   try {
     return new ImageRun({
@@ -691,6 +709,11 @@ function renderVerticalMathQuestion(q: Record<string, any>, children: (Paragraph
   )
 }
 
+function circledNumber(value: number): string {
+  const circled = ['⓪', '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫']
+  return circled[value] || `(${value})`
+}
+
 function examQuestionParagraphs(q: Record<string, any>, number: number) {
   const isMatching =
     q.type === 'matching' ||
@@ -745,27 +768,64 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
       examAssetMessage(q, 'Ilustrasi mewarnai belum tersedia')
     )
     imageRendered = true
+  } else if (q.type === 'number_writing') {
+    const values = String(q.traceText || q.answer || q.question)
+      .split(/[,;\n]+/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, 5)
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: values.map(
+          (value) =>
+            new TextRun({
+              text: `${value}    `,
+              bold: true,
+              size: 28,
+              color: '777777',
+              underline: { type: UnderlineType.DOTTED },
+            })
+        ),
+      })
+    )
   } else if (q.type === 'count_and_circle') {
     const countItems = Array.isArray(q.countItems)
       ? q.countItems
       : [{ count: 4, options: [3, 4, 5] }]
-    for (const item of countItems) {
-      const imageRun = imageRunFromData(item.imageUrl, 28, 28)
-      const imagePlaceholder = !imageRun
+    for (const [index, item] of countItems.slice(0, 5).entries()) {
+      const itemChildren: Array<TextRun | ImageRun> = [
+        new TextRun({
+          text: `${item.sectionItemLetter || String.fromCharCode(97 + index)}. `,
+          bold: true,
+          size: 20,
+        }),
+      ]
+      const count = Math.max(1, Number(item.count) || index + 1)
+      let imageCount = 0
+      for (let imageIndex = 0; imageIndex < count; imageIndex += 1) {
+        const imageRun = imageRunFromData(item.imageUrl, 28, 28)
+        if (imageRun) {
+          itemChildren.push(imageRun)
+          imageCount += 1
+        }
+      }
+      if (imageCount === 0) {
+        itemChildren.push(
+          new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 14 })
+        )
+      }
+      const options = Array.isArray(item.options) ? item.options.slice(0, 4) : [3, 4, 5]
+      itemChildren.push(
+        new TextRun({
+          text: `   ${options.map((option: unknown) => circledNumber(Number(option))).join('   ')}`,
+          size: 24,
+        })
+      )
       children.push(
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          children: [
-            ...(imageRun
-              ? [imageRun]
-              : imagePlaceholder
-                ? [new TextRun({ text: '[Gambar belum tersedia] ', italics: true, size: 14 })]
-                : []),
-            new TextRun({
-              text: `${imageRun || imagePlaceholder ? '' : `${'● '.repeat(Math.max(1, Number(item.count) || 1))}   `}${(item.options || [3, 4, 5]).join('   ')}`,
-              size: 24,
-            }),
-          ],
+          children: itemChildren,
         })
       )
     }
@@ -784,39 +844,21 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
   return children
 }
 
-function examQuestionSectionLabel(q: Record<string, any>): string {
-  const labels: Record<string, string> = {
-    multiple_choice: 'Pilihan Ganda',
-    matching: 'Hubungkan Garis',
-    coloring: 'Warnai Sesuai Petunjuk',
-    tracing: 'Tebalkan',
-    fill_blank_image: 'Tulis Nama Gambar',
-    count_and_circle: 'Hitung dan Lingkari',
-    vertical_math: 'Hitung Bersusun',
-    practical: 'Praktik',
-    oral: 'Kegiatan Lisan',
-    essay: 'Uraian',
-    visual: 'Aktivitas Visual',
-  }
-  return labels[q.type] || 'Aktivitas'
-}
-
 function examQuestionParagraphsWithSections(questions: Record<string, any>[]) {
-  let previousSection = ''
   const paragraphs: (Paragraph | Table)[] = []
 
-  for (const [index, question] of questions.entries()) {
-    const section = examQuestionSectionLabel(question)
-    if (section !== previousSection) {
+  for (const group of groupWorksheetQuestions(questions)) {
+    paragraphs.push(
+      new Paragraph({
+        spacing: { before: 120, after: 60 },
+        children: [new TextRun({ text: `${group.letter}. ${group.title}`, bold: true, size: 20 })],
+      })
+    )
+    for (const [index, question] of group.questions.entries()) {
       paragraphs.push(
-        new Paragraph({
-          spacing: { before: 120, after: 60 },
-          children: [new TextRun({ text: section, bold: true, size: 20 })],
-        })
+        ...examQuestionParagraphs(question, question.sectionQuestionNumber || index + 1)
       )
-      previousSection = section
     }
-    paragraphs.push(...examQuestionParagraphs(question, index + 1))
   }
 
   return paragraphs

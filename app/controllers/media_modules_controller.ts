@@ -104,10 +104,14 @@ export default class MediaModulesController {
       const imagePrompt = typeof slide.imagePrompt === 'string' ? slide.imagePrompt.trim() : ''
       if (!imagePrompt) continue
       try {
-        slide.imageUrl = await aiQueueService.enqueueAiImage({
+        const visual = await aiQueueService.enqueueAiVisual({
           userId: user.id,
           prompt: imagePrompt,
+          purpose: 'media',
         })
+        slide.imageUrl = visual?.url || ''
+        slide.assetId = visual?.assetId || null
+        slide.assetKind = visual?.kind || null
       } catch {
         imageQuotaWarning = true
         slide.imageUrl = ''

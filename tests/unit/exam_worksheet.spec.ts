@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { Packer } from 'docx'
 import { EXAM_WORKSHEET_PAGE, renderExamWorksheetHtml } from '#services/exam_worksheet_service'
+import { fitPaudQuestionSet } from '#services/exam_worksheet_layout_service'
 import { createExamDocument } from '#services/export_service'
 
 const png = 'data:image/png;base64,iVBORw0KGgo='
@@ -42,7 +43,7 @@ test.group('RA/TK exam worksheet renderer', () => {
           {
             type: 'count_and_circle',
             question: 'Hitung dan lingkari',
-            countItems: [{ count: 4, options: [3, 4, 5] }],
+            countItems: [{ count: 4, imageUrl: png, options: [3, 4, 5] }],
           },
           {
             type: 'vertical_math',
@@ -63,6 +64,7 @@ test.group('RA/TK exam worksheet renderer', () => {
     assert.include(html, '8.51in')
     assert.include(html, '14.34in')
     assert.include(html, 'Hubungkan Garis')
+    assert.include(html, 'A. Pilihan Ganda')
     assert.include(html, 'Payung')
     assert.notInclude(html, rightOnlyPng)
     assert.include(html, 'Warnai Sesuai Petunjuk')
@@ -70,11 +72,47 @@ test.group('RA/TK exam worksheet renderer', () => {
     assert.include(html, 'Gambar belum tersedia')
     assert.include(html, 'Ilustrasi tidak dibuat karena kuota generate gambar habis.')
     assert.include(html, 'count-grid')
+    assert.include(html, 'count-image')
+    assert.include(html, 'count-options')
+    assert.include(html, 'a.')
     assert.include(html, 'math-grid')
     assert.include(html, 'teacher-observation')
     assert.include(html, 'data:image/png;base64')
     assert.include(html, 'Evaluasi Semester &lt;2&gt;')
     assert.notInclude(html, 'line-art coloring')
+  })
+
+  test('caps each PAUD question type at five and assigns worksheet sections', ({ assert }) => {
+    const questions = fitPaudQuestionSet(
+      [
+        ...Array.from({ length: 6 }, (_, index) => ({
+          type: 'multiple_choice',
+          question: `Pilihan ${index + 1}`,
+        })),
+        {
+          type: 'count_and_circle',
+          question: 'Hitung lalu lingkari',
+          countItems: [
+            { count: 2, options: [1, 2, 3] },
+            { count: 5, options: [4, 5, 6, 7] },
+            { count: 7, options: [6, 7, 8] },
+            { count: 9, options: [8, 9, 10] },
+            { count: 11, options: [10, 11, 12] },
+            { count: 12, options: [11, 12, 13] },
+          ],
+        },
+      ],
+      25
+    )
+
+    assert.lengthOf(
+      questions.filter((question) => question.type === 'multiple_choice'),
+      5
+    )
+    assert.lengthOf(questions[5].countItems, 5)
+    assert.equal(questions[5].countItems[0].sectionItemLetter, 'a')
+    assert.equal(questions[0].sectionLetter, 'A')
+    assert.equal(questions[5].sectionLetter, 'B')
   })
 
   test('serializes the primary DOCX as a worksheet without an appended answer-key page', async ({

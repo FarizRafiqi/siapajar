@@ -19,6 +19,7 @@ import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 import { chromium, type Browser } from 'playwright'
 import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
+import env from '#start/env'
 
 async function consumePdfExport(user: User) {
   const reservationKey = await reservePdfExport(user)
@@ -142,7 +143,15 @@ export async function exportExamPdf(exam: Exam, user: User, charge = true) {
   const reservationKey = charge ? await reservePdfExport(user) : null
   let browser: Browser | null = null
   try {
-    browser = await chromium.launch({ headless: true })
+    const browserEnv =
+      process.platform === 'linux'
+        ? { ...process.env, TMPDIR: '/tmp', TMP: '/tmp', TEMP: '/tmp' }
+        : process.env
+    browser = await chromium.launch({
+      headless: true,
+      executablePath: env.get('PDF_BROWSER_EXECUTABLE_PATH') || undefined,
+      env: browserEnv,
+    })
     const page = await browser.newPage({
       viewport: { width: 820, height: 1380 },
       deviceScaleFactor: 1,

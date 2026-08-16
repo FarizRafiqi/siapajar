@@ -7,6 +7,7 @@ export type QuestionKind =
   | 'oral'
   | 'fill_blank_image'
   | 'vertical_math'
+  | 'number_writing'
   | 'count_and_circle'
   | 'coloring'
   | 'tracing'
@@ -42,6 +43,7 @@ export interface CountItem {
   imageUrl?: string
   imagePrompt?: string
   options: number[]
+  sectionItemLetter?: string
 }
 
 export interface ExamQuestion {
@@ -61,6 +63,10 @@ export interface ExamQuestion {
   options?: QuestionOption[]
   mathProblems?: VerticalMathProblem[]
   countItems?: CountItem[]
+  sectionKey?: string
+  sectionTitle?: string
+  sectionLetter?: string
+  sectionQuestionNumber?: number
   answer?: string
   explanation?: string
   rubric?: string
@@ -93,6 +99,7 @@ const QUESTION_KINDS = new Set<QuestionKind>([
   'oral',
   'fill_blank_image',
   'vertical_math',
+  'number_writing',
   'count_and_circle',
   'coloring',
   'tracing',
@@ -247,6 +254,11 @@ export function normalizeQuestion(raw: Record<string, unknown>, index: number): 
       ? (raw.mathProblems as VerticalMathProblem[])
       : undefined,
     countItems: Array.isArray(raw.countItems) ? (raw.countItems as CountItem[]) : undefined,
+    sectionKey: typeof raw.sectionKey === 'string' ? raw.sectionKey : undefined,
+    sectionTitle: typeof raw.sectionTitle === 'string' ? raw.sectionTitle : undefined,
+    sectionLetter: typeof raw.sectionLetter === 'string' ? raw.sectionLetter : undefined,
+    sectionQuestionNumber:
+      typeof raw.sectionQuestionNumber === 'number' ? raw.sectionQuestionNumber : undefined,
     answer: typeof raw.answer === 'string' ? raw.answer : undefined,
     explanation: typeof raw.explanation === 'string' ? raw.explanation : undefined,
     rubric: typeof raw.rubric === 'string' ? raw.rubric : undefined,

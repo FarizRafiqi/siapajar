@@ -22,10 +22,19 @@ const kindMeta = {
   oral: { label: 'Lisan', icon: Mic2 },
   fill_blank_image: { label: 'Tulis Nama Gambar', icon: PencilLine },
   vertical_math: { label: 'Hitung Pengurangan / Penjumlahan', icon: Sparkles },
+  number_writing: { label: 'Tulis Angka Bilangan', icon: PencilLine },
   count_and_circle: { label: 'Hitung & Lingkari', icon: Search },
   coloring: { label: 'Mewarnai Gambar', icon: Palette },
   tracing: { label: 'Menebalkan Garis/Huruf', icon: PencilLine },
 } as const
+
+export function worksheetSectionKey(question: ExamQuestion) {
+  return question.sectionKey || question.type
+}
+
+export function worksheetSectionTitle(question: ExamQuestion) {
+  return question.sectionTitle || kindMeta[question.type]?.label || 'Aktivitas'
+}
 
 function titleCaseLabel(value: string) {
   return value
@@ -227,6 +236,8 @@ export function QuestionRenderer({
       )}
 
       {question.type === 'vertical_math' && <VerticalMathRenderer question={question} />}
+
+      {question.type === 'number_writing' && <NumberWritingRenderer question={question} />}
 
       {question.type === 'count_and_circle' && (
         <CountCircleRenderer question={question} isGrayscale={isGrayscale} />
@@ -447,6 +458,9 @@ function CountCircleRenderer({
             key={`circle-item-${idx}`}
             className="flex flex-col items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4"
           >
+            <span className="self-start text-sm font-bold text-neutral-900 dark:text-white print:text-black">
+              {item.sectionItemLetter || String.fromCharCode(97 + idx)}.
+            </span>
             <div className={cn('flex flex-wrap justify-center gap-2', isGrayscale && 'grayscale')}>
               {Array.from({ length: item.count || 4 }).map((_, i) => (
                 <span
@@ -467,7 +481,7 @@ function CountCircleRenderer({
               {(item.options || [3, 4, 5]).map((num) => (
                 <span
                   key={`cnt-num-${idx}-${num}`}
-                  className="rounded-full px-3 py-1 border border-neutral-300 dark:border-neutral-700"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-700 dark:border-neutral-300 print:border-black"
                 >
                   {num}
                 </span>
@@ -476,6 +490,27 @@ function CountCircleRenderer({
           </div>
         )
       })}
+    </div>
+  )
+}
+
+function NumberWritingRenderer({ question }: Readonly<{ question: ExamQuestion }>) {
+  const values = question.traceText || question.answer || question.question
+  return (
+    <div className="ml-8 mt-4 flex flex-wrap justify-around gap-6 text-center">
+      {values
+        .split(/[,;\n]+/)
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, 5)
+        .map((value, index) => (
+          <div
+            key={`${value}-${index}`}
+            className="trace-text-dotted min-w-24 px-3 py-2 font-mono text-2xl font-bold tracking-[0.3em] text-neutral-500"
+          >
+            {value}
+          </div>
+        ))}
     </div>
   )
 }
