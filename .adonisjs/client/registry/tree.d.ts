@@ -155,6 +155,9 @@ export interface ApiDefinition {
   paudAssessments: {
     index: typeof routes['paud-assessments.index']
     store: typeof routes['paud-assessments.store']
+    generateAi: typeof routes['paud-assessments.generateAi']
+    exportBundle: typeof routes['paud-assessments.exportBundle']
+    exportBundlePdf: typeof routes['paud-assessments.exportBundlePdf']
     update: typeof routes['paud-assessments.update']
     destroy: typeof routes['paud-assessments.destroy']
     export: typeof routes['paud-assessments.export']

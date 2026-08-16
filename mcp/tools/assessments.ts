@@ -13,6 +13,7 @@ import Semester from '#models/semester'
 
 import {
   exportPaudAssessment,
+  exportPaudAssessmentBundle,
   exportExam,
   exportAssessment,
   exportNarrativeReport,
@@ -20,11 +21,13 @@ import {
 } from '#services/export_service'
 import {
   exportPaudAssessmentPdf,
+  exportPaudAssessmentBundlePdf,
   exportExamPdf,
   exportAssessmentPdf,
   exportNarrativeReportPdf,
   exportReportCardPdf,
 } from '#services/pdf_export_service'
+import { paudAssessmentAiService } from '#services/paud_assessment_ai_service'
 import { exportAssessmentScores } from '#services/xlsx_export_service'
 import { computeClassReportCard, compileNarrativeReport } from '#services/report_card_service'
 import { examPrompt } from '#services/ai_prompts'
@@ -287,6 +290,188 @@ export function registerAssessmentTools(server: McpServer) {
           mime_type: EXPORT_CONTENT_TYPES.pdf,
           content_base64: buffer.toString('base64'),
         })
+      } catch (err) {
+        return errorResult(err instanceof Error ? err.message : String(err))
+      }
+    }
+  )
+
+  server.registerTool(
+    'siapajar_export_paud_assessment_bundle',
+    {
+      description:
+        'Export all PAUD assessments for a class/theme into a PPM KBC bundle DOCX (returns base64).',
+      inputSchema: z.object({
+        ...API_KEY_PARAM,
+        class_id: z.number().int().optional().describe('Class ID'),
+        theme: z.string().default('Kenalkan').describe('Theme / Topik name'),
+        start_date: z.string().optional().describe('Start date YYYY-MM-DD'),
+        end_date: z.string().optional().describe('End date YYYY-MM-DD'),
+      }),
+    },
+    async (args) => {
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
+      if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      try {
+        const query = PaudAssessment.query()
+          .preload('student')
+          .preload('schoolClass')
+          .preload('attachments')
+        applyUserOrSchoolScope(query, ctx)
+
+        if (args.class_id) query.where('class_id', args.class_id)
+        if (args.start_date && args.end_date) {
+          query.whereBetween('date', [
+            DateTime.fromISO(args.start_date).toSQLDate()!,
+            DateTime.fromISO(args.end_date).toSQLDate()!,
+          ])
+        }
+
+        const items = await query.orderBy('date', 'asc')
+        const buffer = await exportPaudAssessmentBundle(items, ctx.user, args.theme)
+        const filename = exportFilename(['Asesmen RA', args.theme, 'Bundle'], 'docx')
+        return okResult({
+          filename,
+          mime_type: EXPORT_CONTENT_TYPES.docx,
+          content_base64: buffer.toString('base64'),
+        })
+      } catch (err) {
+        return errorResult(err instanceof Error ? err.message : String(err))
+      }
+    }
+  )
+
+  server.registerTool(
+    'siapajar_export_paud_assessment_bundle_pdf',
+    {
+      description:
+        'Export all PAUD assessments for a class/theme into a PPM KBC bundle PDF (returns base64).',
+      inputSchema: z.object({
+        ...API_KEY_PARAM,
+        class_id: z.number().int().optional().describe('Class ID'),
+        theme: z.string().default('Kenalkan').describe('Theme / Topik name'),
+        start_date: z.string().optional().describe('Start date YYYY-MM-DD'),
+        end_date: z.string().optional().describe('End date YYYY-MM-DD'),
+      }),
+    },
+    async (args) => {
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
+      if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      try {
+        const query = PaudAssessment.query()
+          .preload('student')
+          .preload('schoolClass')
+          .preload('attachments')
+        applyUserOrSchoolScope(query, ctx)
+
+        if (args.class_id) query.where('class_id', args.class_id)
+        if (args.start_date && args.end_date) {
+          query.whereBetween('date', [
+            DateTime.fromISO(args.start_date).toSQLDate()!,
+            DateTime.fromISO(args.end_date).toSQLDate()!,
+          ])
+        }
+
+        const items = await query.orderBy('date', 'asc')
+        const buffer = await exportPaudAssessmentBundlePdf(items, ctx.user, args.theme, false)
+        const filename = exportFilename(['Asesmen RA', args.theme, 'Bundle'], 'pdf')
+        return okResult({
+          filename,
+          mime_type: EXPORT_CONTENT_TYPES.pdf,
+          content_base64: buffer.toString('base64'),
+        })
+      } catch (err) {
+        return errorResult(err instanceof Error ? err.message : String(err))
+      }
+    }
+  )
+
+  server.registerTool(
+    'siapajar_generate_paud_assessment_ai',
+    {
+      description:
+        'Draft PAUD assessment observations and analyses using AI (Token-Optimized TOON format).',
+      inputSchema: z.object({
+        ...API_KEY_PARAM,
+        type: z
+          .enum(['checklist', 'anecdotal_note', 'work_sample', 'photo_series'])
+          .describe('Assessment type'),
+        student_name: z.string().optional().describe('Student name'),
+        class_name: z.string().optional().describe('Class name'),
+        theme: z.string().optional().describe('Theme / Topik name'),
+        context: z.string().optional().describe('Context / Setting (for anecdotal)'),
+        observed_notes: z.string().optional().describe('Rough observation notes (for anecdotal)'),
+        learning_objective: z.string().optional().describe('Learning objective (for checklist)'),
+        target_indicators: z
+          .array(z.string())
+          .optional()
+          .describe('Target indicators list (for checklist)'),
+        rough_notes: z.string().optional().describe('General notes (for checklist)'),
+        work_title: z.string().optional().describe('Work title (for work sample)'),
+        child_quotes: z
+          .string()
+          .optional()
+          .describe('Child quotes / description (for work sample)'),
+        activity_title: z.string().optional().describe('Activity title (for photo series)'),
+        stage_notes: z.string().optional().describe('Stage notes (for photo series)'),
+      }),
+    },
+    async (args) => {
+      const auth = await checkAuthAndAuthorize(args, {
+        roles: ['admin', 'guru', 'kepala_sekolah'],
+        group: 'assessments',
+      })
+      if (!auth.ok) return authError(auth.error)
+      const { ctx } = auth
+
+      try {
+        let result: any = {}
+        if (args.type === 'anecdotal_note') {
+          result = await paudAssessmentAiService.generateAnecdotal(ctx.user, {
+            studentName: args.student_name,
+            className: args.class_name,
+            theme: args.theme,
+            context: args.context,
+            observedBehaviorNotes: args.observed_notes || 'Anak aktif bermain bersama kelompok',
+          })
+        } else if (args.type === 'checklist') {
+          result = await paudAssessmentAiService.generateChecklist(ctx.user, {
+            studentName: args.student_name,
+            className: args.class_name,
+            theme: args.theme,
+            learningObjective: args.learning_objective,
+            targetIndicators: args.target_indicators,
+            roughNotes: args.rough_notes,
+          })
+        } else if (args.type === 'work_sample') {
+          result = await paudAssessmentAiService.generateWorkSample(ctx.user, {
+            studentName: args.student_name,
+            className: args.class_name,
+            theme: args.theme,
+            workTitle: args.work_title || 'Karya Anak',
+            childQuotesOrDescription: args.child_quotes,
+          })
+        } else if (args.type === 'photo_series') {
+          result = await paudAssessmentAiService.generatePhotoSeries(ctx.user, {
+            studentName: args.student_name,
+            className: args.class_name,
+            theme: args.theme,
+            activityTitle: args.activity_title || 'Aktivitas Anak',
+            stageNotes: args.stage_notes,
+          })
+        }
+
+        return okResult({ type: args.type, generated_content: result })
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
       }

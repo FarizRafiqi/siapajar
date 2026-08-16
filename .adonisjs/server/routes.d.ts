@@ -110,6 +110,9 @@ export type ScannedRoutes = {
     'media-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
     'paud-assessments.store': { paramsTuple?: []; params?: {} }
+    'paud-assessments.generateAi': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundle': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundlePdf': { paramsTuple?: []; params?: {} }
     'paud-assessments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -222,6 +225,8 @@ export type ScannedRoutes = {
     'media-modules.exportPptx': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'media-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundle': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundlePdf': { paramsTuple?: []; params?: {} }
     'paud-assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
@@ -306,6 +311,8 @@ export type ScannedRoutes = {
     'media-modules.exportPptx': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'media-modules.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundle': { paramsTuple?: []; params?: {} }
+    'paud-assessments.exportBundlePdf': { paramsTuple?: []; params?: {} }
     'paud-assessments.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'paud-assessments.attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
@@ -366,6 +373,7 @@ export type ScannedRoutes = {
     'lkpd.generate': { paramsTuple?: []; params?: {} }
     'media-modules.generate': { paramsTuple?: []; params?: {} }
     'paud-assessments.store': { paramsTuple?: []; params?: {} }
+    'paud-assessments.generateAi': { paramsTuple?: []; params?: {} }
     'assessments.store': { paramsTuple?: []; params?: {} }
     'report-cards.narratives.save': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
     'report-cards.narratives.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }

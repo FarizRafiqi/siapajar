@@ -319,6 +319,21 @@ router
       .post('/paud-assessments', '#controllers/paud_assessments_controller.store')
       .as('paud-assessments.store')
     router
+      .post('/paud-assessments/generate-ai', '#controllers/paud_assessments_controller.generateAi')
+      .as('paud-assessments.generateAi')
+    router
+      .get(
+        '/paud-assessments/export-bundle',
+        '#controllers/paud_assessments_controller.exportBundle'
+      )
+      .as('paud-assessments.exportBundle')
+    router
+      .get(
+        '/paud-assessments/export-bundle/pdf',
+        '#controllers/paud_assessments_controller.exportBundlePdf'
+      )
+      .as('paud-assessments.exportBundlePdf')
+    router
       .put('/paud-assessments/:id', '#controllers/paud_assessments_controller.update')
       .as('paud-assessments.update')
     router

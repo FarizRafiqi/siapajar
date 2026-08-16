@@ -1279,6 +1279,42 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'paud-assessments.generateAi': {
+    methods: ["POST"]
+    pattern: '/paud-assessments/generate-ai'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.exportBundle': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments/export-bundle'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'paud-assessments.exportBundlePdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/paud-assessments/export-bundle/pdf'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'paud-assessments.update': {
     methods: ["PUT"]
     pattern: '/paud-assessments/:id'
