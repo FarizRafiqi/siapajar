@@ -87,33 +87,41 @@ function getSteps(tourName: DashboardTourName, educationLevel: 'tk' | 'sd' | nul
       {
         element: '[data-tour="assessment-intro"]',
         popover: {
-          title: 'Asesmen berbasis bukti',
+          title: 'Asesmen Berbasis Bukti PAUD / RA',
           description:
-            'Gunakan asesmen untuk mencatat perkembangan anak melalui observasi, catatan anekdot, hasil karya, atau foto berseri. Hubungkan catatan dengan TP dan IKTP jika tersedia.',
+            'Dokumentasikan perkembangan anak melalui 4 instrumen resmi: Catatan Anekdot, Ceklis IKTP, Hasil Karya, dan Foto Berseri.',
+        },
+      },
+      {
+        element: '[data-tour="assessment-ai"]',
+        popover: {
+          title: 'Bantuan Analisis dengan AI',
+          description:
+            'Gunakan AI untuk menyusun narasi observasi, kalimat analisis capaian, dan butir IKTP secara otomatis dan dapat Anda sesuaikan.',
         },
       },
       {
         element: '[data-tour="assessment-create"]',
         popover: {
-          title: 'Catat asesmen baru',
+          title: 'Catat Asesmen Manual',
           description:
-            'Pilih anak, jenis asesmen, tanggal, tujuan pembelajaran, lalu tambahkan catatan dan bukti yang relevan.',
+            'Pilih anak, jenis instrumen, tanggal, tema, lalu masukkan foto dokumentasi dan catatan perkembangan.',
         },
       },
       {
         element: '[data-tour="assessment-filters"]',
         popover: {
-          title: 'Saring catatan',
+          title: 'Saring per Instrumen',
           description:
-            'Gunakan filter jenis asesmen untuk menemukan catatan observasi atau bukti tertentu dengan cepat.',
+            'Beralih dengan mudah antara Ceklis IKTP, Catatan Anekdot, Hasil Karya, dan Foto Berseri.',
         },
       },
       {
         element: '[data-tour="assessment-list"]',
         popover: {
-          title: 'Baca perkembangan anak',
+          title: 'Kartu Asesmen & Ekspor',
           description:
-            'Setiap kartu berisi konteks, jenis bukti, status ketercapaian, dan catatan yang dapat digunakan untuk menyusun narasi perkembangan.',
+            'Lihat detail asesmen serta unduh dokumen DOCX dan PDF dengan format 100% presisi PPM KBC PM Kelas B.',
         },
       },
     ]
