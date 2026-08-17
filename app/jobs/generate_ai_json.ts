@@ -25,10 +25,10 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
     removeOnFail: { age: '1d' },
   }
 
-  async execute() {
-    const job = await AiJob.findByOrFail('job_key', this.payload.jobKey)
+  static async executeDirect(payload: GenerateAiJsonPayload) {
+    const job = await AiJob.findByOrFail('job_key', payload.jobKey)
     if (job.status === 'completed') return
-    const owner = await User.find(this.payload.userId)
+    const owner = await User.find(payload.userId)
     if (!owner) throw new Error('AI job owner not found')
     job.status = 'processing'
     job.attempts += 1
@@ -36,23 +36,27 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
     await job.save()
     try {
       const result = await callAiJson({
-        combo: this.payload.combo,
-        systemPrompt: this.payload.systemPrompt,
-        userPrompt: this.payload.userPrompt,
-        timeoutMs: this.payload.timeoutMs,
+        combo: payload.combo,
+        systemPrompt: payload.systemPrompt,
+        userPrompt: payload.userPrompt,
+        timeoutMs: payload.timeoutMs,
       })
       job.status = 'completed'
       job.result = result
       job.finishedAt = DateTime.now()
       await job.save()
-      await commitUsageReservation(this.payload.jobKey)
+      await commitUsageReservation(payload.jobKey)
     } catch (error) {
       job.status = 'failed'
       job.error = error instanceof Error ? error.message : 'AI job failed'
       job.finishedAt = DateTime.now()
       await job.save()
-      await releaseUsageReservation(this.payload.jobKey)
+      await releaseUsageReservation(payload.jobKey)
       throw error
     }
+  }
+
+  async execute() {
+    return GenerateAiJson.executeDirect(this.payload)
   }
 }

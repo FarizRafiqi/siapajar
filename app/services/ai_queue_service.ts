@@ -65,20 +65,40 @@ class AiQueueService {
       }
     )
     if (job.status !== 'completed') {
+      if (job.status === 'failed') {
+        job.status = 'pending'
+        job.error = null
+        job.startedAt = null
+        job.finishedAt = null
+        await job.save()
+      }
       const featureKey = options.featureKey || 'ai_generation_monthly'
       const reserved = await reserveUsage(owner, featureKey, jobKey, 1, {
         combo: options.combo,
       })
       try {
-        await GenerateAiJson.dispatch({
-          jobKey,
-          userId: options.userId,
-          combo: options.combo,
-          systemPrompt: options.systemPrompt,
-          userPrompt: options.userPrompt,
-          timeoutMs: options.timeoutMs,
-          featureKey,
-        }).dedup({ id: jobKey, ttl: '5m' })
+        const isSync = env.get('QUEUE_DRIVER', 'sync') === 'sync' || env.get('NODE_ENV') === 'test'
+        if (isSync) {
+          await GenerateAiJson.executeDirect({
+            jobKey,
+            userId: options.userId,
+            combo: options.combo,
+            systemPrompt: options.systemPrompt,
+            userPrompt: options.userPrompt,
+            timeoutMs: options.timeoutMs,
+            featureKey,
+          })
+        } else {
+          await GenerateAiJson.dispatch({
+            jobKey,
+            userId: options.userId,
+            combo: options.combo,
+            systemPrompt: options.systemPrompt,
+            userPrompt: options.userPrompt,
+            timeoutMs: options.timeoutMs,
+            featureKey,
+          })
+        }
         await auditService.record({
           actorId: options.userId,
           action: 'ai.generate.queued',
@@ -124,15 +144,31 @@ class AiQueueService {
       }
     )
     if (job.status !== 'completed') {
+      if (job.status === 'failed') {
+        job.status = 'pending'
+        job.error = null
+        job.startedAt = null
+        job.finishedAt = null
+        await job.save()
+      }
       const reserved = await reserveUsage(owner, 'ai_image_generation_monthly', jobKey, 1, {
         combo: 'siapajar-image',
       })
       try {
-        await GenerateAiImage.dispatch({
-          jobKey,
-          userId: options.userId,
-          prompt: options.prompt,
-        }).dedup({ id: jobKey, ttl: '5m' })
+        const isSync = env.get('QUEUE_DRIVER', 'sync') === 'sync' || env.get('NODE_ENV') === 'test'
+        if (isSync) {
+          await GenerateAiImage.executeDirect({
+            jobKey,
+            userId: options.userId,
+            prompt: options.prompt,
+          })
+        } else {
+          await GenerateAiImage.dispatch({
+            jobKey,
+            userId: options.userId,
+            prompt: options.prompt,
+          })
+        }
         await auditService.record({
           actorId: options.userId,
           action: 'ai.generate.image.queued',
