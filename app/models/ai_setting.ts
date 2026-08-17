@@ -62,7 +62,7 @@ export default class AiSetting extends BaseModel {
   declare model: string | null
 
   @column({ columnName: 'reasoning_effort' })
-  declare reasoningEffort: 'medium' | 'high' | 'max' | null
+  declare reasoningEffort: 'none' | 'low' | 'medium' | 'high' | 'max' | 'xhigh' | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

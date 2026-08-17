@@ -12,7 +12,7 @@ export interface CallAiJsonOptions {
   systemPrompt: string
   userPrompt: string
   timeoutMs?: number
-  reasoningEffort?: 'medium' | 'high' | 'max'
+  reasoningEffort?: 'none' | 'low' | 'medium' | 'high' | 'max' | 'xhigh'
 }
 
 export type AiGateway = 'command_code' | 'openrouter' | 'opencode_zen' | 'together'
@@ -28,7 +28,7 @@ interface ResolvedProvider {
   oauthExpiresAt: DateTime | null
   oauthProjectId: string | null
   gateway: AiGateway | null
-  reasoningEffort: 'medium' | 'high' | 'max' | null
+  reasoningEffort: 'none' | 'low' | 'medium' | 'high' | 'max' | 'xhigh' | null
 }
 
 const GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-image'
@@ -185,7 +185,7 @@ async function callAggregator(
     )
   }
   const model = resolved.model
-  const reasoningEffort = options.reasoningEffort || resolved.reasoningEffort || 'high'
+  const reasoningEffort = options.reasoningEffort || resolved.reasoningEffort || 'medium'
   const body: Record<string, unknown> = {
     model,
     messages: [
@@ -194,8 +194,14 @@ async function callAggregator(
     ],
     response_format: { type: 'json_object' },
   }
-  if (/^(gpt-5|deepseek-v4)/i.test(model)) body.reasoning_effort = reasoningEffort
-  if (/^gpt-5/i.test(model)) body.max_completion_tokens = 4000
+  if (
+    /^(gpt-5|deepseek-v4|o1|o3|o4)/i.test(model) &&
+    reasoningEffort &&
+    reasoningEffort !== 'none'
+  ) {
+    body.reasoning_effort = reasoningEffort
+  }
+  if (/^(gpt-5|o1|o3|o4)/i.test(model)) body.max_completion_tokens = 4000
   else body.max_tokens = 4000
 
   const response = await fetchWithTimeout(
@@ -231,6 +237,30 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
   if (!resolved.apiKey)
     throw new AiServiceError('API key OpenAI belum diisi. Atur di halaman Konfigurasi AI.')
 
+  const model = resolved.model || 'gpt-5.6-luna'
+  const isReasoningModel = /^(o1|o3|o4|gpt-5)/i.test(model)
+  const reasoningEffort = options.reasoningEffort || resolved.reasoningEffort
+
+  const body: Record<string, any> = {
+    model,
+    messages: [
+      { role: 'system', content: options.systemPrompt },
+      { role: 'user', content: options.userPrompt },
+    ],
+    response_format: { type: 'json_object' },
+  }
+
+  if (reasoningEffort && reasoningEffort !== 'none') {
+    body.reasoning_effort = reasoningEffort
+  }
+
+  if (isReasoningModel) {
+    body.max_completion_tokens = 4000
+  } else {
+    body.temperature = 0.3
+    body.max_tokens = 2000
+  }
+
   const response = await fetchWithTimeout(
     'https://api.openai.com/v1/chat/completions',
     {
@@ -239,23 +269,16 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${resolved.apiKey}`,
       },
-      body: JSON.stringify({
-        model: resolved.model || 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: options.systemPrompt },
-          { role: 'user', content: options.userPrompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 2000,
-        response_format: { type: 'json_object' },
-      }),
+      body: JSON.stringify(body),
     },
-    options.timeoutMs ?? 45_000
+    options.timeoutMs ?? (isReasoningModel ? 90_000 : 45_000)
   )
 
   if (!response.ok) {
+    const errorText = await response.text().catch(() => '')
+    const detail = errorText.slice(0, 200)
     throw new AiServiceError(
-      `Layanan AI (OpenAI) membalas error (status ${response.status}). Coba lagi.`
+      `Layanan AI (OpenAI) membalas error (status ${response.status}). ${detail || 'Coba lagi.'}`
     )
   }
 
@@ -671,21 +694,38 @@ export async function listModels(
   }
 
   if (provider === 'openai') {
-    const response = await fetchWithTimeout(
-      'https://api.openai.com/v1/models',
-      { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
-      15_000
-    )
-    if (!response.ok) {
-      throw new AiServiceError(
-        `Gagal ambil daftar model OpenAI (status ${response.status}). Cek API key.`
+    let apiModels: string[] = []
+    try {
+      const response = await fetchWithTimeout(
+        'https://api.openai.com/v1/models',
+        { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
+        15_000
       )
+      if (response.ok) {
+        const payload = (await response.json()) as { data?: { id: string }[] }
+        apiModels = (payload.data ?? [])
+          .map((m) => m.id)
+          .filter((id) => /^(gpt-|o1|o3|o4|chatgpt-)/.test(id))
+      }
+    } catch {
+      // ignore
     }
-    const payload = (await response.json()) as { data?: { id: string }[] }
-    return (payload.data ?? [])
-      .map((m) => m.id)
-      .filter((id) => /^(gpt-|o1|o3|o4|chatgpt-)/.test(id))
-      .sort((a, b) => a.localeCompare(b))
+
+    const presetModels = [
+      'gpt-5.6-luna',
+      'gpt-5.6-terra',
+      'gpt-5.6-sol',
+      'gpt-5.1-codex',
+      'gpt-5',
+      'o3-mini',
+      'o4-mini',
+      'o1',
+      'gpt-4o',
+      'gpt-4o-mini',
+    ]
+
+    const allModels = Array.from(new Set([...presetModels, ...apiModels]))
+    return allModels.sort((a, b) => a.localeCompare(b))
   }
 
   const response = await fetchWithTimeout(
@@ -799,9 +839,13 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
         : await call9router(resolved, options)
   }
 
+  const cleaned = stripJsonFence(text)
   try {
-    return JSON.parse(stripJsonFence(text)) as T
+    return JSON.parse(cleaned) as T
   } catch {
+    if (/\[TOON:[A-Z]+\]|ITEM::|KEJADIAN::|DESKRIPSI::|TAHAP1::/i.test(cleaned)) {
+      return { toon: cleaned } as T
+    }
     throw new SyntaxError('AI response bukan JSON valid')
   }
 }
