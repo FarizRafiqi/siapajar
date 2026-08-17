@@ -63,11 +63,12 @@ async function resolveProvider(): Promise<ResolvedProvider> {
   const setting = await AiSetting.current()
 
   // ROUTER_API_KEY hanya dipakai 9router. Aggregator punya key sendiri.
-  const envFallback = setting.gateway
-    ? getAggregatorApiKey(setting.gateway)
-    : setting.provider === '9router'
-      ? env.get('ROUTER_API_KEY')
-      : undefined
+  let envFallback: string | undefined
+  if (setting.gateway) {
+    envFallback = getAggregatorApiKey(setting.gateway)
+  } else if (setting.provider === '9router') {
+    envFallback = env.get('ROUTER_API_KEY')
+  }
 
   return {
     provider: setting.provider,
@@ -627,107 +628,114 @@ async function callAnthropic(
   return text
 }
 
-/** Daftar model live dari provider — dipakai form Konfigurasi AI, bukan alur generate. */
-export async function listModels(
-  provider: '9router' | 'anthropic' | 'openai' | 'gemini' | 'aggregator',
+async function fetch9RouterModels(
   apiKey: string,
-  options: { gateway?: AiGateway | null; baseUrl?: string | null } = {}
+  configuredBaseUrl?: string | null
 ): Promise<string[]> {
-  if (!apiKey) throw new AiServiceError('API key belum diisi.')
+  const resolved = await resolveProvider()
+  let baseUrl =
+    configuredBaseUrl ||
+    resolved.baseUrl ||
+    env.get('ROUTER_API_URL') ||
+    'http://localhost:20128/v1'
+  baseUrl = `${trimTrailingSlashes(baseUrl)}/models`
+  const response = await fetchWithTimeout(
+    baseUrl,
+    { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
+    15_000
+  )
+  if (!response.ok) {
+    throw new AiServiceError(
+      `Gagal ambil daftar model 9Router (status ${response.status}). Cek API key.`
+    )
+  }
+  const payload = (await response.json()) as { data?: { id: string }[] }
+  return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+}
 
-  if (provider === '9router') {
-    const resolved = await resolveProvider()
-    let baseUrl = resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1'
-    baseUrl = `${trimTrailingSlashes(baseUrl)}/models`
+async function fetchAggregatorModels(
+  apiKey: string,
+  gateway?: AiGateway | null,
+  baseUrl?: string | null
+): Promise<string[]> {
+  if (!gateway) throw new AiServiceError('Pilih aggregator terlebih dahulu.')
+  const response = await fetchWithTimeout(
+    modelListUrl(baseUrl || GATEWAY_DEFAULTS[gateway]),
+    { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
+    15_000
+  )
+  if (!response.ok) {
+    throw new AiServiceError(
+      `Gagal ambil daftar model ${aggregatorLabel(gateway)} (status ${response.status}).`
+    )
+  }
+  const payload = (await response.json()) as { data?: Array<{ id?: string }> }
+  return (payload.data || [])
+    .map((model) => model.id || '')
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b))
+}
+
+async function fetchGeminiModels(
+  apiKey: string,
+  configuredBaseUrl?: string | null
+): Promise<string[]> {
+  const resolved = await resolveProvider()
+  const baseUrl =
+    configuredBaseUrl || resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'
+  const response = await fetchWithTimeout(
+    `${baseUrl}/models?key=${apiKey}`,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+    15_000
+  )
+  if (!response.ok) {
+    throw new AiServiceError(
+      `Gagal ambil daftar model Gemini (status ${response.status}). Cek API key.`
+    )
+  }
+  const payload = (await response.json()) as { models?: { name: string }[] }
+  return (payload.models ?? [])
+    .map((m) => m.name.replace(/^models\//, ''))
+    .filter((id) => id.startsWith('gemini-'))
+    .sort((a, b) => a.localeCompare(b))
+}
+
+async function fetchOpenAiModels(apiKey: string): Promise<string[]> {
+  let apiModels: string[] = []
+  try {
     const response = await fetchWithTimeout(
-      baseUrl,
+      'https://api.openai.com/v1/models',
       { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
       15_000
     )
-    if (!response.ok) {
-      throw new AiServiceError(
-        `Gagal ambil daftar model 9Router (status ${response.status}). Cek API key.`
-      )
+    if (response.ok) {
+      const payload = (await response.json()) as { data?: { id: string }[] }
+      apiModels = (payload.data ?? [])
+        .map((m) => m.id)
+        .filter((id) => /^(gpt-|o1|o3|o4|chatgpt-)/.test(id))
     }
-    const payload = (await response.json()) as { data?: { id: string }[] }
-    return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+  } catch {
+    // ignore
   }
 
-  if (provider === 'aggregator') {
-    const gateway = options.gateway
-    if (!gateway) throw new AiServiceError('Pilih aggregator terlebih dahulu.')
-    const response = await fetchWithTimeout(
-      modelListUrl(options.baseUrl || GATEWAY_DEFAULTS[gateway]),
-      { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
-      15_000
-    )
-    if (!response.ok) {
-      throw new AiServiceError(
-        `Gagal ambil daftar model ${aggregatorLabel(gateway)} (status ${response.status}).`
-      )
-    }
-    const payload = (await response.json()) as { data?: Array<{ id?: string }> }
-    return (payload.data || [])
-      .map((model) => model.id || '')
-      .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b))
-  }
+  const presetModels = [
+    'gpt-5.6-luna',
+    'gpt-5.6-terra',
+    'gpt-5.6-sol',
+    'gpt-5.1-codex',
+    'gpt-5',
+    'o3-mini',
+    'o4-mini',
+    'o1',
+    'gpt-4o',
+    'gpt-4o-mini',
+  ]
 
-  if (provider === 'gemini') {
-    const resolved = await resolveProvider()
-    const baseUrl = resolved.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'
-    const response = await fetchWithTimeout(
-      `${baseUrl}/models?key=${apiKey}`,
-      { method: 'GET', headers: { 'Content-Type': 'application/json' } },
-      15_000
-    )
-    if (!response.ok) {
-      throw new AiServiceError(
-        `Gagal ambil daftar model Gemini (status ${response.status}). Cek API key.`
-      )
-    }
-    const payload = (await response.json()) as { models?: { name: string }[] }
-    return (payload.models ?? [])
-      .map((m) => m.name.replace(/^models\//, ''))
-      .filter((id) => id.startsWith('gemini-'))
-      .sort((a, b) => a.localeCompare(b))
-  }
+  const allModels = Array.from(new Set([...presetModels, ...apiModels]))
+  return allModels.sort((a, b) => a.localeCompare(b))
+}
 
-  if (provider === 'openai') {
-    let apiModels: string[] = []
-    try {
-      const response = await fetchWithTimeout(
-        'https://api.openai.com/v1/models',
-        { method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } },
-        15_000
-      )
-      if (response.ok) {
-        const payload = (await response.json()) as { data?: { id: string }[] }
-        apiModels = (payload.data ?? [])
-          .map((m) => m.id)
-          .filter((id) => /^(gpt-|o1|o3|o4|chatgpt-)/.test(id))
-      }
-    } catch {
-      // ignore
-    }
-
-    const presetModels = [
-      'gpt-5.6-luna',
-      'gpt-5.6-terra',
-      'gpt-5.6-sol',
-      'gpt-5.1-codex',
-      'gpt-5',
-      'o3-mini',
-      'o4-mini',
-      'o1',
-      'gpt-4o',
-      'gpt-4o-mini',
-    ]
-
-    const allModels = Array.from(new Set([...presetModels, ...apiModels]))
-    return allModels.sort((a, b) => a.localeCompare(b))
-  }
-
+async function fetchAnthropicModels(apiKey: string): Promise<string[]> {
   const response = await fetchWithTimeout(
     'https://api.anthropic.com/v1/models',
     { method: 'GET', headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' } },
@@ -740,6 +748,28 @@ export async function listModels(
   }
   const payload = (await response.json()) as { data?: { id: string }[] }
   return (payload.data ?? []).map((m) => m.id).sort((a, b) => a.localeCompare(b))
+}
+
+/** Daftar model live dari provider — dipakai form Konfigurasi AI, bukan alur generate. */
+export async function listModels(
+  provider: '9router' | 'anthropic' | 'openai' | 'gemini' | 'aggregator',
+  apiKey: string,
+  options: { gateway?: AiGateway | null; baseUrl?: string | null } = {}
+): Promise<string[]> {
+  if (!apiKey) throw new AiServiceError('API key belum diisi.')
+
+  switch (provider) {
+    case '9router':
+      return fetch9RouterModels(apiKey, options.baseUrl)
+    case 'aggregator':
+      return fetchAggregatorModels(apiKey, options.gateway, options.baseUrl)
+    case 'gemini':
+      return fetchGeminiModels(apiKey, options.baseUrl)
+    case 'openai':
+      return fetchOpenAiModels(apiKey)
+    case 'anthropic':
+      return fetchAnthropicModels(apiKey)
+  }
 }
 
 /**
@@ -885,8 +915,10 @@ export async function callAiJson<T>(options: CallAiJsonOptions): Promise<T> {
     if (error instanceof SyntaxError) {
       try {
         return await requestOnce<T>(options)
-      } catch {
-        throw new AiServiceError('Gagal memproses hasil AI. Coba lagi.')
+      } catch (retryError) {
+        throw new AiServiceError(
+          retryError instanceof Error ? retryError.message : 'Gagal memproses hasil AI.'
+        )
       }
     }
     throw error

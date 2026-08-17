@@ -70,6 +70,12 @@ const PROVIDERS: {
   },
 ]
 
+function getAuthModeLabel(mode: string, provider: string): string {
+  if (mode === 'api_key') return 'API Key'
+  if (provider === 'openai') return 'OAuth via Codex CLI'
+  return 'Google OAuth'
+}
+
 const GATEWAYS: { value: Gateway; label: string; description: string }[] = [
   {
     value: 'command_code',
@@ -293,11 +299,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                         checked={data.authMode === mode}
                         onChange={() => setData('authMode', mode)}
                       />
-                      {mode === 'api_key'
-                        ? 'API Key'
-                        : data.provider === 'openai'
-                          ? 'OAuth via Codex CLI'
-                          : 'Google OAuth'}
+                      {getAuthModeLabel(mode, data.provider)}
                     </label>
                   ))}
                 </div>

@@ -72,9 +72,7 @@ export default class AiSetting extends BaseModel {
 
   static async current() {
     let setting = await AiSetting.query().orderBy('id', 'asc').first()
-    if (!setting) {
-      setting = await AiSetting.create({ provider: '9router', authMode: 'api_key' })
-    }
+    setting ??= await AiSetting.create({ provider: '9router', authMode: 'api_key' })
     return setting
   }
 }
