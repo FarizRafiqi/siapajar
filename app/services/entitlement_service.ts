@@ -12,6 +12,7 @@ const FEATURE_LABELS: Record<string, string> = {
   classes: 'Kelas',
   ai_generation_monthly: 'Generate AI bulanan',
   ai_image_generation_monthly: 'Generate gambar AI bulanan',
+  ai_svg_generation_monthly: 'Generate ilustrasi SVG bulanan',
   export_pdf: 'Export PDF',
   export_docx: 'Export DOCX',
   export_pptx: 'Export PPTX',

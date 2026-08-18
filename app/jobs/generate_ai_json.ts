@@ -13,6 +13,7 @@ export interface GenerateAiJsonPayload {
   systemPrompt: string
   userPrompt: string
   timeoutMs?: number
+  featureKey?: string
 }
 
 export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {

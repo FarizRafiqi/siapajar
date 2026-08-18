@@ -12,6 +12,7 @@ import {
   listGeminiModelsForOAuth,
   listModels,
   AiServiceError,
+  getAggregatorApiKey,
   test9routerConnection,
 } from '#services/ai_service'
 import env from '#start/env'
@@ -27,10 +28,12 @@ export default class AdminAiSettingsController {
 
     return inertia.render('dashboard/admin/ai-settings/index', {
       setting: {
-        provider: setting.provider,
+        provider: setting.gateway ? 'aggregator' : setting.provider,
         authMode: setting.authMode || 'api_key',
         baseUrl: setting.baseUrl,
         model: setting.model,
+        gateway: setting.gateway,
+        reasoningEffort: setting.reasoningEffort,
         hasApiKey: !!setting.apiKey,
         codexAccount,
         geminiOAuthConnected:
@@ -46,12 +49,16 @@ export default class AdminAiSettingsController {
     const data = await request.validateUsing(updateAiSettingValidator)
     const setting = await AiSetting.current()
 
-    setting.provider = data.provider
-    setting.authMode = data.authMode ?? 'api_key'
+    const isAggregator = data.provider === 'aggregator'
+    if (isAggregator) setting.provider = '9router'
+    else setting.provider = data.provider as '9router' | 'anthropic' | 'openai' | 'gemini'
+    setting.gateway = isAggregator ? (data.gateway ?? null) : null
+    setting.reasoningEffort = isAggregator ? (data.reasoningEffort ?? 'high') : null
+    setting.authMode = isAggregator ? 'api_key' : (data.authMode ?? 'api_key')
     if (!['openai', 'gemini'].includes(setting.provider)) {
       setting.authMode = 'api_key'
     }
-    setting.baseUrl = data.provider === '9router' ? (data.baseUrl ?? null) : null
+    setting.baseUrl = isAggregator || data.provider === '9router' ? (data.baseUrl ?? null) : null
     setting.model = data.model ?? null
     if (data.apiKey) {
       setting.apiKey = data.apiKey
@@ -176,6 +183,7 @@ export default class AdminAiSettingsController {
 
   async models({ request, response }: HttpContext) {
     const data = await request.validateUsing(listModelsValidator)
+    const currentSetting = await AiSetting.current()
     let apiKey = data.apiKey
     if (data.provider === 'openai' && data.authMode === 'oauth') {
       try {
@@ -196,15 +204,22 @@ export default class AdminAiSettingsController {
       }
     }
     if (!apiKey) {
-      const setting = await AiSetting.current()
-      apiKey = setting.apiKey ?? undefined
+      apiKey =
+        currentSetting.apiKey ??
+        (data.provider === 'aggregator'
+          ? getAggregatorApiKey(data.gateway ?? currentSetting.gateway)
+          : env.get('ROUTER_API_KEY')) ??
+        undefined
     }
     if (!apiKey) {
       return response.status(422).json({ message: 'API key belum diisi. Isi API key dulu.' })
     }
 
     try {
-      const models = await listModels(data.provider, apiKey)
+      const models = await listModels(data.provider, apiKey, {
+        gateway: data.gateway ?? currentSetting.gateway,
+        baseUrl: data.baseUrl ?? currentSetting.baseUrl,
+      })
       return response.json({ models })
     } catch (error) {
       return response.status(422).json({
@@ -219,10 +234,19 @@ export default class AdminAiSettingsController {
       const setting = await AiSetting.current()
 
       const apiKey: string | null | undefined =
-        body.apiKey || setting.apiKey || env.get('ROUTER_API_KEY')
+        body.apiKey ||
+        setting.apiKey ||
+        (setting.gateway ? getAggregatorApiKey(setting.gateway) : env.get('ROUTER_API_KEY'))
       const model: string | undefined = body.model || setting.model || undefined
 
-      if (setting.provider === '9router') {
+      if (setting.gateway) {
+        await callAiJson<{ ok: boolean }>({
+          combo: model || 'default',
+          systemPrompt: 'Balas HANYA JSON valid: {"ok": true}',
+          userPrompt: 'Tes koneksi.',
+        })
+        session.flash('success', 'Koneksi ke aggregator AI berhasil')
+      } else if (setting.provider === '9router') {
         await this.test9router(model, apiKey)
         session.flash('success', `Koneksi ke 9router berhasil — model "${model}" merespon.`)
       } else {

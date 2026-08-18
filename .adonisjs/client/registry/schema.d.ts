@@ -55,6 +55,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'mcp.wellknown': {
+    methods: ["GET","HEAD"]
+    pattern: '/.well-known/mcp'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'mcp.handle': {
+    methods: ["HEAD","OPTIONS","GET","POST","PUT","PATCH","DELETE"]
+    pattern: '/mcp'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'coming-soon': {
     methods: ["GET","HEAD"]
     pattern: '/coming-soon'
@@ -619,9 +643,33 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'exams.generationStatus': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/generation-status'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'exams.show': {
     methods: ["GET","HEAD"]
     pattern: '/exams/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.uploadImage': {
+    methods: ["POST"]
+    pattern: '/exams/:id/upload-image'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -682,6 +730,18 @@ export interface Registry {
   'exams.exportPdf': {
     methods: ["GET","HEAD"]
     pattern: '/exams/:id/export/pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'exams.printPreview': {
+    methods: ["GET","HEAD"]
+    pattern: '/exams/:id/print-preview'
     types: {
       body: {}
       paramsTuple: [ParamValue]

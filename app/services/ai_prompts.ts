@@ -32,13 +32,17 @@ export function examPrompt(params: {
   isPaud?: boolean
   isRa?: boolean
 }): AiPrompt {
+  const subjectBoundary = /agama|pai|moral|akhlak|islam/i.test(params.subject)
+    ? ' Fokus hanya pada Pendidikan Agama Islam, moral, akhlak, nabi, malaikat, doa, dan perilaku baik. DILARANG membuat soal matematika atau mata pelajaran lain.'
+    : ` Fokus hanya pada mata pelajaran ${params.subject}. DILARANG mencampurkan materi matematika, agama, bahasa, atau mata pelajaran lain kecuali memang bagian dari mata pelajaran tersebut.`
+
   if (params.examMode === 'essay') {
     return {
       system:
         'Kamu pembuat soal uraian untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
         '{"questions": [{"question": string, "instruction": string, "answer": string, "explanation": string, "rubric": string}]}. ' +
         'Buat pertanyaan terbuka, ruang jawaban, kunci ideal, dan rubrik deskriptif yang dapat dinilai guru.',
-      user: `Buatkan ${params.questionCount} soal uraian untuk mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,
+      user: `Buatkan ${params.questionCount} soal uraian untuk mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.${subjectBoundary}`,
     }
   }
 
@@ -48,7 +52,20 @@ export function examPrompt(params: {
         'Kamu pembuat instrumen praktik/performa untuk pendidikan Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur persis: ' +
         '{"questions": [{"question": string, "instruction": string, "answer": string, "rubric": string, "scoringGuide": string}]}. ' +
         'Setiap instrumen harus memiliki tindakan yang diamati, bukti performa, jawaban/hasil ideal, dan rubrik deskriptif.',
-      user: `Buatkan ${params.questionCount} instrumen praktik untuk tema/topik "${params.topic}" (${params.subject}), jenis ${params.type}.`,
+      user: `Buatkan ${params.questionCount} instrumen praktik untuk tema/topik "${params.topic}" (${params.subject}), jenis ${params.type}.${subjectBoundary}`,
+    }
+  }
+
+  if ((params.isPaud || params.isRa) && params.examMode === 'multiple_choice') {
+    return {
+      system:
+        'Kamu pembuat soal pilihan ganda RA/TK Indonesia untuk anak usia dini. ' +
+        'Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
+        '{"questions": [{"type": "multiple_choice", "sectionKey": "multiple_choice", "sectionTitle": "Pilihan Ganda", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "options": [{"label": string, "text": string, "imagePrompt": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'Semua butir WAJIB bertipe multiple_choice. Maksimal 5 butir. Opsi berjumlah 3 dan relevan dengan mata pelajaran. ' +
+        'Jika pertanyaan membutuhkan gambar atau benda, setiap opsi wajib memiliki imagePrompt; jangan memakai teks generik seperti Pilihan A. ' +
+        'Bahasa Indonesia, ramah anak, tanpa istilah Inggris, snake_case, emoji, atau materi lintas mata pelajaran.',
+      user: `Buatkan maksimal ${params.questionCount} soal pilihan ganda untuk mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.${subjectBoundary}`,
     }
   }
 
@@ -65,20 +82,26 @@ export function examPrompt(params: {
           'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
           '{"questions": [{"question": string, "instruction": string, "answer": string, "rubric": string}]}. ' +
           'Sertakan hafalan surah pendek, doa harian, hadits pilihan, atau pertanyaan lisan kontekstual anak.',
-        user: `Buatkan ${params.questionCount} soal/instrumen lisan untuk tema/topik "${params.topic}" (${params.subject}).`,
+        user: `Buatkan ${params.questionCount} soal/instrumen lisan untuk tema/topik "${params.topic}" (${params.subject}).${subjectBoundary}`,
       }
     }
     return {
       system:
         'Kamu pembuat soal lembar kerja anak RA (Raudhatul Athfal) / TK B PAUD Kurikulum Merdeka. ' +
         'Balas HANYA JSON valid tanpa teks lain dengan format TOON/JSON ringkas: ' +
-        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"count_and_circle"|"coloring"|"tracing", "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string, "imagePrompt": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        '{"questions": [{"type": "multiple_choice"|"matching"|"visual"|"fill_blank_image"|"vertical_math"|"number_writing"|"count_and_circle"|"coloring"|"tracing", "sectionKey": string, "sectionTitle": string, "question": string, "visualType": string, "instruction": string, "imagePrompt": string, "traceText": string, "leftItems": [{"id": string, "label": string, "imagePrompt": string}], "rightItems": [{"id": string, "label": string}], "pairs": [{"leftId": string, "rightId": string}], "options": [{"label": string, "text": string, "imagePrompt": string}], "mathProblems": [{"topNumber": number, "bottomNumber": number, "operator": "+"|"-"}], "countItems": [{"count": number, "imagePrompt": string, "options": number[]}], "answer": string, "explanation": string, "rubric": string}]}. ' +
+        'KOMPOSISI: susun bagian berurutan dengan sectionKey/sectionTitle. Bagian diberi huruf kapital A, B, C, dan seterusnya oleh aplikasi; jumlah bagian adaptif sesuai kapasitas satu lembar, bukan selalu tiga. ' +
+        'Pola Kognitif: Tulis Angka Bilangan, Hitung Bersusun/Pengurangan, lalu Hitung dan Lingkari. Pola mapel bahasa/sains/agama dapat menggabungkan Pilihan Ganda, Isian, Hubungkan Garis, Terjemahan, atau Mewarnai sesuai materi; jangan memaksa aktivitas yang tidak relevan. ' +
+        'Setiap jenis maksimal 5 butir. Jika gambar/aktivitas berat, kurangi butir atau bagian visual agar lembar tetap terbaca. ' +
         'ATURAN PILIHAN GANDA (multiple_choice): ' +
         '1. Untuk soal teks (seperti Agama, Malaikat, Nabi, Bahasa, Sains): options WAJIB berisi 3 jawaban teks relevan (contoh untuk "Nabi pertama": options=[{"label":"a","text":"Nabi Adam"},{"label":"b","text":"Nabi Nuh"},{"label":"c","text":"Nabi Muhammad"}]). DILARANG KERAS memberikan opsi angka "4" atau "..." jika soalnya tentang nama nabi/malaikat/agama! ' +
         '2. Hanya untuk soal hitung angka visual (seperti "Berapa jumlah 4 apel"): options boleh angka. ' +
-        'HUBUNGKAN GARIS (matching): leftItems dan rightItems harus berisi nama/label pasangannya secara tepat (seperti "Nabi Nuh" <-> "Kapal"). DILARANG menempelkan ikon bintang pada teks. ' +
-        'MEWARNAI / TRACING / VISUAL: Wajib sertakan "imagePrompt" yang mendeskripsikan gambar line-art hitam-putih sederhana ramah anak.',
-      user: `Buatkan ${params.questionCount} soal lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).`,
+        '3. PILIHAN GANDA BERGAMBAR: jika visualType menyebut gambar/ilustrasi/benda, setiap option WAJIB memiliki imagePrompt dan gambar; jangan mengisi opsi dengan teks generik seperti "Pilihan A". ' +
+        'HITUNG DAN LINGKARI: buat 2-5 countItem dengan jumlah count berbeda; setiap item memiliki 3 atau 4 options angka, label subbutir a, b, c, dan seterusnya dibuat aplikasi. Setiap countItem WAJIB memiliki imagePrompt untuk objek yang benar-benar digambar dan diulang sesuai count; jangan memakai titik atau emoji sebagai pengganti gambar. ' +
+        'HUBUNGKAN GARIS (matching): leftItems wajib berupa ilustrasi konsep dengan imagePrompt per item; rightItems wajib berupa teks saja tanpa imageUrl dan tanpa imagePrompt. Keduanya berisi pasangan tepat (seperti ilustrasi kapal <-> "Nabi Nuh"). DILARANG menempelkan ikon bintang pada teks. ' +
+        'VISUALTYPE: selalu gunakan label jenis soal dalam bahasa Indonesia dengan Title Case. DILARANG mengirim label Inggris, snake_case, atau istilah seperti simple_islamic_symbol, matching_symbols, counting_objects, letter_tracing, dan coloring_page. ' +
+        'MEWARNAI: Wajib sertakan imagePrompt untuk ilustrasi hitam-putih tanpa warna, termasuk MEWARNAI SESUAI BILANGAN. TRACING ANGKA/TEKS: Wajib sertakan traceText berupa angka atau kata yang dirender sebagai titik-titik. TRACING GAMBAR: Wajib sertakan imagePrompt untuk line-art putus-putus. Gambar tidak boleh berupa emoji.',
+      user: `Buatkan maksimal ${params.questionCount} butir pada setiap bagian lembar kegiatan visual tertulis RA/TK untuk tema/topik "${params.topic}" (${params.subject}).${subjectBoundary}`,
     }
   }
 
@@ -87,7 +110,7 @@ export function examPrompt(params: {
       'Kamu pembuat soal pilihan ganda SD Indonesia. Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
       '{"questions": [{"question": string, "options": string[], "answer": string, "explanation": string}]}. ' +
       'options berisi 4 pilihan diawali "A. ", "B. ", "C. ", "D. ". answer isi huruf opsi benar saja (contoh "A").',
-    user: `Buatkan ${params.questionCount} soal pilihan ganda mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.`,
+    user: `Buatkan ${params.questionCount} soal pilihan ganda mata pelajaran ${params.subject}, topik "${params.topic}", jenis ${params.type}.${subjectBoundary}`,
   }
 }
 

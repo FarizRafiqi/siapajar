@@ -6,6 +6,10 @@ export interface ApiDefinition {
   health: typeof routes['health']
   privacy: typeof routes['privacy']
   terms: typeof routes['terms']
+  mcp: {
+    wellknown: typeof routes['mcp.wellknown']
+    handle: typeof routes['mcp.handle']
+  }
   comingSoon: typeof routes['coming-soon']
   newAccount: {
     create: typeof routes['new_account.create']
@@ -84,12 +88,15 @@ export interface ApiDefinition {
   exams: {
     index: typeof routes['exams.index']
     store: typeof routes['exams.store']
+    generationStatus: typeof routes['exams.generationStatus']
     show: typeof routes['exams.show']
+    uploadImage: typeof routes['exams.uploadImage']
     update: typeof routes['exams.update']
     destroy: typeof routes['exams.destroy']
     generate: typeof routes['exams.generate']
     export: typeof routes['exams.export']
     exportPdf: typeof routes['exams.exportPdf']
+    printPreview: typeof routes['exams.printPreview']
   }
   annualPlans: {
     index: typeof routes['annual-plans.index']

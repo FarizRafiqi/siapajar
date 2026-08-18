@@ -45,8 +45,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   // AI Router (9router.com)
   ROUTER_API_KEY: Env.schema.string.optional(),
   ROUTER_API_URL: Env.schema.string.optional(),
+  AGGREGATOR_API_KEY: Env.schema.string.optional(),
+  COMMAND_CODE_API_KEY: Env.schema.string.optional(),
+  OPENROUTER_API_KEY: Env.schema.string.optional(),
+  OPENCODE_ZEN_API_KEY: Env.schema.string.optional(),
+  TOGETHER_API_KEY: Env.schema.string.optional(),
   APP_URL: Env.schema.string.optional(),
   CODEX_CLI_PATH: Env.schema.string.optional(),
+  PDF_BROWSER_EXECUTABLE_PATH: Env.schema.string.optional(),
 
   // Payment (Xendit)
   XENDIT_KEY: Env.schema.string.optional(),

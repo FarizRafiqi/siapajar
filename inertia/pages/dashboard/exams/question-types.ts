@@ -7,6 +7,7 @@ export type QuestionKind =
   | 'oral'
   | 'fill_blank_image'
   | 'vertical_math'
+  | 'number_writing'
   | 'count_and_circle'
   | 'coloring'
   | 'tracing'
@@ -15,6 +16,7 @@ export interface QuestionOption {
   label: string
   text: string
   imageUrl?: string
+  imagePrompt?: string
 }
 
 export interface MatchingItem {
@@ -39,7 +41,9 @@ export interface CountItem {
   count: number
   iconName?: string
   imageUrl?: string
+  imagePrompt?: string
   options: number[]
+  sectionItemLetter?: string
 }
 
 export interface ExamQuestion {
@@ -53,9 +57,16 @@ export interface ExamQuestion {
   pairs?: MatchingPair[]
   imagePrompt?: string
   imageUrl?: string
+  traceText?: string
+  assetStatus?: 'ready' | 'processing' | 'quota_unavailable' | 'failed'
+  assetError?: string
   options?: QuestionOption[]
   mathProblems?: VerticalMathProblem[]
   countItems?: CountItem[]
+  sectionKey?: string
+  sectionTitle?: string
+  sectionLetter?: string
+  sectionQuestionNumber?: number
   answer?: string
   explanation?: string
   rubric?: string
@@ -88,6 +99,7 @@ const QUESTION_KINDS = new Set<QuestionKind>([
   'oral',
   'fill_blank_image',
   'vertical_math',
+  'number_writing',
   'count_and_circle',
   'coloring',
   'tracing',
@@ -109,7 +121,13 @@ function normalizeOption(value: unknown, index: number): QuestionOption {
     return {
       label: labelStr.toUpperCase(),
       text: textStr,
-      imageUrl: typeof valObj.imageUrl === 'string' ? valObj.imageUrl : undefined,
+      imageUrl:
+        typeof valObj.imageUrl === 'string'
+          ? valObj.imageUrl
+          : typeof valObj.image === 'string'
+            ? valObj.image
+            : undefined,
+      imagePrompt: typeof valObj.imagePrompt === 'string' ? valObj.imagePrompt : undefined,
     }
   }
 
@@ -123,6 +141,14 @@ function normalizeOption(value: unknown, index: number): QuestionOption {
 }
 
 function determineQuestionKind(rawType: string, raw: Record<string, unknown>): QuestionKind {
+  const visualType = typeof raw.visualType === 'string' ? raw.visualType : ''
+  if (
+    rawType === 'visual' &&
+    Array.isArray(raw.options) &&
+    /pilihan\s*ganda.*gambar|gambar.*pilihan\s*ganda|bergambar/i.test(visualType)
+  ) {
+    return 'multiple_choice'
+  }
   if (QUESTION_KINDS.has(rawType as QuestionKind)) {
     return rawType as QuestionKind
   }
@@ -168,10 +194,13 @@ function normalizeItems(value: unknown, side: 'left' | 'right'): MatchingItem[] 
         imageUrl = record.image
       }
 
+      const imagePrompt = typeof record.imagePrompt === 'string' ? record.imagePrompt : undefined
+
       return {
         id: typeof record.id === 'string' ? record.id : defaultId,
         label,
         imageUrl,
+        imagePrompt,
       }
     })
     .filter((item) => item.label || item.imageUrl)
@@ -210,9 +239,26 @@ export function normalizeQuestion(raw: Record<string, unknown>, index: number): 
     pairs: normalizePairs(pairsValue),
     imagePrompt: typeof raw.imagePrompt === 'string' ? raw.imagePrompt : undefined,
     imageUrl: typeof raw.imageUrl === 'string' ? raw.imageUrl : undefined,
+    traceText: typeof raw.traceText === 'string' ? raw.traceText : undefined,
+    assetStatus:
+      raw.assetStatus === 'failed' ||
+      raw.assetStatus === 'quota_unavailable' ||
+      raw.assetStatus === 'processing'
+        ? raw.assetStatus
+        : 'ready',
+    assetError: typeof raw.assetError === 'string' ? raw.assetError : undefined,
     options: Array.isArray(raw.options)
       ? raw.options.map((option, optionIndex) => normalizeOption(option, optionIndex))
       : undefined,
+    mathProblems: Array.isArray(raw.mathProblems)
+      ? (raw.mathProblems as VerticalMathProblem[])
+      : undefined,
+    countItems: Array.isArray(raw.countItems) ? (raw.countItems as CountItem[]) : undefined,
+    sectionKey: typeof raw.sectionKey === 'string' ? raw.sectionKey : undefined,
+    sectionTitle: typeof raw.sectionTitle === 'string' ? raw.sectionTitle : undefined,
+    sectionLetter: typeof raw.sectionLetter === 'string' ? raw.sectionLetter : undefined,
+    sectionQuestionNumber:
+      typeof raw.sectionQuestionNumber === 'number' ? raw.sectionQuestionNumber : undefined,
     answer: typeof raw.answer === 'string' ? raw.answer : undefined,
     explanation: typeof raw.explanation === 'string' ? raw.explanation : undefined,
     rubric: typeof raw.rubric === 'string' ? raw.rubric : undefined,

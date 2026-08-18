@@ -5,18 +5,16 @@ const { Pool } = pg
 let pool: pg.Pool | null = null
 
 export function getPool(): pg.Pool {
-  if (!pool) {
-    pool = new Pool({
-      host: process.env.DB_HOST ?? '127.0.0.1',
-      port: Number(process.env.DB_PORT ?? 5432),
-      user: process.env.DB_USER ?? 'siapajar',
-      password: process.env.DB_PASSWORD ?? '',
-      database: process.env.DB_DATABASE ?? 'siapajar',
-      max: 5,
-      idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 5_000,
-    })
-  }
+  pool ??= new Pool({
+    host: process.env.DB_HOST ?? '127.0.0.1',
+    port: Number(process.env.DB_PORT ?? 5432),
+    user: process.env.DB_USER ?? 'siapajar',
+    password: process.env.DB_PASSWORD ?? '',
+    database: process.env.DB_DATABASE ?? 'siapajar',
+    max: 5,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
+  })
   return pool
 }
 
