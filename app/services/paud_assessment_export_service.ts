@@ -1670,6 +1670,14 @@ export async function buildPaudAssessmentDocx(
   }
 
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Arial' },
+          paragraph: { spacing: { line: 276 } },
+        },
+      },
+    },
     sections: [
       {
         properties: {
@@ -1738,6 +1746,14 @@ export async function buildPaudAssessmentBundleDocx(
   }
 
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Arial' },
+          paragraph: { spacing: { line: 276 } },
+        },
+      },
+    },
     sections: [
       {
         properties: {

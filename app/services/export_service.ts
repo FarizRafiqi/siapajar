@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   Document,
   Packer,
@@ -32,6 +34,11 @@ import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 import { groupWorksheetQuestions } from '#services/exam_worksheet_layout_service'
 import { rasterizeSvgSync, readRasterAssetSync } from '#services/visual_asset_service'
+import { formatRpmClassCover, formatRpmClassGroupDetail } from '#services/class_formatter'
+import {
+  loadWeeklyPlanAssessments,
+  type LoadedWeeklyAssessments,
+} from '#services/weekly_assessment_loader'
 
 async function consumeExport(user: User) {
   const reservationKey = `export:docx:${user.id}:${randomUUID()}`
@@ -120,7 +127,25 @@ function contentValue(value: unknown): string | string[] {
 }
 
 function documentFromChildren(children: (Paragraph | Table)[]) {
-  return toBuffer(new Document({ sections: [{ children }] }))
+  return toBuffer(
+    new Document({
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: 'Arial',
+            },
+            paragraph: {
+              spacing: {
+                line: 276, // 1.15 line height (240 * 1.15 = 276 twips)
+              },
+            },
+          },
+        },
+      },
+      sections: [{ children }],
+    })
+  )
 }
 
 function stringifyValue(val: unknown): string {
@@ -282,10 +307,9 @@ function examHeaderParagraphs(exam: Exam, user: User) {
     ],
   })
 
-  paragraphs.push(topKopGrid)
-
-  // Double Line Divider
   paragraphs.push(
+    topKopGrid,
+    // Double Line Divider
     new Paragraph({
       border: {
         bottom: { style: BorderStyle.DOUBLE, size: 18, color: '000000' },
@@ -796,7 +820,7 @@ function examQuestionParagraphs(q: Record<string, any>, number: number) {
     for (const [index, item] of countItems.slice(0, 5).entries()) {
       const itemChildren: Array<TextRun | ImageRun> = [
         new TextRun({
-          text: `${item.sectionItemLetter || String.fromCharCode(97 + index)}. `,
+          text: `${item.sectionItemLetter || String.fromCodePoint(97 + index)}. `,
           bold: true,
           size: 20,
         }),
@@ -874,7 +898,17 @@ export async function exportTeachingModule(teachingModule: TeachingModule, user:
     { key: 'sumberBelajar', title: 'Sumber Belajar' },
   ]
 
+  const docStyles = {
+    default: {
+      document: {
+        run: { font: 'Arial' },
+        paragraph: { spacing: { line: 276 } },
+      },
+    },
+  }
+
   const doc = new Document({
+    styles: docStyles,
     sections: [
       {
         children: [
@@ -937,6 +971,14 @@ export async function exportAnnualPlan(annualPlan: AnnualPlan, user: User) {
   ]
 
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Arial' },
+          paragraph: { spacing: { line: 276 } },
+        },
+      },
+    },
     sections: [
       {
         children: [
@@ -965,6 +1007,14 @@ export async function exportSemesterPlan(semesterPlan: SemesterPlan, user: User)
   ]
 
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Arial' },
+          paragraph: { spacing: { line: 276 } },
+        },
+      },
+    },
     sections: [
       {
         children: [
@@ -1612,22 +1662,1993 @@ export async function exportCurriculum(
   )
 }
 
-export async function exportWeeklyLessonPlan(weekly: WeeklyLessonPlan, user: User) {
+export async function exportWeeklyLessonPlan(
+  weekly: WeeklyLessonPlan,
+  user: User,
+  loadedAssessments?: LoadedWeeklyAssessments
+) {
   await consumeExport(user)
-  const children: Paragraph[] = [
-    ...kopParagraphs(user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)'),
-    new Paragraph({ heading: HeadingLevel.HEADING_1, text: weekly.theme }),
-    ...metaParagraphs([
-      ['Kelompok', weekly.schoolClass?.name],
-      ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
-      ['Status', weekly.status],
-    ]),
+
+  const content = weekly.content ?? {}
+  const isRpm = Boolean(
+    content.identification || content.learningExperience || content.learningDesign
+  )
+
+  if (!isRpm) {
+    const children: Paragraph[] = [
+      ...kopParagraphs(user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)'),
+      new Paragraph({ heading: HeadingLevel.HEADING_1, text: weekly.theme }),
+      ...metaParagraphs([
+        ['Kelompok', weekly.schoolClass?.name],
+        ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
+        ['Status', weekly.status],
+      ]),
+      new Paragraph({ text: '' }),
+    ]
+    for (const [key, value] of Object.entries(content)) {
+      if (key === 'curriculum') continue
+      children.push(...sectionParagraphs(key, contentValue(value)))
+    }
+    return documentFromChildren(children)
+  }
+
+  const assessments = loadedAssessments || (await loadWeeklyPlanAssessments(weekly))
+
+  // RPM KBC RA (Deep Learning) 12-Page Comprehensive Matrix Layout
+  const borderlessBorders = {
+    top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    insideHorizontal: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    insideVertical: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+  }
+
+  const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: 'CBD5E1' }
+  const lavenderBorder = { style: BorderStyle.SINGLE, size: 1, color: 'D8B4FE' }
+  const tableBorders = {
+    top: thinBorder,
+    bottom: thinBorder,
+    left: thinBorder,
+    right: thinBorder,
+    insideHorizontal: thinBorder,
+    insideVertical: thinBorder,
+  }
+
+  const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
+  const weekStr = content.weekNumber ? `Pekan ke-${content.weekNumber}` : 'Pekan 1'
+  const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
+  const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
+  const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
+  const subthemeUpper = (content.subtheme || 'AYO KITA BERKENALAN').toUpperCase()
+
+  const children: (Paragraph | Table)[] = [
+    // 1. Cover Header (Orange Centered Title with lines)
+    new Paragraph({
+      border: {
+        top: { style: BorderStyle.SINGLE, size: 12, color: 'F97316' },
+        bottom: { style: BorderStyle.SINGLE, size: 12, color: 'F97316' },
+      },
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 200, after: 200 },
+      children: [
+        new TextRun({
+          text: `${themeUpper} : ${subthemeUpper}`,
+          bold: true,
+          size: 26,
+          color: 'EA580C',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '64748B' } },
+      spacing: { after: 100 },
+      children: [
+        new TextRun({
+          text: 'RPM KBC RA FASE FONDASI',
+          bold: true,
+          size: 20,
+          color: '0F172A',
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 150 },
+      children: [
+        new TextRun({
+          text: `JENJANG / KELAS : ${groupCoverStr.toUpperCase()}`,
+          bold: true,
+          size: 19,
+          color: '64748B',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+
+    // Metadata Table
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: borderlessBorders,
+      rows: [
+        ['PENULIS', user.fullName || 'Guru Kelas'],
+        ['SATUAN PENDIDIKAN', user.schoolName || 'RA / TK PAUD'],
+        ['KELOMPOK / USIA', groupDetailStr],
+        ['TOPIK', themeUpper],
+        ['SUB TOPIK', subthemeUpper],
+        ['SEMESTER / PEKAN', `${semesterStr} / ${weekStr}`],
+        ['ALOKASI WAKTU', String(content.allocation || '5 Hari x 180 Menit (15 JP)')],
+      ].map(
+        ([lbl, val]) =>
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: 26, type: WidthType.PERCENTAGE },
+                borders: borderlessBorders,
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: lbl, bold: true, size: 19, color: '334155' })],
+                  }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 4, type: WidthType.PERCENTAGE },
+                borders: borderlessBorders,
+                children: [
+                  new Paragraph({ children: [new TextRun({ text: ':', bold: true, size: 19 })] }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 70, type: WidthType.PERCENTAGE },
+                borders: borderlessBorders,
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: val || '-', bold: true, size: 19, color: '0F172A' }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          })
+      ),
+    }),
     new Paragraph({ text: '' }),
   ]
-  for (const [key, value] of Object.entries(weekly.content ?? {})) {
-    if (key === 'curriculum') continue
-    children.push(...sectionParagraphs(key, contentValue(value)))
+
+  // Helper Banner Lavender
+  const createLavenderBanner = (title: string) =>
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: lavenderBorder,
+        bottom: lavenderBorder,
+        left: lavenderBorder,
+        right: lavenderBorder,
+        insideHorizontal: borderlessBorders.insideHorizontal,
+        insideVertical: borderlessBorders.insideVertical,
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              margins: { top: 100, bottom: 100, left: 150, right: 150 },
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: title, bold: true, size: 20, color: '581C87' })],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    })
+
+  // SECTION A: IDENTIFIKASI PEMBELAJARAN
+  const idf = content.identification || {}
+  children.push(
+    createLavenderBanner('A. IDENTIFIKASI PEMBELAJARAN & NILAI KARAKTER'),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Karakteristik Murid', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text:
+                        idf.studentCharacteristics ||
+                        'Peserta didik aktif, senang bereksplorasi sensorik-motorik.',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Materi Pembelajaran', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `• Esensial: ${idf.essentialMaterials || idf.essentialMaterial || weekly.theme}`,
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `• Aplikatif: ${idf.practicalMaterials || idf.appliedMaterial || content.subtheme || weekly.theme}`,
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `• Nilai/Karakter: ${idf.valueMaterials || idf.valueMaterial || 'Kasih sayang & syukur kepada Allah SWT'}`,
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Dimensi Profil Lulusan (DPL)', bold: true, size: 18 }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: (Array.isArray(idf.dpl) && idf.dpl.length > 0
+                ? idf.dpl
+                : ['DPL 1: Keimanan & Ketakwaan', 'DPL 3: Penalaran Kritis']
+              ).map(
+                (d: string) =>
+                  new Paragraph({ children: [new TextRun({ text: `• ${d}`, size: 18 })] })
+              ),
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Nilai Panca Cinta KBC', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: (Array.isArray(idf.pancaCintaValues || idf.kbcValues) &&
+              (idf.pancaCintaValues || idf.kbcValues).length > 0
+                ? idf.pancaCintaValues || idf.kbcValues
+                : ['Cinta Alloh & RosulNya', 'Cinta Diri & Sesama', 'Cinta Lingkungan']
+              ).map(
+                (v: string) =>
+                  new Paragraph({ children: [new TextRun({ text: `• ${v}`, size: 18 })] })
+              ),
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' })
+  )
+
+  // SECTION B: DESAIN PEMBELAJARAN (Matriks Tabel 2-Kolom)
+  const ld = content.learningDesign || {}
+  const cpParagraphs = (
+    Array.isArray(ld.cpElements) && ld.cpElements.length > 0
+      ? ld.cpElements
+      : [
+          'CP Nilai Agama & Budi Pekerti: Anak mengenal Allah SWT & ciptaan-Nya',
+          'CP Jati Diri: Anak mengenali identitas diri & emosi',
+          'CP Dasar Literasi & STEAM: Anak mengeksplorasi media loose parts',
+        ]
+  ).map((cp: string) => new Paragraph({ children: [new TextRun({ text: `• ${cp}`, size: 18 })] }))
+
+  const tpParagraphs = (
+    Array.isArray(ld.learningObjectives) && ld.learningObjectives.length > 0
+      ? ld.learningObjectives
+      : [
+          {
+            code: 'TP 1',
+            title: 'Anak mengenal dan memahami identitas dirinya serta ciptaan Allah',
+          },
+        ]
+  ).map((tp: any, idx: number) => {
+    const title = typeof tp === 'string' ? tp : tp?.title || tp?.name || ''
+    const code = typeof tp === 'object' && tp?.code ? tp.code : `TP ${idx + 1}`
+    return new Paragraph({ children: [new TextRun({ text: `• [${code}] ${title}`, size: 18 })] })
+  })
+
+  let pedStr =
+    'Menggunakan pendekatan bermain sebagai cara alami anak belajar, bercerita untuk membangun pemahaman, bernyanyi untuk menciptakan suasana menyenangkan, dan eksplorasi langsung dengan media loose parts.'
+  if (typeof ld.pedagogicalPractices === 'object' && ld.pedagogicalPractices !== null) {
+    pedStr = `Mindful: ${ld.pedagogicalPractices.mindful || '-'}\nMeaningful: ${ld.pedagogicalPractices.meaningful || '-'}\nJoyful: ${ld.pedagogicalPractices.joyful || '-'}`
+  } else if (typeof ld.pedagogicalPractices === 'string' && ld.pedagogicalPractices.trim()) {
+    pedStr = ld.pedagogicalPractices
   }
+
+  children.push(
+    createLavenderBanner('B. DESAIN PEMBELAJARAN'),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Capaian Pembelajaran', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: cpParagraphs,
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Lintas Disiplin Ilmu', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text:
+                        ld.crossDisciplinaryConcepts ||
+                        ld.crossDisciplinary ||
+                        'Nilai agama dan moral, sosial emosional, fisik motorik, kognitif, bahasa, seni',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Tujuan Pembelajaran', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: tpParagraphs,
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Topik Pembelajaran', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${weekly.theme} : ${content.subtheme || 'Eksplorasi Bermakna'}`,
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'Praktik Pedagogis (Deep Learning)',
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: pedStr
+                .split('\n')
+                .map((p) => new Paragraph({ children: [new TextRun({ text: p, size: 18 })] })),
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Kemitraan Pembelajaran', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text:
+                        ld.partnerships ||
+                        'Guru kelas, orang tua/keluarga, teman sebaya, dan komunitas sekolah.',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Lingkungan Pembelajaran', bold: true, size: 18 }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text:
+                        ld.learningEnvironment ||
+                        'Ruang kelas fleksibel dengan area bermain loose parts, lingkungan outdoor untuk eksplorasi fisik.',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'FAF5FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Pemanfaatan Digital', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: '• Perencanaan: Persiapan media lagu dan audio/video interaktif',
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: '• Pelaksanaan: Dokumentasi foto & video proses main anak',
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: '• Asesmen: Portofolio digital karya anak', size: 18 }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' })
+  )
+
+  // SECTION C: PENGALAMAN BELAJAR
+  const exp = content.learningExperience || {}
+  children.push(
+    createLavenderBanner('C. PENGALAMAN BELAJAR'),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: 'RENCANA PELAKSANAAN PEMBELAJARAN / LANGKAH-LANGKAH PEMBELAJARAN',
+          bold: true,
+          size: 19,
+          color: '1E293B',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+
+    // C.1 AWAL
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: lavenderBorder,
+        bottom: lavenderBorder,
+        left: lavenderBorder,
+        right: lavenderBorder,
+        insideHorizontal: borderlessBorders.insideHorizontal,
+        insideVertical: borderlessBorders.insideVertical,
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F5F3FF' },
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'C.1. AWAL (BERKESADARAN, BERMAKNA, MENGGEMBIRAKAN)',
+                      bold: true,
+                      size: 18,
+                      color: '6B21A8',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 100 },
+      children: [
+        new TextRun({
+          text: 'Pembuka dari proses pembelajaran yang bertujuan untuk mempersiapkan peserta didik sebelum memasuki inti pembelajaran. Kegiatan dalam tahap ini meliputi orientasi yang bermakna, apersepsi yang kontekstual, dan motivasi yang menggembirakan:',
+          size: 18,
+          italics: true,
+        }),
+      ],
+    })
+  )
+
+  const openActs =
+    Array.isArray(exp.openingActivities) && exp.openingActivities.length > 0
+      ? exp.openingActivities
+      : [
+          'Salam dan doa pembuka dengan penuh kesadaran',
+          'Renungan/nasehat/motivasi pagi yang bermakna',
+          'Menyanyikan lagu ceria tentang tema pembelajaran',
+          'Asesmen awal melalui diskusi ide kegiatan hari ini',
+          'Kegiatan pemantik berupa cerita/video interaktif',
+          'Menyiapkan kesepakatan kelas dan aturan bermain',
+          'Pertanyaan pemantik untuk mengembangkan dimensi profil lulusan:',
+        ]
+
+  openActs.forEach((act: string, idx: number) => {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: `${idx + 1}. ${act}`, size: 18 })] })
+    )
+  })
+
+  const openQuestions =
+    Array.isArray(exp.openingQuestions) && exp.openingQuestions.length > 0
+      ? exp.openingQuestions
+      : [
+          'Siapa yang bisa menceritakan pengalamannya tentang tema ini dengan suara jelas? (Komunikasi)',
+          'Apa yang membuat dirimu dan ciptaan Tuhan ini istimewa? (Keimanan & Ketakwaan)',
+          'Bagaimana cara kita menghargai dan bekerja sama dengan teman? (Kewargaan & Kolaborasi)',
+          'Apa yang bisa kamu lakukan secara mandiri hari ini? (Kemandirian)',
+        ]
+
+  openQuestions.forEach((q: string, qIdx: number) => {
+    const letter = String.fromCodePoint(97 + qIdx)
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: `    ${letter}) "${q}"`, size: 17, italics: true })],
+      })
+    )
+  })
+
+  children.push(
+    new Paragraph({ text: '' }),
+    // C.2 INTI
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: lavenderBorder,
+        bottom: lavenderBorder,
+        left: lavenderBorder,
+        right: lavenderBorder,
+        insideHorizontal: borderlessBorders.insideHorizontal,
+        insideVertical: borderlessBorders.insideVertical,
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F5F3FF' },
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'C.2. INTI', bold: true, size: 18, color: '6B21A8' }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 100 },
+      children: [
+        new TextRun({
+          text: 'Pada tahap ini, anak aktif terlibat dalam pengalaman belajar memahami, mengaplikasi, dan merefleksi. Guru menerapkan prinsip pembelajaran berkesadaran, bermakna, menggembirakan untuk mencapai tujuan pembelajaran.',
+          size: 18,
+          italics: true,
+        }),
+      ],
+    })
+  )
+
+  // Tabel Pengalaman Belajar Inti Harian
+  const coreDays = Array.isArray(exp.dailyCoreActivities) ? exp.dailyCoreActivities : []
+  const coreTableRows: TableRow[] = [
+    new TableRow({
+      children: [
+        new TableCell({
+          width: { size: 12, type: WidthType.PERCENTAGE },
+          shading: { fill: 'E9D5FF' },
+          borders: tableBorders,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: 'Hari', bold: true, size: 18, color: '581C87' })],
+            }),
+          ],
+        }),
+        new TableCell({
+          width: { size: 88, type: WidthType.PERCENTAGE },
+          shading: { fill: 'E9D5FF' },
+          borders: tableBorders,
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Uraian Kegiatan Inti Bermain Bermakna & Loose Parts',
+                  bold: true,
+                  size: 18,
+                  color: '581C87',
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+  ]
+
+  coreDays.forEach((d: any, dayIdx: number) => {
+    const actParas: Paragraph[] = []
+    if (d.stage) {
+      actParas.push(
+        new Paragraph({
+          shading: { fill: 'F3E8FF' },
+          children: [
+            new TextRun({ text: `TAHAP: ${d.stage}`, bold: true, size: 17, color: '6B21A8' }),
+          ],
+        }),
+        new Paragraph({ text: '' })
+      )
+    }
+
+    let details: any[] = []
+    if (Array.isArray(d.activitiesDetail) && d.activitiesDetail.length > 0) {
+      details = d.activitiesDetail
+    } else {
+      const fallbackActs = Array.isArray(d.activities) ? d.activities : []
+      details = fallbackActs.map((a: string, aIdx: number) => ({
+        name: `Kegiatan ${aIdx + 1} : ${a}`,
+        focus: d.steamFocus || d.kbcFocus || 'Eksplorasi Loose Parts',
+        materials: d.mediaLooseParts || 'Bahan alam, loose parts',
+        instructions: 'Anak bereksplorasi secara aktif dan mandiri bersama kelompok main.',
+        benefits: 'Melatih kreativitas, daya pikir kritis, dan kemandirian.',
+      }))
+    }
+
+    details.forEach((item: any, iIdx: number) => {
+      actParas.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: item.name || `Kegiatan ${iIdx + 1}`, bold: true, size: 18 }),
+            new TextRun({
+              text: item.focus ? ` (${item.focus})` : '',
+              bold: true,
+              size: 18,
+              color: '0369A1',
+            }),
+            new TextRun({ text: `. Alat dan bahan: `, bold: true, size: 18 }),
+            new TextRun({ text: item.materials || 'Bahan alam dan loose parts', size: 18 }),
+          ],
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Cara Bermain / Membuat: ', bold: true, size: 18 }),
+            new TextRun({ text: item.instructions || '-', size: 18 }),
+          ],
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Manfaat Kegiatan: ', bold: true, size: 18 }),
+            new TextRun({ text: item.benefits || '-', size: 18, italics: true }),
+          ],
+        }),
+        new Paragraph({ text: '' })
+      )
+    })
+
+    coreTableRows.push(
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 12, type: WidthType.PERCENTAGE },
+            borders: tableBorders,
+            verticalAlign: VerticalAlign.CENTER,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: String(dayIdx + 1), bold: true, size: 22, color: '0F172A' }),
+                ],
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: d.day || `Hari ${dayIdx + 1}`, bold: true, size: 16 }),
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 88, type: WidthType.PERCENTAGE },
+            borders: tableBorders,
+            children: actParas,
+          }),
+        ],
+      })
+    )
+  })
+
+  children.push(
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: coreTableRows,
+    }),
+    new Paragraph({ text: '' }),
+
+    // C.3 PENUTUP
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: lavenderBorder,
+        bottom: lavenderBorder,
+        left: lavenderBorder,
+        right: lavenderBorder,
+        insideHorizontal: borderlessBorders.insideHorizontal,
+        insideVertical: borderlessBorders.insideVertical,
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F5F3FF' },
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'C.3. PENUTUP (BERKESADARAN, MENGGEMBIRAKAN)',
+                      bold: true,
+                      size: 18,
+                      color: '6B21A8',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 100 },
+      children: [
+        new TextRun({
+          text: 'Tahap akhir dalam proses pembelajaran yang bertujuan memberikan umpan balik yang konstruktif kepada anak atas pengalaman belajar yang telah dilakukan, menyimpulkan pembelajaran, dan anak terlibat dalam perencanaan pembelajaran selanjutnya:',
+          size: 18,
+          italics: true,
+        }),
+      ],
+    })
+  )
+
+  const closeActs =
+    Array.isArray(exp.closingActivities) && exp.closingActivities.length > 0
+      ? exp.closingActivities
+      : [
+          'Recalling kegiatan hari ini dengan bertanya "Apa yang paling menyenangkan hari ini?"',
+          'Pameran mini hasil karya dimana setiap anak memamerkan karyanya dengan bangga',
+          'Tepuk tangan apresiasi bersama untuk semua pencapaian anak hari ini',
+          'Bernyanyi lagu penutup yang ceria tentang kebanggaan diri',
+          'Yel-yel semangat untuk kegiatan esok hari',
+          'Doa penutup dengan penuh syukur dan persiapan pulang yang gembira',
+        ]
+
+  closeActs.forEach((act: string, idx: number) => {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: `${idx + 1}. ${act}`, size: 18 })] })
+    )
+  })
+
+  children.push(new Paragraph({ text: '' }))
+
+  // SECTION D: ASESMEN PEMBELAJARAN
+  const asm = content.assessment || {}
+  children.push(
+    createLavenderBanner('D. ASESMEN PEMBELAJARAN'),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: 'Asesmen dalam pembelajaran ini dirancang untuk mengamati dan mendokumentasikan perkembangan anak secara alami melalui kegiatan bermain, tanpa membuat anak merasa sedang dievaluasi. Guru menggunakan berbagai teknik observasi yang ramah anak untuk memahami kemajuan setiap individu dalam mengenal identitas diri dan berinteraksi sosial.',
+          size: 18,
+          italics: true,
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [new TextRun({ text: 'Asesmen Awal:', bold: true, size: 18, color: '581C87' })],
+    })
+  )
+
+  const earlyList =
+    Array.isArray(asm.earlyAssessment) && asm.earlyAssessment.length > 0
+      ? asm.earlyAssessment
+      : [
+          'Ajak anak bercerita tentang dirinya sambil bermain boneka atau media interaktif',
+          'Minta anak mengekspresikan ide awal terkait tema secara bebas tanpa tekanan',
+          'Observasi bagaimana anak memperkenalkan diri kepada teman baru di awal kegiatan',
+          'Catat kemampuan anak menyebutkan nama, alamat, dan identitas saat ditanya dengan lembut',
+          'Amati tingkat kepercayaan diri anak saat berbicara di depan kelompok kecil',
+        ]
+  earlyList.forEach((e: string) =>
+    children.push(new Paragraph({ children: [new TextRun({ text: `• ${e}`, size: 18 })] }))
+  )
+
+  children.push(
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [new TextRun({ text: 'Asesmen Proses:', bold: true, size: 18, color: '581C87' })],
+    })
+  )
+  const processList =
+    Array.isArray(asm.processAssessment) && asm.processAssessment.length > 0
+      ? asm.processAssessment
+      : [
+          'Foto dan video anak saat bermain untuk melihat interaksi sosial dan keterampilan motorik',
+          'Buat catatan singkat tentang kata-kata santun yang diucapkan anak secara spontan',
+          'Dokumentasikan cara anak menyelesaikan tugas mandiri seperti merapikan mainan',
+          'Rekam suara anak saat bercerita atau bernyanyi untuk menilai kemampuan komunikasi',
+          'Amati bagaimana anak bekerjasama dalam kegiatan kelompok dan menghargai perbedaan teman',
+        ]
+  processList.forEach((p: string) =>
+    children.push(new Paragraph({ children: [new TextRun({ text: `• ${p}`, size: 18 })] }))
+  )
+
+  children.push(
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [new TextRun({ text: 'Asesmen Akhir:', bold: true, size: 18, color: '581C87' })],
+    })
+  )
+  const finalList =
+    Array.isArray(asm.finalAssessment) && asm.finalAssessment.length > 0
+      ? asm.finalAssessment
+      : [
+          'Minta anak mempresentasikan hasil karyanya dengan cara yang menyenangkan',
+          'Ajak anak merefleksi dengan pertanyaan "Apa yang paling berharga yang kamu pelajari hari ini?"',
+          'Observasi perubahan sikap anak dari awal hingga akhir pembelajaran',
+          'Dokumentasikan kemampuan anak mengekspresikan perasaan dan pengalaman belajarnya',
+          'Catat perkembangan kemandirian dan kepercayaan diri anak melalui aktivitas sehari-hari',
+        ]
+  finalList.forEach((f: string) =>
+    children.push(new Paragraph({ children: [new TextRun({ text: `• ${f}`, size: 18 })] }))
+  )
+
+  // Lembar Pengesahan Tanda Tangan
+  children.push(
+    new Paragraph({ text: '' }),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: borderlessBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({ children: [new TextRun({ text: 'Mengetahui,', size: 18 })] }),
+                new Paragraph({
+                  children: [new TextRun({ text: 'Kepala RA', bold: true, size: 18 })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: '......................................................',
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'NIP. ........................................',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: 'Guru Kelas / Penyusun,', size: 18 })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `( ${user.fullName || '........................................'} )`,
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'NIP. ........................................',
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' })
+  )
+
+  // LAMPIRAN 1 s.d. 4 (Instrumen Asesmen Otentik)
+  const iktpList =
+    Array.isArray(asm.iktpChecklist) && asm.iktpChecklist.length > 0
+      ? asm.iktpChecklist
+      : [
+          'Anak dapat menyebutkan nama lengkap dan alamat rumahnya dengan jelas saat ditanya dengan lembut',
+          'Anak mampu menggambar diri dan keluarganya secara bebas tanpa bantuan berlebihan',
+          'Anak menunjukkan kepercayaan diri saat memperkenalkan diri kepada teman baru',
+          'Anak mengucapkan kata-kata sopan (terima kasih, maaf, permisi) secara spontan selama bermain',
+          'Anak dapat menyelesaikan tugas mandiri seperti merapikan mainan tanpa diingatkan berulang',
+          'Anak menunjukkan keterampilan motorik halus yang baik dalam kegiatan membuat karya (menggunting, menempel)',
+          'Anak mampu bekerjasama dengan teman dalam kegiatan kelompok dan berbagi peran',
+          'Anak menghargai perbedaan karakteristik teman (warna kulit, bentuk rambut) dengan sikap positif',
+          'Anak dapat bercerita atau bernyanyi dengan komunikasi yang jelas dan percaya diri',
+          'Anak mampu mempresentasikan hasil karyanya di depan teman-teman dengan antusias',
+          'Anak dapat merefleksi pengalaman belajarnya dengan menjawab pertanyaan sederhana tentang dirinya',
+          'Anak menunjukkan peningkatan kemandirian dan kepercayaan diri dari awal hingga akhir pembelajaran',
+        ]
+
+  children.push(
+    // LAMPIRAN 1: CATATAN ANEKDOT
+    new Paragraph({ pageBreakBefore: true }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'ASESMEN RA', bold: true, size: 22, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'CATATAN ANEKDOT', bold: true, size: 20, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: `TAHUN AJARAN : ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`,
+          bold: true,
+          size: 18,
+          color: '581C87',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Jenjang / Kelas : ${groupDetailStr}          Semester / Minggu : ${semesterStr} / ${weekStr}`,
+          size: 18,
+        }),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: `Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, size: 18 }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 15, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Tanggal', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Nama Anak', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 35, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Kejadian Teramati', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Analisis Capaian', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+          ],
+        }),
+        ...(assessments && assessments.anecdotes.length > 0
+          ? assessments.anecdotes.map(
+              (item) =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [new TextRun({ text: item.date, size: 18 })],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          children: [new TextRun({ text: item.studentName, bold: true, size: 18 })],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 35, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ children: [new TextRun({ text: item.event, size: 18 })] }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          children: [new TextRun({ text: item.analysis, size: 18 })],
+                        }),
+                      ],
+                    }),
+                  ],
+                })
+            )
+          : [1, 2, 3, 4, 5, 6].map(
+              () =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' }), new Paragraph({ text: '' })],
+                    }),
+                    new TableCell({
+                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' }), new Paragraph({ text: '' })],
+                    }),
+                    new TableCell({
+                      width: { size: 35, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' }), new Paragraph({ text: '' })],
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' }), new Paragraph({ text: '' })],
+                    }),
+                  ],
+                })
+            )),
+      ],
+    }),
+
+    // LAMPIRAN 2: CEKLIS IKTP
+    new Paragraph({ pageBreakBefore: true }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'ASESMEN RA', bold: true, size: 22, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: 'CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)',
+          bold: true,
+          size: 20,
+          color: '581C87',
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: `TAHUN AJARAN : ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`,
+          bold: true,
+          size: 18,
+          color: '581C87',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Jenjang / Kelas : ${groupDetailStr}          Semester / Minggu : ${semesterStr} / ${weekStr}`,
+          size: 18,
+        }),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: `Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, size: 18 }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 6, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'No', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 44, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Indikator', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 15, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Sudah Muncul', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 15, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Belum Muncul', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Keterangan', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+          ],
+        }),
+        ...(assessments && assessments.checklists.length > 0
+          ? assessments.checklists.map(
+              (item, idx) =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 6, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [new TextRun({ text: String(item.no || idx + 1), size: 18 })],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 44, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          children: [new TextRun({ text: item.indicator, size: 18 })],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [
+                            new TextRun({
+                              text: item.sudahMuncul ? '✔' : '',
+                              font: 'Segoe UI Symbol',
+                              bold: true,
+                              size: 22,
+                              color: '16A34A',
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [
+                            new TextRun({
+                              text: item.belumMuncul ? '✔' : '',
+                              font: 'Segoe UI Symbol',
+                              bold: true,
+                              size: 22,
+                              color: 'DC2626',
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: item.note || item.studentName || '', size: 17 }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                })
+            )
+          : iktpList.map(
+              (ind: string, idx: number) =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 6, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [new TextRun({ text: String(idx + 1), size: 18 })],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 44, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ children: [new TextRun({ text: ind, size: 18 })] }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' })],
+                    }),
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' })],
+                    }),
+                    new TableCell({
+                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [new Paragraph({ text: '' })],
+                    }),
+                  ],
+                })
+            )),
+      ],
+    }),
+
+    // LAMPIRAN 3: DOKUMENTASI HASIL KARYA
+    new Paragraph({ pageBreakBefore: true }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'ASESMEN RA', bold: true, size: 22, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({ text: 'DOKUMENTASI HASIL KARYA', bold: true, size: 20, color: '581C87' }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: `TAHUN AJARAN : ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`,
+          bold: true,
+          size: 18,
+          color: '581C87',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Jenjang / Kelas : ${groupDetailStr}          Semester / Minggu : ${semesterStr} / ${weekStr}`,
+          size: 18,
+        }),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: `Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, size: 18 }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 12, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Tanggal', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 18, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Nama Anak', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Foto Karya Anak', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 40, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({
+                      text: 'Deskripsi Foto dan Analisis Capaian Perkembangan',
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        ...(assessments && assessments.workSamples.length > 0
+          ? assessments.workSamples.map((item) => {
+              const photoParas: Paragraph[] = []
+              let imgLoaded = false
+              if (item.storedName) {
+                const filePath = join(
+                  process.cwd(),
+                  'public',
+                  'uploads',
+                  'assessments',
+                  String(user.id),
+                  String(item.id),
+                  item.storedName
+                )
+                if (existsSync(filePath)) {
+                  try {
+                    const imgBuf = readFileSync(filePath)
+                    photoParas.push(
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                          new ImageRun({
+                            data: imgBuf,
+                            type: 'png',
+                            transformation: { width: 140, height: 100 },
+                          }),
+                        ],
+                      })
+                    )
+                    imgLoaded = true
+                  } catch {}
+                }
+              }
+              if (!imgLoaded) {
+                photoParas.push(
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: '[ Foto Hasil Karya ]',
+                        size: 16,
+                        italics: true,
+                        color: '94A3B8',
+                      }),
+                    ],
+                  })
+                )
+              }
+
+              return new TableRow({
+                children: [
+                  new TableCell({
+                    width: { size: 12, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text: item.date, size: 18 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 18, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: item.studentName, bold: true, size: 18 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 30, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: photoParas,
+                  }),
+                  new TableCell({
+                    width: { size: 40, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: 'Deskripsi:', bold: true, size: 18 })],
+                      }),
+                      new Paragraph({
+                        children: [new TextRun({ text: item.description, size: 18 })],
+                      }),
+                      new Paragraph({ text: '' }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: 'Analisis Capaian:', bold: true, size: 18 }),
+                        ],
+                      }),
+                      new Paragraph({ children: [new TextRun({ text: item.analysis, size: 18 })] }),
+                    ],
+                  }),
+                ],
+              })
+            })
+          : [1, 2, 3, 4, 5].map(
+              () =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 12, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 18, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [
+                            new TextRun({
+                              text: '[ Tempel Foto Karya ]',
+                              size: 16,
+                              italics: true,
+                              color: '94A3B8',
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 40, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                      ],
+                    }),
+                  ],
+                })
+            )),
+      ],
+    }),
+
+    // LAMPIRAN 4: FOTO BERSERI
+    new Paragraph({ pageBreakBefore: true }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'ASESMEN RA', bold: true, size: 22, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'FOTO BERSERI', bold: true, size: 20, color: '581C87' })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: `TAHUN AJARAN : ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`,
+          bold: true,
+          size: 18,
+          color: '581C87',
+        }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Jenjang / Kelas : ${groupDetailStr}          Semester / Minggu : ${semesterStr} / ${weekStr}`,
+          size: 18,
+        }),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: `Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, size: 18 }),
+      ],
+    }),
+    new Paragraph({ text: '' }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: tableBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 12, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Tanggal', bold: true, size: 18 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 44, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({
+                      text: 'Nama Anak, dan Dokumentasi Foto (Minimal 3)',
+                      bold: true,
+                      size: 18,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 44, type: WidthType.PERCENTAGE },
+              shading: { fill: 'F3E8FF' },
+              borders: tableBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({ text: 'Deskripsi Foto dan Analisis CP', bold: true, size: 18 }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        ...(assessments && assessments.photoSeries.length > 0
+          ? assessments.photoSeries.map((item) => {
+              const photoCellChildren: Paragraph[] = [
+                new Paragraph({
+                  children: [new TextRun({ text: item.studentName, bold: true, size: 18 })],
+                }),
+              ]
+              const imgRuns: ImageRun[] = []
+              for (const att of item.attachments.slice(0, 3)) {
+                if (att.storedName) {
+                  const filePath = join(
+                    process.cwd(),
+                    'public',
+                    'uploads',
+                    'assessments',
+                    String(user.id),
+                    String(item.id),
+                    att.storedName
+                  )
+                  if (existsSync(filePath)) {
+                    try {
+                      const imgBuf = readFileSync(filePath)
+                      imgRuns.push(
+                        new ImageRun({
+                          data: imgBuf,
+                          type: 'png',
+                          transformation: { width: 75, height: 60 },
+                        })
+                      )
+                    } catch {}
+                  }
+                }
+              }
+              if (imgRuns.length > 0) {
+                photoCellChildren.push(
+                  new Paragraph({
+                    children: imgRuns,
+                  })
+                )
+              } else {
+                photoCellChildren.push(
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: '[ Foto 1 ]  [ Foto 2 ]  [ Foto 3 ]',
+                        size: 16,
+                        italics: true,
+                        color: '94A3B8',
+                      }),
+                    ],
+                  })
+                )
+              }
+
+              return new TableRow({
+                children: [
+                  new TableCell({
+                    width: { size: 12, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text: item.date, size: 18 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 44, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: photoCellChildren,
+                  }),
+                  new TableCell({
+                    width: { size: 44, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: 'Judul / Kegiatan:', bold: true, size: 18 }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [new TextRun({ text: item.description, size: 18 })],
+                      }),
+                      new Paragraph({ text: '' }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: 'Analisis Perkembangan:', bold: true, size: 18 }),
+                        ],
+                      }),
+                      new Paragraph({ children: [new TextRun({ text: item.analysis, size: 18 })] }),
+                    ],
+                  }),
+                ],
+              })
+            })
+          : [1, 2, 3, 4, 5].map(
+              () =>
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 12, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 44, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [
+                            new TextRun({
+                              text: '[ Foto 1 ]  [ Foto 2 ]  [ Foto 3 ]',
+                              size: 16,
+                              italics: true,
+                              color: '94A3B8',
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      width: { size: 44, type: WidthType.PERCENTAGE },
+                      borders: tableBorders,
+                      children: [
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                        new Paragraph({ text: '' }),
+                      ],
+                    }),
+                  ],
+                })
+            )),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 150 },
+      children: [
+        new TextRun({
+          text: 'Catatan: Foto berseri fokus pada proses perkembangan pada satu keterampilan/kegiatan yang sama dari waktu ke waktu; Menunjukkan progres bertahap dalam penguasaan suatu keterampilan.',
+          size: 16,
+          italics: true,
+          color: '475569',
+        }),
+      ],
+    })
+  )
+
   return documentFromChildren(children)
 }
 

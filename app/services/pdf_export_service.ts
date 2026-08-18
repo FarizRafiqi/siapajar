@@ -1,4 +1,6 @@
 import PDFDocument from 'pdfkit'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import type TeachingModule from '#models/teaching_module'
 import type Exam from '#models/exam'
 import type AnnualPlan from '#models/annual_plan'
@@ -19,6 +21,15 @@ import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 import { chromium, type Browser } from 'playwright'
 import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
+import { formatRpmClassCover, formatRpmClassGroupDetail } from '#services/class_formatter'
+import {
+  loadWeeklyPlanAssessments,
+  type LoadedWeeklyAssessments,
+  type AnecdoteItem,
+  type ChecklistItem,
+  type WorkSampleItem,
+  type PhotoSeriesItem,
+} from '#services/weekly_assessment_loader'
 import env from '#start/env'
 
 async function consumePdfExport(user: User) {
@@ -50,6 +61,22 @@ function toBuffer(doc: PDFKit.PDFDocument): Promise<Buffer> {
     doc.on('error', reject)
     doc.end()
   })
+}
+
+function drawVectorCheckmark(
+  doc: PDFKit.PDFDocument,
+  centerX: number,
+  centerY: number,
+  color = '#16A34A'
+) {
+  doc.save()
+  doc.lineWidth(1.8).strokeColor(color).lineCap('round').lineJoin('round')
+  doc
+    .moveTo(centerX - 4.5, centerY)
+    .lineTo(centerX - 1.2, centerY + 3.8)
+    .lineTo(centerX + 5.5, centerY - 4.2)
+    .stroke()
+  doc.restore()
 }
 
 function writeKop(doc: PDFKit.PDFDocument, user: User, subtitle: string) {
@@ -1075,21 +1102,1394 @@ export async function exportCurriculumPdf(
   return toBuffer(doc)
 }
 
+function drawRpmPdfCover(
+  doc: typeof PDFDocument,
+  leftX: number,
+  contentWidth: number,
+  user: User,
+  meta: {
+    themeUpper: string
+    subthemeUpper: string
+    groupCoverStr: string
+    groupDetailStr: string
+    semesterStr: string
+    weekStr: string
+    allocation: string
+  }
+) {
+  doc.rect(leftX, 40, contentWidth, 3).fill('#EA580C')
+  doc.rect(leftX, 46, contentWidth, 1).fill('#FDBA74')
+
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor('#9A3412')
+    .text('KEMENTERIAN AGAMA REPUBLIK INDONESIA', leftX, 60, {
+      align: 'center',
+      width: contentWidth,
+    })
+  doc
+    .font('Helvetica')
+    .fontSize(9)
+    .fillColor('#64748B')
+    .text('MODUL AJAR KURIKULUM BERBASIS CINTA (KBC) RA - FASE FONDASI', leftX, 75, {
+      align: 'center',
+      width: contentWidth,
+    })
+
+  // Hero Card Title
+  const heroY = 110
+  const heroH = 145
+  doc.roundedRect(leftX, heroY, contentWidth, heroH, 6).fillAndStroke('#FFF7ED', '#F97316')
+
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(13)
+    .fillColor('#C2410C')
+    .text('RENCANA PEMBELAJARAN MENDALAM (RPM)', leftX + 15, heroY + 18, {
+      align: 'center',
+      width: contentWidth - 30,
+    })
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor('#EA580C')
+    .text('RENCANA PELAKSANAAN PEMBELAJARAN MINGGUAN (RPPM)', leftX + 15, heroY + 36, {
+      align: 'center',
+      width: contentWidth - 30,
+    })
+
+  doc.rect(leftX + contentWidth * 0.2, heroY + 54, contentWidth * 0.6, 1).fill('#FED7AA')
+
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(16)
+    .fillColor('#9A3412')
+    .text(meta.themeUpper, leftX + 15, heroY + 68, {
+      align: 'center',
+      width: contentWidth - 30,
+    })
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(13)
+    .fillColor('#C2410C')
+    .text(`SUB TOPIK : ${meta.subthemeUpper}`, leftX + 15, heroY + 92, {
+      align: 'center',
+      width: contentWidth - 30,
+    })
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(9.5)
+    .fillColor('#64748B')
+    .text(`JENJANG / KELAS : ${meta.groupCoverStr.toUpperCase()}`, leftX + 15, heroY + 116, {
+      align: 'center',
+      width: contentWidth - 30,
+    })
+
+  // Metadata Card
+  const metaCardY = 280
+  const metaCardH = 240
+  doc
+    .roundedRect(leftX + 15, metaCardY, contentWidth - 30, metaCardH, 6)
+    .fillAndStroke('#F8FAFC', '#CBD5E1')
+
+  doc.rect(leftX + 15, metaCardY, contentWidth - 30, 26).fillAndStroke('#F1F5F9', '#CBD5E1')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor('#334155')
+    .text('INFORMASI PERANGKAT PEMBELAJARAN', leftX + 25, metaCardY + 7, {
+      align: 'center',
+      width: contentWidth - 50,
+    })
+
+  const metaRows: [string, string][] = [
+    ['PENULIS', user.fullName || 'Guru Kelas'],
+    ['SATUAN PENDIDIKAN', user.schoolName || 'RA / TK PAUD'],
+    ['KELOMPOK / USIA', meta.groupDetailStr],
+    ['TOPIK', meta.themeUpper],
+    ['SUB TOPIK', meta.subthemeUpper],
+    ['SEMESTER / PEKAN', `${meta.semesterStr} / ${meta.weekStr}`],
+    ['ALOKASI WAKTU', meta.allocation],
+  ]
+
+  let curMetaY = metaCardY + 38
+  const metaLabelW = 140
+  const metaColonX = leftX + 35 + metaLabelW
+  const metaValX = metaColonX + 15
+  const metaValW = contentWidth - 80 - metaLabelW
+
+  for (const [lbl, val] of metaRows) {
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(9)
+      .fillColor('#475569')
+      .text(lbl, leftX + 35, curMetaY, { width: metaLabelW })
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#475569').text(':', metaColonX, curMetaY)
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(9)
+      .fillColor('#0F172A')
+      .text(val || '-', metaValX, curMetaY, { width: metaValW })
+    curMetaY += 26
+  }
+
+  // Cover Footer
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor('#334155')
+    .text(
+      `TAHUN PELAJARAN ${new Date().getFullYear()} / ${new Date().getFullYear() + 1}`,
+      leftX,
+      730,
+      {
+        align: 'center',
+        width: contentWidth,
+      }
+    )
+  doc.rect(leftX, 760, contentWidth, 3).fill('#EA580C')
+}
+
+function drawRpmPdfIdentification(
+  idf: any,
+  weeklyTheme: string,
+  subtheme: string,
+  drawBanner: (title: string, topGap?: number) => void,
+  draw2ColRow: (lbl: string, lines: string[]) => void
+) {
+  drawBanner('A. IDENTIFIKASI PEMBELAJARAN & NILAI KARAKTER')
+
+  draw2ColRow('Karakteristik Murid', [
+    idf.studentCharacteristics ||
+      'Peserta didik aktif, senang bereksplorasi sensorik-motorik, dan memiliki rasa ingin tahu tinggi.',
+  ])
+  draw2ColRow('Materi Pembelajaran', [
+    `• Esensial: ${idf.essentialMaterials || idf.essentialMaterial || weeklyTheme}`,
+    `• Aplikatif: ${idf.practicalMaterials || idf.appliedMaterial || subtheme || weeklyTheme}`,
+    `• Nilai & Karakter: ${idf.valueMaterials || idf.valueMaterial || 'Kasih sayang dan rasa syukur kepada Allah SWT'}`,
+  ])
+  draw2ColRow(
+    'Dimensi Profil Lulusan (DPL)',
+    (Array.isArray(idf.dpl) && idf.dpl.length > 0
+      ? idf.dpl
+      : ['DPL 1: Keimanan & Ketakwaan', 'DPL 3: Penalaran Kritis']
+    ).map((d: string) => `• ${d}`)
+  )
+  draw2ColRow(
+    'Nilai Panca Cinta KBC',
+    (Array.isArray(idf.pancaCintaValues || idf.kbcValues) &&
+    (idf.pancaCintaValues || idf.kbcValues).length > 0
+      ? idf.pancaCintaValues || idf.kbcValues
+      : ['Cinta Alloh & RosulNya', 'Cinta Diri & Sesama', 'Cinta Lingkungan']
+    ).map((v: string) => `• ${v}`)
+  )
+}
+
+function drawRpmPdfLearningDesign(
+  ld: any,
+  weeklyTheme: string,
+  subtheme: string,
+  drawBanner: (title: string, topGap?: number) => void,
+  draw2ColRow: (lbl: string, lines: string[]) => void
+) {
+  drawBanner('B. DESAIN PEMBELAJARAN')
+
+  const cpList =
+    Array.isArray(ld.cpElements) && ld.cpElements.length > 0
+      ? ld.cpElements.map((c: string) => `• ${c}`)
+      : [
+          '• CP Nilai Agama & Budi Pekerti: Anak mengenal Allah SWT & ciptaan-Nya',
+          '• CP Jati Diri: Anak mengenali identitas diri & emosi',
+          '• CP Dasar Literasi & STEAM: Anak mengeksplorasi media loose parts',
+        ]
+
+  const tpList = (
+    Array.isArray(ld.learningObjectives) && ld.learningObjectives.length > 0
+      ? ld.learningObjectives
+      : [
+          {
+            code: 'TP 1',
+            title: 'Anak mengenal dan memahami identitas dirinya serta ciptaan Allah',
+          },
+        ]
+  ).map((tp: any, idx: number) => {
+    const title = typeof tp === 'string' ? tp : tp?.title || tp?.name || ''
+    const code = typeof tp === 'object' && tp?.code ? tp.code : `TP ${idx + 1}`
+    return `• [${code}] ${title}`
+  })
+
+  let pedText =
+    'Menggunakan pendekatan bermain sebagai cara alami anak belajar, bercerita untuk membangun pemahaman, bernyanyi untuk menciptakan suasana menyenangkan, dan eksplorasi langsung dengan media loose parts.'
+  if (typeof ld.pedagogicalPractices === 'object' && ld.pedagogicalPractices !== null) {
+    pedText = `Mindful: ${ld.pedagogicalPractices.mindful || '-'}\nMeaningful: ${ld.pedagogicalPractices.meaningful || '-'}\nJoyful: ${ld.pedagogicalPractices.joyful || '-'}`
+  } else if (typeof ld.pedagogicalPractices === 'string' && ld.pedagogicalPractices.trim()) {
+    pedText = ld.pedagogicalPractices
+  }
+
+  draw2ColRow('Capaian Pembelajaran', cpList)
+  draw2ColRow('Lintas Disiplin Ilmu', [
+    ld.crossDisciplinaryConcepts ||
+      ld.crossDisciplinary ||
+      'Nilai agama dan moral, sosial emosional, fisik motorik, kognitif, bahasa, seni',
+  ])
+  draw2ColRow('Tujuan Pembelajaran', tpList)
+  draw2ColRow('Topik Pembelajaran', [`${weeklyTheme} : ${subtheme || 'Ayo Kita Berkenalan'}`])
+  draw2ColRow('Praktik Pedagogis (Deep Learning)', pedText.split('\n'))
+  draw2ColRow('Kemitraan Pembelajaran', [
+    ld.partnerships ||
+      'Guru kelas, orang tua/keluarga, teman sebaya dalam kelompok bermain, dan komunitas sekolah.',
+  ])
+  draw2ColRow('Lingkungan Pembelajaran', [
+    ld.learningEnvironment ||
+      'Ruang kelas fleksibel dengan area bermain loose parts, lingkungan outdoor untuk eksplorasi fisik.',
+  ])
+  draw2ColRow('Pemanfaatan Digital', [
+    '• Perencanaan: Persiapan media lagu dan audio/video interaktif',
+    '• Pelaksanaan: Dokumentasi foto & video proses main anak',
+    '• Asesmen: Portofolio digital karya anak',
+  ])
+}
+
+function drawRpmPdfLearningExperience(
+  doc: typeof PDFDocument,
+  leftX: number,
+  contentWidth: number,
+  exp: any,
+  drawPageHeader: () => void,
+  drawBanner: (title: string, topGap?: number) => void
+) {
+  drawBanner('C. PENGALAMAN BELAJAR')
+
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(9.5)
+    .fillColor('#1E293B')
+    .text('RENCANA PELAKSANAAN PEMBELAJARAN / LANGKAH-LANGKAH PEMBELAJARAN', leftX, doc.y)
+  doc.moveDown(0.4)
+
+  // C.1 AWAL
+  if (doc.y > 670) {
+    doc.addPage()
+    drawPageHeader()
+  }
+  const subY = doc.y
+  doc.rect(leftX, subY, contentWidth, 20).fillAndStroke('#F5F3FF', '#D8B4FE')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(9)
+    .fillColor('#6B21A8')
+    .text('C.1. AWAL (BERKESADARAN, BERMAKNA, MENGGEMBIRAKAN)', leftX + 8, subY + 5)
+  doc.y = subY + 25
+
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(8)
+    .fillColor('#334155')
+    .text(
+      'Pembuka dari proses pembelajaran yang bertujuan untuk mempersiapkan peserta didik sebelum memasuki inti pembelajaran. Kegiatan dalam tahap ini meliputi orientasi yang bermakna, apersepsi yang kontekstual, dan motivasi yang menggembirakan:',
+      leftX,
+      doc.y,
+      { width: contentWidth }
+    )
+  doc.moveDown(0.3)
+
+  const openActs =
+    Array.isArray(exp.openingActivities) && exp.openingActivities.length > 0
+      ? exp.openingActivities
+      : [
+          'Salam dan doa pembuka dengan penuh kesadaran',
+          'Renungan/nasehat/motivasi pagi yang bermakna',
+          'Menyanyikan lagu ceria tentang tema pembelajaran',
+          'Asesmen awal melalui diskusi ide kegiatan hari ini',
+          'Kegiatan pemantik berupa cerita/video interaktif',
+          'Menyiapkan kesepakatan kelas dan aturan bermain',
+          'Pertanyaan pemantik untuk mengembangkan dimensi profil lulusan:',
+        ]
+
+  openActs.forEach((act: string, idx: number) => {
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor('#0F172A')
+      .text(`${idx + 1}. ${act}`, leftX + 5, doc.y, { width: contentWidth - 10 })
+    doc.moveDown(0.15)
+  })
+
+  const openQuestions =
+    Array.isArray(exp.openingQuestions) && exp.openingQuestions.length > 0
+      ? exp.openingQuestions
+      : [
+          'Siapa yang bisa menceritakan pengalamannya tentang tema ini dengan suara jelas? (Komunikasi)',
+          'Apa yang membuat dirimu dan ciptaan Tuhan ini istimewa? (Keimanan & Ketakwaan)',
+          'Bagaimana cara kita menghargai dan bekerja sama dengan teman? (Kewargaan & Kolaborasi)',
+          'Apa yang bisa kamu lakukan secara mandiri hari ini? (Kemandirian)',
+        ]
+
+  openQuestions.forEach((q: string, qIdx: number) => {
+    const letter = String.fromCodePoint(97 + qIdx)
+    doc
+      .font('Helvetica-Oblique')
+      .fontSize(7.5)
+      .fillColor('#475569')
+      .text(`    ${letter}) "${q}"`, leftX + 15, doc.y, { width: contentWidth - 25 })
+    doc.moveDown(0.1)
+  })
+
+  doc.moveDown(0.4)
+
+  // C.2 INTI
+  if (doc.y > 600) {
+    doc.addPage()
+    drawPageHeader()
+  }
+  const intiY = doc.y
+  doc.rect(leftX, intiY, contentWidth, 20).fillAndStroke('#F5F3FF', '#D8B4FE')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(9)
+    .fillColor('#6B21A8')
+    .text('C.2. INTI', leftX + 8, intiY + 5)
+  doc.y = intiY + 25
+
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(8)
+    .fillColor('#334155')
+    .text(
+      'Pada tahap ini, anak aktif terlibat dalam pengalaman belajar memahami, mengaplikasi, dan merefleksi. Guru menerapkan prinsip pembelajaran berkesadaran, bermakna, menggembirakan untuk mencapai tujuan pembelajaran.',
+      leftX,
+      doc.y,
+      { width: contentWidth }
+    )
+  doc.moveDown(0.4)
+
+  // Tabel Pengalaman Belajar Inti Harian
+  const coreDays = Array.isArray(exp.dailyCoreActivities) ? exp.dailyCoreActivities : []
+  const colHariW = 55
+  const colUraianW = contentWidth - colHariW
+  const colUraianX = leftX + colHariW
+
+  const drawIntiTableHeader = () => {
+    const tableHeaderY = doc.y
+    doc.rect(leftX, tableHeaderY, colHariW, 20).fillAndStroke('#E9D5FF', '#CBD5E1')
+    doc.rect(colUraianX, tableHeaderY, colUraianW, 20).fillAndStroke('#E9D5FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8.5)
+      .fillColor('#581C87')
+      .text('Hari', leftX, tableHeaderY + 5, { width: colHariW, align: 'center' })
+    doc.text(
+      'Uraian Kegiatan Inti Bermain Bermakna & Loose Parts',
+      colUraianX + 10,
+      tableHeaderY + 5,
+      { width: colUraianW - 20 }
+    )
+    doc.y = tableHeaderY + 20
+  }
+
+  drawIntiTableHeader()
+
+  coreDays.forEach((d: any, dayIdx: number) => {
+    let details: any[] = []
+    if (Array.isArray(d.activitiesDetail) && d.activitiesDetail.length > 0) {
+      details = d.activitiesDetail
+    } else {
+      const fallbackActs = Array.isArray(d.activities) ? d.activities : []
+      details = fallbackActs.map((a: string, aIdx: number) => ({
+        name: `Kegiatan ${aIdx + 1} : ${a}`,
+        focus: d.steamFocus || d.kbcFocus || 'Eksplorasi Loose Parts',
+        materials: d.mediaLooseParts || 'Bahan alam, loose parts',
+        instructions: 'Anak bereksplorasi secara aktif dan mandiri bersama kelompok main.',
+        benefits: 'Melatih kreativitas, daya pikir kritis, dan kemandirian.',
+      }))
+    }
+
+    // Measure height accurately
+    let estH = 16
+    if (d.stage) estH += 22
+    for (const item of details) {
+      const focusStr = item.focus ? ` (${item.focus})` : ''
+      const actTitle = (item.name || 'Kegiatan') + focusStr
+      doc.fontSize(8.5)
+      estH += doc.heightOfString(actTitle, { width: colUraianW - 16 }) + 3
+      doc.fontSize(8)
+      if (item.materials) {
+        estH +=
+          doc.heightOfString(`Alat dan Bahan: ${item.materials}`, { width: colUraianW - 16 }) + 3
+      }
+      estH +=
+        doc.heightOfString(`Cara Bermain / Membuat: ${item.instructions || '-'}`, {
+          width: colUraianW - 16,
+        }) + 3
+      estH +=
+        doc.heightOfString(`Manfaat Kegiatan: ${item.benefits || '-'}`, {
+          width: colUraianW - 16,
+        }) + 8
+    }
+
+    if (doc.y + estH > 750) {
+      doc.addPage()
+      drawPageHeader()
+      drawIntiTableHeader()
+    }
+
+    const rowStartY = doc.y
+    let curY = rowStartY + 8
+
+    if (d.stage) {
+      doc.rect(colUraianX + 8, curY, colUraianW - 16, 16).fillAndStroke('#F3E8FF', '#D8B4FE')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#6B21A8')
+        .text(d.stage, colUraianX + 12, curY + 3.5, { width: colUraianW - 24 })
+      curY += 20
+    }
+
+    details.forEach((item: any, actIdx: number) => {
+      const defaultName = `Kegiatan ${actIdx + 1}`
+      const baseName = item.name || defaultName
+      const focusStr = item.focus ? ` (${item.focus})` : ''
+      const actTitle = baseName + focusStr
+      doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0F172A')
+      doc.text(actTitle, colUraianX + 8, curY, { width: colUraianW - 16 })
+      curY = doc.y + 2
+
+      if (item.materials) {
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor('#475569')
+          .text('Alat dan Bahan: ', colUraianX + 8, curY, {
+            continued: true,
+            width: colUraianW - 16,
+          })
+        doc.font('Helvetica').fillColor('#334155').text(item.materials)
+        curY = doc.y + 2.5
+      }
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#1E293B')
+        .text('Cara Bermain / Membuat: ', colUraianX + 8, curY, {
+          continued: true,
+          width: colUraianW - 16,
+        })
+      doc
+        .font('Helvetica')
+        .fillColor('#334155')
+        .text(item.instructions || 'Anak bereksplorasi secara aktif dan mandiri.')
+      curY = doc.y + 2.5
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#1E293B')
+        .text('Manfaat Kegiatan: ', colUraianX + 8, curY, {
+          continued: true,
+          width: colUraianW - 16,
+        })
+      doc
+        .font('Helvetica-Oblique')
+        .fillColor('#475569')
+        .text(item.benefits || 'Melatih daya pikir kritis dan kemandirian.')
+      curY = doc.y + 6
+    })
+
+    const finalRowH = Math.max(curY - rowStartY + 4, 45)
+    doc.rect(leftX, rowStartY, colHariW, finalRowH).stroke('#CBD5E1')
+    doc.rect(colUraianX, rowStartY, colUraianW, finalRowH).stroke('#CBD5E1')
+
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(13)
+      .fillColor('#0F172A')
+      .text(String(dayIdx + 1), leftX, rowStartY + 14, { width: colHariW, align: 'center' })
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#475569')
+      .text(d.day || `Hari ${dayIdx + 1}`, leftX, rowStartY + 30, {
+        width: colHariW,
+        align: 'center',
+      })
+
+    doc.y = rowStartY + finalRowH
+  })
+
+  doc.moveDown(0.4)
+
+  // C.3 PENUTUP
+  if (doc.y > 670) {
+    doc.addPage()
+    drawPageHeader()
+  }
+  const penutupY = doc.y
+  doc.rect(leftX, penutupY, contentWidth, 20).fillAndStroke('#F5F3FF', '#D8B4FE')
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(9)
+    .fillColor('#6B21A8')
+    .text('C.3. PENUTUP (BERKESADARAN, MENGGEMBIRAKAN)', leftX + 8, penutupY + 5)
+  doc.y = penutupY + 25
+
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(8)
+    .fillColor('#334155')
+    .text(
+      'Tahap akhir dalam proses pembelajaran yang bertujuan memberikan umpan balik yang konstruktif kepada anak atas pengalaman belajar yang telah dilakukan, menyimpulkan pembelajaran, dan anak terlibat dalam perencanaan pembelajaran selanjutnya:',
+      leftX,
+      doc.y,
+      { width: contentWidth }
+    )
+  doc.moveDown(0.3)
+
+  const closeActs =
+    Array.isArray(exp.closingActivities) && exp.closingActivities.length > 0
+      ? exp.closingActivities
+      : [
+          'Recalling kegiatan hari ini dengan bertanya "Apa yang paling menyenangkan hari ini?"',
+          'Pameran mini hasil karya dimana setiap anak memamerkan karyanya dengan bangga',
+          'Tepuk tangan apresiasi bersama untuk semua pencapaian anak hari ini',
+          'Bernyanyi lagu penutup yang ceria tentang kebanggaan diri',
+          'Yel-yel semangat untuk kegiatan esok hari',
+          'Doa penutup dengan penuh syukur dan persiapan pulang yang gembira',
+        ]
+
+  closeActs.forEach((act: string, idx: number) => {
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor('#0F172A')
+      .text(`${idx + 1}. ${act}`, leftX + 5, doc.y, { width: contentWidth - 10 })
+    doc.moveDown(0.15)
+  })
+
+  doc.moveDown(0.4)
+}
+
+function drawRpmPdfAssessmentAndSignatures(
+  doc: typeof PDFDocument,
+  leftX: number,
+  contentWidth: number,
+  asm: any,
+  user: User,
+  drawPageHeader: () => void,
+  drawBanner: (title: string, topGap?: number) => void
+) {
+  drawBanner('D. ASESMEN PEMBELAJARAN')
+
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(8)
+    .fillColor('#334155')
+    .text(
+      'Asesmen dalam pembelajaran ini dirancang untuk mengamati dan mendokumentasikan perkembangan anak secara alami melalui kegiatan bermain, tanpa membuat anak merasa sedang dievaluasi. Guru menggunakan berbagai teknik observasi yang ramah anak untuk memahami kemajuan setiap individu dalam mengenal identitas diri dan berinteraksi sosial.',
+      leftX,
+      doc.y,
+      { width: contentWidth }
+    )
+  doc.moveDown(0.3)
+
+  const renderAssessmentCategory = (categoryTitle: string, items: string[]) => {
+    if (doc.y > 700) {
+      doc.addPage()
+      drawPageHeader()
+    }
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#581C87').text(categoryTitle, leftX, doc.y)
+    doc.moveDown(0.2)
+    items.forEach((item) => {
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(`• ${item}`, leftX + 8, doc.y, { width: contentWidth - 16 })
+      doc.moveDown(0.1)
+    })
+    doc.moveDown(0.25)
+  }
+
+  const earlyList =
+    Array.isArray(asm.earlyAssessment) && asm.earlyAssessment.length > 0
+      ? asm.earlyAssessment
+      : [
+          'Ajak anak bercerita tentang dirinya sambil bermain boneka atau media interaktif',
+          'Minta anak mengekspresikan ide awal terkait tema secara bebas tanpa tekanan',
+          'Observasi bagaimana anak memperkenalkan diri kepada teman baru di awal kegiatan',
+          'Catat kemampuan anak menyebutkan nama, alamat, dan identitas saat ditanya dengan lembut',
+          'Amati tingkat kepercayaan diri anak saat berbicara di depan kelompok kecil',
+        ]
+
+  const processList =
+    Array.isArray(asm.processAssessment) && asm.processAssessment.length > 0
+      ? asm.processAssessment
+      : [
+          'Foto dan video anak saat bermain untuk melihat interaksi sosial dan keterampilan motorik',
+          'Buat catatan singkat tentang kata-kata santun yang diucapkan anak secara spontan',
+          'Dokumentasikan cara anak menyelesaikan tugas mandiri seperti merapikan mainan',
+          'Rekam suara anak saat bercerita atau bernyanyi untuk menilai kemampuan komunikasi',
+          'Amati bagaimana anak bekerjasama dalam kegiatan kelompok dan menghargai perbedaan teman',
+        ]
+
+  const finalList =
+    Array.isArray(asm.finalAssessment) && asm.finalAssessment.length > 0
+      ? asm.finalAssessment
+      : [
+          'Minta anak mempresentasikan hasil karyanya dengan cara yang menyenangkan',
+          'Ajak anak merefleksi dengan pertanyaan "Apa yang paling berharga yang kamu pelajari hari ini?"',
+          'Observasi perubahan sikap anak dari awal hingga akhir pembelajaran',
+          'Dokumentasikan kemampuan anak mengekspresikan perasaan dan pengalaman belajarnya',
+          'Catat perkembangan kemandirian dan kepercayaan diri anak melalui aktivitas sehari-hari',
+        ]
+
+  renderAssessmentCategory('Asesmen Awal:', earlyList)
+  renderAssessmentCategory('Asesmen Proses:', processList)
+  renderAssessmentCategory('Asesmen Akhir:', finalList)
+
+  // LEMBAR PENGESAHAN
+  if (doc.y > 640) {
+    doc.addPage()
+    drawPageHeader()
+  }
+  doc.moveDown(0.8)
+  const sigY = doc.y
+  const sigLeftX = leftX + 20
+  const sigRightX = leftX + contentWidth * 0.55
+
+  doc.font('Helvetica').fontSize(8.5).fillColor('#0F172A').text('Mengetahui,', sigLeftX, sigY)
+  doc.font('Helvetica-Bold').text('Kepala RA', sigLeftX, sigY + 12)
+  doc.text('......................................................', sigLeftX, sigY + 65)
+  doc
+    .font('Helvetica')
+    .fontSize(8)
+    .text('NIP. ........................................', sigLeftX, sigY + 78)
+
+  doc.font('Helvetica').fontSize(8.5).text('Guru Kelas / Penyusun,', sigRightX, sigY)
+  doc
+    .font('Helvetica-Bold')
+    .text(
+      `( ${user.fullName || '........................................'} )`,
+      sigRightX,
+      sigY + 65
+    )
+  doc
+    .font('Helvetica')
+    .fontSize(8)
+    .text('NIP. ........................................', sigRightX, sigY + 78)
+}
+
+function drawAppendixTable(
+  doc: typeof PDFDocument,
+  leftX: number,
+  cols: { title: string; w: number }[],
+  rowCount: number,
+  rowHeight: number,
+  customPlaceholder?: { colIdx: number; text: string }
+) {
+  let curTblY = doc.y
+  let curTblX = leftX
+  for (const c of cols) {
+    doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#581C87')
+      .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+    curTblX += c.w
+  }
+  curTblY += 20
+
+  for (let r = 0; r < rowCount; r++) {
+    curTblX = leftX
+    for (const [cIdx, c] of cols.entries()) {
+      doc.rect(curTblX, curTblY, c.w, rowHeight).stroke('#CBD5E1')
+      if (cIdx === customPlaceholder?.colIdx) {
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(8)
+          .fillColor('#94A3B8')
+          .text(customPlaceholder.text, curTblX, curTblY + rowHeight / 2 - 4, {
+            width: c.w,
+            align: 'center',
+          })
+      }
+      curTblX += c.w
+    }
+    curTblY += rowHeight
+  }
+  doc.y = curTblY
+}
+
+function drawRpmPdfAppendices(
+  doc: typeof PDFDocument,
+  leftX: number,
+  contentWidth: number,
+  asm: any,
+  user: User,
+  meta: { groupStr: string; semesterStr: string; weekStr: string },
+  assessments?: LoadedWeeklyAssessments
+) {
+  const renderAppendixHeader = (title: string) => {
+    doc.addPage()
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(13)
+      .fillColor('#581C87')
+      .text('ASESMEN RA', leftX, 40, { align: 'center', width: contentWidth })
+    doc.fontSize(10.5).text(title, leftX, 56, { align: 'center', width: contentWidth })
+    doc
+      .fontSize(9)
+      .text(
+        `TAHUN AJARAN : ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`,
+        leftX,
+        70,
+        { align: 'center', width: contentWidth }
+      )
+
+    doc.rect(leftX, 86, contentWidth, 0.75).fill('#D8B4FE')
+
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor('#1E293B')
+      .text(`Jenjang / Kelas : ${meta.groupStr}`, leftX, 94)
+    doc.text(
+      `Semester / Minggu : ${meta.semesterStr} / ${meta.weekStr}`,
+      leftX + contentWidth * 0.55,
+      94
+    )
+    doc.text(`Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, leftX, 108)
+
+    doc.y = 125
+  }
+
+  // 1. LAMPIRAN 1: CATATAN ANEKDOT
+  renderAppendixHeader('CATATAN ANEKDOT')
+  if (assessments && assessments.anecdotes.length > 0) {
+    const colAnecdote = [
+      { title: 'Tanggal', w: 75 },
+      { title: 'Nama Anak', w: 100 },
+      { title: 'Kejadian Teramati', w: 185 },
+      { title: 'Analisis Capaian', w: contentWidth - 360 },
+    ]
+    let curTblY = doc.y
+    let curTblX = leftX
+    for (const c of colAnecdote) {
+      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#581C87')
+        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+      curTblX += c.w
+    }
+    curTblY += 20
+
+    assessments.anecdotes.forEach((item: AnecdoteItem) => {
+      const eventH = doc.heightOfString(item.event, { width: 185 - 10 })
+      const analysisH = doc.heightOfString(item.analysis, { width: contentWidth - 360 - 10 })
+      const rH = Math.max(eventH + 10, analysisH + 10, 28)
+
+      if (curTblY + rH > 750) {
+        renderAppendixHeader('CATATAN ANEKDOT (Lanjutan)')
+        curTblY = doc.y
+        curTblX = leftX
+        for (const c of colAnecdote) {
+          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(8)
+            .fillColor('#581C87')
+            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+          curTblX += c.w
+        }
+        curTblY += 20
+      }
+
+      curTblX = leftX
+      doc.rect(curTblX, curTblY, colAnecdote[0].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.date, curTblX + 4, curTblY + 6, { width: colAnecdote[0].w - 8, align: 'center' })
+      curTblX += colAnecdote[0].w
+
+      doc.rect(curTblX, curTblY, colAnecdote[1].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.studentName, curTblX + 5, curTblY + 6, { width: colAnecdote[1].w - 10 })
+      curTblX += colAnecdote[1].w
+
+      doc.rect(curTblX, curTblY, colAnecdote[2].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(7.5)
+        .fillColor('#334155')
+        .text(item.event, curTblX + 5, curTblY + 6, { width: colAnecdote[2].w - 10 })
+      curTblX += colAnecdote[2].w
+
+      doc.rect(curTblX, curTblY, colAnecdote[3].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(7.5)
+        .fillColor('#334155')
+        .text(item.analysis, curTblX + 5, curTblY + 6, { width: colAnecdote[3].w - 10 })
+      curTblY += rH
+    })
+    doc.y = curTblY
+  } else {
+    drawAppendixTable(
+      doc,
+      leftX,
+      [
+        { title: 'Tanggal', w: 75 },
+        { title: 'Nama Anak', w: 100 },
+        { title: 'Kejadian Teramati', w: 185 },
+        { title: 'Analisis Capaian', w: contentWidth - 360 },
+      ],
+      7,
+      58
+    )
+  }
+
+  // 2. LAMPIRAN 2: CEKLIS IKTP
+  renderAppendixHeader('CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)')
+  const checklistData =
+    assessments && assessments.checklists.length > 0 ? assessments.checklists : null
+
+  const defaultIktpList = [
+    'Anak dapat menyebutkan nama lengkap dan identitas dirinya dengan jelas saat ditanya dengan lembut',
+    'Anak mampu berkreasi dengan media dan loose parts secara mandiri tanpa bantuan berlebihan',
+    'Anak menunjukkan kepercayaan diri saat memperkenalkan diri kepada teman baru',
+    'Anak mengucapkan kata-kata sopan (terima kasih, maaf, tolong) secara spontan selama bermain',
+    'Anak dapat menyelesaikan tugas mandiri seperti merapikan mainan tanpa diingatkan berulang',
+    'Anak menunjukkan keterampilan motorik halus yang baik dalam kegiatan membuat karya',
+    'Anak mampu bekerjasama dengan teman dalam kegiatan kelompok dan berbagi peran',
+    'Anak menghargai perbedaan karakteristik teman dengan sikap positif dan toleran',
+    'Anak dapat bercerita atau bernyanyi dengan komunikasi yang jelas dan percaya diri',
+    'Anak mampu mempresentasikan hasil karyanya di depan teman-teman dengan antusias',
+    'Anak dapat merefleksi pengalaman belajarnya dengan menjawab pertanyaan sederhana',
+    'Anak menunjukkan peningkatan kemandirian dan rasa syukur dari awal hingga akhir pembelajaran',
+  ]
+
+  const iktpItems: ChecklistItem[] =
+    checklistData ??
+    (Array.isArray(asm.iktpChecklist) && asm.iktpChecklist.length > 0
+      ? asm.iktpChecklist
+      : defaultIktpList
+    ).map((ind: string, idx: number) => ({
+      no: idx + 1,
+      indicator: ind,
+      sudahMuncul: false,
+      belumMuncul: false,
+      note: '',
+      studentName: '',
+    }))
+
+  const colIktp = [
+    { title: 'No', w: 25 },
+    { title: 'Indikator', w: 240 },
+    { title: 'Sudah Muncul', w: 75 },
+    { title: 'Belum Muncul', w: 75 },
+    { title: 'Keterangan', w: contentWidth - 415 },
+  ]
+
+  let curTblY = doc.y
+  let curTblX = leftX
+  for (const c of colIktp) {
+    doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#581C87')
+      .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+    curTblX += c.w
+  }
+  curTblY += 20
+
+  iktpItems.forEach((item: ChecklistItem, idx: number) => {
+    const textH = doc.heightOfString(item.indicator, { width: 240 - 10 })
+    const rH = Math.max(textH + 8, 22)
+
+    if (curTblY + rH > 750) {
+      renderAppendixHeader('CEKLIS IKTP (Lanjutan)')
+      curTblY = doc.y
+      curTblX = leftX
+      for (const c of colIktp) {
+        doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor('#581C87')
+          .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+        curTblX += c.w
+      }
+      curTblY += 20
+    }
+
+    curTblX = leftX
+    doc.rect(curTblX, curTblY, colIktp[0].w, rH).stroke('#CBD5E1')
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor('#0F172A')
+      .text(String(item.no || idx + 1), curTblX, curTblY + 6, {
+        width: colIktp[0].w,
+        align: 'center',
+      })
+    curTblX += colIktp[0].w
+
+    doc.rect(curTblX, curTblY, colIktp[1].w, rH).stroke('#CBD5E1')
+    doc.text(item.indicator, curTblX + 5, curTblY + 5, { width: colIktp[1].w - 10 })
+    curTblX += colIktp[1].w
+
+    doc.rect(curTblX, curTblY, colIktp[2].w, rH).stroke('#CBD5E1')
+    if (item.sudahMuncul) {
+      drawVectorCheckmark(doc, curTblX + colIktp[2].w / 2, curTblY + rH / 2, '#16A34A')
+    }
+    curTblX += colIktp[2].w
+
+    doc.rect(curTblX, curTblY, colIktp[3].w, rH).stroke('#CBD5E1')
+    if (item.belumMuncul) {
+      drawVectorCheckmark(doc, curTblX + colIktp[3].w / 2, curTblY + rH / 2, '#DC2626')
+    }
+    curTblX += colIktp[3].w
+
+    doc.rect(curTblX, curTblY, colIktp[4].w, rH).stroke('#CBD5E1')
+    const noteText = item.note || item.studentName || ''
+    if (noteText) {
+      doc
+        .font('Helvetica')
+        .fontSize(7.5)
+        .fillColor('#334155')
+        .text(noteText, curTblX + 4, curTblY + 5, { width: colIktp[4].w - 8 })
+    }
+    curTblY += rH
+  })
+
+  // 3. LAMPIRAN 3: DOKUMENTASI HASIL KARYA
+  renderAppendixHeader('DOKUMENTASI HASIL KARYA')
+  if (assessments && assessments.workSamples.length > 0) {
+    const colWork = [
+      { title: 'Tanggal', w: 65 },
+      { title: 'Nama Anak', w: 95 },
+      { title: 'Foto Karya Anak', w: 160 },
+      { title: 'Deskripsi Foto dan Analisis Capaian Perkembangan', w: contentWidth - 320 },
+    ]
+    curTblY = doc.y
+    curTblX = leftX
+    for (const c of colWork) {
+      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#581C87')
+        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+      curTblX += c.w
+    }
+    curTblY += 20
+
+    for (const item of assessments.workSamples as WorkSampleItem[]) {
+      const descAnalysisStr = `Deskripsi:\n${item.description}\n\nAnalisis Capaian:\n${item.analysis}`
+      const descH = doc.heightOfString(descAnalysisStr, { width: contentWidth - 320 - 12 })
+      const rH = Math.max(descH + 14, 85)
+
+      if (curTblY + rH > 750) {
+        renderAppendixHeader('DOKUMENTASI HASIL KARYA (Lanjutan)')
+        curTblY = doc.y
+        curTblX = leftX
+        for (const c of colWork) {
+          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(8)
+            .fillColor('#581C87')
+            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+          curTblX += c.w
+        }
+        curTblY += 20
+      }
+
+      curTblX = leftX
+      doc.rect(curTblX, curTblY, colWork[0].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.date, curTblX + 4, curTblY + 8, { width: colWork[0].w - 8, align: 'center' })
+      curTblX += colWork[0].w
+
+      doc.rect(curTblX, curTblY, colWork[1].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.studentName, curTblX + 6, curTblY + 8, { width: colWork[1].w - 12 })
+      curTblX += colWork[1].w
+
+      doc.rect(curTblX, curTblY, colWork[2].w, rH).stroke('#CBD5E1')
+      let imgDrawn = false
+      if (item.storedName) {
+        const filePath = join(
+          process.cwd(),
+          'public',
+          'uploads',
+          'assessments',
+          String(user.id),
+          String(item.id),
+          item.storedName
+        )
+        if (existsSync(filePath)) {
+          try {
+            doc.image(filePath, curTblX + 10, curTblY + 6, {
+              fit: [colWork[2].w - 20, rH - 12],
+              align: 'center',
+              valign: 'center',
+            })
+            imgDrawn = true
+          } catch {}
+        }
+      }
+      if (!imgDrawn) {
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(8)
+          .fillColor('#94A3B8')
+          .text('[ Foto Hasil Karya ]', curTblX + 4, curTblY + rH / 2 - 4, {
+            width: colWork[2].w - 8,
+            align: 'center',
+          })
+      }
+      curTblX += colWork[2].w
+
+      doc.rect(curTblX, curTblY, colWork[3].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(7.5)
+        .fillColor('#1E293B')
+        .text(descAnalysisStr, curTblX + 6, curTblY + 6, { width: colWork[3].w - 12 })
+      curTblY += rH
+    }
+    doc.y = curTblY
+  } else {
+    drawAppendixTable(
+      doc,
+      leftX,
+      [
+        { title: 'Tanggal', w: 65 },
+        { title: 'Nama Anak', w: 95 },
+        { title: 'Foto Karya Anak', w: 160 },
+        { title: 'Deskripsi Foto dan Analisis Capaian Perkembangan', w: contentWidth - 320 },
+      ],
+      5,
+      80,
+      { colIdx: 2, text: '[ Tempel Foto Karya ]' }
+    )
+  }
+
+  // 4. LAMPIRAN 4: FOTO BERSERI
+  renderAppendixHeader('FOTO BERSERI')
+  if (assessments && assessments.photoSeries.length > 0) {
+    const colPhoto = [
+      { title: 'Tanggal', w: 65 },
+      { title: 'Nama Anak & Dokumentasi Foto (Minimal 3)', w: 230 },
+      { title: 'Deskripsi Foto dan Analisis CP', w: contentWidth - 295 },
+    ]
+    curTblY = doc.y
+    curTblX = leftX
+    for (const c of colPhoto) {
+      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#581C87')
+        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+      curTblX += c.w
+    }
+    curTblY += 20
+
+    for (const item of assessments.photoSeries as PhotoSeriesItem[]) {
+      const descAnalysisStr = `Judul/Kegiatan:\n${item.description}\n\nAnalisis Perkembangan:\n${item.analysis}`
+      const descH = doc.heightOfString(descAnalysisStr, { width: contentWidth - 295 - 12 })
+      const rH = Math.max(descH + 14, 85)
+
+      if (curTblY + rH > 750) {
+        renderAppendixHeader('FOTO BERSERI (Lanjutan)')
+        curTblY = doc.y
+        curTblX = leftX
+        for (const c of colPhoto) {
+          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(8)
+            .fillColor('#581C87')
+            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+          curTblX += c.w
+        }
+        curTblY += 20
+      }
+
+      curTblX = leftX
+      doc.rect(curTblX, curTblY, colPhoto[0].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.date, curTblX + 4, curTblY + 8, { width: colPhoto[0].w - 8, align: 'center' })
+      curTblX += colPhoto[0].w
+
+      doc.rect(curTblX, curTblY, colPhoto[1].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(item.studentName, curTblX + 6, curTblY + 6, { width: colPhoto[1].w - 12 })
+
+      let imgX = curTblX + 6
+      const thumbW = 65
+      const thumbH = 55
+      let anyDrawn = false
+      for (const att of item.attachments.slice(0, 3)) {
+        if (att.storedName) {
+          const filePath = join(
+            process.cwd(),
+            'public',
+            'uploads',
+            'assessments',
+            String(user.id),
+            String(item.id),
+            att.storedName
+          )
+          if (existsSync(filePath)) {
+            try {
+              doc.image(filePath, imgX, curTblY + 20, { fit: [thumbW, thumbH] })
+              imgX += thumbW + 6
+              anyDrawn = true
+            } catch {}
+          }
+        }
+      }
+      if (!anyDrawn) {
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(8)
+          .fillColor('#94A3B8')
+          .text('[ Foto 1 ]     [ Foto 2 ]     [ Foto 3 ]', curTblX + 6, curTblY + rH / 2 - 2, {
+            width: colPhoto[1].w - 12,
+            align: 'center',
+          })
+      }
+      curTblX += colPhoto[1].w
+
+      doc.rect(curTblX, curTblY, colPhoto[2].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(7.5)
+        .fillColor('#1E293B')
+        .text(descAnalysisStr, curTblX + 6, curTblY + 6, { width: colPhoto[2].w - 12 })
+      curTblY += rH
+    }
+    doc.y = curTblY
+  } else {
+    drawAppendixTable(
+      doc,
+      leftX,
+      [
+        { title: 'Tanggal', w: 65 },
+        { title: 'Nama Anak, dan Dokumentasi Foto (Minimal 3)', w: 230 },
+        { title: 'Deskripsi Foto dan Analisis CP', w: contentWidth - 295 },
+      ],
+      5,
+      80,
+      { colIdx: 1, text: '[ Foto 1 ]     [ Foto 2 ]     [ Foto 3 ]' }
+    )
+  }
+
+  doc
+    .font('Helvetica-Oblique')
+    .fontSize(7.5)
+    .fillColor('#64748B')
+    .text(
+      'Catatan: Foto berseri fokus pada proses perkembangan pada satu keterampilan/kegiatan yang sama dari waktu ke waktu; Menunjukkan progres bertahap dalam penguasaan suatu keterampilan;',
+      leftX,
+      doc.y + 10,
+      { width: contentWidth }
+    )
+}
+
 export async function exportWeeklyLessonPlanPdf(
   weekly: WeeklyLessonPlan,
   user: User,
-  charge = true
+  charge = true,
+  loadedAssessments?: LoadedWeeklyAssessments
 ) {
   if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
-  doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
-  writeMetadata(doc, [
-    ['Kelompok', weekly.schoolClass?.name],
-    ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
-    ['Status', weekly.status],
-  ])
-  writeContentObject(doc, weekly.content ?? {})
+  const doc = new PDFDocument({ margin: 40, size: 'A4' })
+  const content = weekly.content ?? {}
+  const isRpm = Boolean(
+    content.identification || content.learningExperience || content.learningDesign
+  )
+
+  if (!isRpm) {
+    writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
+    doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
+    writeMetadata(doc, [
+      ['Kelompok', weekly.schoolClass?.name],
+      ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
+      ['Status', weekly.status],
+    ])
+    writeContentObject(doc, content)
+    return toBuffer(doc)
+  }
+
+  const assessments = loadedAssessments || (await loadWeeklyPlanAssessments(weekly))
+
+  const pageWidth = doc.page.width
+  const contentWidth = pageWidth - 80 // 40 margin each side
+  const leftX = 40
+
+  const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
+  const weekStr = content.weekNumber ? `Pekan ke-${content.weekNumber}` : 'Pekan 1'
+  const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
+  const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
+  const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
+  const subthemeUpper = (content.subtheme || 'AYO KITA BERKENALAN').toUpperCase()
+
+  // 1. Cover
+  drawRpmPdfCover(doc, leftX, contentWidth, user, {
+    themeUpper,
+    subthemeUpper,
+    groupCoverStr,
+    groupDetailStr,
+    semesterStr,
+    weekStr,
+    allocation: String(content.allocation || '5 Hari x 180 Menit (15 JP)'),
+  })
+
+  // 2. Konten Isi
+  doc.addPage()
+
+  const drawPageHeader = () => {
+    doc.rect(leftX, 35, contentWidth, 20).fillAndStroke('#EA580C', '#C2410C')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(9)
+      .fillColor('#FFFFFF')
+      .text('RENCANA PEMBELAJARAN MENDALAM (RPM) - KBC RA FASE FONDASI', leftX, 40, {
+        align: 'center',
+        width: contentWidth,
+      })
+    doc.y = 65
+  }
+
+  drawPageHeader()
+
+  const drawBanner = (title: string, topGap = 10) => {
+    if (doc.y > 690) {
+      doc.addPage()
+      drawPageHeader()
+    }
+    doc.moveDown(topGap / 10)
+    const y = doc.y
+    doc.rect(leftX, y, contentWidth, 24).fillAndStroke('#F3E8FF', '#D8B4FE')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(10.5)
+      .fillColor('#581C87')
+      .text(title, leftX + 10, y + 6, {
+        width: contentWidth - 20,
+      })
+    doc.y = y + 30
+  }
+
+  const draw2ColRow = (title: string, contentLines: string[], customRowH?: number) => {
+    const col1W = 145
+    const col2W = contentWidth - col1W
+    const col2X = leftX + col1W
+
+    let totalTextH = 0
+    doc.fontSize(8.5)
+    for (const line of contentLines) {
+      totalTextH += doc.heightOfString(line, { width: col2W - 16 }) + 3
+    }
+
+    const rowH = customRowH || Math.max(totalTextH + 16, 28)
+
+    if (doc.y + rowH > 750) {
+      doc.addPage()
+      drawPageHeader()
+    }
+
+    const startY = doc.y
+
+    doc.rect(leftX, startY, col1W, rowH).fillAndStroke('#FAF5FF', '#D8B4FE')
+    doc.rect(col2X, startY, col2W, rowH).stroke('#D8B4FE')
+
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8.5)
+      .fillColor('#581C87')
+      .text(title, leftX + 8, startY + 8, {
+        width: col1W - 16,
+      })
+
+    let tY = startY + 8
+    doc.font('Helvetica').fontSize(8.5)
+    for (const line of contentLines) {
+      doc.fillColor('#0F172A').text(line, col2X + 8, tY, { width: col2W - 16 })
+      tY = doc.y + 3
+    }
+
+    doc.y = startY + rowH
+  }
+
+  drawRpmPdfIdentification(
+    content.identification || {},
+    weekly.theme,
+    content.subtheme,
+    drawBanner,
+    draw2ColRow
+  )
+  drawRpmPdfLearningDesign(
+    content.learningDesign || {},
+    weekly.theme,
+    content.subtheme,
+    drawBanner,
+    draw2ColRow
+  )
+  drawRpmPdfLearningExperience(
+    doc,
+    leftX,
+    contentWidth,
+    content.learningExperience || {},
+    drawPageHeader,
+    drawBanner
+  )
+  drawRpmPdfAssessmentAndSignatures(
+    doc,
+    leftX,
+    contentWidth,
+    content.assessment || {},
+    user,
+    drawPageHeader,
+    drawBanner
+  )
+  drawRpmPdfAppendices(
+    doc,
+    leftX,
+    contentWidth,
+    content.assessment || {},
+    user,
+    { groupStr: groupDetailStr, semesterStr, weekStr },
+    assessments
+  )
+
   return toBuffer(doc)
 }
 
