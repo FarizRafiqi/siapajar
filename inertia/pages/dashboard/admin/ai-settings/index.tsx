@@ -12,7 +12,7 @@ function getXsrfToken() {
 type Provider = '9router' | 'anthropic' | 'openai' | 'gemini' | 'aggregator'
 type AuthMode = 'api_key' | 'oauth'
 type Gateway = 'command_code' | 'openrouter' | 'opencode_zen' | 'together'
-type ReasoningEffort = 'medium' | 'high' | 'max'
+type ReasoningEffort = 'none' | 'low' | 'medium' | 'high' | 'max' | 'xhigh'
 
 interface Setting {
   provider: Provider
@@ -53,7 +53,7 @@ const PROVIDERS: {
     value: 'openai',
     label: 'OpenAI',
     description: 'API key OpenAI atau subscription ChatGPT melalui Codex CLI.',
-    modelPlaceholder: 'contoh: gpt-5.1-codex',
+    modelPlaceholder: 'contoh: gpt-5.6-luna',
   },
   {
     value: 'gemini',
@@ -69,6 +69,12 @@ const PROVIDERS: {
     modelPlaceholder: 'contoh: gpt-5.6-luna',
   },
 ]
+
+function getAuthModeLabel(mode: string, provider: string): string {
+  if (mode === 'api_key') return 'API Key'
+  if (provider === 'openai') return 'OAuth via Codex CLI'
+  return 'Google OAuth'
+}
 
 const GATEWAYS: { value: Gateway; label: string; description: string }[] = [
   {
@@ -96,16 +102,45 @@ const GATEWAYS: { value: Gateway; label: string; description: string }[] = [
 const FALLBACK_MODELS: Record<string, string[]> = {
   '9router': ['flash', 'pro', 'max'],
   'anthropic': ['claude-sonnet-5', 'claude-opus-5'],
-  'openai': ['gpt-5.6-luna', 'gpt-5.1-codex'],
+  'openai': [
+    'gpt-5.6-luna',
+    'gpt-5.6-terra',
+    'gpt-5.6-sol',
+    'gpt-5.5',
+    'gpt-5.4',
+    'gpt-5.4-mini',
+    'gpt-5.1-codex',
+    'gpt-5',
+    'o3-mini',
+    'o4-mini',
+    'o1',
+    'gpt-4o',
+    'gpt-4o-mini',
+  ],
   'gemini': ['gemini-3.5-flash', 'gemini-3.1-flash-image'],
-  'command_code': ['gpt-5.6-luna', 'gemini-3.5-flash', 'deepseek-v4-flash', 'qwen3.7-plus'],
+  'command_code': [
+    'gpt-5.6-luna',
+    'gpt-5.6-terra',
+    'gpt-5.6-sol',
+    'gemini-3.5-flash',
+    'deepseek-v4-flash',
+    'qwen3.7-plus',
+  ],
   'openrouter': [
     'openai/gpt-5.6-luna',
+    'openai/gpt-5.6-terra',
+    'openai/gpt-5.6-sol',
     'google/gemini-3.5-flash',
     'deepseek/deepseek-v4-flash',
     'qwen/qwen3.7-plus',
   ],
-  'opencode_zen': ['gpt-5.6-luna', 'deepseek-v4-flash', 'qwen3.7-plus'],
+  'opencode_zen': [
+    'gpt-5.6-luna',
+    'gpt-5.6-terra',
+    'gpt-5.6-sol',
+    'deepseek-v4-flash',
+    'qwen3.7-plus',
+  ],
   'together': ['Qwen/Qwen3.7-Plus', 'deepseek-ai/DeepSeek-V4-Flash'],
 }
 
@@ -121,7 +156,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
     baseUrl: setting.baseUrl || '',
     model: setting.model || '',
     gateway: setting.gateway || 'command_code',
-    reasoningEffort: setting.reasoningEffort || 'high',
+    reasoningEffort: setting.reasoningEffort || 'medium',
   })
 
   const [models, setModels] = useState<string[]>([])
@@ -264,11 +299,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                         checked={data.authMode === mode}
                         onChange={() => setData('authMode', mode)}
                       />
-                      {mode === 'api_key'
-                        ? 'API Key'
-                        : data.provider === 'openai'
-                          ? 'OAuth via Codex CLI'
-                          : 'Google OAuth'}
+                      {getAuthModeLabel(mode, data.provider)}
                     </label>
                   ))}
                 </div>
@@ -409,24 +440,37 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 </div>
               )}
 
-              {data.provider === 'aggregator' && (
+              {(data.provider === 'openai' || data.provider === 'aggregator') && (
                 <div>
                   <label
                     htmlFor="reasoningEffort"
                     className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                   >
-                    Tingkat penalaran
+                    Mode Berpikir / Tingkat Penalaran (Reasoning Effort)
                   </label>
                   <select
                     id="reasoningEffort"
-                    value={data.reasoningEffort}
+                    value={data.reasoningEffort || 'medium'}
                     onChange={(e) => setData('reasoningEffort', e.target.value as ReasoningEffort)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                   >
-                    <option value="medium">Sedang — lebih cepat dan hemat</option>
-                    <option value="high">Tinggi — seimbang</option>
-                    <option value="max">Maksimal — paling teliti</option>
+                    <option value="none">None — Nonaktif / tanpa reasoning tambahan</option>
+                    <option value="low">Low (Rendah) — Lebih cepat & hemat token</option>
+                    <option value="medium">Medium (Sedang) — Seimbang & standar rekomendasi</option>
+                    <option value="high">
+                      High (Tinggi) — Penalaran mendalam untuk konteks kompleks
+                    </option>
+                    <option value="xhigh">
+                      Extra High (Sangat Tinggi) — Penalaran mendalam Codex
+                    </option>
+                    <option value="max">
+                      Max (Maksimal) — Tingkat penalaran maksimal (OpenAI docs)
+                    </option>
                   </select>
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Mengontrol kedalaman proses penalaran internal (thinking / reasoning effort)
+                    untuk model GPT-5.6 series (Luna, Terra, Sol) dan model o1/o3/o4.
+                  </p>
                 </div>
               )}
 

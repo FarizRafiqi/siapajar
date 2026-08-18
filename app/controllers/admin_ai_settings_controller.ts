@@ -53,7 +53,8 @@ export default class AdminAiSettingsController {
     if (isAggregator) setting.provider = '9router'
     else setting.provider = data.provider as '9router' | 'anthropic' | 'openai' | 'gemini'
     setting.gateway = isAggregator ? (data.gateway ?? null) : null
-    setting.reasoningEffort = isAggregator ? (data.reasoningEffort ?? 'high') : null
+    setting.reasoningEffort =
+      isAggregator || data.provider === 'openai' ? (data.reasoningEffort ?? 'medium') : null
     setting.authMode = isAggregator ? 'api_key' : (data.authMode ?? 'api_key')
     if (!['openai', 'gemini'].includes(setting.provider)) {
       setting.authMode = 'api_key'

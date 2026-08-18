@@ -1699,33 +1699,18 @@ export async function exportAssessment(assessment: Assessment, user: User) {
 
 export async function exportPaudAssessment(assessment: PaudAssessment, user: User) {
   await consumeExport(user)
-  const children: Paragraph[] = [
-    ...kopParagraphs(user, 'Catatan Asesmen PAUD'),
-    new Paragraph({
-      heading: HeadingLevel.HEADING_1,
-      text: assessment.student?.fullName || 'Asesmen PAUD',
-    }),
-    ...metaParagraphs([
-      ['Kelompok', assessment.schoolClass?.name],
-      ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
-      ['Jenis asesmen', assessment.type],
-      ['Status ketercapaian', assessment.achievementStatus],
-      ['Kegiatan', assessment.activity],
-    ]),
-    ...sectionParagraphs('Catatan Guru', assessment.teacherNote || ''),
-  ]
-  for (const [key, value] of Object.entries(assessment.content ?? {})) {
-    children.push(...sectionParagraphs(key, contentValue(value)))
-  }
-  if (assessment.attachments?.length) {
-    children.push(
-      ...sectionParagraphs(
-        'Evidence',
-        assessment.attachments.map((file) => file.originalName)
-      )
-    )
-  }
-  return documentFromChildren(children)
+  const { buildPaudAssessmentDocx } = await import('#services/paud_assessment_export_service')
+  return buildPaudAssessmentDocx(assessment, user)
+}
+
+export async function exportPaudAssessmentBundle(
+  assessments: PaudAssessment[],
+  user: User,
+  themeTitle = 'Kenalkan'
+) {
+  await consumeExport(user)
+  const { buildPaudAssessmentBundleDocx } = await import('#services/paud_assessment_export_service')
+  return buildPaudAssessmentBundleDocx(assessments, user, themeTitle)
 }
 
 export async function exportStudentReport(

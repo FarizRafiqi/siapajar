@@ -23,22 +23,22 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
     removeOnFail: { age: '1d' },
   }
 
-  async execute() {
-    const job = await AiJob.findByOrFail('job_key', this.payload.jobKey)
+  static async executeDirect(payload: GenerateAiImagePayload) {
+    const job = await AiJob.findByOrFail('job_key', payload.jobKey)
     if (job.status === 'completed') return
-    const user = await User.findOrFail(this.payload.userId)
+    const user = await User.findOrFail(payload.userId)
     const setting = await AiSetting.current()
     job.status = 'processing'
     job.attempts += 1
     job.startedAt = DateTime.now()
     await job.save()
     try {
-      const dataUrl = await generateConfiguredImage(this.payload.prompt)
+      const dataUrl = await generateConfiguredImage(payload.prompt)
       const asset = await persistVisualAsset({
         user,
         source: 'image_model',
         kind: 'raster',
-        prompt: this.payload.prompt,
+        prompt: payload.prompt,
         provider: setting.provider,
         model: setting.model,
         dataUrl,
@@ -52,14 +52,18 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
       job.status = 'completed'
       job.finishedAt = DateTime.now()
       await job.save()
-      await commitUsageReservation(this.payload.jobKey)
+      await commitUsageReservation(payload.jobKey)
     } catch (error) {
       job.status = 'failed'
       job.error = error instanceof Error ? error.message : 'AI image job failed'
       job.finishedAt = DateTime.now()
       await job.save()
-      await releaseUsageReservation(this.payload.jobKey)
+      await releaseUsageReservation(payload.jobKey)
       throw error
     }
+  }
+
+  async execute() {
+    return GenerateAiImage.executeDirect(this.payload)
   }
 }

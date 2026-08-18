@@ -642,6 +642,24 @@ const routes = {
     tokens: [{"old":"/paud-assessments","type":0,"val":"paud-assessments","end":""}],
     types: placeholder as Registry['paud-assessments.store']['types'],
   },
+  'paud-assessments.generateAi': {
+    methods: ["POST"],
+    pattern: '/paud-assessments/generate-ai',
+    tokens: [{"old":"/paud-assessments/generate-ai","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/generate-ai","type":0,"val":"generate-ai","end":""}],
+    types: placeholder as Registry['paud-assessments.generateAi']['types'],
+  },
+  'paud-assessments.exportBundle': {
+    methods: ["GET","HEAD"],
+    pattern: '/paud-assessments/export-bundle',
+    tokens: [{"old":"/paud-assessments/export-bundle","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/export-bundle","type":0,"val":"export-bundle","end":""}],
+    types: placeholder as Registry['paud-assessments.exportBundle']['types'],
+  },
+  'paud-assessments.exportBundlePdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/paud-assessments/export-bundle/pdf',
+    tokens: [{"old":"/paud-assessments/export-bundle/pdf","type":0,"val":"paud-assessments","end":""},{"old":"/paud-assessments/export-bundle/pdf","type":0,"val":"export-bundle","end":""},{"old":"/paud-assessments/export-bundle/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['paud-assessments.exportBundlePdf']['types'],
+  },
   'paud-assessments.update': {
     methods: ["PUT"],
     pattern: '/paud-assessments/:id',

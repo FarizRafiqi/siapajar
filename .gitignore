@@ -32,6 +32,8 @@ storage/exports/
 public/uploads/
 *.tsbuildinfo
 *.log
+scratch/
+output/
 
 # Docker volumes
 docker-compose.override.yml

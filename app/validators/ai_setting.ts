@@ -7,7 +7,10 @@ export const updateAiSettingValidator = vine.create(
       .enum(['command_code', 'openrouter', 'opencode_zen', 'together'])
       .nullable()
       .optional(),
-    reasoningEffort: vine.enum(['medium', 'high', 'max']).nullable().optional(),
+    reasoningEffort: vine
+      .enum(['none', 'low', 'medium', 'high', 'max', 'xhigh'])
+      .nullable()
+      .optional(),
     authMode: vine.enum(['api_key', 'oauth']).optional(),
     apiKey: vine.string().trim().maxLength(500).optional(),
     baseUrl: vine.string().trim().url({ require_tld: false }).maxLength(500).nullable().optional(),

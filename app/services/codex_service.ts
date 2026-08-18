@@ -167,38 +167,73 @@ class CodexAppServerClient {
     let responseText = ''
     let activeTurnId: string | undefined
     const completed = new Promise<void>((resolve, reject) => {
+      let isDone = false
+      const finish = (callback: () => void) => {
+        if (isDone) return
+        isDone = true
+        this.notificationHandlers.delete(handler)
+        callback()
+      }
+
       const handler = (message: JsonRpcMessage) => {
         const params = message.params || {}
         if (
           message.method === 'turn/started' &&
-          params.turn?.threadId === threadId &&
+          (params.turn?.threadId === threadId || params.threadId === threadId) &&
           typeof params.turn?.id === 'string'
         ) {
           activeTurnId = params.turn.id
         }
-        if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
-          this.notificationHandlers.delete(handler)
+
+        const isMatchingTurn =
+          (activeTurnId && params.turn?.id === activeTurnId) ||
+          params.turn?.threadId === threadId ||
+          params.threadId === threadId
+
+        if (message.method === 'turn/completed' && isMatchingTurn) {
           if (params.turn?.status === 'failed') {
-            reject(
-              new CodexServiceError(
-                params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'
-              )
-            )
+            const raw = params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'
+            let messageStr = raw
+            try {
+              const parsed = JSON.parse(raw)
+              if (parsed?.error?.message) messageStr = parsed.error.message
+            } catch {}
+            finish(() => reject(new CodexServiceError(messageStr)))
           } else {
-            resolve()
+            finish(() => resolve())
           }
         }
-        if (message.method === 'item/completed' && params.item?.type === 'agentMessage') {
-          responseText = typeof params.item.text === 'string' ? params.item.text : responseText
+
+        if (
+          (message.method === 'item/completed' ||
+            message.method === 'item/agentMessage/completed') &&
+          (params.threadId === threadId || isMatchingTurn)
+        ) {
+          const item = params.item || {}
+          if (typeof item.text === 'string' && item.text.trim()) {
+            responseText = item.text
+          } else if (Array.isArray(item.content)) {
+            const contentText = item.content
+              .map((c: any) => (typeof c === 'string' ? c : c?.text || ''))
+              .join('')
+            if (contentText.trim()) responseText = contentText
+          }
         }
-        if (message.method === 'item/agentMessage/delta' && params.threadId === threadId) {
-          responseText += typeof params.delta === 'string' ? params.delta : ''
+
+        if (
+          (message.method === 'item/agentMessage/delta' || message.method === 'item/delta') &&
+          (params.threadId === threadId || isMatchingTurn)
+        ) {
+          if (typeof params.delta === 'string') responseText += params.delta
+          else if (typeof params.delta?.text === 'string') responseText += params.delta.text
         }
       }
+
       this.notificationHandlers.add(handler)
       setTimeout(() => {
-        this.notificationHandlers.delete(handler)
-        reject(new CodexServiceError('Codex tidak menyelesaikan generate dalam waktu wajar.'))
+        finish(() =>
+          reject(new CodexServiceError('Codex tidak menyelesaikan generate dalam waktu wajar.'))
+        )
       }, 90_000)
     })
 
@@ -327,12 +362,13 @@ export function getCodexAccount() {
   return client.account()
 }
 
-export function listCodexModels() {
+export async function listCodexModels() {
   return client.models()
 }
 
 export function callCodex(systemPrompt: string, userPrompt: string, model?: string | null) {
-  return client.generate(systemPrompt, userPrompt, model)
+  const normalizedModel = model && /^gpt-5\.6/i.test(model) ? 'gpt-5.5' : model || 'gpt-5.5'
+  return client.generate(systemPrompt, userPrompt, normalizedModel)
 }
 
 export function generateCodexImage(prompt: string, model?: string | null) {
