@@ -19,6 +19,8 @@ interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
+  groupContext?: 'a' | 'b' | null
+  rombelNumber?: string | null
   createdAt: string
   academicYear: AcademicYear
   students: Student[]
@@ -61,7 +63,27 @@ export default function ClassesIndex({
     name: '',
     academicYearId: academicYears[0]?.id || 0,
     gradeLevel: isTk ? 0 : 1,
+    rombelNumber: '',
   })
+
+  const formatClassDisplayName = (item: SchoolClass) => {
+    if (isTk) {
+      const groupLetter = (item.groupContext || (item.gradeLevel === 0 ? 'A' : 'B')).toUpperCase()
+      const rombel = item.rombelNumber ? String(item.rombelNumber).trim() : ''
+      const code = rombel ? `${groupLetter}${rombel}` : groupLetter
+      const rawName = item.name ? item.name.trim() : ''
+      const isRedundant =
+        !rawName ||
+        rawName.toUpperCase() === code ||
+        rawName.toUpperCase() === `KELOMPOK ${groupLetter}`
+
+      if (!isRedundant) {
+        return `RA / ${code} (${rawName})`
+      }
+      return `RA / ${code}`
+    }
+    return `Kelas ${item.name}`
+  }
 
   const handleCreate = () => {
     post('/classes', {
@@ -95,6 +117,7 @@ export default function ClassesIndex({
       name: schoolClass.name,
       academicYearId: schoolClass.academicYear.id,
       gradeLevel: schoolClass.gradeLevel,
+      rombelNumber: schoolClass.rombelNumber || '',
     })
   }
 
@@ -166,7 +189,7 @@ export default function ClassesIndex({
                 <div className="mb-4 flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                      Kelas {item.name}
+                      {formatClassDisplayName(item)}
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
                       {gradeLabel(item.gradeLevel)} • {item.academicYear.name}
@@ -202,7 +225,7 @@ export default function ClassesIndex({
 
       {/* Modal Tambah */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -212,23 +235,6 @@ export default function ClassesIndex({
               Tambah Kelas Baru
             </h3>
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="create_name"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Nama Kelas
-                </label>
-                <input
-                  id="create_name"
-                  type="text"
-                  value={data.name}
-                  onChange={(e) => setData('name', e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                  placeholder={isTk ? 'contoh: Mawar' : 'contoh: 1A'}
-                />
-                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-              </div>
               <div>
                 <label
                   htmlFor="create_academicYearId"
@@ -257,7 +263,7 @@ export default function ClassesIndex({
                   htmlFor="create_gradeLevel"
                   className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                 >
-                  {isTk ? 'Kelompok' : 'Tingkat Kelas'}
+                  {isTk ? 'Kelompok Usia' : 'Tingkat Kelas'}
                 </label>
                 <select
                   id="create_gradeLevel"
@@ -274,6 +280,63 @@ export default function ClassesIndex({
                 {errors.gradeLevel && (
                   <p className="mt-1 text-sm text-red-500">{errors.gradeLevel}</p>
                 )}
+              </div>
+
+              {isTk && (
+                <div>
+                  <label
+                    htmlFor="create_rombelNumber"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Nomor Rombel (Paralel)
+                  </label>
+                  <input
+                    id="create_rombelNumber"
+                    type="text"
+                    value={data.rombelNumber}
+                    onChange={(e) => setData('rombelNumber', e.target.value)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    placeholder="contoh: 1 (untuk A1 / B1) atau 2 (untuk A2 / B2)"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Kode otomatis:{' '}
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                      {data.gradeLevel === 0 ? 'A' : 'B'}
+                      {data.rombelNumber ? data.rombelNumber.trim() : '1'}
+                    </span>
+                  </p>
+                  {errors.rombelNumber && (
+                    <p className="mt-1 text-sm text-red-500">{errors.rombelNumber}</p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="create_name"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
+                  {isTk ? 'Nama / Julukan Rombel' : 'Nama Kelas'}
+                </label>
+                <input
+                  id="create_name"
+                  type="text"
+                  value={data.name}
+                  onChange={(e) => setData('name', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  placeholder={isTk ? 'contoh: Ibrahim / Mawar' : 'contoh: 1A'}
+                />
+                {isTk && (
+                  <p className="mt-1.5 rounded-md bg-neutral-100 p-2 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+                    Preview di Cover RPM:{' '}
+                    <strong className="text-emerald-600 dark:text-emerald-400">
+                      RA / {data.gradeLevel === 0 ? 'A' : 'B'}
+                      {data.rombelNumber ? data.rombelNumber.trim() : '1'}
+                      {data.name.trim() ? ` (${data.name.trim().toUpperCase()})` : ''}
+                    </strong>
+                  </p>
+                )}
+                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -300,7 +363,7 @@ export default function ClassesIndex({
 
       {/* Modal Edit */}
       {editingClass && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -310,22 +373,6 @@ export default function ClassesIndex({
               Edit Kelas
             </h3>
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="edit_name"
-                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Nama Kelas
-                </label>
-                <input
-                  id="edit_name"
-                  type="text"
-                  value={data.name}
-                  onChange={(e) => setData('name', e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                />
-                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-              </div>
               <div>
                 <label
                   htmlFor="edit_academicYearId"
@@ -354,7 +401,7 @@ export default function ClassesIndex({
                   htmlFor="edit_gradeLevel"
                   className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                 >
-                  {isTk ? 'Kelompok' : 'Tingkat Kelas'}
+                  {isTk ? 'Kelompok Usia' : 'Tingkat Kelas'}
                 </label>
                 <select
                   id="edit_gradeLevel"
@@ -372,6 +419,63 @@ export default function ClassesIndex({
                   <p className="mt-1 text-sm text-red-500">{errors.gradeLevel}</p>
                 )}
               </div>
+
+              {isTk && (
+                <div>
+                  <label
+                    htmlFor="edit_rombelNumber"
+                    className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Nomor Rombel (Paralel)
+                  </label>
+                  <input
+                    id="edit_rombelNumber"
+                    type="text"
+                    value={data.rombelNumber}
+                    onChange={(e) => setData('rombelNumber', e.target.value)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                    placeholder="contoh: 1 (untuk A1 / B1) atau 2 (untuk A2 / B2)"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Kode otomatis:{' '}
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                      {data.gradeLevel === 0 ? 'A' : 'B'}
+                      {data.rombelNumber ? data.rombelNumber.trim() : '1'}
+                    </span>
+                  </p>
+                  {errors.rombelNumber && (
+                    <p className="mt-1 text-sm text-red-500">{errors.rombelNumber}</p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="edit_name"
+                  className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                >
+                  {isTk ? 'Nama / Julukan Rombel' : 'Nama Kelas'}
+                </label>
+                <input
+                  id="edit_name"
+                  type="text"
+                  value={data.name}
+                  onChange={(e) => setData('name', e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                  placeholder={isTk ? 'contoh: Ibrahim / Mawar' : 'contoh: 1A'}
+                />
+                {isTk && (
+                  <p className="mt-1.5 rounded-md bg-neutral-100 p-2 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+                    Preview di Cover RPM:{' '}
+                    <strong className="text-emerald-600 dark:text-emerald-400">
+                      RA / {data.gradeLevel === 0 ? 'A' : 'B'}
+                      {data.rombelNumber ? data.rombelNumber.trim() : '1'}
+                      {data.name.trim() ? ` (${data.name.trim().toUpperCase()})` : ''}
+                    </strong>
+                  </p>
+                )}
+                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+              </div>
             </div>
             <div className="mt-6 flex gap-3">
               <button
@@ -388,7 +492,7 @@ export default function ClassesIndex({
                 disabled={processing}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                {processing ? 'Menyimpan...' : 'Simpan'}
+                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
               </button>
             </div>
           </motion.div>

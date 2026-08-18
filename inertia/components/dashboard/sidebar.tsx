@@ -101,8 +101,7 @@ const guruTkNavigation: NavigationEntry[] = [
   {
     name: 'Perencanaan',
     items: [
-      { name: 'RPPM', href: '/rppm', icon: CalendarRange },
-      { name: 'RPPH', href: '/rpph', icon: CalendarDays },
+      { name: 'Modul Ajar (RPM)', href: '/rppm', icon: CalendarRange },
       { name: 'Protah', href: '/annual-plans', icon: Calendar },
       { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
     ],
@@ -155,6 +154,7 @@ const adminNavigation: NavigationEntry[] = [
     name: 'Konfigurasi Sistem',
     items: [
       { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
+      { name: 'Preset Kurikulum', href: '/admin/curriculum-presets', icon: Library },
       { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
     ],
   },
@@ -333,6 +333,7 @@ export default function Sidebar({
           <div className={cn('flex items-center', collapsed && 'md:w-full md:justify-center')}>
             {/* Desktop collapse toggle */}
             <button
+              type="button"
               onClick={onToggle}
               className="hidden rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 md:block"
             >
@@ -344,6 +345,7 @@ export default function Sidebar({
             </button>
             {/* Mobile close button */}
             <button
+              type="button"
               onClick={onMobileClose}
               className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 md:hidden"
             >
@@ -415,6 +417,7 @@ export default function Sidebar({
         <div className="absolute bottom-0 left-0 right-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
           <div className="relative" ref={dropdownRef} data-tour="profile-menu">
             <button
+              type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
               className={cn(
                 'flex w-full cursor-pointer items-center gap-3 rounded-lg p-1 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800',
@@ -465,6 +468,7 @@ export default function Sidebar({
                   Pengaturan
                 </Link>
                 <button
+                  type="button"
                   onClick={() => {
                     setDropdownOpen(false)
                     router.post('/logout')
