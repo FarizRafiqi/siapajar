@@ -2,7 +2,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import AcademicYear from '#models/academic_year'
 import Semester from '#models/semester'
 
-export default class extends BaseSeeder {
+export default class AcademicSeeder extends BaseSeeder {
   async run() {
     // Create academic years
     const ay2024 = await AcademicYear.firstOrCreate(

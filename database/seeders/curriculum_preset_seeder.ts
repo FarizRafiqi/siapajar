@@ -1,0 +1,290 @@
+import { BaseSeeder } from '@adonisjs/lucid/seeders'
+import CurriculumPreset from '#models/curriculum_preset'
+
+export const MASTER_KBC_PRESETS = [
+  {
+    weekNumber: 1,
+    code: 'TEMA-01-KENALKAN',
+    themeTitle: 'Kenalkan',
+    subthemeTitle: 'Aku Istimewa: Ayo Kita Berkenalan',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kewargaan', 'Kolaborasi', 'Kemandirian', 'Komunikasi'],
+    kbcValues: ['Cinta Alloh dan RosulNya', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: [
+      'Kancing warna-warni',
+      'Balok kayu',
+      'Tutup botol',
+      'Matras',
+      'Ring & Cone',
+      'Karton',
+    ],
+    description:
+      'Mengenalkan identitas diri, nama lengkap, keluarga, dan berinteraksi santun dengan guru dan teman baru.',
+  },
+  {
+    weekNumber: 2,
+    code: 'TEMA-02-INDONESIAKU',
+    themeTitle: 'Indonesiaku',
+    subthemeTitle: 'Negaraku Indonesia yang Indah',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kewargaan', 'Kreativitas', 'Komunikasi'],
+    kbcValues: ['Cinta Tanah Air', 'Cinta Alloh dan RosulNya'],
+    looseParts: [
+      'Bendera merah putih mini',
+      'Peta Indonesia sederhana',
+      'Batu warna',
+      'Kertas krep',
+    ],
+    description:
+      'Mengenal simbol negara Indonesia, bendera merah putih, lagu kebangsaan, dan rasa bangga sebagai anak Indonesia.',
+  },
+  {
+    weekNumber: 3,
+    code: 'TEMA-03-KEBINEKAAN',
+    themeTitle: 'Kebinekaan',
+    subthemeTitle: 'Berbeda-beda Tetapi Tetap Satu',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Kewargaan', 'Kolaborasi', 'Komunikasi'],
+    kbcValues: ['Cinta Diri dan Sesama Manusia', 'Cinta Tanah Air'],
+    looseParts: [
+      'Gambar baju adat mini',
+      'Kain perca bermotif',
+      'Pola wayang kertas',
+      'Pewarna alami',
+    ],
+    description:
+      'Mengenal keragaman suku, bahasa daerah, dan saling menghargai teman yang berbeda latar belakang.',
+  },
+  {
+    weekNumber: 4,
+    code: 'TEMA-04-P5-KEMERDEKAAN',
+    themeTitle: 'P5 Kemerdekaan',
+    subthemeTitle: 'Semarak Hari Kemerdekaan RI',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kewargaan', 'Kreativitas', 'Kolaborasi'],
+    kbcValues: ['Cinta Tanah Air', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: ['Bambu mini/stik es krim', 'Tali rami', 'Origami merah putih', 'Kardus bekas'],
+    description:
+      'Proyek Profil Pelajar Pancasila & Rahmatan lil Alamin merayakan kemerdekaan melalui karya dan perlombaan gembira.',
+  },
+  {
+    weekNumber: 5,
+    code: 'TEMA-05-PAKAIAN-ADAT',
+    themeTitle: 'Pakaian Adat',
+    subthemeTitle: 'Keberagaman Busana Nusantara',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Kewargaan', 'Kreativitas', 'Komunikasi'],
+    kbcValues: ['Cinta Tanah Air', 'Cinta Ilmu'],
+    looseParts: ['Perca batik', 'Manik-manik', 'Kertas lipat', 'Renda bekas'],
+    description:
+      'Mengenal motif busana tradisional Nusantara dan berkreasi membuat aksesoris busana daerah.',
+  },
+  {
+    weekNumber: 6,
+    code: 'TEMA-06-LINGKUNGAN-BERSIH',
+    themeTitle: 'Lingkungan Bersih',
+    subthemeTitle: 'Sekolah dan Rumahku Bersih Sehat',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kemandirian', 'Kesehatan'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: ['Tempat sampah mini berlabel', 'Spons cuci', 'Ember air', 'Daun kering'],
+    description:
+      'Membiasakan membuang sampah pada tempatnya, mencuci tangan, dan menjaga kebersihan lingkungan madrasah.',
+  },
+  {
+    weekNumber: 7,
+    code: 'TEMA-07-RUMAHKU',
+    themeTitle: 'Rumahku',
+    subthemeTitle: 'Rumahku Surgaku yang Nyaman',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kolaborasi', 'Kemandirian'],
+    kbcValues: ['Cinta Diri dan Sesama Manusia', 'Cinta Alloh dan RosulNya'],
+    looseParts: ['Kardus kotak berbagai ukuran', 'Stik kayu', 'Batu kerikil', 'Miniatur perabot'],
+    description:
+      'Mengenal bagian-bagian rumah, fungsi ruangan, dan adab bertamu serta membantu orang tua di rumah.',
+  },
+  {
+    weekNumber: 8,
+    code: 'TEMA-08-SEKOLAHKU',
+    themeTitle: 'Sekolahku',
+    subthemeTitle: 'Tempatku Belajar dan Bermain Bersama',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Kewargaan', 'Kolaborasi', 'Komunikasi'],
+    kbcValues: ['Cinta Ilmu', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: ['Papan kayu', 'Lego/balok susun', 'Alat tulis', 'Buku bergambar'],
+    description:
+      'Mengenal ruangan sekolah, guru, teman sebaya, dan menaati tata tertib kelas dengan gembira.',
+  },
+  {
+    weekNumber: 9,
+    code: 'TEMA-09-KEBUN-BINATANG',
+    themeTitle: 'Kebun Binatang',
+    subthemeTitle: 'Mengenal Berbagai Hewan Ciptaan Allah',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kreativitas'],
+    kbcValues: ['Cinta Alloh dan RosulNya', 'Cinta Lingkungan'],
+    looseParts: ['Miniatur hewan', 'Ranting pohon', 'Rumput sintetis/kering', 'Plastisin'],
+    description:
+      'Mengenal aneka ragam hewan liar dan jinak, suara hewan, serta rasa takjub pada ciptaan Allah.',
+  },
+  {
+    weekNumber: 10,
+    code: 'TEMA-10-BINATANG-AIR',
+    themeTitle: 'Binatang Air',
+    subthemeTitle: 'Kehidupan Ikan dan Hewan di Dalam Air',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kreativitas'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Ilmu'],
+    looseParts: ['Wadah air transparan', 'Kerang', 'Batu akuarium', 'Kertas origami ikan'],
+    description:
+      'Mengenal habitat hewan air tawar dan laut, ciri-ciri ikan, dan menjaga ekosistem air.',
+  },
+  {
+    weekNumber: 11,
+    code: 'TEMA-11-BINATANG-DARAT',
+    themeTitle: 'Binatang Darat',
+    subthemeTitle: 'Hewan Peliharaan dan Ternak di Darat',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kemandirian'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Alloh dan RosulNya'],
+    looseParts: ['Kapas (bulu domba)', 'Kandang balok', 'Biji jagung/makanan hewan', 'Tanah liat'],
+    description:
+      'Mengenal hewan darat seperti kucing, ayam, sapi, kambing, serta manfaatnya bagi manusia.',
+  },
+  {
+    weekNumber: 12,
+    code: 'TEMA-12-SAYANG-BINATANG',
+    themeTitle: 'Sayang Binatang',
+    subthemeTitle: 'Merawat dan Melindungi Hewan di Sekitar Kita',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kewargaan', 'Kesehatan'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: ['Mangkok makan mainan', 'Sikat halus', 'Kain lap', 'Karton rekam medis hewan'],
+    description:
+      'Membangun empati terhadap hewan, memberi makan, dan tidak menyakiti makhluk hidup.',
+  },
+  {
+    weekNumber: 13,
+    code: 'TEMA-13-MAKAN-MINUM',
+    themeTitle: 'Makan Minum',
+    subthemeTitle: 'Makanan Halal, Thayyib, dan Bergizi Seimbang',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kemandirian', 'Kesehatan'],
+    kbcValues: ['Cinta Diri dan Sesama Manusia', 'Cinta Alloh dan RosulNya'],
+    looseParts: ['Piring plastik', 'Sendok garpu', 'Biji-bijian', 'Replika buah sayur'],
+    description:
+      'Mengenal adab makan (cuci tangan, doa, tangan kanan, duduk), makanan 4 sehat 5 sempurna, dan makanan halal.',
+  },
+  {
+    weekNumber: 14,
+    code: 'TEMA-14-PAKAIAN',
+    themeTitle: 'Pakaian',
+    subthemeTitle: 'Menutup Aurat dan Berpakaian Rapi',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kreativitas', 'Kemandirian'],
+    kbcValues: ['Cinta Alloh dan RosulNya', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: ['Kancing besar', 'Resleting latihan', 'Tali sepatu', 'Kain lipat'],
+    description:
+      'Mengenal jenis pakaian menurut fungsi dan cuaca, adab berpakaian, serta mandiri memakai baju sendiri.',
+  },
+  {
+    weekNumber: 15,
+    code: 'TEMA-15-AIR',
+    themeTitle: 'Air',
+    subthemeTitle: 'Manfaat dan Sumber Air Ciptaan Allah',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kesehatan'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Ilmu'],
+    looseParts: ['Corong air', 'Botol ukur', 'Pipet tetes', 'Pewarna makanan', 'Busa'],
+    description:
+      'Eksperimen sifat air, menghemat air bersih, manfaat air untuk wudhu dan minum, serta siklus hujan.',
+  },
+  {
+    weekNumber: 16,
+    code: 'TEMA-16-API',
+    themeTitle: 'Api',
+    subthemeTitle: 'Manfaat dan Bahaya Api Serta Keselamatan',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kesehatan'],
+    kbcValues: ['Cinta Ilmu', 'Cinta Diri dan Sesama Manusia'],
+    looseParts: [
+      'Lilin mainan',
+      'Senter',
+      'Kertas merah/kuning (simulasi api)',
+      'Miniatur pemadam',
+    ],
+    description:
+      'Mengenal manfaat api (memasak, penerangan) dan waspada bahaya api serta prosedur keselamatan sederhana.',
+  },
+  {
+    weekNumber: 17,
+    code: 'TEMA-17-UDARA',
+    themeTitle: 'Udara',
+    subthemeTitle: 'Udara Bersih untuk Bernapas dan Angin yang Menggerakkan',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Penalaran Kritis', 'Kreativitas'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Ilmu'],
+    looseParts: ['Balon', 'Kincir angin kertas', 'Sedotan', 'Bulu ayam', 'Gelembung sabun'],
+    description:
+      'Mengamati keberadaan udara, membuat kincir angin, meniup gelembung, dan pentingnya udara segar tanpa polusi.',
+  },
+  {
+    weekNumber: 18,
+    code: 'TEMA-18-BUMI',
+    themeTitle: 'Bumi',
+    subthemeTitle: 'Bumiku yang Indah dan Menjaganya dari Kerusakan',
+    groupContext: 'b' as const,
+    semester: 1,
+    dpl: ['Keimanan dan Ketakwaan', 'Kewargaan', 'Penalaran Kritis'],
+    kbcValues: ['Cinta Lingkungan', 'Cinta Tanah Air'],
+    looseParts: ['Globe/bola bumi', 'Batu alam', 'Pasir', 'Tanaman mini dalam pot', 'Karton'],
+    description:
+      'Mengenal bentuk bumi, daratan dan lautan, siang dan malam, serta menanam pohon untuk merawat bumi ciptaan Allah.',
+  },
+]
+
+export default class CurriculumPresetSeeder extends BaseSeeder {
+  async run() {
+    for (const item of MASTER_KBC_PRESETS) {
+      await CurriculumPreset.updateOrCreate(
+        { code: item.code },
+        {
+          educationLevel: 'tk',
+          curriculumVersion: 'KBC RA',
+          semester: item.semester,
+          weekNumber: item.weekNumber,
+          code: item.code,
+          themeTitle: item.themeTitle,
+          subthemeTitle: item.subthemeTitle,
+          phase: 'Fondasi',
+          groupContext: item.groupContext,
+          data: {
+            description: item.description,
+            dpl: item.dpl,
+            kbcValues: item.kbcValues,
+            loosePartsSuggestions: item.looseParts,
+          },
+          isActive: true,
+          sortOrder: item.weekNumber,
+        }
+      )
+    }
+  }
+}
