@@ -132,7 +132,126 @@ export function semesterPlanPrompt(params: { subject: string }): AiPrompt {
   }
 }
 
-/** TK — RPPM: rencana mingguan, 3 elemen CP PAUD Kurikulum Merdeka. */
+/** TK / RA — RPM KBC (Rencana Pembelajaran Mendalam Kurikulum Berbasis Cinta) */
+export function rpmKbcRaPrompt(params: {
+  theme: string
+  subtheme?: string
+  semester?: number
+  weekNumber?: number
+  groupName?: string
+  schoolName?: string
+  teacherName?: string
+  dplSuggestions?: string[]
+  kbcSuggestions?: string[]
+  loosePartsSuggestions?: string[]
+  curriculumContext?: {
+    cps?: Array<{ code: string; title: string; element?: string }>
+    objectives?: Array<{ code: string; title: string }>
+  }
+}): AiPrompt {
+  const subthemeText = params.subtheme ? ` Subtopik/Subtema: "${params.subtheme}".` : ''
+  const semesterText = params.semester ? `Semester ${params.semester}` : 'Semester 1'
+  const weekText = params.weekNumber ? `Pekan ke-${params.weekNumber}` : 'Pekan 1'
+  const group = params.groupName || 'Kelompok B (5-6 Tahun)'
+  const school = params.schoolName || 'RA / TK PAUD'
+  const teacher = params.teacherName || 'Guru Kelas'
+
+  const cpContextStr = params.curriculumContext?.cps?.length
+    ? `\nData CP Acuan Guru:\n` +
+      params.curriculumContext.cps
+        .map((c) => `- [${c.code}] ${c.element || ''}: ${c.title}`)
+        .join('\n')
+    : ''
+
+  const tpContextStr = params.curriculumContext?.objectives?.length
+    ? `\nData TP Acuan Guru:\n` +
+      params.curriculumContext.objectives.map((t) => `- [${t.code}] ${t.title}`).join('\n')
+    : ''
+
+  return {
+    system:
+      'Kamu adalah pakar kurikulum PAUD/RA (Raudhatul Athfal Kemenag) dan ahli Rencana Pembelajaran Mendalam (RPM) Kurikulum Berbasis Cinta (KBC) & Deep Learning. ' +
+      'Tugasmu menyusun dokumen Modul Ajar Mingguan (RPM KBC RA) yang sangat komprehensif, operasional, islami, berbasis Loose Parts dan STEAM, ramah anak, dan terstruktur. ' +
+      'Balas HANYA JSON valid tanpa teks lain, tanpa markdown wrapping selain format JSON murni dengan struktur persis:\n' +
+      '{\n' +
+      '  "theme": string,\n' +
+      '  "subtheme": string,\n' +
+      '  "semester": number,\n' +
+      '  "weekNumber": number,\n' +
+      '  "groupContext": string,\n' +
+      '  "allocation": string,\n' +
+      '  "identification": {\n' +
+      '    "studentCharacteristics": string,\n' +
+      '    "essentialMaterial": string,\n' +
+      '    "appliedMaterial": string,\n' +
+      '    "valueMaterial": string,\n' +
+      '    "dpl": string[],\n' +
+      '    "kbcValues": string[],\n' +
+      '    "pancaCintaValues": string[]\n' +
+      '  },\n' +
+      '  "learningDesign": {\n' +
+      '    "cpElements": string[],\n' +
+      '    "crossDisciplinary": string,\n' +
+      '    "learningObjectives": string[],\n' +
+      '    "pedagogicalPractices": string,\n' +
+      '    "partnerships": string,\n' +
+      '    "learningEnvironment": string,\n' +
+      '    "digitalUtilization": string\n' +
+      '  },\n' +
+      '  "learningExperience": {\n' +
+      '    "openingActivities": string[],\n' +
+      '    "openingQuestions": string[],\n' +
+      '    "dailyCoreActivities": [\n' +
+      '      {\n' +
+      '        "day": "Senin" | "Selasa" | "Rabu" | "Kamis" | "Jumat",\n' +
+      '        "title": string,\n' +
+      '        "stage": "MEMAHAMI (BERKESADARAN, BERMAKNA)" | "MENGAPLIKASIKAN (BERKESADARAN, BERMAKNA)" | "MEREFLEKSI (BERKESADARAN, BERMAKNA)",\n' +
+      '        "dplFocus": string,\n' +
+      '        "kbcFocus": string,\n' +
+      '        "activities": string[],\n' +
+      '        "activitiesDetail": [\n' +
+      '          {\n' +
+      '            "name": string,\n' +
+      '            "focus": string,\n' +
+      '            "materials": string,\n' +
+      '            "instructions": string,\n' +
+      '            "benefits": string\n' +
+      '          }\n' +
+      '        ],\n' +
+      '        "mediaLooseParts": string\n' +
+      '      }\n' +
+      '    ],\n' +
+      '    "closingActivities": string[]\n' +
+      '  },\n' +
+      '  "assessment": {\n' +
+      '    "techniques": string[],\n' +
+      '    "indicators": string[],\n' +
+      '    "earlyAssessment": string[],\n' +
+      '    "processAssessment": string[],\n' +
+      '    "finalAssessment": string[]\n' +
+      '  },\n' +
+      '  "nilaiAgamaBudiPekerti": string[],\n' +
+      '  "jatiDiri": string[],\n' +
+      '  "literasiSainsTeknologi": string[],\n' +
+      '  "rencanaKegiatan": string[]\n' +
+      '}\n\n' +
+      'Panduan Isi:\n' +
+      '1. DPL (Dimensi Profil Lulusan): Pilih relevan dari DPL 1 (Keimanan), DPL 2 (Kewargaan), DPL 3 (Penalaran Kritis), DPL 4 (Kreativitas), DPL 5 (Kolaborasi), DPL 6 (Kemandirian), DPL 7 (Kesehatan), DPL 8 (Komunikasi).\n' +
+      '2. Panca Cinta KBC: Pilih relevan dari Cinta Alloh & RosulNya, Cinta Diri & Sesama, Cinta Ilmu, Cinta Lingkungan, Cinta Tanah Air.\n' +
+      '3. Inti Pembelajaran: Sediakan 5 hari (Senin s.d. Jumat) dengan masing-masing 3 kegiatan bermain bermakna dengan rincian nama kegiatan, fokus karakter, alat/bahan, cara bermain, dan manfaat.\n' +
+      '4. Pastikan selaras dengan Capaian Pembelajaran Fase Fondasi (NABP, Jati Diri, Literasi-STEAM).',
+    user:
+      `Buatkan dokumen lengkap RPM KBC RA untuk:\n` +
+      `- Guru: ${teacher}\n` +
+      `- Satuan: ${school}\n` +
+      `- Kelompok: ${group}\n` +
+      `- Periode: ${semesterText}, ${weekText}\n` +
+      `- Tema/Topik: "${params.theme}"\n` +
+      `${subthemeText}${cpContextStr}${tpContextStr}`,
+  }
+}
+
+/** TK — RPPM: rencana mingguan, 3 elemen CP PAUD Kurikulum Merdeka (Legacy Fallback). */
 export function weeklyLessonPlanPrompt(params: { theme: string }): AiPrompt {
   return {
     system:

@@ -247,7 +247,7 @@ router
       .get('/semester-plans/:id/export/pdf', '#controllers/semester_plans_controller.exportPdf')
       .as('semester-plans.exportPdf')
 
-    // RPPM (rencana mingguan TK/PAUD)
+    // RPPM / RPM (rencana mingguan TK/PAUD/RA)
     router.get('/rppm', '#controllers/weekly_lesson_plans_controller.index').as('rppm.index')
     router.get('/rppm/:id', '#controllers/weekly_lesson_plans_controller.show').as('rppm.show')
     router
@@ -263,6 +263,18 @@ router
     router
       .post('/rppm/generate', '#controllers/weekly_lesson_plans_controller.generate')
       .as('rppm.generate')
+
+    // Alias /rpm -> /rppm
+    router.get('/rpm', ({ response }) => response.redirect().toRoute('rppm.index'))
+    router.get('/rpm/:id', ({ params, response }) =>
+      response.redirect().toRoute('rppm.show', { id: params.id })
+    )
+    router.get('/rpm/:id/export', ({ params, response }) =>
+      response.redirect().toRoute('rppm.export', { id: params.id })
+    )
+    router.get('/rpm/:id/export/pdf', ({ params, response }) =>
+      response.redirect().toRoute('rppm.exportPdf', { id: params.id })
+    )
 
     // RPPH (rencana harian TK/PAUD)
     router.get('/rpph', '#controllers/daily_lesson_plans_controller.index').as('rpph.index')
@@ -551,6 +563,37 @@ router
         '#controllers/admin_ai_settings_controller.geminiOauthCallback'
       )
       .as('admin.ai-settings.oauth.gemini.callback')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    // Admin — Preset Kurikulum
+    router
+      .get('/admin/curriculum-presets', '#controllers/admin_curriculum_presets_controller.index')
+      .as('admin.curriculum-presets.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post('/admin/curriculum-presets', '#controllers/admin_curriculum_presets_controller.store')
+      .as('admin.curriculum-presets.store')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put(
+        '/admin/curriculum-presets/:id',
+        '#controllers/admin_curriculum_presets_controller.update'
+      )
+      .as('admin.curriculum-presets.update')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .delete(
+        '/admin/curriculum-presets/:id',
+        '#controllers/admin_curriculum_presets_controller.destroy'
+      )
+      .as('admin.curriculum-presets.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .post(
+        '/admin/curriculum-presets/reset-defaults',
+        '#controllers/admin_curriculum_presets_controller.resetDefaults'
+      )
+      .as('admin.curriculum-presets.resetDefaults')
       .use(middleware.role({ roles: ['admin'] }))
   })
   .use([middleware.auth(), middleware.onboarding()])

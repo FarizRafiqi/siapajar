@@ -7,6 +7,16 @@ import { createStudentValidator, updateStudentValidator } from '#validators/stud
 import { parseStudentImportFile } from '#services/student_import_service'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
 
+function resolveGroupContext(
+  isTk: boolean,
+  gradeLevel?: number,
+  explicitGroup?: 'a' | 'b'
+): 'a' | 'b' | null {
+  if (explicitGroup) return explicitGroup
+  if (!isTk || gradeLevel === undefined) return null
+  return gradeLevel === 0 ? 'a' : 'b'
+}
+
 export default class ClassesController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
@@ -46,10 +56,13 @@ export default class ClassesController {
       return response.redirect().back()
     }
 
+    const groupCtx = resolveGroupContext(Boolean(user.isTk), data.gradeLevel, data.groupContext)
+
     await SchoolClass.create({
       ...data,
       userId: user.id,
-      groupContext: data.groupContext ?? (user.isTk ? user.defaultGroupContext : null),
+      groupContext: groupCtx,
+      rombelNumber: data.rombelNumber || null,
     })
     await recordUsage(user.id, 'classes')
 
@@ -88,7 +101,19 @@ export default class ClassesController {
     }
 
     const data = await request.validateUsing(updateClassValidator)
-    await schoolClass.merge(data).save()
+    const groupCtx =
+      data.gradeLevel !== undefined
+        ? resolveGroupContext(Boolean(user.isTk), data.gradeLevel, data.groupContext)
+        : schoolClass.groupContext
+
+    await schoolClass
+      .merge({
+        ...data,
+        groupContext: groupCtx,
+        rombelNumber:
+          data.rombelNumber !== undefined ? data.rombelNumber || null : schoolClass.rombelNumber,
+      })
+      .save()
 
     session.flash('success', 'Kelas berhasil diupdate')
     return response.redirect().back()

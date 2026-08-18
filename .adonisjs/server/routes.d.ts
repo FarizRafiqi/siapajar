@@ -166,6 +166,11 @@ export type ScannedRoutes = {
     'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.index': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.store': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.curriculum-presets.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.curriculum-presets.resetDefaults': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -252,6 +257,7 @@ export type ScannedRoutes = {
     'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -338,6 +344,7 @@ export type ScannedRoutes = {
     'admin.ai-settings.oauth.openai.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.start': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.oauth.gemini.callback': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.index': { paramsTuple?: []; params?: {} }
   }
   OPTIONS: {
     'mcp.handle': { paramsTuple?: []; params?: {} }
@@ -385,6 +392,8 @@ export type ScannedRoutes = {
     'admin.schools.store': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
     'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.store': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.resetDefaults': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'mcp.handle': { paramsTuple?: []; params?: {} }
@@ -407,6 +416,7 @@ export type ScannedRoutes = {
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.schools.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.ai-settings.update': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PATCH: {
     'mcp.handle': { paramsTuple?: []; params?: {} }
@@ -431,6 +441,7 @@ export type ScannedRoutes = {
     'admin.packages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.schools.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.curriculum-presets.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

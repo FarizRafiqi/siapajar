@@ -179,62 +179,49 @@ class CodexAppServerClient {
         const params = message.params || {}
         if (
           message.method === 'turn/started' &&
-          (params.turn?.threadId === threadId || params.threadId === threadId) &&
+          isMessageForThread(params, threadId) &&
           typeof params.turn?.id === 'string'
         ) {
           activeTurnId = params.turn.id
         }
 
-        const isMatchingTurn =
-          (activeTurnId && params.turn?.id === activeTurnId) ||
-          params.turn?.threadId === threadId ||
-          params.threadId === threadId
+        const isMatchingTurn = isMessageForThread(params, threadId, activeTurnId)
+        if (!isMatchingTurn) return
 
-        if (message.method === 'turn/completed' && isMatchingTurn) {
+        if (message.method === 'turn/completed') {
           if (params.turn?.status === 'failed') {
-            const raw = params.turn?.error?.message || 'Codex gagal menyelesaikan permintaan.'
-            let messageStr = raw
-            try {
-              const parsed = JSON.parse(raw)
-              if (parsed?.error?.message) messageStr = parsed.error.message
-            } catch {}
-            finish(() => reject(new CodexServiceError(messageStr)))
+            const err = extractTurnErrorMessage(params.turn?.error?.message)
+            finish(() => reject(new CodexServiceError(err)))
           } else {
-            finish(() => resolve())
+            finish(resolve)
           }
+          return
         }
 
         if (
-          (message.method === 'item/completed' ||
-            message.method === 'item/agentMessage/completed') &&
-          (params.threadId === threadId || isMatchingTurn)
+          message.method === 'item/completed' ||
+          message.method === 'item/agentMessage/completed'
         ) {
-          const item = params.item || {}
-          if (typeof item.text === 'string' && item.text.trim()) {
-            responseText = item.text
-          } else if (Array.isArray(item.content)) {
-            const contentText = item.content
-              .map((c: any) => (typeof c === 'string' ? c : c?.text || ''))
-              .join('')
-            if (contentText.trim()) responseText = contentText
-          }
+          const text = extractItemText(params.item)
+          if (text) responseText = text
+          return
         }
 
-        if (
-          (message.method === 'item/agentMessage/delta' || message.method === 'item/delta') &&
-          (params.threadId === threadId || isMatchingTurn)
-        ) {
-          if (typeof params.delta === 'string') responseText += params.delta
-          else if (typeof params.delta?.text === 'string') responseText += params.delta.text
+        if (message.method === 'item/agentMessage/delta' || message.method === 'item/delta') {
+          responseText += extractDeltaText(params.delta)
         }
       }
 
       this.notificationHandlers.add(handler)
       setTimeout(() => {
         finish(() =>
-          reject(new CodexServiceError('Codex tidak menyelesaikan generate dalam waktu wajar.'))
+          reject(
+            new CodexServiceError(
+              'Codex tidak menyelesaikan generate dalam waktu wajar (timeout 4 menit).'
+            )
+          )
         )
-      }, 90_000)
+      }, 240_000)
     })
 
     const turnResult = (await this.requestRaw('turn/start', {
@@ -350,6 +337,43 @@ async function normalizeImageResult(result: string) {
     throw new CodexServiceError('Ukuran ilustrasi dari Codex tidak aman untuk disimpan.')
   }
   return `data:image/png;base64,${encoded}`
+}
+
+function extractTurnErrorMessage(raw?: string): string {
+  const fallback = 'Codex gagal menyelesaikan permintaan.'
+  if (!raw) return fallback
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed?.error?.message) return parsed.error.message
+  } catch {}
+  return raw
+}
+
+function extractItemText(item: any): string {
+  if (!item) return ''
+  if (typeof item.text === 'string' && item.text.trim()) {
+    return item.text
+  }
+  if (Array.isArray(item.content)) {
+    const contentText = item.content
+      .map((c: any) => (typeof c === 'string' ? c : c?.text || ''))
+      .join('')
+    if (contentText.trim()) return contentText
+  }
+  return ''
+}
+
+function extractDeltaText(delta: any): string {
+  if (!delta) return ''
+  if (typeof delta === 'string') return delta
+  if (typeof delta?.text === 'string') return delta.text
+  return ''
+}
+
+function isMessageForThread(params: any, threadId: string, activeTurnId?: string): boolean {
+  if (!params) return false
+  if (activeTurnId && params.turn?.id === activeTurnId) return true
+  return params.turn?.threadId === threadId || params.threadId === threadId
 }
 
 const client = new CodexAppServerClient()
