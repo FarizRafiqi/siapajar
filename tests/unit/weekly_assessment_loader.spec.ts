@@ -115,7 +115,7 @@ test.group('Weekly Assessment Loader', () => {
       schoolName: 'RA Al-Falah',
     }
 
-    const docxBuffer = await exportWeeklyLessonPlan(mockPlan, mockUser)
+    const docxBuffer = await exportWeeklyLessonPlan(mockPlan, mockUser, false)
     assert.isTrue(Buffer.isBuffer(docxBuffer))
     assert.isAbove(docxBuffer.length, 500)
   }).timeout(10000)

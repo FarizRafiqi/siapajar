@@ -500,7 +500,7 @@ export default class WeeklyLessonPlansController {
       .first()
     if (!plan) return response.redirect('/rppm')
     const assessments = await loadWeeklyPlanAssessments(plan)
-    const buffer = await exportWeeklyLessonPlan(plan, user, assessments)
+    const buffer = await exportWeeklyLessonPlan(plan, user, true, assessments)
     return sendExport(
       response,
       buffer,

@@ -1671,9 +1671,10 @@ export async function exportCurriculum(
 export async function exportWeeklyLessonPlan(
   weekly: WeeklyLessonPlan,
   user: User,
+  charge = true,
   loadedAssessments?: LoadedWeeklyAssessments
 ) {
-  await consumeExport(user)
+  if (charge) await consumeExport(user)
 
   const content = weekly.content ?? {}
   const isRpm = Boolean(
