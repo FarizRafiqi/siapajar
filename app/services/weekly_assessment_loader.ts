@@ -1,24 +1,10 @@
 import PaudAssessment from '#models/paud_assessment'
+import Student from '#models/student'
 import type WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import { parseAssessmentContent } from '#services/paud_assessment_export_service'
 
-export const DEFAULT_IKTP_INDICATORS: string[] = [
-  'Mengenal dan meniru doa-doa harian / kalimat toyyibah',
-  'Mengenal dan mempraktikkan adab santun terhadap teman dan guru',
-  'Menunjukkan rasa syukur atas ciptaan Allah melalui eksplorasi alam',
-  'Mampu memperkenalkan diri dan menyebutkan anggota keluarga',
-  'Menunjukkan kemandirian dalam merapikan alat dan perlengkapan',
-  'Mengekspresikan emosi secara wajar dan mengenali perasaan teman',
-  'Mampu menyimak dan menceritakan kembali cerita sederhana',
-  'Mengenal konsep bilangan, bentuk, pola, dan ukuran benda di sekitar',
-  'Menunjukkan koordinasi motorik halus saat meronce, menggunting, dan menempel',
-  'Menunjukkan koordinasi motorik kasar saat gerak bebas dan bermain fisik',
-  'Mampu membuat karya seni dari berbagai media loose parts dan bahan alam',
-  'Mengekspresikan ide dan menyelesaikan tantangan bermain secara kreatif',
-]
-
 export interface AnecdoteItem {
-  id: number
+  id?: number
   date: string
   studentName: string
   event: string
@@ -32,6 +18,12 @@ export interface ChecklistItem {
   belumMuncul: boolean
   note: string
   studentName?: string
+}
+
+export interface StudentChecklistGroup {
+  studentId?: number
+  studentName: string
+  items: ChecklistItem[]
 }
 
 export interface WorkSampleItem {
@@ -61,6 +53,7 @@ export interface PhotoSeriesItem {
 export interface LoadedWeeklyAssessments {
   anecdotes: AnecdoteItem[]
   checklists: ChecklistItem[]
+  studentChecklists: StudentChecklistGroup[]
   workSamples: WorkSampleItem[]
   photoSeries: PhotoSeriesItem[]
   totalCount: number
@@ -75,8 +68,13 @@ export async function loadWeeklyPlanAssessments(
   const userId = weeklyPlan.userId
   const classId = weeklyPlan.classId
 
+  let classStudents: Student[] = []
+  if (classId) {
+    classStudents = await Student.query().where('class_id', classId).orderBy('full_name', 'asc')
+  }
+
   if (!userId || !classId) {
-    return formatLoadedAssessments([], weeklyPlan)
+    return formatLoadedAssessments([], weeklyPlan, classStudents)
   }
 
   let query = PaudAssessment.query()
@@ -86,7 +84,6 @@ export async function loadWeeklyPlanAssessments(
     .preload('attachments', (q) => q.orderBy('display_order', 'asc'))
     .orderBy('date', 'asc')
 
-  // If weekStartDate is available, filter by week date range
   if (weeklyPlan.weekStartDate) {
     const startDate = weeklyPlan.weekStartDate.startOf('day')
     const endDate = startDate.plus({ days: 6 }).endOf('day')
@@ -97,26 +94,12 @@ export async function loadWeeklyPlanAssessments(
       .where('date', '<=', endDate.toISODate()!)
 
     if (dateFiltered.length > 0) {
-      return formatLoadedAssessments(dateFiltered, weeklyPlan)
+      return formatLoadedAssessments(dateFiltered, weeklyPlan, classStudents)
     }
   }
 
-  // Fallback: Query all assessments for this class and user
   const allAssessments = await query
-  return formatLoadedAssessments(allAssessments, weeklyPlan)
-}
-
-function extractPlanIndicators(weeklyPlan: WeeklyLessonPlan): string[] {
-  const rawIndicators = weeklyPlan.content?.assessment?.indicators
-  if (Array.isArray(rawIndicators) && rawIndicators.length > 0) {
-    return rawIndicators
-      .map((i: any) => (typeof i === 'string' ? i : i?.indicator || ''))
-      .filter((s: string) => s.trim().length > 0)
-  }
-  if (Array.isArray(weeklyPlan.content?.assessment?.iktpChecklist)) {
-    return weeklyPlan.content.assessment.iktpChecklist
-  }
-  return []
+  return formatLoadedAssessments(allAssessments, weeklyPlan, classStudents)
 }
 
 function processAnecdote(
@@ -175,79 +158,87 @@ function processPhotoSeries(
   }
 }
 
-function processChecklist(
-  a: PaudAssessment,
-  studentName: string,
-  c: Record<string, any>,
-  checklists: ChecklistItem[],
-  iktpMap: Map<string, { sudah: boolean; belum: boolean; note: string }>
-) {
-  if (Array.isArray(c.items) && c.items.length > 0) {
-    c.items.forEach((item) => {
-      const ind = item.indicator || a.activity || '-'
-      const isSudah = item.status === 'sudah_muncul'
-      const isBelum = item.status === 'belum_muncul'
-      checklists.push({
-        no: checklists.length + 1,
-        indicator: ind,
-        sudahMuncul: isSudah,
-        belumMuncul: isBelum,
-        note: item.observationNote || item.event || a.teacherNote || '',
-        studentName,
-      })
-      if (!iktpMap.has(ind)) {
-        iktpMap.set(ind, {
-          sudah: isSudah,
-          belum: isBelum,
-          note: item.observationNote || item.event || studentName,
-        })
-      }
-    })
-  } else {
-    const ind = a.activity || c.context || 'Indikator Perkembangan'
-    const isSudah =
-      a.achievementStatus === 'sudah_muncul' ||
-      a.achievementStatus === 'BSB' ||
-      a.achievementStatus === 'BSH'
-    const isBelum =
-      a.achievementStatus === 'belum_muncul' ||
-      a.achievementStatus === 'MB' ||
-      a.achievementStatus === 'BB'
-    checklists.push({
-      no: checklists.length + 1,
-      indicator: ind,
-      sudahMuncul: isSudah,
-      belumMuncul: isBelum,
-      note: a.teacherNote || c.note || '',
-      studentName,
-    })
-  }
-}
-
 function formatLoadedAssessments(
   assessments: PaudAssessment[],
-  weeklyPlan: WeeklyLessonPlan
+  weeklyPlan: WeeklyLessonPlan,
+  _classStudents: Student[] = []
 ): LoadedWeeklyAssessments {
   const anecdotes: AnecdoteItem[] = []
-  const checklists: ChecklistItem[] = []
+  const rawChecklists: ChecklistItem[] = []
+  const studentChecklistMap = new Map<
+    string,
+    { studentId?: number; studentName: string; items: ChecklistItem[] }
+  >()
   const workSamples: WorkSampleItem[] = []
   const photoSeries: PhotoSeriesItem[] = []
-
-  const planIktp = extractPlanIndicators(weeklyPlan)
-  const iktpMap = new Map<string, { sudah: boolean; belum: boolean; note: string }>()
 
   for (const a of assessments) {
     const c = parseAssessmentContent(a)
     const dateStr = a.date ? a.date.toFormat('dd/MM/yyyy') : '-'
     const studentName = a.student?.fullName || 'Siswa'
+    const studentId = a.studentId || undefined
 
     switch (a.type) {
       case 'anecdotal_note':
         anecdotes.push(processAnecdote(a, dateStr, studentName, c))
         break
-      case 'checklist':
-        processChecklist(a, studentName, c, checklists, iktpMap)
+      case 'checklist': {
+        if (!studentChecklistMap.has(studentName)) {
+          studentChecklistMap.set(studentName, {
+            studentId,
+            studentName,
+            items: [],
+          })
+        }
+        const group = studentChecklistMap.get(studentName)!
+
+        if (Array.isArray(c.items) && c.items.length > 0) {
+          c.items.forEach((item: any) => {
+            const ind = item.indicator || a.activity || '-'
+            const statusStr = String(item.status || '').toLowerCase()
+            const isSudah =
+              statusStr === 'sudah_muncul' ||
+              !item.status ||
+              statusStr === 'bsb' ||
+              statusStr === 'bsh'
+            const isBelum = statusStr === 'belum_muncul' || statusStr === 'mb' || statusStr === 'bb'
+            const note = item.observationNote || item.event || a.teacherNote || c.note || '-'
+            const checkItem: ChecklistItem = {
+              no: group.items.length + 1,
+              indicator: ind,
+              sudahMuncul: isSudah,
+              belumMuncul: isBelum,
+              note,
+              studentName,
+            }
+            group.items.push(checkItem)
+            rawChecklists.push(checkItem)
+          })
+        } else {
+          const ind = a.activity || c.context || 'Indikator Perkembangan'
+          const isSudah =
+            a.achievementStatus === 'sudah_muncul' ||
+            a.achievementStatus === 'BSB' ||
+            a.achievementStatus === 'BSH' ||
+            !a.achievementStatus
+          const isBelum =
+            a.achievementStatus === 'belum_muncul' ||
+            a.achievementStatus === 'MB' ||
+            a.achievementStatus === 'BB'
+          const note = a.teacherNote || c.note || '-'
+          const checkItem: ChecklistItem = {
+            no: group.items.length + 1,
+            indicator: ind,
+            sudahMuncul: isSudah,
+            belumMuncul: isBelum,
+            note,
+            studentName,
+          }
+          group.items.push(checkItem)
+          rawChecklists.push(checkItem)
+        }
         break
+      }
       case 'work_sample':
         workSamples.push(processWorkSample(a, dateStr, studentName, c))
         break
@@ -257,26 +248,52 @@ function formatLoadedAssessments(
     }
   }
 
-  // If no checklist assessments filled, populate default indicators
-  if (checklists.length === 0) {
-    const listToUse = planIktp.length > 0 ? planIktp : DEFAULT_IKTP_INDICATORS
-    listToUse.forEach((ind, idx) => {
-      const match = iktpMap.get(ind)
-      checklists.push({
-        no: idx + 1,
-        indicator: ind,
-        sudahMuncul: match ? match.sudah : false,
-        belumMuncul: match ? match.belum : false,
-        note: match ? match.note : '',
-      })
-    })
+  // If no checklists exist in DB, check AI generated plan content
+  const studentChecklists: StudentChecklistGroup[] = Array.from(studentChecklistMap.values())
+
+  if (studentChecklists.length === 0) {
+    const aiChecklists = weeklyPlan.content?.assessment?.studentChecklists
+    if (Array.isArray(aiChecklists) && aiChecklists.length > 0) {
+      for (const group of aiChecklists) {
+        const items: ChecklistItem[] = (group.items || []).map((it: any, idx: number) => ({
+          no: it.no || idx + 1,
+          indicator: it.indicator || `Indikator ${idx + 1}`,
+          sudahMuncul: it.sudahMuncul !== false,
+          belumMuncul: Boolean(it.belumMuncul),
+          note: it.note || '-',
+          studentName: group.studentName,
+        }))
+        studentChecklists.push({
+          studentName: group.studentName,
+          items,
+        })
+        rawChecklists.push(...items)
+      }
+    }
   }
 
-  const totalCount = anecdotes.length + checklists.length + workSamples.length + photoSeries.length
+  // If anecdotes are empty in DB, check AI generated plan content
+  if (anecdotes.length === 0) {
+    const aiAnecdotes = weeklyPlan.content?.assessment?.anecdotes
+    if (Array.isArray(aiAnecdotes) && aiAnecdotes.length > 0) {
+      for (const anec of aiAnecdotes) {
+        anecdotes.push({
+          date: anec.date || '-',
+          studentName: anec.studentName || '-',
+          event: anec.event || '-',
+          analysis: anec.analysis || '-',
+        })
+      }
+    }
+  }
+
+  const totalCount =
+    anecdotes.length + rawChecklists.length + workSamples.length + photoSeries.length
 
   return {
     anecdotes,
-    checklists,
+    checklists: rawChecklists,
+    studentChecklists,
     workSamples,
     photoSeries,
     totalCount,

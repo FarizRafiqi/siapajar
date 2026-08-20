@@ -329,6 +329,34 @@ function normalizeAssessment(asmRaw: any, finalTheme: string) {
           'Anak menunjukkan peningkatan rasa syukur dan kasih sayang kepada sesama ciptaan Tuhan',
         ]
 
+  const anecdotes = Array.isArray(asmRaw.anecdotes)
+    ? asmRaw.anecdotes
+        .map((anec: any) => ({
+          studentName: String(anec.studentName || '').trim(),
+          date: String(anec.date || '').trim(),
+          event: String(anec.event || '').trim(),
+          analysis: String(anec.analysis || '').trim(),
+        }))
+        .filter((a: any) => a.studentName && a.event)
+    : undefined
+
+  const studentChecklists = Array.isArray(asmRaw.studentChecklists)
+    ? asmRaw.studentChecklists
+        .map((sc: any) => ({
+          studentName: String(sc.studentName || '').trim(),
+          items: Array.isArray(sc.items)
+            ? sc.items.map((it: any, itIdx: number) => ({
+                no: it.no || itIdx + 1,
+                indicator: String(it.indicator || '').trim(),
+                sudahMuncul: it.sudahMuncul !== false,
+                belumMuncul: Boolean(it.belumMuncul),
+                note: String(it.note || '').trim(),
+              }))
+            : [],
+        }))
+        .filter((sc: any) => sc.studentName && sc.items.length > 0)
+    : undefined
+
   return {
     assessmentTechniques,
     indicators:
@@ -342,6 +370,8 @@ function normalizeAssessment(asmRaw: any, finalTheme: string) {
     processAssessment,
     finalAssessment,
     iktpChecklist,
+    anecdotes,
+    studentChecklists,
   }
 }
 
@@ -556,6 +586,7 @@ export default class WeeklyLessonPlansController {
     const schoolClass = await SchoolClass.query()
       .where('id', classId)
       .where('user_id', user.id)
+      .preload('students')
       .first()
 
     if (!schoolClass) {
@@ -574,6 +605,7 @@ export default class WeeklyLessonPlansController {
     const computedWeek = weekNumber ?? preset?.weekNumber ?? 1
     const finalTheme = theme || preset?.themeTitle || 'Aku Hamba Allah'
     const finalSubtheme = subtheme || preset?.subthemeTitle || ''
+    const studentNames = (schoolClass.students || []).map((s) => s.fullName).filter(Boolean)
 
     const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     let content: Record<string, any>
@@ -586,6 +618,7 @@ export default class WeeklyLessonPlansController {
         groupName: schoolClass.name,
         schoolName: user.schoolName || undefined,
         teacherName: user.fullName || undefined,
+        studentNames: studentNames.length > 0 ? studentNames : undefined,
         dplSuggestions: (preset?.data?.dpl as string[]) || undefined,
         kbcSuggestions: (preset?.data?.kbcValues as string[]) || undefined,
         loosePartsSuggestions: (preset?.data?.loosePartsSuggestions as string[]) || undefined,

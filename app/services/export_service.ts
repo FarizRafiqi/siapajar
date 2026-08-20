@@ -34,10 +34,16 @@ import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 import { groupWorksheetQuestions } from '#services/exam_worksheet_layout_service'
 import { rasterizeSvgSync, readRasterAssetSync } from '#services/visual_asset_service'
-import { formatRpmClassCover, formatRpmClassGroupDetail } from '#services/class_formatter'
+import {
+  formatRpmClassCover,
+  formatRpmClassGroupDetail,
+  formatRpmClassShortCode,
+  detectInstitutionInfo,
+} from '#services/class_formatter'
 import {
   loadWeeklyPlanAssessments,
   type LoadedWeeklyAssessments,
+  type StudentChecklistGroup,
 } from '#services/weekly_assessment_loader'
 
 async function consumeExport(user: User) {
@@ -1715,8 +1721,9 @@ export async function exportWeeklyLessonPlan(
     insideVertical: thinBorder,
   }
 
-  const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
-  const weekStr = content.weekNumber ? `Pekan ke-${content.weekNumber}` : 'Pekan 1'
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
+  const shortGroupStr = formatRpmClassShortCode(weekly.schoolClass, user, content.groupContext)
+  const shortSemesterWeekStr = `${content.semester || 1}/${content.weekNumber || 1}`
   const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
   const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
   const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
@@ -1737,7 +1744,7 @@ export async function exportWeeklyLessonPlan(
       spacing: { after: 40 },
       children: [
         new TextRun({
-          text: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
+          text: instInfo.ministry,
           bold: true,
           size: 20, // 10pt
           color: '9A3412',
@@ -1749,7 +1756,7 @@ export async function exportWeeklyLessonPlan(
       spacing: { after: 200 },
       children: [
         new TextRun({
-          text: 'MODUL AJAR KURIKULUM BERBASIS CINTA (KBC) RA - FASE FONDASI',
+          text: instInfo.subtitle,
           size: 18, // 9pt
           color: '64748B',
         }),
@@ -1848,10 +1855,17 @@ export async function exportWeeklyLessonPlan(
     }),
     new Paragraph({ spacing: { before: 150 } }),
 
-    // Metadata Card
+    // Metadata Card (Clean card with borderless inner table to avoid boxed colons)
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: tableBorders,
+      borders: {
+        top: thinBorder,
+        bottom: thinBorder,
+        left: thinBorder,
+        right: thinBorder,
+        insideHorizontal: borderlessBorders.insideHorizontal,
+        insideVertical: borderlessBorders.insideVertical,
+      },
       rows: [
         new TableRow({
           children: [
@@ -1859,7 +1873,12 @@ export async function exportWeeklyLessonPlan(
               width: { size: 100, type: WidthType.PERCENTAGE },
               columnSpan: 3,
               shading: { fill: 'F1F5F9' },
-              borders: tableBorders,
+              borders: {
+                top: borderlessBorders.top,
+                bottom: thinBorder,
+                left: borderlessBorders.left,
+                right: borderlessBorders.right,
+              },
               margins: { top: 80, bottom: 80, left: 120, right: 120 },
               children: [
                 new Paragraph({
@@ -1883,7 +1902,7 @@ export async function exportWeeklyLessonPlan(
           ['KELOMPOK / USIA', groupDetailStr],
           ['TOPIK', themeUpper],
           ['SUB TOPIK', subthemeUpper],
-          ['SEMESTER / PEKAN', `${semesterStr} / ${weekStr}`],
+          ['SEMESTER / MINGGU', shortSemesterWeekStr],
           ['ALOKASI WAKTU', String(content.allocation || '5 Hari x 180 Menit (15 JP)')],
         ].map(
           ([lbl, val]) =>
@@ -1892,7 +1911,7 @@ export async function exportWeeklyLessonPlan(
                 new TableCell({
                   width: { size: 28, type: WidthType.PERCENTAGE },
                   shading: { fill: 'F8FAFC' },
-                  borders: tableBorders,
+                  borders: borderlessBorders,
                   margins: { top: 60, bottom: 60, left: 100, right: 100 },
                   children: [
                     new Paragraph({
@@ -1903,7 +1922,7 @@ export async function exportWeeklyLessonPlan(
                 new TableCell({
                   width: { size: 4, type: WidthType.PERCENTAGE },
                   shading: { fill: 'F8FAFC' },
-                  borders: tableBorders,
+                  borders: borderlessBorders,
                   margins: { top: 60, bottom: 60, left: 50, right: 50 },
                   children: [
                     new Paragraph({
@@ -1915,7 +1934,7 @@ export async function exportWeeklyLessonPlan(
                 new TableCell({
                   width: { size: 68, type: WidthType.PERCENTAGE },
                   shading: { fill: 'F8FAFC' },
-                  borders: tableBorders,
+                  borders: borderlessBorders,
                   margins: { top: 60, bottom: 60, left: 100, right: 100 },
                   children: [
                     new Paragraph({
@@ -1981,7 +2000,7 @@ export async function exportWeeklyLessonPlan(
                   alignment: AlignmentType.CENTER,
                   children: [
                     new TextRun({
-                      text: 'RENCANA PEMBELAJARAN MENDALAM (RPM) - KBC RA FASE FONDASI',
+                      text: `RENCANA PEMBELAJARAN MENDALAM (RPM) - ${instInfo.level} FASE FONDASI`,
                       bold: true,
                       size: 18,
                       color: 'FFFFFF',
@@ -3134,7 +3153,14 @@ export async function exportWeeklyLessonPlan(
     new Paragraph({ pageBreakBefore: true }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: 'ASESMEN RA', bold: true, size: 24, color: '581C87' })],
+      children: [
+        new TextRun({
+          text: instInfo.assessmentHeaderTitle,
+          bold: true,
+          size: 24,
+          color: '581C87',
+        }),
+      ],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -3164,23 +3190,14 @@ export async function exportWeeklyLessonPlan(
         new TableRow({
           children: [
             new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
+              width: { size: 16, type: WidthType.PERCENTAGE },
               borders: borderlessBorders,
               children: [
                 new Paragraph({
                   children: [
                     new TextRun({
-                      text: `Jenjang / Kelas : ${groupDetailStr}`,
+                      text: 'Jenjang / Kelas',
                       bold: true,
-                      size: 18,
-                      color: '1E293B',
-                    }),
-                  ],
-                }),
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: `Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`,
                       size: 18,
                       color: '1E293B',
                     }),
@@ -3189,14 +3206,77 @@ export async function exportWeeklyLessonPlan(
               ],
             }),
             new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
+              width: { size: 3, type: WidthType.PERCENTAGE },
               borders: borderlessBorders,
               children: [
                 new Paragraph({
-                  alignment: AlignmentType.RIGHT,
                   children: [
                     new TextRun({
-                      text: `Semester / Minggu : ${semesterStr} / ${weekStr}`,
+                      text: ':',
+                      bold: true,
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 31, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: shortGroupStr,
+                      bold: true,
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'Semester / Minggu',
+                      bold: true,
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: ':',
+                      bold: true,
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 27, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: shortSemesterWeekStr,
                       bold: true,
                       size: 18,
                       color: '1E293B',
@@ -3207,34 +3287,78 @@ export async function exportWeeklyLessonPlan(
             }),
           ],
         }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 16, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: 'Guru Kelas',
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: ':',
+                      bold: true,
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 31, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: user.fullName || 'Guru Pengampu',
+                      size: 18,
+                      color: '1E293B',
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [new Paragraph({ text: '' })],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [new Paragraph({ text: '' })],
+            }),
+            new TableCell({
+              width: { size: 27, type: WidthType.PERCENTAGE },
+              borders: borderlessBorders,
+              children: [new Paragraph({ text: '' })],
+            }),
+          ],
+        }),
       ],
     }),
     new Paragraph({ text: '' }),
   ]
 
-  // LAMPIRAN 1 s.d. 4 (Instrumen Asesmen Otentik)
-  const defaultIktpList = [
-    'Anak dapat menyebutkan nama lengkap dan identitas dirinya dengan jelas saat ditanya dengan lembut',
-    'Anak mampu berkreasi dengan media dan loose parts secara mandiri tanpa bantuan berlebihan',
-    'Anak menunjukkan kepercayaan diri saat memperkenalkan diri kepada teman baru',
-    'Anak mengucapkan kata-kata sopan (terima kasih, maaf, tolong) secara spontan selama bermain',
-    'Anak dapat menyelesaikan tugas mandiri seperti merapikan mainan tanpa diingatkan berulang',
-    'Anak menunjukkan keterampilan motorik halus yang baik dalam kegiatan membuat karya',
-    'Anak mampu bekerjasama dengan teman dalam kegiatan kelompok dan berbagi peran',
-    'Anak menghargai perbedaan karakteristik teman dengan sikap positif dan toleran',
-    'Anak dapat bercerita atau bernyanyi dengan komunikasi yang jelas dan percaya diri',
-    'Anak mampu mempresentasikan hasil karyanya di depan teman-teman dengan antusias',
-    'Anak dapat merefleksi pengalaman belajarnya dengan menjawab pertanyaan sederhana',
-    'Anak menunjukkan peningkatan kemandirian dan rasa syukur dari awal hingga akhir pembelajaran',
-  ]
-
-  const iktpList =
-    Array.isArray(asm.iktpChecklist) && asm.iktpChecklist.length > 0
-      ? asm.iktpChecklist
-      : defaultIktpList
-
+  // LAMPIRAN 1: CATATAN ANEKDOT
   children.push(
-    // LAMPIRAN 1: CATATAN ANEKDOT
     ...createAppendixHeader('CATATAN ANEKDOT'),
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -3243,7 +3367,7 @@ export async function exportWeeklyLessonPlan(
         new TableRow({
           children: [
             new TableCell({
-              width: { size: 15, type: WidthType.PERCENTAGE },
+              width: { size: 14, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3E8FF' },
               borders: tableBorders,
               margins: { top: 80, bottom: 80, left: 80, right: 80 },
@@ -3257,7 +3381,7 @@ export async function exportWeeklyLessonPlan(
               ],
             }),
             new TableCell({
-              width: { size: 20, type: WidthType.PERCENTAGE },
+              width: { size: 18, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3E8FF' },
               borders: tableBorders,
               margins: { top: 80, bottom: 80, left: 80, right: 80 },
@@ -3271,7 +3395,7 @@ export async function exportWeeklyLessonPlan(
               ],
             }),
             new TableCell({
-              width: { size: 35, type: WidthType.PERCENTAGE },
+              width: { size: 34, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3E8FF' },
               borders: tableBorders,
               margins: { top: 80, bottom: 80, left: 80, right: 80 },
@@ -3290,7 +3414,7 @@ export async function exportWeeklyLessonPlan(
               ],
             }),
             new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
+              width: { size: 34, type: WidthType.PERCENTAGE },
               shading: { fill: 'F3E8FF' },
               borders: tableBorders,
               margins: { top: 80, bottom: 80, left: 80, right: 80 },
@@ -3316,7 +3440,7 @@ export async function exportWeeklyLessonPlan(
                 new TableRow({
                   children: [
                     new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      width: { size: 14, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 80, bottom: 80, left: 80, right: 80 },
                       children: [
@@ -3327,7 +3451,7 @@ export async function exportWeeklyLessonPlan(
                       ],
                     }),
                     new TableCell({
-                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      width: { size: 18, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 80, bottom: 80, left: 80, right: 80 },
                       children: [
@@ -3344,7 +3468,7 @@ export async function exportWeeklyLessonPlan(
                       ],
                     }),
                     new TableCell({
-                      width: { size: 35, type: WidthType.PERCENTAGE },
+                      width: { size: 34, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 80, bottom: 80, left: 80, right: 80 },
                       children: [
@@ -3354,16 +3478,26 @@ export async function exportWeeklyLessonPlan(
                       ],
                     }),
                     new TableCell({
-                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      width: { size: 34, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 80, bottom: 80, left: 80, right: 80 },
-                      children: [
-                        new Paragraph({
+                      children: item.analysis.split('\n').map((line) => {
+                        const trimmed = line.trim()
+                        const isHeader =
+                          trimmed.endsWith(':') ||
+                          /^Nilai Agama|^Jati Diri|^Dasar Literasi|^STEAM/i.test(trimmed)
+                        return new Paragraph({
+                          spacing: { after: 20 },
                           children: [
-                            new TextRun({ text: item.analysis, size: 18, color: '334155' }),
+                            new TextRun({
+                              text: trimmed,
+                              bold: isHeader,
+                              size: 17,
+                              color: isHeader ? '0F172A' : '334155',
+                            }),
                           ],
-                        }),
-                      ],
+                        })
+                      }),
                     }),
                   ],
                 })
@@ -3373,25 +3507,25 @@ export async function exportWeeklyLessonPlan(
                 new TableRow({
                   children: [
                     new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      width: { size: 14, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 120, bottom: 120, left: 80, right: 80 },
                       children: [new Paragraph({ text: '' })],
                     }),
                     new TableCell({
-                      width: { size: 20, type: WidthType.PERCENTAGE },
+                      width: { size: 18, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 120, bottom: 120, left: 80, right: 80 },
                       children: [new Paragraph({ text: '' })],
                     }),
                     new TableCell({
-                      width: { size: 35, type: WidthType.PERCENTAGE },
+                      width: { size: 34, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 120, bottom: 120, left: 80, right: 80 },
                       children: [new Paragraph({ text: '' })],
                     }),
                     new TableCell({
-                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      width: { size: 34, type: WidthType.PERCENTAGE },
                       borders: tableBorders,
                       margins: { top: 120, bottom: 120, left: 80, right: 80 },
                       children: [new Paragraph({ text: '' })],
@@ -3400,233 +3534,238 @@ export async function exportWeeklyLessonPlan(
                 })
             )),
       ],
-    }),
+    })
+  )
 
-    // LAMPIRAN 2: CEKLIS IKTP
-    ...createAppendixHeader('CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)'),
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: tableBorders,
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 6, type: WidthType.PERCENTAGE },
-              shading: { fill: 'F3E8FF' },
-              borders: tableBorders,
-              margins: { top: 80, bottom: 80, left: 50, right: 50 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [new TextRun({ text: 'No', bold: true, size: 18, color: '581C87' })],
-                }),
-              ],
-            }),
-            new TableCell({
-              width: { size: 44, type: WidthType.PERCENTAGE },
-              shading: { fill: 'F3E8FF' },
-              borders: tableBorders,
-              margins: { top: 80, bottom: 80, left: 80, right: 80 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({ text: 'Indikator', bold: true, size: 18, color: '581C87' }),
-                  ],
-                }),
-              ],
-            }),
-            new TableCell({
-              width: { size: 15, type: WidthType.PERCENTAGE },
-              shading: { fill: 'F3E8FF' },
-              borders: tableBorders,
-              margins: { top: 80, bottom: 80, left: 50, right: 50 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({ text: 'Sudah Muncul', bold: true, size: 18, color: '581C87' }),
-                  ],
-                }),
-              ],
-            }),
-            new TableCell({
-              width: { size: 15, type: WidthType.PERCENTAGE },
-              shading: { fill: 'F3E8FF' },
-              borders: tableBorders,
-              margins: { top: 80, bottom: 80, left: 50, right: 50 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({ text: 'Belum Muncul', bold: true, size: 18, color: '581C87' }),
-                  ],
-                }),
-              ],
-            }),
-            new TableCell({
-              width: { size: 20, type: WidthType.PERCENTAGE },
-              shading: { fill: 'F3E8FF' },
-              borders: tableBorders,
-              margins: { top: 80, bottom: 80, left: 80, right: 80 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({ text: 'Keterangan', bold: true, size: 18, color: '581C87' }),
-                  ],
-                }),
-              ],
-            }),
-          ],
-        }),
-        ...(assessments && assessments.checklists.length > 0
-          ? assessments.checklists.map(
-              (item, idx) =>
-                new TableRow({
-                  children: [
-                    new TableCell({
-                      width: { size: 6, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [
-                        new Paragraph({
-                          alignment: AlignmentType.CENTER,
-                          children: [
-                            new TextRun({
-                              text: String(item.no || idx + 1),
-                              size: 18,
-                              color: '0F172A',
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 44, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 80, right: 80 },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new TextRun({ text: item.indicator, size: 18, color: '0F172A' }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [
-                        new Paragraph({
-                          alignment: AlignmentType.CENTER,
-                          children: [
-                            new TextRun({
-                              text: item.sudahMuncul ? '✔' : '',
-                              font: 'Segoe UI Symbol',
-                              bold: true,
-                              size: 22,
-                              color: '16A34A',
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [
-                        new Paragraph({
-                          alignment: AlignmentType.CENTER,
-                          children: [
-                            new TextRun({
-                              text: item.belumMuncul ? '✔' : '',
-                              font: 'Segoe UI Symbol',
-                              bold: true,
-                              size: 22,
-                              color: 'DC2626',
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 20, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 80, right: 80 },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new TextRun({
-                              text: item.note || item.studentName || '',
-                              size: 17,
-                              color: '334155',
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                  ],
-                })
-            )
-          : iktpList.map(
-              (ind: string, idx: number) =>
-                new TableRow({
-                  children: [
-                    new TableCell({
-                      width: { size: 6, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [
-                        new Paragraph({
-                          alignment: AlignmentType.CENTER,
-                          children: [
-                            new TextRun({
-                              text: String(idx + 1),
-                              size: 18,
-                              color: '0F172A',
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 44, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 80, right: 80 },
-                      children: [
-                        new Paragraph({
-                          children: [new TextRun({ text: ind, size: 18, color: '0F172A' })],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [new Paragraph({ text: '' })],
-                    }),
-                    new TableCell({
-                      width: { size: 15, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 50, right: 50 },
-                      children: [new Paragraph({ text: '' })],
-                    }),
-                    new TableCell({
-                      width: { size: 20, type: WidthType.PERCENTAGE },
-                      borders: tableBorders,
-                      margins: { top: 80, bottom: 80, left: 80, right: 80 },
-                      children: [new Paragraph({ text: '' })],
-                    }),
-                  ],
-                })
-            )),
-      ],
-    }),
+  // LAMPIRAN 2: CEKLIS IKTP (1 Tabel per Siswa)
+  children.push(...createAppendixHeader('CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)'))
 
-    // LAMPIRAN 3: DOKUMENTASI HASIL KARYA
+  const studentGroups: StudentChecklistGroup[] = assessments?.studentChecklists || []
+
+  for (const [sIdx, studentGroup] of studentGroups.entries()) {
+    if (sIdx > 0) {
+      children.push(new Paragraph({ spacing: { before: 200 } }))
+    }
+
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: tableBorders,
+        rows: [
+          // Row 1 of 2-tier header
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: 6, type: WidthType.PERCENTAGE },
+                rowSpan: 2,
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [new TextRun({ text: 'No', bold: true, size: 18, color: '581C87' })],
+                  }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 44, type: WidthType.PERCENTAGE },
+                rowSpan: 2,
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 80, bottom: 80, left: 80, right: 80 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({ text: 'Indikator', bold: true, size: 18, color: '581C87' }),
+                    ],
+                  }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 22, type: WidthType.PERCENTAGE },
+                columnSpan: 2,
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 60, bottom: 60, left: 50, right: 50 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: studentGroup.studentName,
+                        bold: true,
+                        size: 18,
+                        color: '581C87',
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 28, type: WidthType.PERCENTAGE },
+                rowSpan: 2,
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 80, bottom: 80, left: 80, right: 80 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: 'Keterangan / Kejadian Teramati',
+                        bold: true,
+                        size: 18,
+                        color: '581C87',
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          // Row 2 of 2-tier header (Sudah Muncul / Belum Muncul)
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: 11, type: WidthType.PERCENTAGE },
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: 'Sudah Muncul',
+                        bold: true,
+                        size: 16,
+                        color: '581C87',
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              new TableCell({
+                width: { size: 11, type: WidthType.PERCENTAGE },
+                shading: { fill: 'F3E8FF' },
+                borders: tableBorders,
+                margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: 'Belum Muncul',
+                        bold: true,
+                        size: 16,
+                        color: '581C87',
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          // Data Rows for this student
+          ...studentGroup.items.map(
+            (item, idx) =>
+              new TableRow({
+                children: [
+                  new TableCell({
+                    width: { size: 6, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                          new TextRun({
+                            text: String(item.no || idx + 1),
+                            size: 18,
+                            color: '0F172A',
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 44, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    margins: { top: 80, bottom: 80, left: 80, right: 80 },
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: item.indicator, size: 18, color: '0F172A' }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 11, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                          new TextRun({
+                            text: item.sudahMuncul ? '✔' : '',
+                            font: 'Segoe UI Symbol',
+                            bold: true,
+                            size: 22,
+                            color: '16A34A',
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 11, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    margins: { top: 80, bottom: 80, left: 50, right: 50 },
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                          new TextRun({
+                            text: item.belumMuncul ? '✔' : '',
+                            font: 'Segoe UI Symbol',
+                            bold: true,
+                            size: 22,
+                            color: 'DC2626',
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    width: { size: 28, type: WidthType.PERCENTAGE },
+                    borders: tableBorders,
+                    margins: { top: 80, bottom: 80, left: 80, right: 80 },
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: item.note || '',
+                            size: 17,
+                            color: '334155',
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              })
+          ),
+        ],
+      })
+    )
+  }
+
+  // LAMPIRAN 3: DOKUMENTASI HASIL KARYA
+  children.push(
     ...createAppendixHeader('DOKUMENTASI HASIL KARYA'),
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },

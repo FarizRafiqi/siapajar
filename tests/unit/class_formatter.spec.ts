@@ -36,14 +36,14 @@ test.group('Class Formatter Service', () => {
     assert.equal(res, 'RA / A2 (MAWAR)')
   })
 
-  test('formats group detail string with age range and nickname', ({ assert }) => {
+  test('formats group detail string with compact code and age range', ({ assert }) => {
     const res = formatRpmClassGroupDetail({
       name: 'Ibrahim',
       gradeLevel: 1,
       groupContext: 'b',
       rombelNumber: '1',
     })
-    assert.equal(res, 'Kelompok B1 (5-6 Tahun) - Ibrahim')
+    assert.equal(res, 'B1 / 5-6 Tahun')
   })
 
   test('formats group detail string without duplicate nickname', ({ assert }) => {
@@ -53,7 +53,7 @@ test.group('Class Formatter Service', () => {
       groupContext: 'b',
       rombelNumber: '1',
     })
-    assert.equal(res, 'Kelompok B1 (5-6 Tahun)')
+    assert.equal(res, 'B1 / 5-6 Tahun')
   })
 
   test('formats school class display name for SD/MI', ({ assert }) => {

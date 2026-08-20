@@ -141,6 +141,7 @@ export function rpmKbcRaPrompt(params: {
   groupName?: string
   schoolName?: string
   teacherName?: string
+  studentNames?: string[]
   dplSuggestions?: string[]
   kbcSuggestions?: string[]
   loosePartsSuggestions?: string[]
@@ -151,10 +152,13 @@ export function rpmKbcRaPrompt(params: {
 }): AiPrompt {
   const subthemeText = params.subtheme ? ` Subtopik/Subtema: "${params.subtheme}".` : ''
   const semesterText = params.semester ? `Semester ${params.semester}` : 'Semester 1'
-  const weekText = params.weekNumber ? `Pekan ke-${params.weekNumber}` : 'Pekan 1'
+  const weekText = params.weekNumber ? `Minggu ke-${params.weekNumber}` : 'Minggu 1'
   const group = params.groupName || 'Kelompok B (5-6 Tahun)'
   const school = params.schoolName || 'RA / TK PAUD'
   const teacher = params.teacherName || 'Guru Kelas'
+  const studentsText = params.studentNames?.length
+    ? `\nDaftar Siswa di Kelas:\n` + params.studentNames.map((s) => `- ${s}`).join('\n')
+    : '\nDaftar Siswa: Siswa A, Siswa B, Siswa C'
 
   const cpContextStr = params.curriculumContext?.cps?.length
     ? `\nData CP Acuan Guru:\n` +
@@ -228,7 +232,29 @@ export function rpmKbcRaPrompt(params: {
       '    "indicators": string[],\n' +
       '    "earlyAssessment": string[],\n' +
       '    "processAssessment": string[],\n' +
-      '    "finalAssessment": string[]\n' +
+      '    "finalAssessment": string[],\n' +
+      '    "anecdotes": [\n' +
+      '      {\n' +
+      '        "studentName": string,\n' +
+      '        "date": string,\n' +
+      '        "event": string,\n' +
+      '        "analysis": string\n' +
+      '      }\n' +
+      '    ],\n' +
+      '    "studentChecklists": [\n' +
+      '      {\n' +
+      '        "studentName": string,\n' +
+      '        "items": [\n' +
+      '          {\n' +
+      '            "no": number,\n' +
+      '            "indicator": string,\n' +
+      '            "sudahMuncul": boolean,\n' +
+      '            "belumMuncul": boolean,\n' +
+      '            "note": string\n' +
+      '          }\n' +
+      '        ]\n' +
+      '      }\n' +
+      '    ]\n' +
       '  },\n' +
       '  "nilaiAgamaBudiPekerti": string[],\n' +
       '  "jatiDiri": string[],\n' +
@@ -239,7 +265,12 @@ export function rpmKbcRaPrompt(params: {
       '1. DPL (Dimensi Profil Lulusan): Pilih relevan dari DPL 1 (Keimanan), DPL 2 (Kewargaan), DPL 3 (Penalaran Kritis), DPL 4 (Kreativitas), DPL 5 (Kolaborasi), DPL 6 (Kemandirian), DPL 7 (Kesehatan), DPL 8 (Komunikasi).\n' +
       '2. Panca Cinta KBC: Pilih relevan dari Cinta Alloh & RosulNya, Cinta Diri & Sesama, Cinta Ilmu, Cinta Lingkungan, Cinta Tanah Air.\n' +
       '3. Inti Pembelajaran: Sediakan 5 hari (Senin s.d. Jumat) dengan masing-masing 3 kegiatan bermain bermakna dengan rincian nama kegiatan, fokus karakter, alat/bahan, cara bermain, dan manfaat.\n' +
-      '4. Pastikan selaras dengan Capaian Pembelajaran Fase Fondasi (NABP, Jati Diri, Literasi-STEAM).',
+      '5. Asesmen Otentik Catatan Anekdot ("assessment.anecdotes"): Susun deskripsi pengamatan dan analisis yang dinamis, alami, dan kontekstual terhadap tema/kegiatan minggu ini untuk setiap siswa dengan format struktur:\n' +
+      '   - event: Tanggal pengamatan dan narasi deskripsi peristiwa teramati yang dinamis & bervariasi sesuai aktivitas bermain:\n' +
+      '     "(dd/MM) [Nama] [deskripsi perilaku/peristiwa nyata yang teramati saat bermain/belajar].\\n\\n(dd/MM) [deskripsi pengamatan kedua saat kegiatan kelompok/interaktif]."\n' +
+      '   - analysis: Analisis capaian perkembangan anak yang selaras dengan Capaian Pembelajaran (CP) dan tema:\n' +
+      '     "Nilai Agama & Budi Pekerti:\\n[Uraian analisis capaian anak]\\n\\nJati Diri:\\n[Uraian analisis capaian anak]\\n\\nDasar Literasi & STEAM:\\n[Uraian analisis capaian anak]"\n' +
+      '6. Asesmen Ceklis IKTP ("assessment.studentChecklists"): Buat 1 tabel ceklis per siswa. Pada kolom keterangan ("note"), generate kalimat narasi pengamatan yang dinamis, kontekstual, dan bervariasi untuk menggambarkan ketercapaian masing-masing indikator IKTP siswa tersebut.',
     user:
       `Buatkan dokumen lengkap RPM KBC RA untuk:\n` +
       `- Guru: ${teacher}\n` +
@@ -247,7 +278,7 @@ export function rpmKbcRaPrompt(params: {
       `- Kelompok: ${group}\n` +
       `- Periode: ${semesterText}, ${weekText}\n` +
       `- Tema/Topik: "${params.theme}"\n` +
-      `${subthemeText}${cpContextStr}${tpContextStr}`,
+      `${subthemeText}${cpContextStr}${tpContextStr}${studentsText}`,
   }
 }
 

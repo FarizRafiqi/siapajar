@@ -196,7 +196,7 @@ export default function WeeklyLessonPlansIndex({
             </h3>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
               Klik tombol &quot;Generate RPM dengan AI&quot; untuk membuat rencana pembelajaran 1
-              pekan otomatis sesuai tema Kemenag & Kurikulum Merdeka.
+              minggu otomatis sesuai tema Kemenag & Kurikulum Merdeka.
             </p>
           </div>
         ) : (
@@ -218,7 +218,7 @@ export default function WeeklyLessonPlansIndex({
                       <div className="flex items-center gap-1.5">
                         {weekNum ? (
                           <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950/50 dark:text-emerald-300">
-                            Pekan {weekNum}
+                            Minggu {weekNum}
                           </span>
                         ) : null}
                         {semesterNum ? (
@@ -476,7 +476,7 @@ export default function WeeklyLessonPlansIndex({
                           htmlFor="field-presetSelection"
                           className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
                         >
-                          Pilih Tema Pekan (1 s.d 18)
+                          Pilih Tema Mingguan (1 s.d 18)
                         </label>
                         <select
                           id="field-presetSelection"
@@ -490,7 +490,7 @@ export default function WeeklyLessonPlansIndex({
                         >
                           {filteredPresets.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.weekNumber ? `Pekan ${p.weekNumber}: ` : ''}
+                              {p.weekNumber ? `Minggu ${p.weekNumber}: ` : ''}
                               {p.themeTitle}
                               {p.subthemeTitle ? ` (${p.subthemeTitle})` : ''}
                             </option>
@@ -523,7 +523,7 @@ export default function WeeklyLessonPlansIndex({
                           htmlFor="field-manualWeek"
                           className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
                         >
-                          Pekan Ke-
+                          Minggu Ke-
                         </label>
                         <input
                           id="field-manualWeek"
@@ -582,7 +582,7 @@ export default function WeeklyLessonPlansIndex({
                     htmlFor="field-weekStartDate"
                     className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
                   >
-                    Tanggal Mulai Pekan (Hari Senin)
+                    Tanggal Mulai Minggu Ini (Hari Senin)
                   </label>
                   <input
                     id="field-weekStartDate"

@@ -68,6 +68,18 @@ export interface LoadedWeeklyAssessments {
     note: string
     studentName: string
   }>
+  studentChecklists?: Array<{
+    studentId?: number
+    studentName: string
+    items: Array<{
+      no: number
+      indicator: string
+      sudahMuncul: boolean
+      belumMuncul: boolean
+      note: string
+      studentName?: string
+    }>
+  }>
   workSamples: Array<{
     id: number
     date: string
@@ -303,7 +315,7 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
                   ))
                 ) : (
                   <li className="text-neutral-400 italic">
-                    SOP Penyambutan, Ikrar, Berdoa, Apersepsi Topik Pekan Ini.
+                    SOP Penyambutan, Ikrar, Berdoa, Apersepsi Topik Minggu Ini.
                   </li>
                 )}
               </ul>
@@ -1018,7 +1030,7 @@ function AnecdoteAppendixTab({ anecdotes }: { readonly anecdotes?: AnecdoteItem[
     return (
       <div className="rounded-xl border border-dashed border-neutral-200 p-6 text-center dark:border-neutral-800 space-y-2">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Belum ada catatan anekdot terisi untuk pekan ini. Dokumen cetak akan menampilkan format
+          Belum ada catatan anekdot terisi untuk minggu ini. Dokumen cetak akan menampilkan format
           kosong siap cetak.
         </p>
         <Link
@@ -1045,18 +1057,38 @@ function AnecdoteAppendixTab({ anecdotes }: { readonly anecdotes?: AnecdoteItem[
         <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
           {anecdotes.map((item) => (
             <tr
-              key={`anecdote-row-${item.id}`}
+              key={`anecdote-row-${item.id || item.studentName}`}
               className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
             >
-              <td className="px-3 py-2.5 font-medium text-neutral-600 dark:text-neutral-400">
+              <td className="px-3 py-2.5 font-medium text-neutral-600 dark:text-neutral-400 align-top">
                 {item.date}
               </td>
-              <td className="px-3 py-2.5 font-bold text-neutral-900 dark:text-white">
+              <td className="px-3 py-2.5 font-bold text-neutral-900 dark:text-white align-top">
                 {item.studentName}
               </td>
-              <td className="px-3 py-2.5 text-neutral-800 dark:text-neutral-200">{item.event}</td>
-              <td className="px-3 py-2.5 text-neutral-800 dark:text-neutral-200">
-                {item.analysis}
+              <td className="px-3 py-2.5 text-neutral-800 dark:text-neutral-200 align-top">
+                {item.event}
+              </td>
+              <td className="px-3 py-2.5 text-neutral-800 dark:text-neutral-200 space-y-1 align-top">
+                {item.analysis.split('\n').map((line, lIdx) => {
+                  const trimmed = line.trim()
+                  if (!trimmed) return null
+                  const isHdr =
+                    trimmed.endsWith(':') ||
+                    /^Nilai Agama|^Jati Diri|^Dasar Literasi|^STEAM/i.test(trimmed)
+                  return (
+                    <p
+                      key={`anecdote-line-${lIdx}`}
+                      className={
+                        isHdr
+                          ? 'font-bold text-purple-900 dark:text-purple-300 mt-1'
+                          : 'text-neutral-700 dark:text-neutral-300 text-xs'
+                      }
+                    >
+                      {trimmed}
+                    </p>
+                  )
+                })}
               </td>
             </tr>
           ))}
@@ -1066,14 +1098,105 @@ function AnecdoteAppendixTab({ anecdotes }: { readonly anecdotes?: AnecdoteItem[
   )
 }
 
-function ChecklistAppendixTab({ checklists }: { readonly checklists?: ChecklistItem[] }) {
+function ChecklistAppendixTab({
+  checklists,
+  studentChecklists,
+}: {
+  readonly checklists?: ChecklistItem[]
+  readonly studentChecklists?: LoadedWeeklyAssessments['studentChecklists']
+}) {
+  if (studentChecklists && studentChecklists.length > 0) {
+    return (
+      <div className="space-y-6">
+        {studentChecklists.map((group, gIdx) => (
+          <div
+            key={`student-checklist-group-${group.studentName}-${gIdx}`}
+            className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm"
+          >
+            <table className="w-full text-left text-xs">
+              <thead className="bg-purple-50 text-purple-900 dark:bg-purple-950/50 dark:text-purple-200 border-b border-neutral-200 dark:border-neutral-800 font-semibold">
+                <tr>
+                  <th
+                    rowSpan={2}
+                    className="px-3 py-2 w-10 text-center border-r border-purple-200/50 dark:border-purple-800/50"
+                  >
+                    No
+                  </th>
+                  <th
+                    rowSpan={2}
+                    className="px-3 py-2 border-r border-purple-200/50 dark:border-purple-800/50"
+                  >
+                    Indikator
+                  </th>
+                  <th
+                    colSpan={2}
+                    className="px-3 py-1.5 text-center border-b border-r border-purple-200/50 dark:border-purple-800/50 font-bold text-purple-950 dark:text-purple-100"
+                  >
+                    {group.studentName}
+                  </th>
+                  <th rowSpan={2} className="px-3 py-2 w-48">
+                    Keterangan / Kejadian Teramati
+                  </th>
+                </tr>
+                <tr>
+                  <th className="px-2 py-1 w-20 text-center text-[11px] border-r border-purple-200/50 dark:border-purple-800/50">
+                    Sudah Muncul
+                  </th>
+                  <th className="px-2 py-1 w-20 text-center text-[11px] border-r border-purple-200/50 dark:border-purple-800/50">
+                    Belum Muncul
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                {group.items.map((item, idx) => (
+                  <tr
+                    key={`checklist-row-${group.studentName}-${item.no || idx}`}
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                  >
+                    <td className="px-3 py-2 text-center font-medium text-neutral-500 border-r border-neutral-200 dark:border-neutral-800">
+                      {item.no || idx + 1}
+                    </td>
+                    <td className="px-3 py-2 font-medium text-neutral-900 dark:text-white border-r border-neutral-200 dark:border-neutral-800">
+                      {item.indicator}
+                    </td>
+                    <td className="px-2 py-2 text-center border-r border-neutral-200 dark:border-neutral-800">
+                      {item.sudahMuncul ? (
+                        <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 text-xs dark:bg-emerald-950 dark:text-emerald-300">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-center border-r border-neutral-200 dark:border-neutral-800">
+                      {item.belumMuncul ? (
+                        <span className="inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 font-bold px-2 py-0.5 text-xs dark:bg-rose-950 dark:text-rose-300">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300 text-xs">
+                      {item.note || '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   if (!checklists || checklists.length === 0) {
     return (
       <div className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 space-y-2">
         <p className="text-xs text-neutral-600 dark:text-neutral-300">
           Menggunakan daftar standar 12 butir IKTP dari RPM. Jika Anda mengisi instrumen ceklis di
-          menu <strong>Asesmen PAUD</strong>, ceklis hasil observasi akan otomatis mengisi tabel
-          ini.
+          menu <strong>Asesmen PAUD</strong>, ceklis hasil observasi per siswa akan otomatis mengisi
+          tabel ini.
         </p>
         <Link
           href="/paud-assessments/create?type=checklist"
@@ -1141,7 +1264,7 @@ function WorkSampleAppendixTab({ workSamples }: { readonly workSamples?: WorkSam
     return (
       <div className="rounded-xl border border-dashed border-neutral-200 p-6 text-center dark:border-neutral-800 space-y-2">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Belum ada hasil karya yang didokumentasikan untuk pekan ini. Dokumen cetak akan
+          Belum ada hasil karya yang didokumentasikan untuk minggu ini. Dokumen cetak akan
           menyediakan area tempel foto karya.
         </p>
         <Link
@@ -1202,7 +1325,7 @@ function PhotoSeriesAppendixTab({ photoSeries }: { readonly photoSeries?: PhotoS
     return (
       <div className="rounded-xl border border-dashed border-neutral-200 p-6 text-center dark:border-neutral-800 space-y-2">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Belum ada foto berseri untuk pekan ini. Dokumen cetak akan menyediakan format 3 foto
+          Belum ada foto berseri untuk minggu ini. Dokumen cetak akan menyediakan format 3 foto
           berurutan.
         </p>
         <Link
@@ -1351,7 +1474,7 @@ function TabAssessmentSection({
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Instrumen & Rekap Hasil Asesmen Otentik Pekan Ini
+                Instrumen & Rekap Hasil Asesmen Otentik Minggu Ini
               </h3>
               <span className="shrink-0 whitespace-nowrap rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
                 {totalFilled > 0 ? `${totalFilled} Asesmen Terisi` : 'Template Siap Pakai'}
@@ -1511,7 +1634,10 @@ function TabAssessmentSection({
               <CheckSquare className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               Ceklis IKTP (Indikator Ketercapaian)
             </h4>
-            <ChecklistAppendixTab checklists={assessments?.checklists} />
+            <ChecklistAppendixTab
+              checklists={assessments?.checklists}
+              studentChecklists={assessments?.studentChecklists}
+            />
           </div>
         )}
 
@@ -1570,7 +1696,7 @@ function TabSummarySection({
             }
             rows={4}
             className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-white"
-            placeholder="Catatan refleksi pelaksanaan pembelajaran pekan ini..."
+            placeholder="Catatan refleksi pelaksanaan pembelajaran minggu ini..."
           />
         ) : (
           <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-line">

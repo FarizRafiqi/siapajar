@@ -3,23 +3,44 @@ import { DateTime } from 'luxon'
 import { loadWeeklyPlanAssessments } from '#services/weekly_assessment_loader'
 
 test.group('Weekly Assessment Loader', () => {
-  test('returns default template structures gracefully when no user_id is provided', async ({
+  test('returns empty checklists and anecdotes when no DB assessments or AI data exist', async ({
     assert,
   }) => {
     // @ts-ignore
     const result = await loadWeeklyPlanAssessments({ userId: 0, classId: 0, weekStartDate: null })
-    assert.deepEqual(result.anecdotes, [])
-    assert.equal(result.checklists.length, 12)
-    assert.deepEqual(result.workSamples, [])
-    assert.deepEqual(result.photoSeries, [])
+    assert.equal(result.anecdotes.length, 0)
+    assert.equal(result.studentChecklists.length, 0)
+    assert.equal(result.workSamples.length, 0)
+    assert.equal(result.photoSeries.length, 0)
+    assert.equal(result.totalCount, 0)
   })
 
-  test('extracts indicators correctly from standard RPM content', async ({ assert }) => {
+  test('loads AI-generated student checklists and anecdotes correctly from RPM content', async ({
+    assert,
+  }) => {
     const customContent = {
       assessment: {
-        indicators: [
-          { indicator: 'Anak mampu mengucapkan salam secara spontan' },
-          { indicator: 'Anak mampu merapikan alat bermain sendiri' },
+        anecdotes: [
+          {
+            studentName: 'Siswa A',
+            date: '12/08/2026',
+            event: 'Siswa A bermain balok dengan tertib.',
+            analysis: 'Nilai Agama & Budi Pekerti:\nMenunjukkan sikap santun.',
+          },
+        ],
+        studentChecklists: [
+          {
+            studentName: 'Siswa A',
+            items: [
+              {
+                no: 1,
+                indicator: 'Anak mampu mengucapkan salam secara spontan',
+                sudahMuncul: true,
+                belumMuncul: false,
+                note: 'Mengucapkan salam dengan ramah.',
+              },
+            ],
+          },
         ],
       },
     }
@@ -31,24 +52,16 @@ test.group('Weekly Assessment Loader', () => {
       weekStartDate: DateTime.fromISO('2026-08-10'),
       content: customContent,
     })
-    assert.equal(result.checklists.length, 2)
-    assert.equal(result.checklists[0].indicator, 'Anak mampu mengucapkan salam secara spontan')
-    assert.equal(result.checklists[1].indicator, 'Anak mampu merapikan alat bermain sendiri')
-  })
-
-  test('falls back to default 12 IKTP indicators when content indicators are missing', async ({
-    assert,
-  }) => {
-    // @ts-ignore
-    const result = await loadWeeklyPlanAssessments({
-      userId: 0,
-      classId: 0,
-      weekStartDate: DateTime.fromISO('2026-08-10'),
-      content: {},
-    })
-    assert.equal(result.checklists.length, 12)
-    assert.include(result.checklists[0].indicator, 'Mengenal dan meniru doa-doa harian')
-    assert.include(result.checklists[11].indicator, 'Mengekspresikan ide')
+    assert.equal(result.anecdotes.length, 1)
+    assert.equal(result.anecdotes[0].studentName, 'Siswa A')
+    assert.include(result.anecdotes[0].analysis, 'Nilai Agama & Budi Pekerti:')
+    assert.equal(result.studentChecklists.length, 1)
+    assert.equal(result.studentChecklists[0].items.length, 1)
+    assert.equal(
+      result.studentChecklists[0].items[0].indicator,
+      'Anak mampu mengucapkan salam secara spontan'
+    )
+    assert.equal(result.studentChecklists[0].items[0].note, 'Mengucapkan salam dengan ramah.')
   })
 
   test('exportWeeklyLessonPlanPdf renders PDF buffer without errors', async ({ assert }) => {
@@ -77,5 +90,33 @@ test.group('Weekly Assessment Loader', () => {
     const pdfBuffer = await exportWeeklyLessonPlanPdf(mockPlan, mockUser, false)
     assert.isTrue(Buffer.isBuffer(pdfBuffer))
     assert.isAbove(pdfBuffer.length, 500)
-  })
+  }).timeout(10000)
+
+  test('exportWeeklyLessonPlan renders DOCX buffer without errors', async ({ assert }) => {
+    const { exportWeeklyLessonPlan } = await import('#services/export_service')
+    const mockPlan: any = {
+      id: 1,
+      theme: 'AKU HAMBA ALLAH',
+      weekStartDate: DateTime.fromISO('2026-08-10'),
+      status: 'draft',
+      schoolClass: { name: 'Kelompok B1', gradeLevel: 0, rombelNumber: 1, nickname: 'Ibrahim' },
+      content: {
+        theme: 'Aku Hamba Allah',
+        subtheme: 'Mengenal Anggota Tubuh',
+        identification: {},
+        learningDesign: {},
+        learningExperience: {},
+        assessment: {},
+      },
+    }
+    const mockUser: any = {
+      id: 1,
+      fullName: 'Fariz Guru',
+      schoolName: 'RA Al-Falah',
+    }
+
+    const docxBuffer = await exportWeeklyLessonPlan(mockPlan, mockUser)
+    assert.isTrue(Buffer.isBuffer(docxBuffer))
+    assert.isAbove(docxBuffer.length, 500)
+  }).timeout(10000)
 })

@@ -21,12 +21,18 @@ import { auditService } from '#services/audit_service'
 import { randomUUID } from 'node:crypto'
 import { chromium, type Browser } from 'playwright'
 import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
-import { formatRpmClassCover, formatRpmClassGroupDetail } from '#services/class_formatter'
+import {
+  formatRpmClassCover,
+  formatRpmClassGroupDetail,
+  formatRpmClassShortCode,
+  detectInstitutionInfo,
+} from '#services/class_formatter'
 import {
   loadWeeklyPlanAssessments,
   type LoadedWeeklyAssessments,
   type AnecdoteItem,
   type ChecklistItem,
+  type StudentChecklistGroup,
   type WorkSampleItem,
   type PhotoSeriesItem,
 } from '#services/weekly_assessment_loader'
@@ -1112,30 +1118,23 @@ function drawRpmPdfCover(
     subthemeUpper: string
     groupCoverStr: string
     groupDetailStr: string
-    semesterStr: string
-    weekStr: string
+    shortSemesterWeekStr: string
     allocation: string
   }
 ) {
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
+
   doc.rect(leftX, 40, contentWidth, 3).fill('#EA580C')
   doc.rect(leftX, 46, contentWidth, 1).fill('#FDBA74')
 
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .fillColor('#9A3412')
-    .text('KEMENTERIAN AGAMA REPUBLIK INDONESIA', leftX, 60, {
-      align: 'center',
-      width: contentWidth,
-    })
-  doc
-    .font('Helvetica')
-    .fontSize(9)
-    .fillColor('#64748B')
-    .text('MODUL AJAR KURIKULUM BERBASIS CINTA (KBC) RA - FASE FONDASI', leftX, 75, {
-      align: 'center',
-      width: contentWidth,
-    })
+  doc.font('Helvetica-Bold').fontSize(10).fillColor('#9A3412').text(instInfo.ministry, leftX, 60, {
+    align: 'center',
+    width: contentWidth,
+  })
+  doc.font('Helvetica').fontSize(9).fillColor('#64748B').text(instInfo.subtitle, leftX, 75, {
+    align: 'center',
+    width: contentWidth,
+  })
 
   // Hero Card Title
   const heroY = 110
@@ -1209,7 +1208,7 @@ function drawRpmPdfCover(
     ['KELOMPOK / USIA', meta.groupDetailStr],
     ['TOPIK', meta.themeUpper],
     ['SUB TOPIK', meta.subthemeUpper],
-    ['SEMESTER / PEKAN', `${meta.semesterStr} / ${meta.weekStr}`],
+    ['SEMESTER / MINGGU', meta.shortSemesterWeekStr],
     ['ALOKASI WAKTU', meta.allocation],
   ]
 
@@ -1789,18 +1788,28 @@ function drawAppendixTable(
   rowHeight: number,
   customPlaceholder?: { colIdx: number; text: string }
 ) {
+  let headerH = 26
+  for (const c of cols) {
+    const textH = doc.heightOfString(c.title, { width: c.w - 8 })
+    if (textH + 12 > headerH) headerH = Math.ceil(textH + 12)
+  }
+
   let curTblY = doc.y
   let curTblX = leftX
   for (const c of cols) {
-    doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc.rect(curTblX, curTblY, c.w, headerH).fillAndStroke('#F3E8FF', '#CBD5E1')
+    const textH = doc.heightOfString(c.title, { width: c.w - 8 })
     doc
       .font('Helvetica-Bold')
       .fontSize(8)
       .fillColor('#581C87')
-      .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+      .text(c.title, curTblX + 4, curTblY + (headerH - textH) / 2, {
+        width: c.w - 8,
+        align: 'center',
+      })
     curTblX += c.w
   }
-  curTblY += 20
+  curTblY += headerH
 
   for (let r = 0; r < rowCount; r++) {
     curTblX = leftX
@@ -1827,18 +1836,25 @@ function drawRpmPdfAppendices(
   doc: typeof PDFDocument,
   leftX: number,
   contentWidth: number,
-  asm: any,
   user: User,
-  meta: { groupStr: string; semesterStr: string; weekStr: string },
+  meta: {
+    shortGroupStr: string
+    shortSemesterWeekStr: string
+    groupStr: string
+    semesterStr: string
+    weekStr: string
+  },
   assessments?: LoadedWeeklyAssessments
 ) {
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
+
   const renderAppendixHeader = (title: string) => {
     doc.addPage()
     doc
       .font('Helvetica-Bold')
       .fontSize(13)
       .fillColor('#581C87')
-      .text('ASESMEN RA', leftX, 40, { align: 'center', width: contentWidth })
+      .text(instInfo.assessmentHeaderTitle, leftX, 40, { align: 'center', width: contentWidth })
     doc.fontSize(10.5).text(title, leftX, 56, { align: 'center', width: contentWidth })
     doc
       .fontSize(9)
@@ -1851,17 +1867,36 @@ function drawRpmPdfAppendices(
 
     doc.rect(leftX, 86, contentWidth, 0.75).fill('#D8B4FE')
 
+    const col1LabelW = 72
+    const col1ColonX = leftX + col1LabelW
+    const col1ValX = col1ColonX + 8
+
+    const col2X = leftX + contentWidth * 0.55
+    const col2LabelW = 88
+    const col2ColonX = col2X + col2LabelW
+    const col2ValX = col2ColonX + 8
+
+    // Row 1 (y = 94)
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#1E293B')
+      .text('Jenjang / Kelas', leftX, 94, { width: col1LabelW })
+    doc.font('Helvetica-Bold').text(':', col1ColonX, 94)
+    doc.font('Helvetica-Bold').text(meta.shortGroupStr, col1ValX, 94)
+
+    doc.font('Helvetica-Bold').text('Semester / Minggu', col2X, 94, { width: col2LabelW })
+    doc.font('Helvetica-Bold').text(':', col2ColonX, 94)
+    doc.font('Helvetica-Bold').text(meta.shortSemesterWeekStr, col2ValX, 94)
+
+    // Row 2 (y = 108)
     doc
       .font('Helvetica')
       .fontSize(8)
       .fillColor('#1E293B')
-      .text(`Jenjang / Kelas : ${meta.groupStr}`, leftX, 94)
-    doc.text(
-      `Semester / Minggu : ${meta.semesterStr} / ${meta.weekStr}`,
-      leftX + contentWidth * 0.55,
-      94
-    )
-    doc.text(`Guru Kelas     : ${user.fullName || 'Guru Pengampu'}`, leftX, 108)
+      .text('Guru Kelas', leftX, 108, { width: col1LabelW })
+    doc.font('Helvetica-Bold').text(':', col1ColonX, 108)
+    doc.font('Helvetica').text(user.fullName || 'Guru Pengampu', col1ValX, 108)
 
     doc.y = 125
   }
@@ -1871,42 +1906,56 @@ function drawRpmPdfAppendices(
   if (assessments && assessments.anecdotes.length > 0) {
     const colAnecdote = [
       { title: 'Tanggal', w: 75 },
-      { title: 'Nama Anak', w: 100 },
-      { title: 'Kejadian Teramati', w: 185 },
-      { title: 'Analisis Capaian', w: contentWidth - 360 },
+      { title: 'Nama Anak', w: 95 },
+      { title: 'Kejadian Teramati', w: 180 },
+      { title: 'Analisis Capaian', w: contentWidth - 350 },
     ]
+    let anecHeaderH = 26
+    for (const c of colAnecdote) {
+      const h = doc.heightOfString(c.title, { width: c.w - 8 })
+      if (h + 12 > anecHeaderH) anecHeaderH = Math.ceil(h + 12)
+    }
+
     let curTblY = doc.y
     let curTblX = leftX
     for (const c of colAnecdote) {
-      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      doc.rect(curTblX, curTblY, c.w, anecHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+      const textH = doc.heightOfString(c.title, { width: c.w - 8 })
       doc
         .font('Helvetica-Bold')
         .fontSize(8)
         .fillColor('#581C87')
-        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+        .text(c.title, curTblX + 4, curTblY + (anecHeaderH - textH) / 2, {
+          width: c.w - 8,
+          align: 'center',
+        })
       curTblX += c.w
     }
-    curTblY += 20
+    curTblY += anecHeaderH
 
     assessments.anecdotes.forEach((item: AnecdoteItem) => {
-      const eventH = doc.heightOfString(item.event, { width: 185 - 10 })
-      const analysisH = doc.heightOfString(item.analysis, { width: contentWidth - 360 - 10 })
-      const rH = Math.max(eventH + 10, analysisH + 10, 28)
+      const eventH = doc.heightOfString(item.event, { width: 180 - 10 })
+      const analysisH = doc.heightOfString(item.analysis, { width: contentWidth - 350 - 10 })
+      const rH = Math.max(eventH + 12, analysisH + 12, 32)
 
       if (curTblY + rH > 750) {
         renderAppendixHeader('CATATAN ANEKDOT (Lanjutan)')
         curTblY = doc.y
         curTblX = leftX
         for (const c of colAnecdote) {
-          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc.rect(curTblX, curTblY, c.w, anecHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+          const textH = doc.heightOfString(c.title, { width: c.w - 8 })
           doc
             .font('Helvetica-Bold')
             .fontSize(8)
             .fillColor('#581C87')
-            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+            .text(c.title, curTblX + 4, curTblY + (anecHeaderH - textH) / 2, {
+              width: c.w - 8,
+              align: 'center',
+            })
           curTblX += c.w
         }
-        curTblY += 20
+        curTblY += anecHeaderH
       }
 
       curTblX = leftX
@@ -1935,11 +1984,27 @@ function drawRpmPdfAppendices(
       curTblX += colAnecdote[2].w
 
       doc.rect(curTblX, curTblY, colAnecdote[3].w, rH).stroke('#CBD5E1')
-      doc
-        .font('Helvetica')
-        .fontSize(7.5)
-        .fillColor('#334155')
-        .text(item.analysis, curTblX + 5, curTblY + 6, { width: colAnecdote[3].w - 10 })
+      const lines = item.analysis.split('\n')
+      let textY = curTblY + 6
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed) {
+          textY += 3
+          continue
+        }
+        const isHeader =
+          trimmed.endsWith(':') || /^Nilai Agama|^Jati Diri|^Dasar Literasi|^STEAM/i.test(trimmed)
+
+        if (isHeader) {
+          doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#0F172A')
+          doc.text(trimmed, curTblX + 5, textY, { width: colAnecdote[3].w - 10 })
+          textY = doc.y + 1
+        } else {
+          doc.font('Helvetica').fontSize(7.5).fillColor('#334155')
+          doc.text(trimmed, curTblX + 5, textY, { width: colAnecdote[3].w - 10 })
+          textY = doc.y + 1
+        }
+      }
       curTblY += rH
     })
     doc.y = curTblY
@@ -1949,129 +2014,219 @@ function drawRpmPdfAppendices(
       leftX,
       [
         { title: 'Tanggal', w: 75 },
-        { title: 'Nama Anak', w: 100 },
-        { title: 'Kejadian Teramati', w: 185 },
-        { title: 'Analisis Capaian', w: contentWidth - 360 },
+        { title: 'Nama Anak', w: 95 },
+        { title: 'Kejadian Teramati', w: 180 },
+        { title: 'Analisis Capaian', w: contentWidth - 350 },
       ],
       7,
       58
     )
   }
 
-  // 2. LAMPIRAN 2: CEKLIS IKTP
+  // 2. LAMPIRAN 2: CEKLIS IKTP (1 Tabel per Siswa)
   renderAppendixHeader('CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)')
-  const checklistData =
-    assessments && assessments.checklists.length > 0 ? assessments.checklists : null
-
-  const defaultIktpList = [
-    'Anak dapat menyebutkan nama lengkap dan identitas dirinya dengan jelas saat ditanya dengan lembut',
-    'Anak mampu berkreasi dengan media dan loose parts secara mandiri tanpa bantuan berlebihan',
-    'Anak menunjukkan kepercayaan diri saat memperkenalkan diri kepada teman baru',
-    'Anak mengucapkan kata-kata sopan (terima kasih, maaf, tolong) secara spontan selama bermain',
-    'Anak dapat menyelesaikan tugas mandiri seperti merapikan mainan tanpa diingatkan berulang',
-    'Anak menunjukkan keterampilan motorik halus yang baik dalam kegiatan membuat karya',
-    'Anak mampu bekerjasama dengan teman dalam kegiatan kelompok dan berbagi peran',
-    'Anak menghargai perbedaan karakteristik teman dengan sikap positif dan toleran',
-    'Anak dapat bercerita atau bernyanyi dengan komunikasi yang jelas dan percaya diri',
-    'Anak mampu mempresentasikan hasil karyanya di depan teman-teman dengan antusias',
-    'Anak dapat merefleksi pengalaman belajarnya dengan menjawab pertanyaan sederhana',
-    'Anak menunjukkan peningkatan kemandirian dan rasa syukur dari awal hingga akhir pembelajaran',
-  ]
-
-  const iktpItems: ChecklistItem[] =
-    checklistData ??
-    (Array.isArray(asm.iktpChecklist) && asm.iktpChecklist.length > 0
-      ? asm.iktpChecklist
-      : defaultIktpList
-    ).map((ind: string, idx: number) => ({
-      no: idx + 1,
-      indicator: ind,
-      sudahMuncul: false,
-      belumMuncul: false,
-      note: '',
-      studentName: '',
-    }))
+  const studentGroups: StudentChecklistGroup[] = assessments?.studentChecklists || []
 
   const colIktp = [
     { title: 'No', w: 25 },
-    { title: 'Indikator', w: 240 },
-    { title: 'Sudah Muncul', w: 75 },
-    { title: 'Belum Muncul', w: 75 },
-    { title: 'Keterangan', w: contentWidth - 415 },
+    { title: 'Indikator', w: 215 },
+    { title: 'Sudah Muncul', w: 65 },
+    { title: 'Belum Muncul', w: 65 },
+    { title: 'Keterangan / Kejadian Teramati', w: contentWidth - 370 },
   ]
 
-  let curTblY = doc.y
-  let curTblX = leftX
-  for (const c of colIktp) {
-    doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+  for (const [sIdx, studentGroup] of studentGroups.entries()) {
+    if (sIdx > 0) {
+      if (doc.y > 520) {
+        renderAppendixHeader('CEKLIS IKTP (INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN)')
+      } else {
+        doc.moveDown(1.5)
+      }
+    }
+
+    let curTblY = doc.y
+    let curTblX = leftX
+    const stuHeaderW = colIktp[2].w + colIktp[3].w
+
+    // 2-tier header:
+    // Row 1 Column 1 & 2
+    doc.rect(curTblX, curTblY, colIktp[0].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
     doc
       .font('Helvetica-Bold')
       .fontSize(8)
       .fillColor('#581C87')
-      .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
-    curTblX += c.w
-  }
-  curTblY += 20
+      .text('No', curTblX, curTblY + 15, { width: colIktp[0].w, align: 'center' })
+    curTblX += colIktp[0].w
 
-  iktpItems.forEach((item: ChecklistItem, idx: number) => {
-    const textH = doc.heightOfString(item.indicator, { width: 240 - 10 })
-    const rH = Math.max(textH + 8, 22)
+    doc.rect(curTblX, curTblY, colIktp[1].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#581C87')
+      .text('Indikator', curTblX, curTblY + 15, { width: colIktp[1].w, align: 'center' })
+    curTblX += colIktp[1].w
 
-    if (curTblY + rH > 750) {
-      renderAppendixHeader('CEKLIS IKTP (Lanjutan)')
-      curTblY = doc.y
-      curTblX = leftX
-      for (const c of colIktp) {
-        doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+    // Row 1 Column 3&4: Student Name Header
+    doc.rect(curTblX, curTblY, stuHeaderW, 18).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(7.5)
+      .fillColor('#581C87')
+      .text(studentGroup.studentName, curTblX + 2, curTblY + 5, {
+        width: stuHeaderW - 4,
+        align: 'center',
+      })
+
+    // Sub-columns: Sudah Muncul & Belum Muncul
+    doc.rect(curTblX, curTblY + 18, colIktp[2].w, 22).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(7)
+      .fillColor('#581C87')
+      .text('Sudah\nMuncul', curTblX, curTblY + 21, { width: colIktp[2].w, align: 'center' })
+
+    doc
+      .rect(curTblX + colIktp[2].w, curTblY + 18, colIktp[3].w, 22)
+      .fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(7)
+      .fillColor('#581C87')
+      .text('Belum\nMuncul', curTblX + colIktp[2].w, curTblY + 21, {
+        width: colIktp[3].w,
+        align: 'center',
+      })
+
+    curTblX += stuHeaderW
+
+    // Column 5: Keterangan / Kejadian Teramati
+    doc.rect(curTblX, curTblY, colIktp[4].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#581C87')
+      .text('Keterangan /\nKejadian Teramati', curTblX, curTblY + 10, {
+        width: colIktp[4].w,
+        align: 'center',
+      })
+
+    curTblY += 40
+
+    studentGroup.items.forEach((item: ChecklistItem, idx: number) => {
+      const indH = doc.heightOfString(item.indicator, { width: colIktp[1].w - 10 })
+      const noteH = doc.heightOfString(item.note || '-', { width: colIktp[4].w - 10 })
+      const rH = Math.max(indH + 8, noteH + 8, 22)
+
+      if (curTblY + rH > 750) {
+        renderAppendixHeader('CEKLIS IKTP (Lanjutan)')
+        curTblY = doc.y
+        curTblX = leftX
+
+        doc.rect(curTblX, curTblY, colIktp[0].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
         doc
           .font('Helvetica-Bold')
           .fontSize(8)
           .fillColor('#581C87')
-          .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
-        curTblX += c.w
+          .text('No', curTblX, curTblY + 15, { width: colIktp[0].w, align: 'center' })
+        curTblX += colIktp[0].w
+
+        doc.rect(curTblX, curTblY, colIktp[1].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor('#581C87')
+          .text('Indikator', curTblX, curTblY + 15, { width: colIktp[1].w, align: 'center' })
+        curTblX += colIktp[1].w
+
+        doc.rect(curTblX, curTblY, stuHeaderW, 18).fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(7.5)
+          .fillColor('#581C87')
+          .text(studentGroup.studentName, curTblX + 2, curTblY + 5, {
+            width: stuHeaderW - 4,
+            align: 'center',
+          })
+
+        doc.rect(curTblX, curTblY + 18, colIktp[2].w, 22).fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(7)
+          .fillColor('#581C87')
+          .text('Sudah\nMuncul', curTblX, curTblY + 21, { width: colIktp[2].w, align: 'center' })
+
+        doc
+          .rect(curTblX + colIktp[2].w, curTblY + 18, colIktp[3].w, 22)
+          .fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(7)
+          .fillColor('#581C87')
+          .text('Belum\nMuncul', curTblX + colIktp[2].w, curTblY + 21, {
+            width: colIktp[3].w,
+            align: 'center',
+          })
+
+        curTblX += stuHeaderW
+
+        doc.rect(curTblX, curTblY, colIktp[4].w, 40).fillAndStroke('#F3E8FF', '#CBD5E1')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor('#581C87')
+          .text('Keterangan /\nKejadian Teramati', curTblX, curTblY + 10, {
+            width: colIktp[4].w,
+            align: 'center',
+          })
+
+        curTblY += 40
       }
-      curTblY += 20
-    }
 
-    curTblX = leftX
-    doc.rect(curTblX, curTblY, colIktp[0].w, rH).stroke('#CBD5E1')
-    doc
-      .font('Helvetica')
-      .fontSize(8)
-      .fillColor('#0F172A')
-      .text(String(item.no || idx + 1), curTblX, curTblY + 6, {
-        width: colIktp[0].w,
-        align: 'center',
-      })
-    curTblX += colIktp[0].w
+      curTblX = leftX
+      doc.rect(curTblX, curTblY, colIktp[0].w, rH).stroke('#CBD5E1')
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#0F172A')
+        .text(String(item.no || idx + 1), curTblX, curTblY + 6, {
+          width: colIktp[0].w,
+          align: 'center',
+        })
+      curTblX += colIktp[0].w
 
-    doc.rect(curTblX, curTblY, colIktp[1].w, rH).stroke('#CBD5E1')
-    doc.text(item.indicator, curTblX + 5, curTblY + 5, { width: colIktp[1].w - 10 })
-    curTblX += colIktp[1].w
-
-    doc.rect(curTblX, curTblY, colIktp[2].w, rH).stroke('#CBD5E1')
-    if (item.sudahMuncul) {
-      drawVectorCheckmark(doc, curTblX + colIktp[2].w / 2, curTblY + rH / 2, '#16A34A')
-    }
-    curTblX += colIktp[2].w
-
-    doc.rect(curTblX, curTblY, colIktp[3].w, rH).stroke('#CBD5E1')
-    if (item.belumMuncul) {
-      drawVectorCheckmark(doc, curTblX + colIktp[3].w / 2, curTblY + rH / 2, '#DC2626')
-    }
-    curTblX += colIktp[3].w
-
-    doc.rect(curTblX, curTblY, colIktp[4].w, rH).stroke('#CBD5E1')
-    const noteText = item.note || item.studentName || ''
-    if (noteText) {
+      doc.rect(curTblX, curTblY, colIktp[1].w, rH).stroke('#CBD5E1')
       doc
         .font('Helvetica')
         .fontSize(7.5)
-        .fillColor('#334155')
-        .text(noteText, curTblX + 4, curTblY + 5, { width: colIktp[4].w - 8 })
-    }
-    curTblY += rH
-  })
+        .fillColor('#0F172A')
+        .text(item.indicator, curTblX + 4, curTblY + 5, { width: colIktp[1].w - 8 })
+      curTblX += colIktp[1].w
+
+      doc.rect(curTblX, curTblY, colIktp[2].w, rH).stroke('#CBD5E1')
+      if (item.sudahMuncul) {
+        drawVectorCheckmark(doc, curTblX + colIktp[2].w / 2, curTblY + rH / 2, '#16A34A')
+      }
+      curTblX += colIktp[2].w
+
+      doc.rect(curTblX, curTblY, colIktp[3].w, rH).stroke('#CBD5E1')
+      if (item.belumMuncul) {
+        drawVectorCheckmark(doc, curTblX + colIktp[3].w / 2, curTblY + rH / 2, '#DC2626')
+      }
+      curTblX += colIktp[3].w
+
+      doc.rect(curTblX, curTblY, colIktp[4].w, rH).stroke('#CBD5E1')
+      const noteText = item.note || ''
+      if (noteText) {
+        doc
+          .font('Helvetica')
+          .fontSize(7.5)
+          .fillColor('#334155')
+          .text(noteText, curTblX + 4, curTblY + 5, { width: colIktp[4].w - 8 })
+      }
+      curTblY += rH
+    })
+    doc.y = curTblY
+  }
 
   // 3. LAMPIRAN 3: DOKUMENTASI HASIL KARYA
   renderAppendixHeader('DOKUMENTASI HASIL KARYA')
@@ -2082,18 +2237,28 @@ function drawRpmPdfAppendices(
       { title: 'Foto Karya Anak', w: 160 },
       { title: 'Deskripsi Foto dan Analisis Capaian Perkembangan', w: contentWidth - 320 },
     ]
-    curTblY = doc.y
-    curTblX = leftX
+    let workHeaderH = 28
     for (const c of colWork) {
-      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      const h = doc.heightOfString(c.title, { width: c.w - 8 })
+      if (h + 12 > workHeaderH) workHeaderH = Math.ceil(h + 12)
+    }
+
+    let curTblY = doc.y
+    let curTblX = leftX
+    for (const c of colWork) {
+      doc.rect(curTblX, curTblY, c.w, workHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+      const textH = doc.heightOfString(c.title, { width: c.w - 8 })
       doc
         .font('Helvetica-Bold')
         .fontSize(8)
         .fillColor('#581C87')
-        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+        .text(c.title, curTblX + 4, curTblY + (workHeaderH - textH) / 2, {
+          width: c.w - 8,
+          align: 'center',
+        })
       curTblX += c.w
     }
-    curTblY += 20
+    curTblY += workHeaderH
 
     for (const item of assessments.workSamples as WorkSampleItem[]) {
       const descAnalysisStr = `Deskripsi:\n${item.description}\n\nAnalisis Capaian:\n${item.analysis}`
@@ -2105,15 +2270,19 @@ function drawRpmPdfAppendices(
         curTblY = doc.y
         curTblX = leftX
         for (const c of colWork) {
-          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc.rect(curTblX, curTblY, c.w, workHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+          const textH = doc.heightOfString(c.title, { width: c.w - 8 })
           doc
             .font('Helvetica-Bold')
             .fontSize(8)
             .fillColor('#581C87')
-            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+            .text(c.title, curTblX + 4, curTblY + (workHeaderH - textH) / 2, {
+              width: c.w - 8,
+              align: 'center',
+            })
           curTblX += c.w
         }
-        curTblY += 20
+        curTblY += workHeaderH
       }
 
       curTblX = leftX
@@ -2201,18 +2370,28 @@ function drawRpmPdfAppendices(
       { title: 'Nama Anak & Dokumentasi Foto (Minimal 3)', w: 230 },
       { title: 'Deskripsi Foto dan Analisis CP', w: contentWidth - 295 },
     ]
-    curTblY = doc.y
-    curTblX = leftX
+    let photoHeaderH = 28
     for (const c of colPhoto) {
-      doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+      const h = doc.heightOfString(c.title, { width: c.w - 8 })
+      if (h + 12 > photoHeaderH) photoHeaderH = Math.ceil(h + 12)
+    }
+
+    let curTblY = doc.y
+    let curTblX = leftX
+    for (const c of colPhoto) {
+      doc.rect(curTblX, curTblY, c.w, photoHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+      const textH = doc.heightOfString(c.title, { width: c.w - 8 })
       doc
         .font('Helvetica-Bold')
         .fontSize(8)
         .fillColor('#581C87')
-        .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+        .text(c.title, curTblX + 4, curTblY + (photoHeaderH - textH) / 2, {
+          width: c.w - 8,
+          align: 'center',
+        })
       curTblX += c.w
     }
-    curTblY += 20
+    curTblY += photoHeaderH
 
     for (const item of assessments.photoSeries as PhotoSeriesItem[]) {
       const descAnalysisStr = `Judul/Kegiatan:\n${item.description}\n\nAnalisis Perkembangan:\n${item.analysis}`
@@ -2224,15 +2403,19 @@ function drawRpmPdfAppendices(
         curTblY = doc.y
         curTblX = leftX
         for (const c of colPhoto) {
-          doc.rect(curTblX, curTblY, c.w, 20).fillAndStroke('#F3E8FF', '#CBD5E1')
+          doc.rect(curTblX, curTblY, c.w, photoHeaderH).fillAndStroke('#F3E8FF', '#CBD5E1')
+          const textH = doc.heightOfString(c.title, { width: c.w - 8 })
           doc
             .font('Helvetica-Bold')
             .fontSize(8)
             .fillColor('#581C87')
-            .text(c.title, curTblX, curTblY + 6, { width: c.w, align: 'center' })
+            .text(c.title, curTblX + 4, curTblY + (photoHeaderH - textH) / 2, {
+              width: c.w - 8,
+              align: 'center',
+            })
           curTblX += c.w
         }
-        curTblY += 20
+        curTblY += photoHeaderH
       }
 
       curTblX = leftX
@@ -2354,8 +2537,11 @@ export async function exportWeeklyLessonPlanPdf(
   const contentWidth = pageWidth - 80 // 40 margin each side
   const leftX = 40
 
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
   const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
-  const weekStr = content.weekNumber ? `Pekan ke-${content.weekNumber}` : 'Pekan 1'
+  const weekStr = content.weekNumber ? `Minggu ke-${content.weekNumber}` : 'Minggu 1'
+  const shortGroupStr = formatRpmClassShortCode(weekly.schoolClass, user, content.groupContext)
+  const shortSemesterWeekStr = `${content.semester || 1}/${content.weekNumber || 1}`
   const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
   const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
   const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
@@ -2367,8 +2553,7 @@ export async function exportWeeklyLessonPlanPdf(
     subthemeUpper,
     groupCoverStr,
     groupDetailStr,
-    semesterStr,
-    weekStr,
+    shortSemesterWeekStr,
     allocation: String(content.allocation || '5 Hari x 180 Menit (15 JP)'),
   })
 
@@ -2381,7 +2566,7 @@ export async function exportWeeklyLessonPlanPdf(
       .font('Helvetica-Bold')
       .fontSize(9)
       .fillColor('#FFFFFF')
-      .text('RENCANA PEMBELAJARAN MENDALAM (RPM) - KBC RA FASE FONDASI', leftX, 40, {
+      .text(`RENCANA PEMBELAJARAN MENDALAM (RPM) - ${instInfo.level} FASE FONDASI`, leftX, 40, {
         align: 'center',
         width: contentWidth,
       })
@@ -2484,9 +2669,8 @@ export async function exportWeeklyLessonPlanPdf(
     doc,
     leftX,
     contentWidth,
-    content.assessment || {},
     user,
-    { groupStr: groupDetailStr, semesterStr, weekStr },
+    { shortGroupStr, shortSemesterWeekStr, groupStr: groupDetailStr, semesterStr, weekStr },
     assessments
   )
 
