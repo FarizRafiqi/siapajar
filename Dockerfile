@@ -13,7 +13,7 @@ RUN npm run build
 FROM node:24-bookworm-slim
 
 WORKDIR /app
-RUN addgroup --system app && adduser --system -G app app
+RUN addgroup --system app && adduser --system --ingroup app app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends tini \
