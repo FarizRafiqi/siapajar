@@ -597,3 +597,6 @@ router
       .use(middleware.role({ roles: ['admin'] }))
   })
   .use([middleware.auth(), middleware.onboarding()])
+
+// Import Dedicated Mobile & REST API Routes
+import './routes/api.js'

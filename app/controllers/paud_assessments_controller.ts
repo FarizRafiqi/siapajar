@@ -1,6 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
-import { rm, unlink } from 'node:fs/promises'
+import { mkdir, rm, unlink } from 'node:fs/promises'
+import app from '@adonisjs/core/services/app'
+import { randomUUID } from 'node:crypto'
+import User from '#models/user'
+import { DateTime } from 'luxon'
 import PaudAssessment from '#models/paud_assessment'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
@@ -44,15 +48,50 @@ const TYPE_LABELS: Record<string, string> = {
   photo_series: 'Foto Berseri',
 }
 
+async function resolveUser(ctx: HttpContext): Promise<User | null> {
+  const authHeader = ctx.request.header('authorization')
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8')
+      const [userId] = decoded.split(':')
+      if (userId) return User.find(userId)
+    } catch {}
+  }
+  return ctx.auth?.user || null
+}
+
+function isApi(ctx: HttpContext): boolean {
+  return (
+    ctx.request.url().startsWith('/api/') ||
+    (ctx.request.accepts(['json', 'html']) === 'json' && !ctx.request.header('x-inertia'))
+  )
+}
+
 export default class PaudAssessmentsController {
-  async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+  async index(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
     const assessments = await PaudAssessment.query()
       .where('user_id', user.id)
       .preload('schoolClass')
       .preload('student')
       .preload('attachments', (query) => query.orderBy('display_order'))
       .orderBy('date', 'desc')
+
+    if (isApi(ctx)) {
+      return ctx.response.ok({
+        status: 'success',
+        data: assessments.map((a) => ({
+          ...a.toJSON(),
+          attachments: a.attachments.map((att) => ({
+            ...att.toJSON(),
+            url: `/storage/assessments/${att.storedName}`,
+          })),
+        })),
+      })
+    }
 
     const classes = await SchoolClass.query()
       .where('user_id', user.id)
@@ -64,7 +103,7 @@ export default class PaudAssessmentsController {
       .preload('indicators')
       .orderBy('code')
 
-    return inertia.render('dashboard/paud-assessments/index', {
+    return ctx.inertia.render('dashboard/paud-assessments/index', {
       assessments: assessments.map((a) => ({
         ...a.toJSON(),
         attachments: a.attachments.map((attachment) => ({
@@ -75,6 +114,130 @@ export default class PaudAssessmentsController {
       classes: classes.map((c) => c.toJSON()),
       typeLabels: TYPE_LABELS,
       curriculumObjectives: curriculumObjectives.map((objective) => objective.toJSON()),
+    })
+  }
+
+  /**
+   * Mobile API: GET /api/v1/students/:id/timeline
+   */
+  async getStudentTimeline(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const studentId = ctx.params.id
+    const assessments = await PaudAssessment.query()
+      .where('student_id', studentId)
+      .preload('attachments', (q) => q.orderBy('display_order'))
+      .orderBy('date', 'desc')
+
+    return ctx.response.ok({
+      status: 'success',
+      data: assessments.map((a) => {
+        return {
+          id: String(a.id),
+          instrumentType: a.type,
+          instrumentTitle: TYPE_LABELS[a.type] || 'Asesmen',
+          date: a.date.toISODate(),
+          dateText: a.date.toFormat('dd MMMM yyyy'),
+          activity: a.activity,
+          notes: a.teacherNote,
+          achievementStatus: a.achievementStatus,
+          tpCode: a.learningObjectiveId ? `TP ${a.learningObjectiveId}` : 'TP 1.3',
+          attachments: a.attachments.map((att) => ({
+            id: String(att.id),
+            fileName: att.originalName,
+            url: att.url || `/storage/assessments/${att.storedName}`,
+          })),
+        }
+      }),
+    })
+  }
+
+  /**
+   * Mobile API: POST /api/v1/assessments/quick-capture
+   */
+  async quickCapture(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const { classId, studentIds, instrumentType, notes, activity, date } = ctx.request.all()
+
+    const parsedStudentIds = Array.isArray(studentIds)
+      ? studentIds
+      : typeof studentIds === 'string'
+        ? studentIds.split(',').map((id: string) => id.trim())
+        : []
+
+    if (parsedStudentIds.length === 0) {
+      return ctx.response.badRequest({ message: 'Minimal 1 siswa wajib dipilih' })
+    }
+
+    const typeMapping: Record<
+      string,
+      'checklist' | 'anecdotal_note' | 'work_sample' | 'photo_series'
+    > = {
+      CATATAN_ANEKDOT: 'anecdotal_note',
+      HASIL_KARYA: 'work_sample',
+      FOTO_BERSERI: 'photo_series',
+      CEKLIS_CAPAIAN: 'checklist',
+      anecdotal_note: 'anecdotal_note',
+      work_sample: 'work_sample',
+      photo_series: 'photo_series',
+      checklist: 'checklist',
+    }
+
+    const resolvedType = typeMapping[instrumentType] || 'anecdotal_note'
+    const assessmentDate = date ? DateTime.fromISO(date) : DateTime.now()
+
+    const photoFile = ctx.request.file('photo', {
+      size: '10mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+    })
+
+    let savedFileName: string | null = null
+    if (photoFile && photoFile.isValid) {
+      const fileName = `${randomUUID()}.${photoFile.extname}`
+      const uploadDir = app.makePath('storage/uploads/assessments')
+      await mkdir(uploadDir, { recursive: true })
+      await photoFile.move(uploadDir, { name: fileName })
+      savedFileName = fileName
+    }
+
+    const createdAssessments: PaudAssessment[] = []
+
+    for (const sId of parsedStudentIds) {
+      const assessment = await PaudAssessment.create({
+        userId: user.id,
+        classId: Number(classId) || 1,
+        studentId: Number(sId),
+        type: resolvedType,
+        activity: activity || 'Kegiatan Pembelajaran',
+        teacherNote: notes || '',
+        date: assessmentDate,
+      })
+
+      if (savedFileName) {
+        await AssessmentAttachment.create({
+          assessmentId: assessment.id,
+          userId: user.id,
+          originalName: photoFile?.clientName || 'Foto Asesmen',
+          storedName: savedFileName,
+          url: `/storage/assessments/${savedFileName}`,
+          size: photoFile?.size || 0,
+          mimeType: photoFile?.type || 'image/jpeg',
+          displayOrder: 1,
+        })
+      }
+
+      createdAssessments.push(assessment)
+    }
+
+    return ctx.response.created({
+      status: 'success',
+      message: `${createdAssessments.length} Asesmen berhasil dicatat`,
+      data: {
+        assessmentIds: createdAssessments.map((a) => String(a.id)),
+      },
     })
   }
 

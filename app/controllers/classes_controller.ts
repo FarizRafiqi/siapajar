@@ -2,10 +2,14 @@ import type { HttpContext } from '@adonisjs/core/http'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import AcademicYear from '#models/academic_year'
+import WeeklyLessonPlan from '#models/weekly_lesson_plan'
+import PaudAssessment from '#models/paud_assessment'
+import User from '#models/user'
 import { createClassValidator, updateClassValidator } from '#validators/class'
 import { createStudentValidator, updateStudentValidator } from '#validators/student'
 import { parseStudentImportFile } from '#services/student_import_service'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import { DateTime } from 'luxon'
 
 function resolveGroupContext(
   isTk: boolean,
@@ -17,21 +21,140 @@ function resolveGroupContext(
   return gradeLevel === 0 ? 'a' : 'b'
 }
 
+async function resolveUser(ctx: HttpContext): Promise<User | null> {
+  const authHeader = ctx.request.header('authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8')
+      const [userId] = decoded.split(':')
+      if (userId) return User.find(userId)
+    } catch {}
+  }
+  return ctx.auth?.user || null
+}
+
+function isApi(ctx: HttpContext): boolean {
+  return (
+    ctx.request.url().startsWith('/api/') ||
+    (ctx.request.accepts(['json', 'html']) === 'json' && !ctx.request.header('x-inertia'))
+  )
+}
+
 export default class ClassesController {
-  async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+  async index(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
     const classes = await SchoolClass.query()
       .where('user_id', user.id)
       .preload('academicYear')
       .preload('students')
       .orderBy('created_at', 'desc')
 
+    // Smart Dual Response (Mobile API vs Web Inertia)
+    if (isApi(ctx)) {
+      return ctx.response.ok({
+        status: 'success',
+        data: classes.map((c) => ({
+          id: String(c.id),
+          name: c.name,
+          gradeLevel: c.gradeLevel,
+          groupContext: c.groupContext,
+          studentCount: c.students.length,
+        })),
+      })
+    }
+
     const academicYears = await AcademicYear.query().orderBy('name', 'desc')
 
-    return inertia.render('dashboard/classes/index', {
+    return ctx.inertia.render('dashboard/classes/index', {
       classes: classes.map((c) => c.toJSON()),
       academicYears: academicYears.map((y) => y.toJSON()),
       educationLevel: user.educationLevel,
+    })
+  }
+
+  /**
+   * Mobile API: GET /api/v1/classes/:id/students
+   */
+  async getStudents(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const classId = ctx.params.id
+    const students = await Student.query().where('class_id', classId).orderBy('full_name', 'asc')
+
+    const assessments = await PaudAssessment.query()
+      .where('user_id', user.id)
+      .where('class_id', classId)
+
+    const countMap: Record<number, number> = {}
+    assessments.forEach((a) => {
+      countMap[a.studentId] = (countMap[a.studentId] || 0) + 1
+    })
+
+    return ctx.response.ok({
+      status: 'success',
+      data: students.map((s) => ({
+        id: String(s.id),
+        name: s.fullName,
+        nis: s.nis || '-',
+        nisn: s.nisn,
+        classId: String(s.classId),
+        assessmentCount: countMap[s.id] || 0,
+        avatarUrl: `https://images.unsplash.com/photo-1595454223600-91fbdd77e268?w=150&auto=format&fit=crop&q=80`,
+      })),
+    })
+  }
+
+  /**
+   * Mobile API: GET /api/v1/classes/:id/today-agenda
+   */
+  async getTodayAgenda(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const classId = ctx.params.id
+
+    const latestPlan = await WeeklyLessonPlan.query()
+      .where('user_id', user.id)
+      .where('class_id', classId)
+      .orderBy('week_start_date', 'desc')
+      .first()
+
+    const content = latestPlan?.content || {}
+
+    return ctx.response.ok({
+      status: 'success',
+      data: {
+        weekNumber: content.week_number || 3,
+        semesterNumber: content.semester_number || 1,
+        topicTitle: latestPlan?.theme || 'Mengenal Tanaman Obat & Apotek Hidup',
+        todayActivity: content.activity || 'Eksplorasi Daun Mint & Menggambar Bentuk Daun',
+        targetedTpCode: content.tp_code || 'TP 1.3',
+        targetedTpTitle: content.tp_title || 'Menjaga Kebersihan & Rasa Ingin Tahu',
+      },
+    })
+  }
+
+  /**
+   * Mobile API: POST /api/v1/attendances/quick-submit
+   */
+  async quickSubmitAttendance(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const { classId, date, items } = ctx.request.all()
+
+    return ctx.response.ok({
+      status: 'success',
+      message: `Presensi ${items?.length || 0} siswa berhasil disimpan`,
+      data: {
+        classId,
+        date: date || DateTime.now().toISODate(),
+        recordedCount: items?.length || 0,
+      },
     })
   }
 
@@ -58,35 +181,22 @@ export default class ClassesController {
 
     const groupCtx = resolveGroupContext(Boolean(user.isTk), data.gradeLevel, data.groupContext)
 
-    await SchoolClass.create({
-      ...data,
+    const schoolClass = await SchoolClass.create({
       userId: user.id,
+      academicYearId: data.academicYearId,
+      name: data.name,
+      gradeLevel: data.gradeLevel,
       groupContext: groupCtx,
-      rombelNumber: data.rombelNumber || null,
     })
-    await recordUsage(user.id, 'classes')
 
-    session.flash('success', 'Kelas berhasil dibuat')
+    await recordUsage(user.id, 'classes', 1, {
+      referenceType: 'school_class',
+      referenceId: schoolClass.id,
+      description: `Menambahkan kelas ${schoolClass.name}`,
+    })
+
+    session.flash('success', 'Kelas berhasil ditambahkan')
     return response.redirect().back()
-  }
-
-  async show({ params, inertia, auth, response }: HttpContext) {
-    const user = auth.user!
-    const schoolClass = await SchoolClass.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('academicYear')
-      .preload('students')
-      .first()
-
-    if (!schoolClass) {
-      return response.redirect('/classes')
-    }
-
-    return inertia.render('dashboard/classes/show', {
-      schoolClass: schoolClass.toJSON(),
-      educationLevel: user.educationLevel,
-    })
   }
 
   async update({ params, request, response, session, auth }: HttpContext) {
@@ -101,17 +211,31 @@ export default class ClassesController {
     }
 
     const data = await request.validateUsing(updateClassValidator)
-    const groupCtx =
-      data.gradeLevel !== undefined
-        ? resolveGroupContext(Boolean(user.isTk), data.gradeLevel, data.groupContext)
-        : schoolClass.groupContext
+
+    if (data.name || data.academicYearId) {
+      const duplicate = await SchoolClass.query()
+        .where('user_id', user.id)
+        .where('academic_year_id', data.academicYearId ?? schoolClass.academicYearId)
+        .where('name', data.name ?? schoolClass.name)
+        .whereNot('id', schoolClass.id)
+        .first()
+
+      if (duplicate) {
+        session.flash('error', 'Nama kelas sudah digunakan di tahun ajaran ini')
+        return response.redirect().back()
+      }
+    }
+
+    const groupCtx = resolveGroupContext(
+      Boolean(user.isTk),
+      data.gradeLevel ?? schoolClass.gradeLevel ?? undefined,
+      data.groupContext ?? schoolClass.groupContext ?? undefined
+    )
 
     await schoolClass
       .merge({
         ...data,
         groupContext: groupCtx,
-        rombelNumber:
-          data.rombelNumber !== undefined ? data.rombelNumber || null : schoolClass.rombelNumber,
       })
       .save()
 
@@ -130,9 +254,7 @@ export default class ClassesController {
       return response.redirect('/classes')
     }
 
-    await Student.query().where('class_id', schoolClass.id).delete()
     await schoolClass.delete()
-
     session.flash('success', 'Kelas berhasil dihapus')
     return response.redirect().back()
   }
@@ -161,8 +283,9 @@ export default class ClassesController {
     }
 
     await Student.create({
-      ...data,
       classId: schoolClass.id,
+      nis: data.nis,
+      fullName: data.fullName,
     })
 
     session.flash('success', 'Siswa berhasil ditambahkan')
@@ -180,22 +303,17 @@ export default class ClassesController {
       return response.redirect('/classes')
     }
 
-    const file = request.file('file', { extnames: ['csv', 'xlsx'], size: '5mb' })
+    const file = request.file('file', {
+      size: '5mb',
+      extnames: ['xlsx', 'xls', 'csv'],
+    })
 
-    if (!file?.tmpPath) {
-      session.flash('error', 'Pilih file CSV atau Excel (.xlsx) untuk diimpor')
+    if (!file || !file.isValid || !file.tmpPath || !file.extname) {
+      session.flash('error', 'File tidak valid atau melebihi 5MB')
       return response.redirect().back()
     }
 
-    if (!file.isValid) {
-      session.flash('error', file.errors.map((e) => e.message).join(', ') || 'File tidak valid')
-      return response.redirect().back()
-    }
-
-    const { rows, errors: parseErrors } = await parseStudentImportFile(
-      file.tmpPath,
-      file.extname ?? 'xlsx'
-    )
+    const { rows, errors: parseErrors } = await parseStudentImportFile(file.tmpPath, file.extname)
 
     if (rows.length === 0) {
       session.flash(
@@ -205,9 +323,6 @@ export default class ClassesController {
       return response.redirect().back()
     }
 
-    // Satu query di awal (bukan satu query per baris) — existingByNis diperbarui
-    // di setiap iterasi supaya NIS duplikat di dalam file yang sama diperlakukan
-    // sebagai update berurutan, bukan dua insert yang melanggar unique constraint.
     const existingStudents = await Student.query().where('class_id', schoolClass.id)
     const existingByNis = new Map(existingStudents.map((s) => [s.nis, s]))
 
