@@ -13,9 +13,11 @@ import router from '@adonisjs/core/services/router'
 
 router
   .group(() => {
-    // 1. Authentication
+    // 1. Authentication (Password & Google OAuth)
     router.post('/auth/login', '#controllers/session_controller.store')
     router.post('/auth/logout', '#controllers/session_controller.destroy')
+    router.get('/auth/google/redirect', '#controllers/google_auth_controller.redirect')
+    router.get('/auth/google/callback', '#controllers/google_auth_controller.callback')
 
     // 2. Classes, Students & Agenda
     router.get('/classes', '#controllers/classes_controller.index')
