@@ -1,4 +1,5 @@
 import router from '@adonisjs/core/services/router'
+import { controllers } from '#generated/controllers'
 
 /*
 |--------------------------------------------------------------------------
@@ -14,29 +15,20 @@ import router from '@adonisjs/core/services/router'
 router
   .group(() => {
     // 1. Authentication (Password & Google OAuth)
-    router.post('/auth/login', '#controllers/session_controller.store')
-    router.post('/auth/logout', '#controllers/session_controller.destroy')
-    router.get('/auth/google/redirect', '#controllers/google_auth_controller.redirect')
-    router.get('/auth/google/callback', '#controllers/google_auth_controller.callback')
+    router.post('/auth/login', [controllers.Session, 'store'])
+    router.post('/auth/logout', [controllers.Session, 'destroy'])
+    router.get('/auth/google/redirect', [controllers.GoogleAuth, 'redirect'])
+    router.get('/auth/google/callback', [controllers.GoogleAuth, 'callback'])
 
     // 2. Classes, Students & Agenda
-    router.get('/classes', '#controllers/classes_controller.index')
-    router.get('/classes/:id/students', '#controllers/classes_controller.getStudents')
-    router.get('/classes/:id/today-agenda', '#controllers/classes_controller.getTodayAgenda')
-    router.post(
-      '/attendances/quick-submit',
-      '#controllers/classes_controller.quickSubmitAttendance'
-    )
+    router.get('/classes', [controllers.Classes, 'index'])
+    router.get('/classes/:id/students', [controllers.Classes, 'getStudents'])
+    router.get('/classes/:id/today-agenda', [controllers.Classes, 'getTodayAgenda'])
+    router.post('/attendances/quick-submit', [controllers.Classes, 'quickSubmitAttendance'])
 
     // 3. Assessments & Timeline
-    router.get('/assessments', '#controllers/paud_assessments_controller.index')
-    router.get(
-      '/students/:id/timeline',
-      '#controllers/paud_assessments_controller.getStudentTimeline'
-    )
-    router.post(
-      '/assessments/quick-capture',
-      '#controllers/paud_assessments_controller.quickCapture'
-    )
+    router.get('/assessments', [controllers.PaudAssessments, 'index'])
+    router.get('/students/:id/timeline', [controllers.PaudAssessments, 'getStudentTimeline'])
+    router.post('/assessments/quick-capture', [controllers.PaudAssessments, 'quickCapture'])
   })
   .prefix('/api/v1')

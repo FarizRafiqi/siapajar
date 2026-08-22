@@ -75,6 +75,43 @@ export default class ClassesController {
     })
   }
 
+  async show(ctx: HttpContext) {
+    const user = await resolveUser(ctx)
+    if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
+
+    const schoolClass = await SchoolClass.query()
+      .where('id', ctx.params.id)
+      .where('user_id', user.id)
+      .preload('academicYear')
+      .preload('students')
+      .first()
+
+    if (!schoolClass) {
+      if (isApi(ctx)) return ctx.response.notFound({ message: 'Kelas tidak ditemukan' })
+      return ctx.response.redirect().toRoute('classes.index')
+    }
+
+    if (isApi(ctx)) {
+      return ctx.response.ok({
+        status: 'success',
+        data: {
+          id: String(schoolClass.id),
+          name: schoolClass.name,
+          gradeLevel: schoolClass.gradeLevel,
+          groupContext: schoolClass.groupContext,
+          students: schoolClass.students.map((s) => ({
+            id: String(s.id),
+            name: s.fullName,
+            nis: s.nis,
+            nisn: s.nisn,
+          })),
+        },
+      })
+    }
+
+    return ctx.response.redirect().toRoute('classes.index')
+  }
+
   /**
    * Mobile API: GET /api/v1/classes/:id/students
    */
