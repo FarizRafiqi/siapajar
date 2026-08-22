@@ -50,7 +50,11 @@ export const generateWeeklyLessonPlanValidator = vine.create(
   vine.object({
     classId: vine.number().positive(),
     theme: vine.string().trim().minLength(1).maxLength(200),
+    subtheme: vine.string().trim().maxLength(200).optional(),
     weekStartDate: vine.date(),
+    semester: vine.number().min(1).max(2).optional(),
+    weekNumber: vine.number().min(1).max(25).optional(),
+    presetId: vine.number().positive().optional(),
     learningSequenceId: vine.number().positive().optional(),
   })
 )

@@ -1951,4 +1951,64 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'admin.curriculum-presets.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/curriculum-presets'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.curriculum-presets.store': {
+    methods: ["POST"]
+    pattern: '/admin/curriculum-presets'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.curriculum-presets.update': {
+    methods: ["PUT"]
+    pattern: '/admin/curriculum-presets/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.curriculum-presets.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/curriculum-presets/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'admin.curriculum-presets.resetDefaults': {
+    methods: ["POST"]
+    pattern: '/admin/curriculum-presets/reset-defaults'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
 }

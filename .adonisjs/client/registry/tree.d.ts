@@ -247,5 +247,12 @@ export interface ApiDefinition {
         }
       }
     }
+    curriculumPresets: {
+      index: typeof routes['admin.curriculum-presets.index']
+      store: typeof routes['admin.curriculum-presets.store']
+      update: typeof routes['admin.curriculum-presets.update']
+      destroy: typeof routes['admin.curriculum-presets.destroy']
+      resetDefaults: typeof routes['admin.curriculum-presets.resetDefaults']
+    }
   }
 }

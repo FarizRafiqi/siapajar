@@ -267,6 +267,7 @@ export class ClassSchema extends BaseModel {
     'groupContext',
     'id',
     'name',
+    'rombelNumber',
     'updatedAt',
     'userId',
   ] as const
@@ -283,6 +284,8 @@ export class ClassSchema extends BaseModel {
   declare id: number
   @column()
   declare name: string
+  @column()
+  declare rombelNumber: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -323,6 +326,57 @@ export class CurriculumCpSchema extends BaseModel {
   declare title: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class CurriculumPresetSchema extends BaseModel {
+  static $columns = [
+    'code',
+    'createdAt',
+    'curriculumVersion',
+    'data',
+    'educationLevel',
+    'groupContext',
+    'id',
+    'isActive',
+    'phase',
+    'semester',
+    'sortOrder',
+    'subthemeTitle',
+    'themeTitle',
+    'updatedAt',
+    'weekNumber',
+  ] as const
+  $columns = CurriculumPresetSchema.$columns
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare curriculumVersion: string
+  @column()
+  declare data: any
+  @column()
+  declare educationLevel: string
+  @column()
+  declare groupContext: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare phase: string
+  @column()
+  declare semester: number
+  @column()
+  declare sortOrder: number
+  @column()
+  declare subthemeTitle: string | null
+  @column()
+  declare themeTitle: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare weekNumber: number | null
 }
 
 export class DailyLessonPlanSchema extends BaseModel {

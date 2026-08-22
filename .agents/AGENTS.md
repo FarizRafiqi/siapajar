@@ -40,3 +40,7 @@
    - **Strict Colon Alignment in Metadata/Kop**: Never pad colons `:` manually with space characters. Always calculate aligned column coordinates (in PDFKit) or use borderless grid tables (in DOCX) with distinct Label (width A), Colon `:` (width B), and Value (width C) columns so colons align in a perfectly straight vertical line.
    - **Descriptive Export Filenames**: Never use generic filenames like `Dokumen.pdf` or `export.docx`. Always name exported files descriptively, e.g. `Dokumen_CP_TP_ATP_[SatuanPendidikan].pdf` / `.docx`.
    - **Explicit Left Alignment for Headings**: Section titles and matrix headers must always be explicitly left-aligned, never floating or right-aligned.
+
+13. **Metadata Label-Value Semantic Alignment (Compact Format Rule)**:
+   - When document/form metadata labels combine multiple concepts with slashes (e.g. `KELOMPOK / USIA`, `SEMESTER / MINGGU`, `JENJANG / KELAS`), format the corresponding value symmetrically and concisely (e.g. `B1 / 5-6 Tahun`, `1 / 3`, `RA / B1`) instead of verbose redundant phrases (avoid `Kelompok B (5-6 Tahun) - Ibrahim`).
+

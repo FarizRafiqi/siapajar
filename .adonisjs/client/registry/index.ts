@@ -978,6 +978,36 @@ const routes = {
     tokens: [{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"admin","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"ai-settings","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"oauth","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"gemini","end":""},{"old":"/admin/ai-settings/oauth/gemini/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['admin.ai-settings.oauth.gemini.callback']['types'],
   },
+  'admin.curriculum-presets.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/curriculum-presets',
+    tokens: [{"old":"/admin/curriculum-presets","type":0,"val":"admin","end":""},{"old":"/admin/curriculum-presets","type":0,"val":"curriculum-presets","end":""}],
+    types: placeholder as Registry['admin.curriculum-presets.index']['types'],
+  },
+  'admin.curriculum-presets.store': {
+    methods: ["POST"],
+    pattern: '/admin/curriculum-presets',
+    tokens: [{"old":"/admin/curriculum-presets","type":0,"val":"admin","end":""},{"old":"/admin/curriculum-presets","type":0,"val":"curriculum-presets","end":""}],
+    types: placeholder as Registry['admin.curriculum-presets.store']['types'],
+  },
+  'admin.curriculum-presets.update': {
+    methods: ["PUT"],
+    pattern: '/admin/curriculum-presets/:id',
+    tokens: [{"old":"/admin/curriculum-presets/:id","type":0,"val":"admin","end":""},{"old":"/admin/curriculum-presets/:id","type":0,"val":"curriculum-presets","end":""},{"old":"/admin/curriculum-presets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.curriculum-presets.update']['types'],
+  },
+  'admin.curriculum-presets.destroy': {
+    methods: ["DELETE"],
+    pattern: '/admin/curriculum-presets/:id',
+    tokens: [{"old":"/admin/curriculum-presets/:id","type":0,"val":"admin","end":""},{"old":"/admin/curriculum-presets/:id","type":0,"val":"curriculum-presets","end":""},{"old":"/admin/curriculum-presets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.curriculum-presets.destroy']['types'],
+  },
+  'admin.curriculum-presets.resetDefaults': {
+    methods: ["POST"],
+    pattern: '/admin/curriculum-presets/reset-defaults',
+    tokens: [{"old":"/admin/curriculum-presets/reset-defaults","type":0,"val":"admin","end":""},{"old":"/admin/curriculum-presets/reset-defaults","type":0,"val":"curriculum-presets","end":""},{"old":"/admin/curriculum-presets/reset-defaults","type":0,"val":"reset-defaults","end":""}],
+    types: placeholder as Registry['admin.curriculum-presets.resetDefaults']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

@@ -1,6 +1,6 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
-export default class extends BaseSchema {
+export default class CreateVisualAssetsTable extends BaseSchema {
   protected tableName = 'visual_assets'
 
   async up() {

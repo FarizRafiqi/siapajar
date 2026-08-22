@@ -29,6 +29,9 @@ export default class SchoolClass extends BaseModel {
   @column({ columnName: 'group_context' })
   declare groupContext: 'a' | 'b' | null
 
+  @column({ columnName: 'rombel_number' })
+  declare rombelNumber: string | null
+
   @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 
