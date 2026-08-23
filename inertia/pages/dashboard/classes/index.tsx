@@ -69,13 +69,14 @@ export default function ClassesIndex({
   const formatClassDisplayName = (item: SchoolClass) => {
     if (isTk) {
       const groupLetter = (item.groupContext || (item.gradeLevel === 0 ? 'A' : 'B')).toUpperCase()
-      const rombel = item.rombelNumber ? String(item.rombelNumber).trim() : ''
-      const code = rombel ? `${groupLetter}${rombel}` : groupLetter
+      const rombel = item.rombelNumber ? String(item.rombelNumber).trim() : '1'
+      const code = `${groupLetter}${rombel}`
       const rawName = item.name ? item.name.trim() : ''
       const isRedundant =
         !rawName ||
         rawName.toUpperCase() === code ||
-        rawName.toUpperCase() === `KELOMPOK ${groupLetter}`
+        rawName.toUpperCase() === `KELOMPOK ${groupLetter}` ||
+        rawName.toUpperCase() === `KELOMPOK ${code}`
 
       if (!isRedundant) {
         return `RA / ${code} (${rawName})`

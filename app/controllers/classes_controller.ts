@@ -99,6 +99,7 @@ export default class ClassesController {
           name: schoolClass.name,
           gradeLevel: schoolClass.gradeLevel,
           groupContext: schoolClass.groupContext,
+          rombelNumber: schoolClass.rombelNumber,
           students: schoolClass.students.map((s) => ({
             id: String(s.id),
             name: s.fullName,
@@ -109,7 +110,10 @@ export default class ClassesController {
       })
     }
 
-    return ctx.response.redirect().toRoute('classes.index')
+    return ctx.inertia.render('dashboard/classes/show', {
+      schoolClass: schoolClass.toJSON(),
+      educationLevel: user.educationLevel,
+    })
   }
 
   /**
@@ -271,6 +275,7 @@ export default class ClassesController {
       name: data.name,
       gradeLevel: data.gradeLevel,
       groupContext: groupCtx,
+      rombelNumber: data.rombelNumber || null,
     })
 
     await recordUsage(user.id, 'classes', 1, {

@@ -19,6 +19,8 @@ interface SchoolClass {
   id: number
   name: string
   gradeLevel: number
+  groupContext?: 'a' | 'b' | null
+  rombelNumber?: string | null
   createdAt: string
   academicYear: AcademicYear
   students: Student[]
@@ -37,8 +39,34 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
   const importInputRef = useRef<HTMLInputElement>(null)
 
   const isTk = educationLevel === 'tk'
-  const tkGroup = schoolClass.gradeLevel === 0 ? 'A' : 'B'
-  const gradeLabel = isTk ? `Kelompok ${tkGroup}` : `Kelas ${schoolClass.gradeLevel}`
+  const groupLetter = (
+    schoolClass.groupContext || (schoolClass.gradeLevel === 0 ? 'A' : 'B')
+  ).toUpperCase()
+  const rombel = schoolClass.rombelNumber ? String(schoolClass.rombelNumber).trim() : '1'
+  const rombelCode = isTk ? `${groupLetter}${rombel}` : ''
+  const gradeLabel = isTk ? `Kelompok ${rombelCode}` : `Kelas ${schoolClass.gradeLevel}`
+
+  const formatClassDisplayName = (item: SchoolClass) => {
+    if (isTk) {
+      const gLetter = (item.groupContext || (item.gradeLevel === 0 ? 'A' : 'B')).toUpperCase()
+      const rNum = item.rombelNumber ? String(item.rombelNumber).trim() : '1'
+      const code = `${gLetter}${rNum}`
+      const rawName = item.name ? item.name.trim() : ''
+      const isRedundant =
+        !rawName ||
+        rawName.toUpperCase() === code ||
+        rawName.toUpperCase() === `KELOMPOK ${gLetter}` ||
+        rawName.toUpperCase() === `KELOMPOK ${code}`
+
+      if (!isRedundant) {
+        return `RA / ${code} (${rawName})`
+      }
+      return `RA / ${code}`
+    }
+    return `Kelas ${item.name}`
+  }
+
+  const displayTitle = formatClassDisplayName(schoolClass)
 
   const { data, setData, post, processing, errors, reset } = useForm({
     nis: '',
@@ -103,14 +131,14 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
 
   return (
     <DashboardWrapper
-      title={`Kelas ${schoolClass.name}`}
+      title={displayTitle}
       breadcrumbs={[
         { label: 'Dashboard', href: '/dashboard' },
         { label: 'Kelas', href: '/classes' },
-        { label: schoolClass.name },
+        { label: displayTitle },
       ]}
     >
-      <Head title={`Kelas ${schoolClass.name}`} />
+      <Head title={displayTitle} />
 
       <div className="space-y-6">
         {/* Header */}
@@ -122,9 +150,7 @@ export default function ClassShow({ schoolClass, educationLevel }: Readonly<Clas
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Kelas {schoolClass.name}
-            </h2>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{displayTitle}</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
               {gradeLabel} • {schoolClass.academicYear.name} • {schoolClass.students.length} siswa
             </p>
