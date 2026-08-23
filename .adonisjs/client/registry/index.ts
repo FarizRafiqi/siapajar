@@ -114,17 +114,17 @@ const routes = {
     tokens: [{"old":"/coming-soon","type":0,"val":"coming-soon","end":""}],
     types: placeholder as Registry['coming-soon']['types'],
   },
-  'signup.create': {
+  'new_account.create': {
     methods: ["GET","HEAD"],
     pattern: '/signup',
     tokens: [{"old":"/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['signup.create']['types'],
+    types: placeholder as Registry['new_account.create']['types'],
   },
-  'signup.store': {
+  'new_account.store': {
     methods: ["POST"],
     pattern: '/signup',
     tokens: [{"old":"/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['signup.store']['types'],
+    types: placeholder as Registry['new_account.store']['types'],
   },
   'session.create': {
     methods: ["GET","HEAD"],

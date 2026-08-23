@@ -36,9 +36,9 @@ export interface ApiDefinition {
     handle: typeof routes['mcp.handle']
   }
   comingSoon: typeof routes['coming-soon']
-  signup: {
-    create: typeof routes['signup.create']
-    store: typeof routes['signup.store']
+  newAccount: {
+    create: typeof routes['new_account.create']
+    store: typeof routes['new_account.store']
   }
   session: {
     create: typeof routes['session.create']

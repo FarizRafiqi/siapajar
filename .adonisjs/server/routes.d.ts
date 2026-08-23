@@ -22,8 +22,8 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'signup.create': { paramsTuple?: []; params?: {} }
-    'signup.store': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
+    'new_account.store': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
@@ -189,7 +189,7 @@ export type ScannedRoutes = {
     'api.attendances.quickSubmit': { paramsTuple?: []; params?: {} }
     'api.assessments.quickCapture': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
-    'signup.store': { paramsTuple?: []; params?: {} }
+    'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
@@ -248,7 +248,7 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'signup.create': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
@@ -342,7 +342,7 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'signup.create': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
