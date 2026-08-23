@@ -7,6 +7,138 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'api.auth.login': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/login'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
+    }
+  }
+  'api.auth.logout': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/logout'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+    }
+  }
+  'api.auth.google.redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/auth/google/redirect'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['redirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['redirect']>>>
+    }
+  }
+  'api.auth.google.callback': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/auth/google/callback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
+    }
+  }
+  'api.classes.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/classes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+    }
+  }
+  'api.classes.students': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/classes/:id/students'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['getStudents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['getStudents']>>>
+    }
+  }
+  'api.classes.agenda': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/classes/:id/today-agenda'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['getTodayAgenda']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['getTodayAgenda']>>>
+    }
+  }
+  'api.attendances.quickSubmit': {
+    methods: ["POST"]
+    pattern: '/api/v1/attendances/quick-submit'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['quickSubmitAttendance']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['quickSubmitAttendance']>>>
+    }
+  }
+  'api.assessments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+    }
+  }
+  'api.students.timeline': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/students/:id/timeline'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['getStudentTimeline']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['getStudentTimeline']>>>
+    }
+  }
+  'api.assessments.quickCapture': {
+    methods: ["POST"]
+    pattern: '/api/v1/assessments/quick-capture'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['quickCapture']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['quickCapture']>>>
+    }
+  }
   'home': {
     methods: ["GET","HEAD"]
     pattern: '/'
@@ -15,8 +147,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
     }
   }
   'health': {
@@ -63,8 +195,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mcp_controller').default['wellKnown']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mcp_controller').default['wellKnown']>>>
     }
   }
   'mcp.handle': {
@@ -75,8 +207,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mcp_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mcp_controller').default['handle']>>>
     }
   }
   'coming-soon': {
@@ -91,7 +223,7 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'new_account.create': {
+  'signup.create': {
     methods: ["GET","HEAD"]
     pattern: '/signup'
     types: {
@@ -103,7 +235,7 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/new_account_controller').default['create']>>>
     }
   }
-  'new_account.store': {
+  'signup.store': {
     methods: ["POST"]
     pattern: '/signup'
     types: {
@@ -147,8 +279,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['redirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['redirect']>>>
     }
   }
   'auth.google.callback': {
@@ -159,8 +291,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
     }
   }
   'session.destroy': {
@@ -183,20 +315,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/onboarding_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/onboarding_controller').default['index']>>>
     }
   }
   'onboarding.store': {
     methods: ["POST"]
     pattern: '/onboarding'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/onboarding').onboardingValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/onboarding').onboardingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/onboarding_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/onboarding_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'dashboard': {
@@ -207,8 +339,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
     }
   }
   'account.package': {
@@ -219,8 +351,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
     }
   }
   'account.usage': {
@@ -231,8 +363,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['usage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['usage']>>>
     }
   }
   'account.subscriptions': {
@@ -243,8 +375,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
     }
   }
   'glossary.index': {
@@ -267,8 +399,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
     }
   }
   'curriculum.export': {
@@ -279,8 +411,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['export']>>>
     }
   }
   'curriculum.exportPdf': {
@@ -291,8 +423,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['exportPdf']>>>
     }
   }
   'documents.autosave': {
@@ -303,8 +435,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { type: ParamValue; id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['autosave']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['autosave']>>>
     }
   }
   'documents.status': {
@@ -315,8 +447,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { type: ParamValue; id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['status']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['status']>>>
     }
   }
   'documents.duplicate': {
@@ -327,44 +459,44 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { type: ParamValue; id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['duplicate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/document_workflows_controller').default['duplicate']>>>
     }
   }
   'curriculum.objectives.store': {
     methods: ["POST"]
     pattern: '/curriculum/objectives'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/curriculum').createObjectiveValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/curriculum').createObjectiveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeObjective']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeObjective']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'curriculum.sequences.store': {
     methods: ["POST"]
     pattern: '/curriculum/sequences'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/curriculum').createSequenceValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/curriculum').createSequenceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeSequence']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeSequence']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'curriculum.sequences.update': {
     methods: ["PUT"]
     pattern: '/curriculum/sequences/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/curriculum').updateSequenceValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/curriculum').updateSequenceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['updateSequence']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['updateSequence']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'curriculum.sequences.destroy': {
@@ -375,20 +507,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroySequence']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroySequence']>>>
     }
   }
   'curriculum.indicators.store': {
     methods: ["POST"]
     pattern: '/curriculum/indicators'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/curriculum').createIndicatorValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/curriculum').createIndicatorValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeIndicator']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeIndicator']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'curriculum.presets.seed': {
@@ -399,8 +531,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['seedPresets']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['seedPresets']>>>
     }
   }
   'curriculum.presets.reset': {
@@ -411,8 +543,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['resetPresets']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['resetPresets']>>>
     }
   }
   'classes.index': {
@@ -423,20 +555,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
     }
   }
   'classes.store': {
     methods: ["POST"]
     pattern: '/classes'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/class').createClassValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/class').createClassValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'classes.show': {
@@ -447,20 +579,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['show']>>>
     }
   }
   'classes.update': {
     methods: ["PUT"]
     pattern: '/classes/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/class').updateClassValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/class').updateClassValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'classes.destroy': {
@@ -471,20 +603,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['destroy']>>>
     }
   }
   'classes.addStudent': {
     methods: ["POST"]
     pattern: '/classes/:id/students'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/student').createStudentValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/student').createStudentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['addStudent']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['addStudent']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'classes.importStudents': {
@@ -495,20 +627,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['importStudents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['importStudents']>>>
     }
   }
   'classes.updateStudent': {
     methods: ["PUT"]
     pattern: '/classes/:id/students/:studentId'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/student').updateStudentValidator)>>
       paramsTuple: [ParamValue, ParamValue]
       params: { id: ParamValue; studentId: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/student').updateStudentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['updateStudent']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['updateStudent']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'classes.removeStudent': {
@@ -519,8 +651,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { id: ParamValue; studentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['removeStudent']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['removeStudent']>>>
     }
   }
   'teaching-modules.index': {
@@ -531,20 +663,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['index']>>>
     }
   }
   'teaching-modules.store': {
     methods: ["POST"]
     pattern: '/teaching-modules'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/teaching_module').createTeachingModuleValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/teaching_module').createTeachingModuleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'teaching-modules.show': {
@@ -555,20 +687,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['show']>>>
     }
   }
   'teaching-modules.update': {
     methods: ["PUT"]
     pattern: '/teaching-modules/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/teaching_module').updateTeachingModuleValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/teaching_module').updateTeachingModuleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'teaching-modules.destroy': {
@@ -579,20 +711,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['destroy']>>>
     }
   }
   'teaching-modules.generate': {
     methods: ["POST"]
     pattern: '/teaching-modules/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateTeachingModuleValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateTeachingModuleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'teaching-modules.export': {
@@ -603,8 +735,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['export']>>>
     }
   }
   'teaching-modules.exportPdf': {
@@ -615,8 +747,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['exportPdf']>>>
     }
   }
   'exams.index': {
@@ -627,20 +759,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['index']>>>
     }
   }
   'exams.store': {
     methods: ["POST"]
     pattern: '/exams'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/exam').createExamValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/exam').createExamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'exams.generationStatus': {
@@ -651,8 +783,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['generationStatus']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['generationStatus']>>>
     }
   }
   'exams.show': {
@@ -663,8 +795,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['show']>>>
     }
   }
   'exams.uploadImage': {
@@ -675,20 +807,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['uploadImage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['uploadImage']>>>
     }
   }
   'exams.update': {
     methods: ["PUT"]
     pattern: '/exams/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/exam').updateExamValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/exam').updateExamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'exams.destroy': {
@@ -699,20 +831,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['destroy']>>>
     }
   }
   'exams.generate': {
     methods: ["POST"]
     pattern: '/exams/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateExamValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateExamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'exams.export': {
@@ -723,8 +855,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['export']>>>
     }
   }
   'exams.exportPdf': {
@@ -735,8 +867,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['exportPdf']>>>
     }
   }
   'exams.printPreview': {
@@ -747,8 +879,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['printPreview']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['printPreview']>>>
     }
   }
   'annual-plans.index': {
@@ -759,20 +891,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['index']>>>
     }
   }
   'annual-plans.store': {
     methods: ["POST"]
     pattern: '/annual-plans'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/annual_plan').createAnnualPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/annual_plan').createAnnualPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'annual-plans.show': {
@@ -783,20 +915,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['show']>>>
     }
   }
   'annual-plans.update': {
     methods: ["PUT"]
     pattern: '/annual-plans/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/annual_plan').updateAnnualPlanValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/annual_plan').updateAnnualPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'annual-plans.destroy': {
@@ -807,20 +939,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['destroy']>>>
     }
   }
   'annual-plans.generate': {
     methods: ["POST"]
     pattern: '/annual-plans/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateAnnualPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateAnnualPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'annual-plans.export': {
@@ -831,8 +963,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['export']>>>
     }
   }
   'annual-plans.exportPdf': {
@@ -843,8 +975,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['exportPdf']>>>
     }
   }
   'semester-plans.index': {
@@ -855,20 +987,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['index']>>>
     }
   }
   'semester-plans.store': {
     methods: ["POST"]
     pattern: '/semester-plans'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/semester_plan').createSemesterPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/semester_plan').createSemesterPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'semester-plans.show': {
@@ -879,20 +1011,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['show']>>>
     }
   }
   'semester-plans.update': {
     methods: ["PUT"]
     pattern: '/semester-plans/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/semester_plan').updateSemesterPlanValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/semester_plan').updateSemesterPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'semester-plans.destroy': {
@@ -903,20 +1035,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['destroy']>>>
     }
   }
   'semester-plans.generate': {
     methods: ["POST"]
     pattern: '/semester-plans/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateSemesterPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateSemesterPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'semester-plans.export': {
@@ -927,8 +1059,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['export']>>>
     }
   }
   'semester-plans.exportPdf': {
@@ -939,8 +1071,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['exportPdf']>>>
     }
   }
   'rppm.index': {
@@ -951,8 +1083,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['index']>>>
     }
   }
   'rppm.show': {
@@ -963,8 +1095,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['show']>>>
     }
   }
   'rppm.export': {
@@ -975,8 +1107,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['export']>>>
     }
   }
   'rppm.exportPdf': {
@@ -987,20 +1119,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['exportPdf']>>>
     }
   }
   'rppm.update': {
     methods: ["PUT"]
     pattern: '/rppm/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/weekly_lesson_plan').updateWeeklyLessonPlanValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/weekly_lesson_plan').updateWeeklyLessonPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'rppm.destroy': {
@@ -1011,20 +1143,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['destroy']>>>
     }
   }
   'rppm.generate': {
     methods: ["POST"]
     pattern: '/rppm/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateWeeklyLessonPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateWeeklyLessonPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'rpph.index': {
@@ -1035,8 +1167,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['index']>>>
     }
   }
   'rpph.show': {
@@ -1047,8 +1179,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['show']>>>
     }
   }
   'rpph.export': {
@@ -1059,8 +1191,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['export']>>>
     }
   }
   'rpph.exportPdf': {
@@ -1071,20 +1203,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['exportPdf']>>>
     }
   }
   'rpph.update': {
     methods: ["PUT"]
     pattern: '/rpph/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/daily_lesson_plan').updateDailyLessonPlanValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/daily_lesson_plan').updateDailyLessonPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'rpph.destroy': {
@@ -1095,20 +1227,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['destroy']>>>
     }
   }
   'rpph.generate': {
     methods: ["POST"]
     pattern: '/rpph/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateDailyLessonPlanValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateDailyLessonPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'lkpd.index': {
@@ -1119,8 +1251,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
     }
   }
   'lkpd.show': {
@@ -1131,8 +1263,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['show']>>>
     }
   }
   'lkpd.export': {
@@ -1143,8 +1275,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['export']>>>
     }
   }
   'lkpd.exportPdf': {
@@ -1155,8 +1287,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['exportPdf']>>>
     }
   }
   'lkpd.destroy': {
@@ -1167,20 +1299,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['destroy']>>>
     }
   }
   'lkpd.generate': {
     methods: ["POST"]
     pattern: '/lkpd/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateLkpdValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateLkpdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'media-modules.index': {
@@ -1191,8 +1323,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['index']>>>
     }
   }
   'media-modules.show': {
@@ -1203,8 +1335,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['show']>>>
     }
   }
   'media-modules.destroy': {
@@ -1215,20 +1347,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['destroy']>>>
     }
   }
   'media-modules.generate': {
     methods: ["POST"]
     pattern: '/media-modules/generate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateMediaModuleValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateMediaModuleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'media-modules.exportPptx': {
@@ -1239,8 +1371,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['exportPptx']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['exportPptx']>>>
     }
   }
   'media-modules.exportPdf': {
@@ -1251,8 +1383,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['exportPdf']>>>
     }
   }
   'paud-assessments.index': {
@@ -1263,32 +1395,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
     }
   }
   'paud-assessments.store': {
     methods: ["POST"]
     pattern: '/paud-assessments'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/paud_assessment').createPaudAssessmentValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/paud_assessment').createPaudAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'paud-assessments.generateAi': {
     methods: ["POST"]
     pattern: '/paud-assessments/generate-ai'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/paud_assessment').generateAiPaudAssessmentValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/paud_assessment').generateAiPaudAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['generateAi']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['generateAi']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'paud-assessments.exportBundle': {
@@ -1298,9 +1430,9 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/paud_assessment').exportBundlePaudAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportBundle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportBundle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'paud-assessments.exportBundlePdf': {
@@ -1310,21 +1442,21 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/paud_assessment').exportBundlePaudAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportBundlePdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportBundlePdf']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'paud-assessments.update': {
     methods: ["PUT"]
     pattern: '/paud-assessments/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/paud_assessment').updatePaudAssessmentValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/paud_assessment').updatePaudAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'paud-assessments.destroy': {
@@ -1335,8 +1467,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['destroy']>>>
     }
   }
   'paud-assessments.export': {
@@ -1347,8 +1479,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['export']>>>
     }
   }
   'paud-assessments.exportPdf': {
@@ -1359,8 +1491,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['exportPdf']>>>
     }
   }
   'paud-assessments.attachments.show': {
@@ -1371,8 +1503,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { id: ParamValue; attachmentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessment_attachments_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessment_attachments_controller').default['show']>>>
     }
   }
   'assessments.index': {
@@ -1383,20 +1515,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['index']>>>
     }
   }
   'assessments.store': {
     methods: ["POST"]
     pattern: '/assessments'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/assessment').createAssessmentValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/assessment').createAssessmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'assessments.show': {
@@ -1407,20 +1539,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['show']>>>
     }
   }
   'assessments.updateScores': {
     methods: ["PUT"]
     pattern: '/assessments/:id/scores'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/assessment').updateScoresValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/assessment').updateScoresValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['updateScores']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['updateScores']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'assessments.destroy': {
@@ -1431,8 +1563,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['destroy']>>>
     }
   }
   'assessments.export': {
@@ -1443,8 +1575,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['export']>>>
     }
   }
   'assessments.exportDocx': {
@@ -1455,8 +1587,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['exportDocx']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['exportDocx']>>>
     }
   }
   'assessments.exportPdf': {
@@ -1467,8 +1599,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['exportPdf']>>>
     }
   }
   'principal.index': {
@@ -1479,8 +1611,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/principal_dashboard_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/principal_dashboard_controller').default['index']>>>
     }
   }
   'principal.teacher': {
@@ -1491,8 +1623,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { userId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/principal_dashboard_controller').default['teacher']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/principal_dashboard_controller').default['teacher']>>>
     }
   }
   'report-cards.index': {
@@ -1503,8 +1635,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
     }
   }
   'report-cards.show': {
@@ -1515,8 +1647,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { classId: ParamValue; semesterId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['show']>>>
     }
   }
   'report-cards.exportPdf': {
@@ -1527,8 +1659,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue, ParamValue]
       params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['exportPdf']>>>
     }
   }
   'report-cards.exportDocx': {
@@ -1539,8 +1671,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue, ParamValue]
       params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['exportDocx']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['exportDocx']>>>
     }
   }
   'report-cards.narratives.save': {
@@ -1551,8 +1683,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue, ParamValue]
       params: { classId: ParamValue; semesterId: ParamValue; studentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['saveNarrative']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['saveNarrative']>>>
     }
   }
   'report-cards.narratives.generate': {
@@ -1563,8 +1695,8 @@ export interface Registry {
       paramsTuple: [ParamValue, ParamValue]
       params: { classId: ParamValue; semesterId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['generateNarratives']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['generateNarratives']>>>
     }
   }
   'report-narratives.approve': {
@@ -1575,8 +1707,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['approveNarrative']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['approveNarrative']>>>
     }
   }
   'subjects.index': {
@@ -1587,20 +1719,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['index']>>>
     }
   }
   'subjects.store': {
     methods: ["POST"]
     pattern: '/subjects'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/subject').createSubjectValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/subject').createSubjectValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'subjects.storeDefaults': {
@@ -1611,20 +1743,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['storeDefaults']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['storeDefaults']>>>
     }
   }
   'subjects.update': {
     methods: ["PUT"]
     pattern: '/subjects/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/subject').updateSubjectValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/subject').updateSubjectValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'subjects.destroy': {
@@ -1635,8 +1767,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['destroy']>>>
     }
   }
   'settings.index': {
@@ -1647,20 +1779,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['index']>>>
     }
   }
   'settings.update': {
     methods: ["PUT"]
     pattern: '/settings'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/settings').createAdminSettingsValidator)>|InferInput<(typeof import('#validators/settings').createSettingsValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/settings').createAdminSettingsValidator)>|InferInput<(typeof import('#validators/settings').createSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.users.index': {
@@ -1671,20 +1803,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['index']>>>
     }
   }
   'admin.users.update': {
     methods: ["PUT"]
     pattern: '/admin/users/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').updateUserRoleValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').updateUserRoleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.users.destroy': {
@@ -1695,8 +1827,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['destroy']>>>
     }
   }
   'admin.packages.index': {
@@ -1707,32 +1839,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['index']>>>
     }
   }
   'admin.packages.store': {
     methods: ["POST"]
     pattern: '/admin/packages'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').createPackageValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').createPackageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.packages.update': {
     methods: ["PUT"]
     pattern: '/admin/packages/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').updatePackageValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').updatePackageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.packages.destroy': {
@@ -1743,8 +1875,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_packages_controller').default['destroy']>>>
     }
   }
   'admin.entitlements.index': {
@@ -1755,8 +1887,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_entitlements_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_entitlements_controller').default['index']>>>
     }
   }
   'admin.entitlements.update': {
@@ -1767,8 +1899,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_entitlements_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_entitlements_controller').default['update']>>>
     }
   }
   'admin.academic-years.index': {
@@ -1779,32 +1911,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['index']>>>
     }
   }
   'admin.academic-years.store': {
     methods: ["POST"]
     pattern: '/admin/academic-years'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').createAcademicYearValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').createAcademicYearValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.academic-years.update': {
     methods: ["PUT"]
     pattern: '/admin/academic-years/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').updateAcademicYearValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').updateAcademicYearValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.academic-years.destroy': {
@@ -1815,8 +1947,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_academic_years_controller').default['destroy']>>>
     }
   }
   'admin.schools.index': {
@@ -1827,32 +1959,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['index']>>>
     }
   }
   'admin.schools.store': {
     methods: ["POST"]
     pattern: '/admin/schools'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').createSchoolValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').createSchoolValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.schools.update': {
     methods: ["PUT"]
     pattern: '/admin/schools/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').updateSchoolValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').updateSchoolValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.schools.destroy': {
@@ -1863,8 +1995,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_schools_controller').default['destroy']>>>
     }
   }
   'admin.ai-settings.index': {
@@ -1875,44 +2007,44 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['index']>>>
     }
   }
   'admin.ai-settings.update': {
     methods: ["PUT"]
     pattern: '/admin/ai-settings'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/ai_setting').updateAiSettingValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/ai_setting').updateAiSettingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.ai-settings.test': {
     methods: ["POST"]
     pattern: '/admin/ai-settings/test'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/ai_setting').testConnectionValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/ai_setting').testConnectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['test']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['test']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.ai-settings.models': {
     methods: ["POST"]
     pattern: '/admin/ai-settings/models'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/ai_setting').listModelsValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/ai_setting').listModelsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['models']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['models']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.ai-settings.oauth.openai.start': {
@@ -1923,8 +2055,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['oauthStart']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['oauthStart']>>>
     }
   }
   'admin.ai-settings.oauth.gemini.start': {
@@ -1935,8 +2067,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['geminiOauthStart']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['geminiOauthStart']>>>
     }
   }
   'admin.ai-settings.oauth.gemini.callback': {
@@ -1947,8 +2079,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['geminiOauthCallback']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_ai_settings_controller').default['geminiOauthCallback']>>>
     }
   }
   'admin.curriculum-presets.index': {
@@ -1959,32 +2091,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['index']>>>
     }
   }
   'admin.curriculum-presets.store': {
     methods: ["POST"]
     pattern: '/admin/curriculum-presets'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin_curriculum_preset').createCurriculumPresetValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin_curriculum_preset').createCurriculumPresetValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.curriculum-presets.update': {
     methods: ["PUT"]
     pattern: '/admin/curriculum-presets/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/admin_curriculum_preset').updateCurriculumPresetValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin_curriculum_preset').updateCurriculumPresetValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.curriculum-presets.destroy': {
@@ -1995,8 +2127,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['destroy']>>>
     }
   }
   'admin.curriculum-presets.resetDefaults': {
@@ -2007,8 +2139,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['resetDefaults']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_curriculum_presets_controller').default['resetDefaults']>>>
     }
   }
 }

@@ -40,11 +40,11 @@ router
 
 router
   .group(() => {
-    router.get('signup', [controllers.NewAccount, 'create'])
-    router.post('signup', [controllers.NewAccount, 'store'])
+    router.get('signup', [controllers.NewAccount, 'create']).as('signup.create')
+    router.post('signup', [controllers.NewAccount, 'store']).as('signup.store')
 
-    router.get('login', [controllers.Session, 'create'])
-    router.post('login', [controllers.Session, 'store'])
+    router.get('login', [controllers.Session, 'create']).as('session.create')
+    router.post('login', [controllers.Session, 'store']).as('session.store')
 
     router
       .get('auth/google/redirect', [controllers.GoogleAuth, 'redirect'])
@@ -57,7 +57,7 @@ router
 
 router
   .group(() => {
-    router.post('logout', [controllers.Session, 'destroy'])
+    router.post('logout', [controllers.Session, 'destroy']).as('session.destroy')
   })
   .use(middleware.auth())
 

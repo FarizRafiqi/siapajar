@@ -160,17 +160,64 @@ export default class ClassesController {
       .orderBy('week_start_date', 'desc')
       .first()
 
-    const content = latestPlan?.content || {}
+    if (!latestPlan) {
+      return ctx.response.ok({
+        status: 'success',
+        data: null,
+      })
+    }
+
+    const content = (latestPlan.content as Record<string, any>) || {}
+    const learningExp = content.learningExperience || {}
+    const dailyCores = Array.isArray(learningExp.dailyCoreActivities)
+      ? learningExp.dailyCoreActivities
+      : []
+    const todayCore = dailyCores[0] || {}
+    const activitiesDetail = Array.isArray(todayCore.activitiesDetail)
+      ? todayCore.activitiesDetail
+      : []
+
+    const openingActivities = Array.isArray(learningExp.openingActivities)
+      ? learningExp.openingActivities
+      : []
+
+    const openingQuestions = Array.isArray(learningExp.openingQuestions)
+      ? learningExp.openingQuestions
+      : []
+
+    const closingActivities = Array.isArray(learningExp.closingActivities)
+      ? learningExp.closingActivities
+      : []
+
+    const topicTitle = latestPlan.theme || content.theme || ''
+    const subTopic = content.subtheme || ''
+    const todayActivity = activitiesDetail[0]?.name || content.activity || todayCore.title || ''
+    const targetedTpCode = content.tp_code || ''
+    const targetedTpTitle = content.tp_title || ''
 
     return ctx.response.ok({
       status: 'success',
       data: {
-        weekNumber: content.week_number || 3,
-        semesterNumber: content.semester_number || 1,
-        topicTitle: latestPlan?.theme || 'Mengenal Tanaman Obat & Apotek Hidup',
-        todayActivity: content.activity || 'Eksplorasi Daun Mint & Menggambar Bentuk Daun',
-        targetedTpCode: content.tp_code || 'TP 1.3',
-        targetedTpTitle: content.tp_title || 'Menjaga Kebersihan & Rasa Ingin Tahu',
+        weekNumber: content.weekNumber || content.week_number || 1,
+        semesterNumber: content.semester || content.semester_number || 1,
+        topicTitle,
+        subTopic,
+        todayActivity,
+        targetedTpCode,
+        targetedTpTitle,
+        stage: todayCore.stage || '',
+        openingActivities,
+        openingQuestions,
+        coreActivities: activitiesDetail.map((act: any, idx: number) => ({
+          id: idx + 1,
+          name: act.name || `Kegiatan ${idx + 1}`,
+          focus: act.focus || '',
+          materials: act.materials || '',
+          instructions: act.instructions || '',
+          benefits: act.benefits || '',
+          isPrimary: idx === 0,
+        })),
+        closingActivities,
       },
     })
   }

@@ -2,6 +2,31 @@
 import type { routes } from './index.ts'
 
 export interface ApiDefinition {
+  api: {
+    auth: {
+      login: typeof routes['api.auth.login']
+      logout: typeof routes['api.auth.logout']
+      google: {
+        redirect: typeof routes['api.auth.google.redirect']
+        callback: typeof routes['api.auth.google.callback']
+      }
+    }
+    classes: {
+      index: typeof routes['api.classes.index']
+      students: typeof routes['api.classes.students']
+      agenda: typeof routes['api.classes.agenda']
+    }
+    attendances: {
+      quickSubmit: typeof routes['api.attendances.quickSubmit']
+    }
+    assessments: {
+      index: typeof routes['api.assessments.index']
+      quickCapture: typeof routes['api.assessments.quickCapture']
+    }
+    students: {
+      timeline: typeof routes['api.students.timeline']
+    }
+  }
   home: typeof routes['home']
   health: typeof routes['health']
   privacy: typeof routes['privacy']
@@ -11,9 +36,9 @@ export interface ApiDefinition {
     handle: typeof routes['mcp.handle']
   }
   comingSoon: typeof routes['coming-soon']
-  newAccount: {
-    create: typeof routes['new_account.create']
-    store: typeof routes['new_account.store']
+  signup: {
+    create: typeof routes['signup.create']
+    store: typeof routes['signup.store']
   }
   session: {
     create: typeof routes['session.create']

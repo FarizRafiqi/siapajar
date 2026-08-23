@@ -4,6 +4,17 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'api.auth.login': { paramsTuple?: []; params?: {} }
+    'api.auth.logout': { paramsTuple?: []; params?: {} }
+    'api.auth.google.redirect': { paramsTuple?: []; params?: {} }
+    'api.auth.google.callback': { paramsTuple?: []; params?: {} }
+    'api.classes.index': { paramsTuple?: []; params?: {} }
+    'api.classes.students': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.classes.agenda': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.attendances.quickSubmit': { paramsTuple?: []; params?: {} }
+    'api.assessments.index': { paramsTuple?: []; params?: {} }
+    'api.students.timeline': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.assessments.quickCapture': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
@@ -11,8 +22,8 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'new_account.create': { paramsTuple?: []; params?: {} }
-    'new_account.store': { paramsTuple?: []; params?: {} }
+    'signup.create': { paramsTuple?: []; params?: {} }
+    'signup.store': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
@@ -172,7 +183,64 @@ export type ScannedRoutes = {
     'admin.curriculum-presets.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.curriculum-presets.resetDefaults': { paramsTuple?: []; params?: {} }
   }
+  POST: {
+    'api.auth.login': { paramsTuple?: []; params?: {} }
+    'api.auth.logout': { paramsTuple?: []; params?: {} }
+    'api.attendances.quickSubmit': { paramsTuple?: []; params?: {} }
+    'api.assessments.quickCapture': { paramsTuple?: []; params?: {} }
+    'mcp.handle': { paramsTuple?: []; params?: {} }
+    'signup.store': { paramsTuple?: []; params?: {} }
+    'session.store': { paramsTuple?: []; params?: {} }
+    'session.destroy': { paramsTuple?: []; params?: {} }
+    'onboarding.store': { paramsTuple?: []; params?: {} }
+    'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
+    'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
+    'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
+    'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.seed': { paramsTuple?: []; params?: {} }
+    'curriculum.presets.reset': { paramsTuple?: []; params?: {} }
+    'classes.store': { paramsTuple?: []; params?: {} }
+    'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teaching-modules.store': { paramsTuple?: []; params?: {} }
+    'teaching-modules.generate': { paramsTuple?: []; params?: {} }
+    'exams.store': { paramsTuple?: []; params?: {} }
+    'exams.uploadImage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exams.generate': { paramsTuple?: []; params?: {} }
+    'annual-plans.store': { paramsTuple?: []; params?: {} }
+    'annual-plans.generate': { paramsTuple?: []; params?: {} }
+    'semester-plans.store': { paramsTuple?: []; params?: {} }
+    'semester-plans.generate': { paramsTuple?: []; params?: {} }
+    'rppm.generate': { paramsTuple?: []; params?: {} }
+    'rpph.generate': { paramsTuple?: []; params?: {} }
+    'lkpd.generate': { paramsTuple?: []; params?: {} }
+    'media-modules.generate': { paramsTuple?: []; params?: {} }
+    'paud-assessments.store': { paramsTuple?: []; params?: {} }
+    'paud-assessments.generateAi': { paramsTuple?: []; params?: {} }
+    'assessments.store': { paramsTuple?: []; params?: {} }
+    'report-cards.narratives.save': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
+    'report-cards.narratives.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
+    'report-narratives.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'subjects.store': { paramsTuple?: []; params?: {} }
+    'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
+    'admin.packages.store': { paramsTuple?: []; params?: {} }
+    'admin.academic-years.store': { paramsTuple?: []; params?: {} }
+    'admin.schools.store': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
+    'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.store': { paramsTuple?: []; params?: {} }
+    'admin.curriculum-presets.resetDefaults': { paramsTuple?: []; params?: {} }
+  }
   GET: {
+    'api.auth.google.redirect': { paramsTuple?: []; params?: {} }
+    'api.auth.google.callback': { paramsTuple?: []; params?: {} }
+    'api.classes.index': { paramsTuple?: []; params?: {} }
+    'api.classes.students': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.classes.agenda': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.assessments.index': { paramsTuple?: []; params?: {} }
+    'api.students.timeline': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'home': { paramsTuple?: []; params?: {} }
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
@@ -180,7 +248,7 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'new_account.create': { paramsTuple?: []; params?: {} }
+    'signup.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
@@ -260,6 +328,13 @@ export type ScannedRoutes = {
     'admin.curriculum-presets.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'api.auth.google.redirect': { paramsTuple?: []; params?: {} }
+    'api.auth.google.callback': { paramsTuple?: []; params?: {} }
+    'api.classes.index': { paramsTuple?: []; params?: {} }
+    'api.classes.students': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.classes.agenda': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.assessments.index': { paramsTuple?: []; params?: {} }
+    'api.students.timeline': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'home': { paramsTuple?: []; params?: {} }
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
@@ -267,7 +342,7 @@ export type ScannedRoutes = {
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
-    'new_account.create': { paramsTuple?: []; params?: {} }
+    'signup.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
@@ -348,52 +423,6 @@ export type ScannedRoutes = {
   }
   OPTIONS: {
     'mcp.handle': { paramsTuple?: []; params?: {} }
-  }
-  POST: {
-    'mcp.handle': { paramsTuple?: []; params?: {} }
-    'new_account.store': { paramsTuple?: []; params?: {} }
-    'session.store': { paramsTuple?: []; params?: {} }
-    'session.destroy': { paramsTuple?: []; params?: {} }
-    'onboarding.store': { paramsTuple?: []; params?: {} }
-    'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
-    'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
-    'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
-    'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
-    'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
-    'curriculum.indicators.store': { paramsTuple?: []; params?: {} }
-    'curriculum.presets.seed': { paramsTuple?: []; params?: {} }
-    'curriculum.presets.reset': { paramsTuple?: []; params?: {} }
-    'classes.store': { paramsTuple?: []; params?: {} }
-    'classes.addStudent': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'classes.importStudents': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teaching-modules.store': { paramsTuple?: []; params?: {} }
-    'teaching-modules.generate': { paramsTuple?: []; params?: {} }
-    'exams.store': { paramsTuple?: []; params?: {} }
-    'exams.uploadImage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'exams.generate': { paramsTuple?: []; params?: {} }
-    'annual-plans.store': { paramsTuple?: []; params?: {} }
-    'annual-plans.generate': { paramsTuple?: []; params?: {} }
-    'semester-plans.store': { paramsTuple?: []; params?: {} }
-    'semester-plans.generate': { paramsTuple?: []; params?: {} }
-    'rppm.generate': { paramsTuple?: []; params?: {} }
-    'rpph.generate': { paramsTuple?: []; params?: {} }
-    'lkpd.generate': { paramsTuple?: []; params?: {} }
-    'media-modules.generate': { paramsTuple?: []; params?: {} }
-    'paud-assessments.store': { paramsTuple?: []; params?: {} }
-    'paud-assessments.generateAi': { paramsTuple?: []; params?: {} }
-    'assessments.store': { paramsTuple?: []; params?: {} }
-    'report-cards.narratives.save': { paramsTuple: [ParamValue,ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue,'studentId': ParamValue} }
-    'report-cards.narratives.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'classId': ParamValue,'semesterId': ParamValue} }
-    'report-narratives.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'subjects.store': { paramsTuple?: []; params?: {} }
-    'subjects.storeDefaults': { paramsTuple?: []; params?: {} }
-    'admin.packages.store': { paramsTuple?: []; params?: {} }
-    'admin.academic-years.store': { paramsTuple?: []; params?: {} }
-    'admin.schools.store': { paramsTuple?: []; params?: {} }
-    'admin.ai-settings.test': { paramsTuple?: []; params?: {} }
-    'admin.ai-settings.models': { paramsTuple?: []; params?: {} }
-    'admin.curriculum-presets.store': { paramsTuple?: []; params?: {} }
-    'admin.curriculum-presets.resetDefaults': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'mcp.handle': { paramsTuple?: []; params?: {} }

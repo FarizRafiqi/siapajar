@@ -6,6 +6,72 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'api.auth.login': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/login',
+    tokens: [{"old":"/api/v1/auth/login","type":0,"val":"api","end":""},{"old":"/api/v1/auth/login","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/login","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/login","type":0,"val":"login","end":""}],
+    types: placeholder as Registry['api.auth.login']['types'],
+  },
+  'api.auth.logout': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/logout',
+    tokens: [{"old":"/api/v1/auth/logout","type":0,"val":"api","end":""},{"old":"/api/v1/auth/logout","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/logout","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/logout","type":0,"val":"logout","end":""}],
+    types: placeholder as Registry['api.auth.logout']['types'],
+  },
+  'api.auth.google.redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/auth/google/redirect',
+    tokens: [{"old":"/api/v1/auth/google/redirect","type":0,"val":"api","end":""},{"old":"/api/v1/auth/google/redirect","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/google/redirect","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/google/redirect","type":0,"val":"google","end":""},{"old":"/api/v1/auth/google/redirect","type":0,"val":"redirect","end":""}],
+    types: placeholder as Registry['api.auth.google.redirect']['types'],
+  },
+  'api.auth.google.callback': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/auth/google/callback',
+    tokens: [{"old":"/api/v1/auth/google/callback","type":0,"val":"api","end":""},{"old":"/api/v1/auth/google/callback","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/google/callback","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/google/callback","type":0,"val":"google","end":""},{"old":"/api/v1/auth/google/callback","type":0,"val":"callback","end":""}],
+    types: placeholder as Registry['api.auth.google.callback']['types'],
+  },
+  'api.classes.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/classes',
+    tokens: [{"old":"/api/v1/classes","type":0,"val":"api","end":""},{"old":"/api/v1/classes","type":0,"val":"v1","end":""},{"old":"/api/v1/classes","type":0,"val":"classes","end":""}],
+    types: placeholder as Registry['api.classes.index']['types'],
+  },
+  'api.classes.students': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/classes/:id/students',
+    tokens: [{"old":"/api/v1/classes/:id/students","type":0,"val":"api","end":""},{"old":"/api/v1/classes/:id/students","type":0,"val":"v1","end":""},{"old":"/api/v1/classes/:id/students","type":0,"val":"classes","end":""},{"old":"/api/v1/classes/:id/students","type":1,"val":"id","end":""},{"old":"/api/v1/classes/:id/students","type":0,"val":"students","end":""}],
+    types: placeholder as Registry['api.classes.students']['types'],
+  },
+  'api.classes.agenda': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/classes/:id/today-agenda',
+    tokens: [{"old":"/api/v1/classes/:id/today-agenda","type":0,"val":"api","end":""},{"old":"/api/v1/classes/:id/today-agenda","type":0,"val":"v1","end":""},{"old":"/api/v1/classes/:id/today-agenda","type":0,"val":"classes","end":""},{"old":"/api/v1/classes/:id/today-agenda","type":1,"val":"id","end":""},{"old":"/api/v1/classes/:id/today-agenda","type":0,"val":"today-agenda","end":""}],
+    types: placeholder as Registry['api.classes.agenda']['types'],
+  },
+  'api.attendances.quickSubmit': {
+    methods: ["POST"],
+    pattern: '/api/v1/attendances/quick-submit',
+    tokens: [{"old":"/api/v1/attendances/quick-submit","type":0,"val":"api","end":""},{"old":"/api/v1/attendances/quick-submit","type":0,"val":"v1","end":""},{"old":"/api/v1/attendances/quick-submit","type":0,"val":"attendances","end":""},{"old":"/api/v1/attendances/quick-submit","type":0,"val":"quick-submit","end":""}],
+    types: placeholder as Registry['api.attendances.quickSubmit']['types'],
+  },
+  'api.assessments.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/assessments',
+    tokens: [{"old":"/api/v1/assessments","type":0,"val":"api","end":""},{"old":"/api/v1/assessments","type":0,"val":"v1","end":""},{"old":"/api/v1/assessments","type":0,"val":"assessments","end":""}],
+    types: placeholder as Registry['api.assessments.index']['types'],
+  },
+  'api.students.timeline': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/students/:id/timeline',
+    tokens: [{"old":"/api/v1/students/:id/timeline","type":0,"val":"api","end":""},{"old":"/api/v1/students/:id/timeline","type":0,"val":"v1","end":""},{"old":"/api/v1/students/:id/timeline","type":0,"val":"students","end":""},{"old":"/api/v1/students/:id/timeline","type":1,"val":"id","end":""},{"old":"/api/v1/students/:id/timeline","type":0,"val":"timeline","end":""}],
+    types: placeholder as Registry['api.students.timeline']['types'],
+  },
+  'api.assessments.quickCapture': {
+    methods: ["POST"],
+    pattern: '/api/v1/assessments/quick-capture',
+    tokens: [{"old":"/api/v1/assessments/quick-capture","type":0,"val":"api","end":""},{"old":"/api/v1/assessments/quick-capture","type":0,"val":"v1","end":""},{"old":"/api/v1/assessments/quick-capture","type":0,"val":"assessments","end":""},{"old":"/api/v1/assessments/quick-capture","type":0,"val":"quick-capture","end":""}],
+    types: placeholder as Registry['api.assessments.quickCapture']['types'],
+  },
   'home': {
     methods: ["GET","HEAD"],
     pattern: '/',
@@ -48,17 +114,17 @@ const routes = {
     tokens: [{"old":"/coming-soon","type":0,"val":"coming-soon","end":""}],
     types: placeholder as Registry['coming-soon']['types'],
   },
-  'new_account.create': {
+  'signup.create': {
     methods: ["GET","HEAD"],
     pattern: '/signup',
     tokens: [{"old":"/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['new_account.create']['types'],
+    types: placeholder as Registry['signup.create']['types'],
   },
-  'new_account.store': {
+  'signup.store': {
     methods: ["POST"],
     pattern: '/signup',
     tokens: [{"old":"/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['new_account.store']['types'],
+    types: placeholder as Registry['signup.store']['types'],
   },
   'session.create': {
     methods: ["GET","HEAD"],

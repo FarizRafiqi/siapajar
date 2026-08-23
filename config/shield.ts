@@ -1,4 +1,5 @@
 import { defineConfig } from '@adonisjs/shield'
+import type { HttpContext } from '@adonisjs/core/http'
 
 const shieldConfig = defineConfig({
   /**
@@ -36,7 +37,10 @@ const shieldConfig = defineConfig({
      * Route patterns to exclude from CSRF checks.
      * Useful for external webhooks or API endpoints.
      */
-    exceptRoutes: ['/mcp', '/.well-known/mcp'],
+    exceptRoutes: (ctx: HttpContext) => {
+      const url = ctx.request.url()
+      return url.startsWith('/api/') || url === '/mcp' || url === '/.well-known/mcp'
+    },
 
     /**
      * Expose an encrypted XSRF-TOKEN cookie for frontend HTTP clients.
