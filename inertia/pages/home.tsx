@@ -341,12 +341,14 @@ function FloatingNav() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2.5"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-black text-sm">SA</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+            <img
+              src="/images/logo.png"
+              alt="SiapAjar Logo"
+              className="w-9 h-9 object-contain drop-shadow-sm"
+            />
+            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent tracking-tight">
               SiapAjar
             </span>
           </motion.div>
@@ -1122,11 +1124,13 @@ export default function Home({ packages }: HomeProps) {
           <div className="grid md:grid-cols-12 gap-10 mb-10">
             {/* Brand Column */}
             <div className="md:col-span-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
-                  <span className="text-white font-black text-sm">SA</span>
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+              <div className="flex items-center gap-2.5 mb-4">
+                <img
+                  src="/images/logo.png"
+                  alt="SiapAjar Logo"
+                  className="w-9 h-9 object-contain drop-shadow-sm"
+                />
+                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                   SiapAjar
                 </span>
               </div>

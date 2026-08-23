@@ -23,8 +23,13 @@ export default function Login() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
-              <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <img
+                src="/images/logo.png"
+                alt="SiapAjar Logo"
+                className="w-10 h-10 object-contain drop-shadow-sm"
+              />
+              <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent tracking-tight">
                 SiapAjar
               </span>
             </Link>

@@ -317,13 +317,15 @@ export default function Sidebar({
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4 dark:border-neutral-800">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
-              <span className="text-sm font-bold text-white">S</span>
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <img
+              src="/images/logo.png"
+              alt="SiapAjar Logo"
+              className="h-8 w-8 object-contain drop-shadow-sm"
+            />
             <span
               className={cn(
-                'text-lg font-semibold text-neutral-900 dark:text-white',
+                'text-lg font-bold text-neutral-900 dark:text-white tracking-tight',
                 collapsed && 'md:hidden'
               )}
             >

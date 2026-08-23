@@ -67,9 +67,16 @@ export default function Onboarding({ role }: OnboardingProps) {
         <div className="w-full max-w-xl">
           {/* Logo / Header */}
           <div className="text-center mb-8">
-            <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              SiapAjar
-            </span>
+            <div className="inline-flex items-center gap-2.5">
+              <img
+                src="/images/logo.png"
+                alt="SiapAjar Logo"
+                className="w-10 h-10 object-contain drop-shadow-sm"
+              />
+              <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent tracking-tight">
+                SiapAjar
+              </span>
+            </div>
             <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500 font-medium uppercase tracking-wider">
               <span>
                 Langkah {step} dari {totalSteps}
