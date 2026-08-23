@@ -54,15 +54,25 @@ export default class ClassesController {
 
     // Smart Dual Response (Mobile API vs Web Inertia)
     if (isApi(ctx)) {
+      const isTk = Boolean(user.educationLevel === 'tk' || user.isTk)
       return ctx.response.ok({
         status: 'success',
-        data: classes.map((c) => ({
-          id: String(c.id),
-          name: c.name,
-          gradeLevel: c.gradeLevel,
-          groupContext: c.groupContext,
-          studentCount: c.students.length,
-        })),
+        data: classes.map((c) => {
+          const groupContext = c.groupContext || (c.gradeLevel === 0 ? 'A' : 'B')
+          const rombel = c.rombelNumber || '1'
+          const displayName = isTk
+            ? `Kelompok ${groupContext.toUpperCase()}${rombel} (${c.name})`
+            : `Kelas ${c.gradeLevel} - ${c.name}`
+          return {
+            id: String(c.id),
+            name: c.name,
+            displayName,
+            gradeLevel: c.gradeLevel,
+            groupContext: c.groupContext,
+            rombelNumber: c.rombelNumber,
+            studentCount: c.students.length,
+          }
+        }),
       })
     }
 
@@ -91,12 +101,20 @@ export default class ClassesController {
       return ctx.response.redirect().toRoute('classes.index')
     }
 
+    const isTk = Boolean(user.educationLevel === 'tk' || user.isTk)
+    const groupContext = schoolClass.groupContext || (schoolClass.gradeLevel === 0 ? 'A' : 'B')
+    const rombel = schoolClass.rombelNumber || '1'
+    const displayName = isTk
+      ? `Kelompok ${groupContext.toUpperCase()}${rombel} (${schoolClass.name})`
+      : `Kelas ${schoolClass.gradeLevel} - ${schoolClass.name}`
+
     if (isApi(ctx)) {
       return ctx.response.ok({
         status: 'success',
         data: {
           id: String(schoolClass.id),
           name: schoolClass.name,
+          displayName,
           gradeLevel: schoolClass.gradeLevel,
           groupContext: schoolClass.groupContext,
           rombelNumber: schoolClass.rombelNumber,
@@ -124,6 +142,7 @@ export default class ClassesController {
     if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
 
     const classId = ctx.params.id
+    const schoolClass = await SchoolClass.find(classId)
     const students = await Student.query().where('class_id', classId).orderBy('full_name', 'asc')
 
     const assessments = await PaudAssessment.query()
@@ -135,6 +154,15 @@ export default class ClassesController {
       countMap[a.studentId] = (countMap[a.studentId] || 0) + 1
     })
 
+    const isTk = Boolean(user.educationLevel === 'tk' || user.isTk)
+    const groupContext = schoolClass?.groupContext || (schoolClass?.gradeLevel === 0 ? 'A' : 'B')
+    const rombel = schoolClass?.rombelNumber || '1'
+    const classDisplayName = schoolClass
+      ? isTk
+        ? `Kelompok ${groupContext.toUpperCase()}${rombel} (${schoolClass.name})`
+        : `Kelas ${schoolClass.gradeLevel} - ${schoolClass.name}`
+      : 'Kelas'
+
     return ctx.response.ok({
       status: 'success',
       data: students.map((s) => ({
@@ -143,6 +171,7 @@ export default class ClassesController {
         nis: s.nis || '-',
         nisn: s.nisn,
         classId: String(s.classId),
+        className: classDisplayName,
         assessmentCount: countMap[s.id] || 0,
         avatarUrl: `https://images.unsplash.com/photo-1595454223600-91fbdd77e268?w=150&auto=format&fit=crop&q=80`,
       })),
