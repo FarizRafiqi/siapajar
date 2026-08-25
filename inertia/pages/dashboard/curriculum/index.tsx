@@ -113,6 +113,7 @@ function ObjectiveCard({
   onToggleIndicators,
   onOpenIndicatorModal,
   onAddToAtp,
+  onDeleteObjective,
 }: Readonly<{
   objective: Objective
   isSelectedInAtp: boolean
@@ -120,6 +121,7 @@ function ObjectiveCard({
   onToggleIndicators: (id: number) => void
   onOpenIndicatorModal: (id: number) => void
   onAddToAtp: (id: number) => void
+  onDeleteObjective: (objective: Objective) => void
 }>) {
   const indicators = objective.indicators || []
 
@@ -184,6 +186,16 @@ function ObjectiveCard({
             ) : (
               <span>+ Pilih ke ATP</span>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onDeleteObjective(objective)}
+            className="rounded-lg p-2 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
+            title="Hapus Tujuan Pembelajaran (TP)"
+            aria-label="Hapus TP"
+          >
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -472,6 +484,7 @@ function ExploreTab({
   onToggleIndicators,
   onOpenIndicatorModal,
   onAddToAtp,
+  onDeleteObjective,
 }: Readonly<{
   cps: Cp[]
   cp?: Cp
@@ -484,6 +497,7 @@ function ExploreTab({
   onToggleIndicators: (id: number) => void
   onOpenIndicatorModal: (id: number) => void
   onAddToAtp: (id: number) => void
+  onDeleteObjective: (objective: Objective) => void
 }>) {
   return (
     <div className="grid gap-5 lg:grid-cols-[18rem_1fr]">
@@ -585,6 +599,7 @@ function ExploreTab({
                   onToggleIndicators={onToggleIndicators}
                   onOpenIndicatorModal={onOpenIndicatorModal}
                   onAddToAtp={onAddToAtp}
+                  onDeleteObjective={onDeleteObjective}
                 />
               ))}
             </div>
@@ -616,6 +631,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
   const [showActionDropdown, setShowActionDropdown] = useState(false)
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
   const [sequenceToDelete, setSequenceToDelete] = useState<Sequence | null>(null)
+  const [objectiveToDelete, setObjectiveToDelete] = useState<Objective | null>(null)
 
   const objectiveForm = useForm<{
     cpId: number
@@ -745,6 +761,13 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
     if (!sequenceToDelete) return
     router.delete(`/curriculum/sequences/${sequenceToDelete.id}`, {
       onSuccess: () => setSequenceToDelete(null),
+    })
+  }
+
+  const handleDeleteObjective = () => {
+    if (!objectiveToDelete) return
+    router.delete(`/curriculum/objectives/${objectiveToDelete.id}`, {
+      onSuccess: () => setObjectiveToDelete(null),
     })
   }
 
@@ -932,6 +955,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               setShowIndicatorModal(true)
             }}
             onAddToAtp={addToAtp}
+            onDeleteObjective={setObjectiveToDelete}
           />
         )}
 
@@ -1216,6 +1240,39 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
               >
                 Ya, Hapus Alur ATP
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Konfirmasi Hapus Tujuan Pembelajaran (TP) */}
+      {objectiveToDelete && (
+        <Modal title="Hapus Tujuan Pembelajaran (TP)" onClose={() => setObjectiveToDelete(null)}>
+          <div className="space-y-5 text-sm">
+            <p className="text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed">
+              Apakah Anda yakin ingin menghapus Tujuan Pembelajaran{' '}
+              <strong className="text-neutral-900 dark:text-white">
+                &quot;{objectiveToDelete.code} - {stripHtml(objectiveToDelete.title)}&quot;
+              </strong>
+              ? Seluruh indikator IKTP yang ada di dalamnya juga akan terhapus.
+            </p>
+
+            <div className="flex justify-end gap-2.5 border-t border-neutral-200 dark:border-neutral-800 pt-4">
+              <button
+                type="button"
+                onClick={() => setObjectiveToDelete(null)}
+                className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteObjective}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 shadow"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Ya, Hapus TP</span>
               </button>
             </div>
           </div>

@@ -240,6 +240,12 @@ const routes = {
     tokens: [{"old":"/curriculum/objectives","type":0,"val":"curriculum","end":""},{"old":"/curriculum/objectives","type":0,"val":"objectives","end":""}],
     types: placeholder as Registry['curriculum.objectives.store']['types'],
   },
+  'curriculum.objectives.destroy': {
+    methods: ["DELETE"],
+    pattern: '/curriculum/objectives/:id',
+    tokens: [{"old":"/curriculum/objectives/:id","type":0,"val":"curriculum","end":""},{"old":"/curriculum/objectives/:id","type":0,"val":"objectives","end":""},{"old":"/curriculum/objectives/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['curriculum.objectives.destroy']['types'],
+  },
   'curriculum.sequences.store': {
     methods: ["POST"],
     pattern: '/curriculum/sequences',

@@ -101,6 +101,9 @@ router
       .post('/curriculum/objectives', [controllers.Curriculum, 'storeObjective'])
       .as('curriculum.objectives.store')
     router
+      .delete('/curriculum/objectives/:id', [controllers.Curriculum, 'destroyObjective'])
+      .as('curriculum.objectives.destroy')
+    router
       .post('/curriculum/sequences', [controllers.Curriculum, 'storeSequence'])
       .as('curriculum.sequences.store')
     router

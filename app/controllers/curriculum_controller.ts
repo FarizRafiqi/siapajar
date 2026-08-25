@@ -90,6 +90,30 @@ export default class CurriculumController {
     return response.redirect().back()
   }
 
+  async destroyObjective({ params, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const objective = await LearningObjective.query()
+      .where('id', params.id)
+      .where((q) => {
+        if (user.role === 'admin') {
+          // admin can delete any
+        } else {
+          q.where('user_id', user.id).orWhereNull('user_id')
+        }
+      })
+      .first()
+
+    if (objective) {
+      await IktpIndicator.query().where('learning_objective_id', objective.id).delete()
+      await objective.delete()
+      session.flash('success', 'Tujuan Pembelajaran (TP) berhasil dihapus')
+    } else {
+      session.flash('error', 'Tujuan Pembelajaran tidak ditemukan')
+    }
+
+    return response.redirect().back()
+  }
+
   async storeSequence({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
     const data = await request.validateUsing(createSequenceValidator)

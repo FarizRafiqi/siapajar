@@ -475,6 +475,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeObjective']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'curriculum.objectives.destroy': {
+    methods: ["DELETE"]
+    pattern: '/curriculum/objectives/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroyObjective']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroyObjective']>>>
+    }
+  }
   'curriculum.sequences.store': {
     methods: ["POST"]
     pattern: '/curriculum/sequences'

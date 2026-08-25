@@ -70,6 +70,7 @@ export interface ApiDefinition {
     exportPdf: typeof routes['curriculum.exportPdf']
     objectives: {
       store: typeof routes['curriculum.objectives.store']
+      destroy: typeof routes['curriculum.objectives.destroy']
     }
     sequences: {
       store: typeof routes['curriculum.sequences.store']
