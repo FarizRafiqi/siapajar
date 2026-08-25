@@ -1,15 +1,18 @@
-# Graph Report - .  (2026-07-26)
+# Graph Report - . (2026-07-26)
 
 ## Corpus Check
+
 - 145 files · ~89,393 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
+
 - 787 nodes · 802 edges · 159 communities (71 shown, 88 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 29 edges (avg confidence: 0.8)
 - Token cost: 0 input · 164,601 output
 
 ## Community Hubs (Navigation)
+
 - Tooling & Lint Config
 - Roles & Permissions Model
 - Package Boundaries & Import Config
@@ -148,6 +151,7 @@
 - SiapAjar Platform Concept
 
 ## God Nodes (most connected - your core abstractions)
+
 1. `cn()` - 31 edges
 2. `imports` - 19 edges
 3. `DashboardWrapper()` - 14 edges
@@ -160,21 +164,24 @@
 10. `AnnualPlansController` - 7 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Guru (Teacher) Role` --conceptually_related_to--> `Soal PTS/PAS/PAT Generator`  [INFERRED]
+
+- `Guru (Teacher) Role` --conceptually_related_to--> `Soal PTS/PAS/PAT Generator` [INFERRED]
   docs/roles-and-permissions.md → PRD-SiapAjar.md
-- `9router (README)` --shares_data_with--> `9router (AI Model Router)`  [INFERRED]
+- `9router (README)` --shares_data_with--> `9router (AI Model Router)` [INFERRED]
   README.md → PRD-SiapAjar.md
-- `Guru (Teacher) Role` --conceptually_related_to--> `Prota (Program Tahunan)`  [INFERRED]
+- `Guru (Teacher) Role` --conceptually_related_to--> `Prota (Program Tahunan)` [INFERRED]
   docs/roles-and-permissions.md → PRD-SiapAjar.md
-- `Guru (Teacher) Role` --conceptually_related_to--> `Modul Ajar / RPP Deep Learning`  [INFERRED]
+- `Guru (Teacher) Role` --conceptually_related_to--> `Modul Ajar / RPP Deep Learning` [INFERRED]
   docs/roles-and-permissions.md → PRD-SiapAjar.md
-- `Kepala Sekolah (Principal) Role` --conceptually_related_to--> `Integrasi RPT Digital (API)`  [INFERRED]
+- `Kepala Sekolah (Principal) Role` --conceptually_related_to--> `Integrasi RPT Digital (API)` [INFERRED]
   docs/roles-and-permissions.md → PRD-SiapAjar.md
 
 ## Import Cycles
+
 - None detected.
 
 ## Hyperedges (group relationships)
+
 - **9router siapajar-docgen Combo Powers Planning Documents** — prd_siapajar_9router, prd_siapajar_prota, prd_siapajar_promes, prd_siapajar_atp, prd_siapajar_modul_ajar [EXTRACTED 1.00]
 - **Four-Role Permission Matrix** — docs_roles_and_permissions_admin_role, docs_roles_and_permissions_guru_role, docs_roles_and_permissions_kepala_sekolah_role, docs_roles_and_permissions_orang_tua_role [EXTRACTED 1.00]
 - **AdonisJS Monolith Architecture Stack** — prd_siapajar_adonisjs, prd_siapajar_inertiajs, prd_siapajar_vue3, prd_siapajar_postgresql, prd_siapajar_redis [EXTRACTED 1.00]
@@ -182,207 +189,258 @@
 ## Communities (159 total, 88 thin omitted)
 
 ### Community 0 - "Tooling & Lint Config"
+
 Cohesion: 0.05
 Nodes (43): @adonisjs/assembler, @adonisjs/eslint-config, @adonisjs/prettier-config, @adonisjs/tsconfig, eslint, hot-hook, @japa/assert, @japa/browser-client (+35 more)
 
 ### Community 1 - "Roles & Permissions Model"
+
 Cohesion: 0.07
 Nodes (43): Administrator Role, Guru (Teacher) Role, Kepala Sekolah (Principal) Role, Orang Tua (Parent) Role, Own Data Filter Pattern, Package Features Matrix, packages Table, role_middleware (+35 more)
 
 ### Community 2 - "Package Boundaries & Import Config"
+
 Cohesion: 0.05
-Nodes (39): engines, node, hotHook, boundaries, imports, #abilities/*, #config/*, #controllers/* (+31 more)
+Nodes (39): engines, node, hotHook, boundaries, imports, #abilities/_, #config/_, #controllers/* (+31 more)
 
 ### Community 3 - "UI Text/Number Animation Components"
+
 Cohesion: 0.09
 Nodes (14): AnimatedNumber(), AnimatedNumberProps, TextGenerateEffect(), TextGenerateEffectProps, TracingBeam(), TracingBeamProps, Settings(), faqs (+6 more)
 
 ### Community 4 - "UI Background & Card Effects Components"
+
 Cohesion: 0.16
 Nodes (13): AuroraBackground(), AuroraBackgroundProps, InfiniteMovingCards(), InfiniteMovingCardsProps, MagicButton(), MagicButtonProps, SpotlightCard(), SpotlightCardProps (+5 more)
 
 ### Community 5 - "Tuyau Route Registry"
+
 Cohesion: 0.15
 Nodes (8): placeholder, registry, @tuyau/core/types, UserRegistry, ParamValue, ApiDefinition, client, DefaultLayoutProps
 
 ### Community 6 - "Vine Schema Definitions"
+
 Cohesion: 0.34
 Nodes (14): AcademicYearSchema, AnnualPlanSchema, ClassSchema, ExamSchema, PackageSchema, RememberMeTokenSchema, SemesterPlanSchema, SemesterSchema (+6 more)
 
 ### Community 7 - "Exams Dashboard Page"
+
 Cohesion: 0.19
 Nodes (13): Exam, EXAM_TYPES, ExamsIndex(), ExamsIndexProps, ExamType, examTypeLabel(), SchoolClass, Subject (+5 more)
 
 ### Community 8 - "Inertia TS Config"
+
 Cohesion: 0.14
-Nodes (13): compilerOptions, jsx, module, paths, extends, include, @generated/*, ../.adonisjs/client/* (+5 more)
+Nodes (13): compilerOptions, jsx, module, paths, extends, include, @generated/_, ../.adonisjs/client/_ (+5 more)
 
 ### Community 9 - "Header & Sidebar Navigation"
+
 Cohesion: 0.15
 Nodes (9): HeaderProps, adminNavigation, guruNavigation, Sidebar(), SidebarProps, User, DashboardLayout(), DashboardLayoutProps (+1 more)
 
 ### Community 10 - "User Model & Auth"
+
 Cohesion: 0.17
 Nodes (5): AuthFinder, belongsTo, column, dateTime, User
 
 ### Community 11 - "Hero Illustration Marketing Concepts"
+
 Cohesion: 0.26
 Nodes (12): Siapajar Education/Class Management Platform, Analytics Charts (bar chart, pie/donut chart), Books Icon (academic/learning materials), Calendar Icon (scheduling/planning), Checklist / Task Completion Widgets (green checkmarks), Hero Illustration Image, Lightbulb Icon (insight/ideas), Laptop (MacBook) (+4 more)
 
 ### Community 12 - "Inertia Middleware & Shared Props"
+
 Cohesion: 0.22
 Nodes (5): @adonisjs/inertia/types, InertiaMiddleware, MiddlewareSharedProps, SharedProps, UserTransformer
 
 ### Community 13 - "Package Model & Seeding"
+
 Cohesion: 0.20
 Nodes (6): Package, column, dateTime, hasMany, beforeCreate, DatabaseSeeder
 
 ### Community 14 - "Backend Runtime Dependencies"
+
 Cohesion: 0.22
 Nodes (9): @adonisjs/auth, @adonisjs/inertia, better-sqlite3, luxon, dependencies, @adonisjs/auth, @adonisjs/inertia, better-sqlite3 (+1 more)
 
 ### Community 17 - "Inertia TS Project Config"
+
 Cohesion: 0.22
-Nodes (8): ./inertia/**/*.ts, ./inertia/tsconfig.json, ./inertia/**/*.tsx, compilerOptions, composite, rootDir, extends, include
+Nodes (8): ./inertia/**/\*.ts, ./inertia/tsconfig.json, ./inertia/**/*.tsx, compilerOptions, composite, rootDir, extends, include
 
 ### Community 22 - "Dashboard Layout & Settings Page"
+
 Cohesion: 0.29
 Nodes (6): DashboardWrapper(), DashboardWrapperProps, PageProps, User, SettingsProps, UserProps
 
 ### Community 23 - "Dashboard Stats Page"
+
 Cohesion: 0.25
 Nodes (7): AdminStats, colorMap, Dashboard(), DashboardProps, RecentItem, statCards, Stats
 
 ### Community 24 - "Semester Plan Detail Page"
+
 Cohesion: 0.25
 Nodes (6): SchoolClass, SECTIONS, Semester, SemesterPlan, SemesterPlanContent, SemesterPlanShowProps
 
 ### Community 25 - "Problem Illustration Marketing Concepts"
+
 Cohesion: 0.29
 Nodes (8): Administrative Overload (concept), Deadline Clock Icons (multiple), Cluttered Desk with Laptop, Books, Notebook, Folders, Floating Paper Documents, Landing Page Problem/Pain-Point Section, Indonesian Education / School Admin Domain (Siapajar), Stressed Teacher (Hijab, Batik Jacket), Urgent File Folders (exclamation mark icons)
 
 ### Community 26 - "Annual Plan Detail Page"
+
 Cohesion: 0.29
 Nodes (5): AcademicYear, AnnualPlan, AnnualPlanContent, AnnualPlanShowProps, SECTIONS
 
 ### Community 27 - "Semester Plans Index Page"
+
 Cohesion: 0.29
 Nodes (5): SchoolClass, Semester, SemesterPlan, SemesterPlansIndexProps, Subject
 
 ### Community 28 - "Teaching Module Detail Page"
+
 Cohesion: 0.29
 Nodes (6): SchoolClass, SECTIONS, TeachingModule, TeachingModuleContent, TeachingModuleShow(), TeachingModuleShowProps
 
 ### Community 29 - "API Serializer"
+
 Cohesion: 0.29
 Nodes (5): @adonisjs/core/http, ApiSerializer, HttpContext, serialize, serializer
 
 ### Community 30 - "TS Config Base"
+
 Cohesion: 0.29
 Nodes (6): @adonisjs/tsconfig/tsconfig.app.json, compilerOptions, outDir, rootDir, extends, references
 
 ### Community 31 - "SchoolClass Model"
+
 Cohesion: 0.33
 Nodes (5): SchoolClass, belongsTo, column, dateTime, hasMany
 
 ### Community 32 - "Semester Model"
+
 Cohesion: 0.33
 Nodes (5): Semester, belongsTo, column, dateTime, hasMany
 
 ### Community 33 - "Auth Config"
+
 Cohesion: 0.33
 Nodes (5): @adonisjs/auth/types, @adonisjs/core/types, authConfig, Authenticators, EventsList
 
 ### Community 35 - "Annual Plans Index Page"
+
 Cohesion: 0.33
 Nodes (4): AcademicYear, AnnualPlan, AnnualPlansIndexProps, Subject
 
 ### Community 36 - "Classes Index Page"
+
 Cohesion: 0.33
 Nodes (4): AcademicYear, ClassesIndexProps, SchoolClass, Student
 
 ### Community 37 - "Class Detail Page"
+
 Cohesion: 0.33
 Nodes (4): AcademicYear, ClassShowProps, SchoolClass, Student
 
 ### Community 38 - "Teaching Modules Index Page"
+
 Cohesion: 0.33
 Nodes (5): SchoolClass, Subject, TeachingModule, TeachingModulesIndex(), TeachingModulesIndexProps
 
 ### Community 39 - "Inertia Shared Data Types"
+
 Cohesion: 0.40
 Nodes (4): Data, SharedProps, User, Variants
 
 ### Community 40 - "Route Types"
+
 Cohesion: 0.50
 Nodes (4): @adonisjs/core/types/http, ParamValue, RoutesList, ScannedRoutes
 
 ### Community 42 - "Academic Year Model"
+
 Cohesion: 0.40
 Nodes (4): AcademicYear, column, dateTime, hasMany
 
 ### Community 43 - "Annual Plan Model"
+
 Cohesion: 0.40
 Nodes (4): AnnualPlan, belongsTo, column, dateTime
 
 ### Community 44 - "Exam Model"
+
 Cohesion: 0.40
 Nodes (4): Exam, belongsTo, column, dateTime
 
 ### Community 45 - "Semester Plan Model"
+
 Cohesion: 0.40
 Nodes (4): SemesterPlan, belongsTo, column, dateTime
 
 ### Community 46 - "Student Model"
+
 Cohesion: 0.40
 Nodes (4): Student, belongsTo, column, dateTime
 
 ### Community 47 - "Subject Model"
+
 Cohesion: 0.40
 Nodes (4): Subject, belongsTo, column, dateTime
 
 ### Community 48 - "Teaching Module Model"
+
 Cohesion: 0.40
 Nodes (4): TeachingModule, belongsTo, column, dateTime
 
 ### Community 49 - "Generate Validators"
+
 Cohesion: 0.40
 Nodes (4): generateAnnualPlanValidator, generateExamValidator, generateSemesterPlanValidator, generateTeachingModuleValidator
 
 ### Community 50 - "Accordion UI Component"
+
 Cohesion: 0.40
 Nodes (3): Accordion(), AccordionItemProps, AccordionProps
 
 ### Community 51 - "Inertia Pages Types"
+
 Cohesion: 0.50
 Nodes (3): @adonisjs/inertia/types, ExtractProps, InertiaPages
 
 ### Community 56 - "Settings Validators"
+
 Cohesion: 0.83
 Nodes (3): createAdminSettingsValidator(), createSettingsValidator(), uniqueEmail()
 
 ### Community 58 - "Encryption Config"
+
 Cohesion: 0.50
 Nodes (3): @adonisjs/core/types, encryptionConfig, EncryptorsList
 
 ### Community 59 - "Hash Config"
+
 Cohesion: 0.50
 Nodes (3): @adonisjs/core/types, hashConfig, HashersList
 
 ### Community 60 - "Logger Config"
+
 Cohesion: 0.50
 Nodes (3): @adonisjs/core/types, loggerConfig, LoggersList
 
 ## Ambiguous Edges - Review These
-- `Orang Tua (Parent) Role` → `Own Data Filter Pattern`  [AMBIGUOUS]
+
+- `Orang Tua (Parent) Role` → `Own Data Filter Pattern` [AMBIGUOUS]
   docs/roles-and-permissions.md · relation: references
 
 ## Knowledge Gaps
+
 - **286 isolated node(s):** `Data`, `User`, `Variants`, `SharedProps`, `placeholder` (+281 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **88 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
+
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Orang Tua (Parent) Role` and `Own Data Filter Pattern`?**

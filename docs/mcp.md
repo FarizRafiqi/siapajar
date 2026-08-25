@@ -24,15 +24,19 @@ The SiapAjar MCP (Model Context Protocol) server exposes application data and se
 ## 2. API Key Management (Ace CLI Commands)
 
 ### Issue API Key (`mcp:key:generate`)
+
 ```bash
 node ace mcp:key:generate <user_id> --label="Hermes Desktop" [--scopes="documents,assessments"]
 ```
+
 Outputs the raw API key **once**.
 
 ### Revoke API Key (`mcp:key:revoke`)
+
 ```bash
 node ace mcp:key:revoke <id_or_prefix>
 ```
+
 Soft-revokes the key by setting `revoked_at`.
 
 ---
@@ -52,34 +56,38 @@ curl -X GET https://siapajar.farizrafiqi.dev/.well-known/mcp
 ### 4.1. Hermes (`.hermes/config.yaml`)
 
 **HTTP Transport (Recommended):**
+
 ```yaml
 mcp_servers:
   siapajar:
-    url: "https://siapajar.farizrafiqi.dev/mcp"
-    transport: "http"
+    url: 'https://siapajar.farizrafiqi.dev/mcp'
+    transport: 'http'
     headers:
-      Authorization: "Bearer siapajar_mcp_..."
+      Authorization: 'Bearer siapajar_mcp_...'
 ```
 
 **Stdio Transport:**
+
 ```yaml
 mcpServers:
   siapajar:
-    command: "node"
-    args: ["ace", "mcp:serve"]
+    command: 'node'
+    args: ['ace', 'mcp:serve']
     env:
-      SIAPAJAR_MCP_API_KEY: "siapajar_mcp_..."
-      NODE_ENV: "development"
+      SIAPAJAR_MCP_API_KEY: 'siapajar_mcp_...'
+      NODE_ENV: 'development'
 ```
 
 ### 4.2. Claude Code CLI
 
 **HTTP Transport (via CLI command):**
+
 ```bash
 claude mcp add siapajar https://siapajar.farizrafiqi.dev/mcp --header "Authorization: Bearer siapajar_mcp_..."
 ```
 
 **Config File (`~/.claude.json`):**
+
 ```json
 {
   "mcpServers": {
@@ -96,6 +104,7 @@ claude mcp add siapajar https://siapajar.farizrafiqi.dev/mcp --header "Authoriza
 ### 4.3. VSCode / Cursor / Claude Desktop
 
 **HTTP Transport (`claude_desktop_config.json`):**
+
 ```json
 {
   "mcpServers": {
@@ -130,28 +139,28 @@ curl -X POST https://siapajar.farizrafiqi.dev/mcp \
 
 ## 4. RBAC Permission Matrix
 
-| Tool Group / Name | Admin | Guru | Kepala Sekolah | Data Scope | Confirmation (`confirm: true`) |
-|---|:---:|:---:|:---:|---|:---:|
-| `siapajar_health` | ✅ | ✅ | ✅ | System | No |
-| `siapajar_list_schools`, `get_school` | ✅ | ❌ | ✅ | School (`school_id`) | No |
-| `siapajar_create_school`, `update_school` | ✅ | ❌ | ❌ | System | No |
-| `siapajar_list_classes`, `get_class`, `create_class`, `update_class` | ✅ | ✅ | ✅ (list/get) | `school` / `own` | No |
-| `siapajar_delete_class` | ✅ | ✅ (own) | ❌ | `own` | **YES** |
-| `siapajar_list_students`, `get_student`, `create_student`, `update_student` | ✅ | ✅ | ✅ (list/get) | `school` / `own` | No |
-| `siapajar_delete_student` | ✅ | ✅ (own) | ❌ | `own` | **YES** |
-| `siapajar_list_subjects`, `create_subject`, `update_subject` | ✅ | ✅ | ✅ (list) | `school` / `own` | No |
-| `siapajar_delete_subject` | ✅ | ✅ (own) | ❌ | `own` | **YES** |
-| Academic Years & Semesters (`list`, `create`, `update_semester`) | ✅ | ❌ | ❌ | System | No |
-| `siapajar_update_academic_year` | ✅ | ❌ | ❌ | System | **YES** |
-| User Admin, Packages, Entitlements, AI Settings, AI Test Connection | ✅ | ❌ | ❌ | System | No |
-| Document Tools (list/get/create/update for Protah, Promes, RPPM, RPPH, Modul Ajar, LKPD, Media) | ✅ | ✅ | ✅ | `school` / `own` | No |
-| Document AI Generation (7 `generate_*` tools) | ✅ | ✅ | ✅ | `school` / `own` | Rate limited (10/10m) |
-| Document Exports (DOCX, PDF, PPTX) | ✅ | ✅ | ✅ | `school` / `own` | No |
-| Assessment & Report Tools (list/get/create/update for PAUD assessments, exams, report cards, scores) | ✅ | ✅ | ✅ | `school` / `own` | No |
-| Assessment AI Generation (`generate_exam`, `generate_report_narratives`) | ✅ | ✅ | ✅ | `school` / `own` | Rate limited (10/10m) |
-| Assessment Exports (DOCX, PDF, XLSX) | ✅ | ✅ | ✅ | `school` / `own` | No |
-| Delete Tools (13 tools) | ✅ | ✅ (own) | ❌ | `own` | **YES** |
-| `siapajar_seed_curriculum_presets` | ✅ | ❌ | ❌ | System | No |
+| Tool Group / Name                                                                                    | Admin |   Guru   | Kepala Sekolah | Data Scope           | Confirmation (`confirm: true`) |
+| ---------------------------------------------------------------------------------------------------- | :---: | :------: | :------------: | -------------------- | :----------------------------: |
+| `siapajar_health`                                                                                    |  ✅   |    ✅    |       ✅       | System               |               No               |
+| `siapajar_list_schools`, `get_school`                                                                |  ✅   |    ❌    |       ✅       | School (`school_id`) |               No               |
+| `siapajar_create_school`, `update_school`                                                            |  ✅   |    ❌    |       ❌       | System               |               No               |
+| `siapajar_list_classes`, `get_class`, `create_class`, `update_class`                                 |  ✅   |    ✅    | ✅ (list/get)  | `school` / `own`     |               No               |
+| `siapajar_delete_class`                                                                              |  ✅   | ✅ (own) |       ❌       | `own`                |            **YES**             |
+| `siapajar_list_students`, `get_student`, `create_student`, `update_student`                          |  ✅   |    ✅    | ✅ (list/get)  | `school` / `own`     |               No               |
+| `siapajar_delete_student`                                                                            |  ✅   | ✅ (own) |       ❌       | `own`                |            **YES**             |
+| `siapajar_list_subjects`, `create_subject`, `update_subject`                                         |  ✅   |    ✅    |   ✅ (list)    | `school` / `own`     |               No               |
+| `siapajar_delete_subject`                                                                            |  ✅   | ✅ (own) |       ❌       | `own`                |            **YES**             |
+| Academic Years & Semesters (`list`, `create`, `update_semester`)                                     |  ✅   |    ❌    |       ❌       | System               |               No               |
+| `siapajar_update_academic_year`                                                                      |  ✅   |    ❌    |       ❌       | System               |            **YES**             |
+| User Admin, Packages, Entitlements, AI Settings, AI Test Connection                                  |  ✅   |    ❌    |       ❌       | System               |               No               |
+| Document Tools (list/get/create/update for Protah, Promes, RPPM, RPPH, Modul Ajar, LKPD, Media)      |  ✅   |    ✅    |       ✅       | `school` / `own`     |               No               |
+| Document AI Generation (7 `generate_*` tools)                                                        |  ✅   |    ✅    |       ✅       | `school` / `own`     |     Rate limited (10/10m)      |
+| Document Exports (DOCX, PDF, PPTX)                                                                   |  ✅   |    ✅    |       ✅       | `school` / `own`     |               No               |
+| Assessment & Report Tools (list/get/create/update for PAUD assessments, exams, report cards, scores) |  ✅   |    ✅    |       ✅       | `school` / `own`     |               No               |
+| Assessment AI Generation (`generate_exam`, `generate_report_narratives`)                             |  ✅   |    ✅    |       ✅       | `school` / `own`     |     Rate limited (10/10m)      |
+| Assessment Exports (DOCX, PDF, XLSX)                                                                 |  ✅   |    ✅    |       ✅       | `school` / `own`     |               No               |
+| Delete Tools (13 tools)                                                                              |  ✅   | ✅ (own) |       ❌       | `own`                |            **YES**             |
+| `siapajar_seed_curriculum_presets`                                                                   |  ✅   |    ❌    |       ❌       | System               |               No               |
 
 ---
 

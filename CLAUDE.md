@@ -49,6 +49,7 @@ Redis       ←  @adonisjs/queue + @adonisjs/redis
 ```
 
 **Frontend** (`inertia/`):
+
 - `inertia/app.tsx` — Inertia + Tuyau bootstrap
 - `inertia/pages/` — one `.tsx` per route, organized by feature domain
 - `inertia/layouts/dashboard.tsx` — sidebar + header shell wrapping all authenticated pages
@@ -58,15 +59,15 @@ Redis       ←  @adonisjs/queue + @adonisjs/redis
 
 ### Key Services (`app/services/`)
 
-| Service | Responsibility |
-|---|---|
-| `ai_service.ts` | Multi-provider LLM dispatch (9router / OpenAI / Anthropic / Gemini); provider chosen from `ai_settings` DB row |
-| `ai_queue_service.ts` | Enqueues AI jobs to `@adonisjs/queue` for async processing |
-| `export_service.ts` / `xlsx_export_service.ts` / `pdf_export_service.ts` | Document generation (DOCX via `docx`, Excel via `exceljs`, PDF via `pdfkit`) |
-| `entitlement_service.ts` | Package/feature gating by `user.package_id` |
-| `curriculum_context_service.ts` | PAUD curriculum helpers (CP → TP → ATP → IKTP chain) |
-| `report_card_service.ts` | Narrative report generation |
-| `student_import_service.ts` | Bulk student import |
+| Service                                                                  | Responsibility                                                                                                 |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `ai_service.ts`                                                          | Multi-provider LLM dispatch (9router / OpenAI / Anthropic / Gemini); provider chosen from `ai_settings` DB row |
+| `ai_queue_service.ts`                                                    | Enqueues AI jobs to `@adonisjs/queue` for async processing                                                     |
+| `export_service.ts` / `xlsx_export_service.ts` / `pdf_export_service.ts` | Document generation (DOCX via `docx`, Excel via `exceljs`, PDF via `pdfkit`)                                   |
+| `entitlement_service.ts`                                                 | Package/feature gating by `user.package_id`                                                                    |
+| `curriculum_context_service.ts`                                          | PAUD curriculum helpers (CP → TP → ATP → IKTP chain)                                                           |
+| `report_card_service.ts`                                                 | Narrative report generation                                                                                    |
+| `student_import_service.ts`                                              | Bulk student import                                                                                            |
 
 ### Domain Model
 

@@ -44,3 +44,7 @@
 13. **Metadata Label-Value Semantic Alignment (Compact Format Rule)**:
    - When document/form metadata labels combine multiple concepts with slashes (e.g. `KELOMPOK / USIA`, `SEMESTER / MINGGU`, `JENJANG / KELAS`), format the corresponding value symmetrically and concisely (e.g. `B1 / 5-6 Tahun`, `1 / 3`, `RA / B1`) instead of verbose redundant phrases (avoid `Kelompok B (5-6 Tahun) - Ibrahim`).
 
+14. **Zero Dummy Data Rule (Strict Empty State Standard)**:
+   - **STRICTLY PROHIBITED**: Never use fake placeholder names (e.g. "Kenzo", "Aisyah", "Budi Santoso" hardcoded) or static fallback mock data across any user-facing screens (web and mobile).
+   - When data from the server or local database is empty or not yet created, **ALWAYS render a clean, informative, and polished Empty State component** (e.g. *"No student data available for this class"* or *"No learning modules found for this week"*).
+   - Never construct mock fallback lists inside ViewModels or Composables solely to populate empty layout space.

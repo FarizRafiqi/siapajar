@@ -1,1 +1,768 @@
-{"nodes": [{"id": "prd_siapajar_siapajar", "label": "SiapAjar Platform", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a71-2", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_kurikulum_merdeka", "label": "Kurikulum Merdeka", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a71.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_prota", "label": "Prota (Program Tahunan)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-01", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_promes", "label": "Promes (Program Semester)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-02", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_atp", "label": "ATP (Alur Tujuan Pembelajaran)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-03", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_cp_tp", "label": "CP & TP Generator", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-04", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_analisis_cp", "label": "Analisis CP", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-05", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_pemetaan_materi", "label": "Pemetaan Materi", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-06", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_modul_ajar", "label": "Modul Ajar / RPP Deep Learning", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-07", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_lkpd", "label": "LKPD (Lembar Kerja Peserta Didik)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-08", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_media_ajar", "label": "Media Ajar", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-09", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_jurnal_refleksi", "label": "Jurnal Refleksi Harian", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-10", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_soal_generator", "label": "Soal PTS/PAS/PAT Generator", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-11", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_rubrik_penilaian", "label": "Rubrik Penilaian", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-12", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_kktp", "label": "KKTP (Kriteria Ketercapaian Tujuan Pembelajaran)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-13", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_bank_soal", "label": "Bank Soal Pribadi", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-14", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_rapor_narasi", "label": "Rapor Narasi TK/SD", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-15", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_peringkat_kelas", "label": "Peringkat Kelas", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-16", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_predikat_tk", "label": "Predikat TK (Non-Kompetitif)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-17", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_integrasi_rpt_digital", "label": "Integrasi RPT Digital (API)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "F-18", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_rapor_digital_madrasah", "label": "Rapor Digital Madrasah", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a76.6", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_dapodik", "label": "Dapodik Import/Integration", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "Fase 1/3", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_9router", "label": "9router (AI Model Router)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1, \u00a78.3", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_adonisjs", "label": "AdonisJS 7 (Backend)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_inertiajs", "label": "InertiaJS", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_vue3", "label": "Vue 3 SPA", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_postgresql", "label": "PostgreSQL 16", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a77.3", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_redis", "label": "Redis", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_bullmq", "label": "BullMQ Queue Workers", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_xendit", "label": "Xendit (Payment)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a79.2", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_baileys", "label": "Baileys (WhatsApp)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_cloudflare_r2", "label": "Cloudflare R2 (Storage)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_docker_compose", "label": "Docker Compose Deployment", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a713.5", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_rate_limiting_backpressure", "label": "AI Rate Limiting & Backpressure Mechanism", "file_type": "rationale", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3", "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Prevents end-of-semester spike of teachers generating rapor simultaneously from hitting AI API rate limits and blowing the cost budget; combines queue, concurrency limiter, priority queue, budget guard, daily caps, exponential backoff, fallback model, and batching."}, {"id": "prd_siapajar_free_tier_abuse_protection", "label": "Free Tier Abuse Protection", "file_type": "rationale", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.4", "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Combines reCAPTCHA v3, IP rate limits, device fingerprinting, disposable email blocking, phone verification, and usage-pattern detection to stop users from cycling free accounts to bypass generation quotas."}, {"id": "prd_siapajar_pricing_tiers", "label": "Pricing Tiers (Free/Basic/Pro/Sekolah)", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a79.1", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_database_schema", "label": "Core Database Schema", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.3", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "prd_siapajar_ai_queue", "label": "ai_queue Table", "file_type": "concept", "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.3", "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [{"source": "prd_siapajar_promes", "target": "prd_siapajar_prota", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "F-02", "weight": 1.0}, {"source": "prd_siapajar_atp", "target": "prd_siapajar_cp_tp", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "F-03", "weight": 1.0}, {"source": "prd_siapajar_modul_ajar", "target": "prd_siapajar_cp_tp", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "F-07", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_prota", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-docgen", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_promes", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-docgen", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_atp", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-docgen", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_modul_ajar", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-docgen; \u00a713.2-13.3", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_soal_generator", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-soal", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_rapor_narasi", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-narasi", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_rubrik_penilaian", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-rubrik", "weight": 1.0}, {"source": "prd_siapajar_9router", "target": "prd_siapajar_kktp", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 combo siapajar-rubrik", "weight": 1.0}, {"source": "prd_siapajar_integrasi_rpt_digital", "target": "prd_siapajar_rapor_digital_madrasah", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "F-18 Catatan", "weight": 1.0}, {"source": "prd_siapajar_integrasi_rpt_digital", "target": "prd_siapajar_rapor_narasi", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "F-18", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_inertiajs", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_inertiajs", "target": "prd_siapajar_vue3", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_postgresql", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_bullmq", "target": "prd_siapajar_redis", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a78.1", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_bullmq", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_xendit", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_baileys", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_cloudflare_r2", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2", "weight": 1.0}, {"source": "prd_siapajar_adonisjs", "target": "prd_siapajar_9router", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.2, \u00a713.2", "weight": 1.0}, {"source": "prd_siapajar_docker_compose", "target": "prd_siapajar_adonisjs", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a713.5", "weight": 1.0}, {"source": "prd_siapajar_docker_compose", "target": "prd_siapajar_postgresql", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a713.5", "weight": 1.0}, {"source": "prd_siapajar_docker_compose", "target": "prd_siapajar_redis", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a713.5", "weight": 1.0}, {"source": "prd_siapajar_rate_limiting_backpressure", "target": "prd_siapajar_9router", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3", "weight": 1.0}, {"source": "prd_siapajar_rate_limiting_backpressure", "target": "prd_siapajar_bullmq", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3", "weight": 1.0}, {"source": "prd_siapajar_rate_limiting_backpressure", "target": "prd_siapajar_ai_queue", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a77.3, \u00a78.3", "weight": 1.0}, {"source": "prd_siapajar_pricing_tiers", "target": "prd_siapajar_xendit", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a79.2", "weight": 1.0}, {"source": "prd_siapajar_dapodik", "target": "prd_siapajar_database_schema", "relation": "shares_data_with", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "PRD-SiapAjar.md", "source_location": "Fase 1/3, \u00a77.3", "weight": 1.0}, {"source": "prd_siapajar_free_tier_abuse_protection", "target": "prd_siapajar_rate_limiting_backpressure", "relation": "semantically_similar_to", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "PRD-SiapAjar.md", "source_location": "\u00a78.3 vs \u00a78.4", "weight": 1.0}], "hyperedges": [{"id": "siapajar_docgen_combo_flow", "label": "9router siapajar-docgen Combo Powers Planning Documents", "nodes": ["prd_siapajar_9router", "prd_siapajar_prota", "prd_siapajar_promes", "prd_siapajar_atp", "prd_siapajar_modul_ajar"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md"}, {"id": "siapajar_monolith_stack", "label": "AdonisJS Monolith Architecture Stack", "nodes": ["prd_siapajar_adonisjs", "prd_siapajar_inertiajs", "prd_siapajar_vue3", "prd_siapajar_postgresql", "prd_siapajar_redis"], "relation": "form", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "PRD-SiapAjar.md"}]}
+{
+  "nodes": [
+    {
+      "id": "prd_siapajar_siapajar",
+      "label": "SiapAjar Platform",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a71-2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_kurikulum_merdeka",
+      "label": "Kurikulum Merdeka",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a71.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_prota",
+      "label": "Prota (Program Tahunan)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-01",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_promes",
+      "label": "Promes (Program Semester)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-02",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_atp",
+      "label": "ATP (Alur Tujuan Pembelajaran)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-03",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_cp_tp",
+      "label": "CP & TP Generator",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-04",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_analisis_cp",
+      "label": "Analisis CP",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-05",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_pemetaan_materi",
+      "label": "Pemetaan Materi",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-06",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_modul_ajar",
+      "label": "Modul Ajar / RPP Deep Learning",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-07",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_lkpd",
+      "label": "LKPD (Lembar Kerja Peserta Didik)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-08",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_media_ajar",
+      "label": "Media Ajar",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-09",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_jurnal_refleksi",
+      "label": "Jurnal Refleksi Harian",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_soal_generator",
+      "label": "Soal PTS/PAS/PAT Generator",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-11",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_rubrik_penilaian",
+      "label": "Rubrik Penilaian",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-12",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_kktp",
+      "label": "KKTP (Kriteria Ketercapaian Tujuan Pembelajaran)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-13",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_bank_soal",
+      "label": "Bank Soal Pribadi",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-14",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_rapor_narasi",
+      "label": "Rapor Narasi TK/SD",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-15",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_peringkat_kelas",
+      "label": "Peringkat Kelas",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-16",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_predikat_tk",
+      "label": "Predikat TK (Non-Kompetitif)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_integrasi_rpt_digital",
+      "label": "Integrasi RPT Digital (API)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-18",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_rapor_digital_madrasah",
+      "label": "Rapor Digital Madrasah",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a76.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_dapodik",
+      "label": "Dapodik Import/Integration",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "Fase 1/3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_9router",
+      "label": "9router (AI Model Router)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1, \u00a78.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_adonisjs",
+      "label": "AdonisJS 7 (Backend)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_inertiajs",
+      "label": "InertiaJS",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_vue3",
+      "label": "Vue 3 SPA",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_postgresql",
+      "label": "PostgreSQL 16",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a77.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_redis",
+      "label": "Redis",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_bullmq",
+      "label": "BullMQ Queue Workers",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_xendit",
+      "label": "Xendit (Payment)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a79.2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_baileys",
+      "label": "Baileys (WhatsApp)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_cloudflare_r2",
+      "label": "Cloudflare R2 (Storage)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_docker_compose",
+      "label": "Docker Compose Deployment",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a713.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_rate_limiting_backpressure",
+      "label": "AI Rate Limiting & Backpressure Mechanism",
+      "file_type": "rationale",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Prevents end-of-semester spike of teachers generating rapor simultaneously from hitting AI API rate limits and blowing the cost budget; combines queue, concurrency limiter, priority queue, budget guard, daily caps, exponential backoff, fallback model, and batching."
+    },
+    {
+      "id": "prd_siapajar_free_tier_abuse_protection",
+      "label": "Free Tier Abuse Protection",
+      "file_type": "rationale",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Combines reCAPTCHA v3, IP rate limits, device fingerprinting, disposable email blocking, phone verification, and usage-pattern detection to stop users from cycling free accounts to bypass generation quotas."
+    },
+    {
+      "id": "prd_siapajar_pricing_tiers",
+      "label": "Pricing Tiers (Free/Basic/Pro/Sekolah)",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a79.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_database_schema",
+      "label": "Core Database Schema",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prd_siapajar_ai_queue",
+      "label": "ai_queue Table",
+      "file_type": "concept",
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "prd_siapajar_promes",
+      "target": "prd_siapajar_prota",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-02",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_atp",
+      "target": "prd_siapajar_cp_tp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-03",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_modul_ajar",
+      "target": "prd_siapajar_cp_tp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-07",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_prota",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-docgen",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_promes",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-docgen",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_atp",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-docgen",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_modul_ajar",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-docgen; \u00a713.2-13.3",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_soal_generator",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-soal",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_rapor_narasi",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-narasi",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_rubrik_penilaian",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-rubrik",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_9router",
+      "target": "prd_siapajar_kktp",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 combo siapajar-rubrik",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_integrasi_rpt_digital",
+      "target": "prd_siapajar_rapor_digital_madrasah",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-18 Catatan",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_integrasi_rpt_digital",
+      "target": "prd_siapajar_rapor_narasi",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "F-18",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_inertiajs",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_inertiajs",
+      "target": "prd_siapajar_vue3",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_postgresql",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_bullmq",
+      "target": "prd_siapajar_redis",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a78.1",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_bullmq",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_xendit",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_baileys",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_cloudflare_r2",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_adonisjs",
+      "target": "prd_siapajar_9router",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.2, \u00a713.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_docker_compose",
+      "target": "prd_siapajar_adonisjs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a713.5",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_docker_compose",
+      "target": "prd_siapajar_postgresql",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a713.5",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_docker_compose",
+      "target": "prd_siapajar_redis",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a713.5",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_rate_limiting_backpressure",
+      "target": "prd_siapajar_9router",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_rate_limiting_backpressure",
+      "target": "prd_siapajar_bullmq",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_rate_limiting_backpressure",
+      "target": "prd_siapajar_ai_queue",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a77.3, \u00a78.3",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_pricing_tiers",
+      "target": "prd_siapajar_xendit",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a79.2",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_dapodik",
+      "target": "prd_siapajar_database_schema",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "Fase 1/3, \u00a77.3",
+      "weight": 1.0
+    },
+    {
+      "source": "prd_siapajar_free_tier_abuse_protection",
+      "target": "prd_siapajar_rate_limiting_backpressure",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "PRD-SiapAjar.md",
+      "source_location": "\u00a78.3 vs \u00a78.4",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "siapajar_docgen_combo_flow",
+      "label": "9router siapajar-docgen Combo Powers Planning Documents",
+      "nodes": [
+        "prd_siapajar_9router",
+        "prd_siapajar_prota",
+        "prd_siapajar_promes",
+        "prd_siapajar_atp",
+        "prd_siapajar_modul_ajar"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md"
+    },
+    {
+      "id": "siapajar_monolith_stack",
+      "label": "AdonisJS Monolith Architecture Stack",
+      "nodes": [
+        "prd_siapajar_adonisjs",
+        "prd_siapajar_inertiajs",
+        "prd_siapajar_vue3",
+        "prd_siapajar_postgresql",
+        "prd_siapajar_redis"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PRD-SiapAjar.md"
+    }
+  ]
+}
