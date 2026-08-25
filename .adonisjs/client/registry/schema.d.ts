@@ -403,6 +403,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
     }
   }
+  'curriculum.print': {
+    methods: ["GET","HEAD"]
+    pattern: '/curriculum/print'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['print']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['print']>>>
+    }
+  }
   'curriculum.export': {
     methods: ["GET","HEAD"]
     pattern: '/curriculum/export'

@@ -204,6 +204,12 @@ const routes = {
     tokens: [{"old":"/curriculum","type":0,"val":"curriculum","end":""}],
     types: placeholder as Registry['curriculum.index']['types'],
   },
+  'curriculum.print': {
+    methods: ["GET","HEAD"],
+    pattern: '/curriculum/print',
+    tokens: [{"old":"/curriculum/print","type":0,"val":"curriculum","end":""},{"old":"/curriculum/print","type":0,"val":"print","end":""}],
+    types: placeholder as Registry['curriculum.print']['types'],
+  },
   'curriculum.export': {
     methods: ["GET","HEAD"],
     pattern: '/curriculum/export',

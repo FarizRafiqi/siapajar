@@ -37,6 +37,7 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
@@ -260,6 +261,7 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
@@ -354,6 +356,7 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }

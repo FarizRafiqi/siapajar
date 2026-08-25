@@ -66,6 +66,7 @@ export interface ApiDefinition {
   }
   curriculum: {
     index: typeof routes['curriculum.index']
+    print: typeof routes['curriculum.print']
     export: typeof routes['curriculum.export']
     exportPdf: typeof routes['curriculum.exportPdf']
     objectives: {

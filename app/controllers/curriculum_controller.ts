@@ -43,6 +43,27 @@ export default class CurriculumController {
     })
   }
 
+  async print({ inertia, auth }: HttpContext) {
+    const user = auth.user!
+    const { cps, sequences } = await this.exportData(user.id)
+    return inertia.render('dashboard/curriculum/print', {
+      cps,
+      sequences,
+      profile: {
+        institutionName: (user as any).institutionName || user.schoolName || 'TK Tunas Bangsa',
+        educationLevel:
+          user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK',
+        institutionType: user.institutionType || 'tk',
+        jenjangFase: `${user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK'} / Fase Fondasi`,
+        curriculumVersion: user.curriculumVersion || 'Kurikulum Merdeka',
+        teacherName: user.fullName || 'Guru Kelas',
+        teacherNip: (user as any).nip || '-',
+        principalName: (user as any).principalName || 'Kepala Sekolah',
+        principalNip: (user as any).principalNip || '-',
+      },
+    })
+  }
+
   async export({ response, auth }: HttpContext) {
     const user = auth.user!
     const { cps, sequences } = await this.exportData(user.id)
