@@ -7153,7 +7153,8 @@ export default class RppmKbcSemester1Seeder extends BaseSeeder {
         targetCp = cps.cpJatiDiri
       }
 
-      const tpTitle = `[M${item.weekNum} ${item.subtopic}] ${item.learningDesign.tp}`
+      // Bersihkan prefix [M... ...] - gunakan kalimat Tujuan Pembelajaran murni
+      const tpTitle = item.learningDesign.tp
       const objective = await LearningObjective.updateOrCreate(
         {
           code: `TP-KBC-B-W${String(item.weekNum).padStart(2, '0')}`,
