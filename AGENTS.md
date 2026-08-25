@@ -32,11 +32,13 @@ node ace queue:work
 ## 2. Architecture & Tech Stack
 
 **SiapAjar** is an AdonisJS 7 (ESM, TypeScript) monolith serving a React 19 SPA via InertiaJS.
+
 - **Backend**: AdonisJS 7, Lucid ORM, VineJS validator, PostgreSQL (pg), Redis (`@adonisjs/queue` + `@adonisjs/redis`).
 - **Frontend**: React 19, HeroUI, Tailwind CSS v4, InertiaJS (`inertia/pages/`), Tuyau typed client (`@generated`).
 - **Path Aliases**: `~/` → `inertia/`, `@generated` → `.adonisjs/client/`.
 
 ### Domain Model (PAUD Kurikulum Merdeka)
+
 Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` (ATP) → `iktp_indicators` (IKTP) → `paud_assessments` → `report_narratives`.
 
 ---
@@ -87,5 +89,17 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
 
 14. **Zero Dummy Data Rule (Strict Empty State Standard)**:
     - **STRICTLY PROHIBITED**: Never use fake placeholder names (e.g. "Kenzo", "Aisyah", "Budi Santoso" hardcoded) or static fallback mock data across any user-facing screens (web and mobile).
-    - When data from the server or local database is empty or not yet created, **ALWAYS render a clean, informative, and polished Empty State component** (e.g. *"No student data available for this class"* or *"No learning modules found for this week"*).
+    - When data from the server or local database is empty or not yet created, **ALWAYS render a clean, informative, and polished Empty State component** (e.g. _"No student data available for this class"_ or _"No learning modules found for this week"_).
     - Never construct mock fallback lists inside ViewModels or Composables solely to populate empty layout space.
+
+15. **Table-First Layout for Structured Data Lists (Table vs Card Rule)**:
+    - Prefer clean, compact, and scannable **Data Tables** over excessive multi-column card grids for repetitive operational data lists (e.g. daftar Modul Ajar / RPPM, daftar siswa, daftar nilai, asesmen, dsb.).
+    - Always structure tables with clear column headers (e.g. `No / Minggu`, `Tema / Judul Modul`, `Kelompok / Kelas`, `Semester`, `Tanggal / Status`, dan `Aksi`).
+    - Place primary and secondary action triggers (`Lihat Detail / Buka`, `Edit`, `Hapus`) in the rightmost `Aksi` column for effortless scanning and consistent interaction patterns.
+    - Ensure table rows have subtle hover states (`hover:bg-neutral-50 dark:hover:bg-neutral-800/50`) and responsive container wrappers (`overflow-x-auto`).
+    - **Mandatory Table Essentials (Search, Sort & Pagination)**:
+      - Every data table component **MUST** include:
+        1. **Live Search & Filter Toolbar**: Search box with proper icon spacing (`style={{ paddingLeft: '2.6rem' }}`) and clear button (`X`), accompanied by relevant filter dropdowns (e.g. Semester, Kelas) and a Reset Filter trigger.
+        2. **Interactive Column Sorting**: Clickable table headers for primary sortable attributes (e.g. Minggu/No, Tema, Tanggal Mulai, Status) with visual sort direction indicators (`ArrowUp`, `ArrowDown`, `ArrowUpDown`).
+        3. **Pagination & Row Size Controls**: Pagination bar with total item counter, page number buttons, previous/next navigation, and customizable page size options (e.g. 5, 10, 18, 25).
+        4. **Empty Search State**: Dedicated empty search message when filtered results return 0 items, with a single-click "Reset Filter" action.
