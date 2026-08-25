@@ -56,7 +56,14 @@ export default class CurriculumSeeder extends BaseSeeder {
       .whereNot('code', 'like', 'TP-KBC-%')
       .delete()
 
-    // 3. Seed Master Learning Objectives (TP) & IKTP Indicators mapped to CP (Clean text, without prefix)
+    // 3. Seed Master Learning Objectives (TP) & IKTP Indicators mapped to CP
+    const masterAtpItems: {
+      learningObjectiveId: number
+      order: number
+      period: string
+      unitTopic?: string
+    }[] = []
+
     for (const item of RPPM_KBC_SEMESTER_1) {
       const cpText = (item.learningDesign?.cp || '').toLowerCase()
       let targetCp = cpLiterasi
@@ -89,6 +96,21 @@ export default class CurriculumSeeder extends BaseSeeder {
           source: 'library',
         }
       )
+
+      const getUnitTopic = (weekNum: number) => {
+        if (weekNum <= 5) return 'Unit 1: Diriku & Cinta Tanah Air (Minggu 1 – 5)'
+        if (weekNum <= 8) return 'Unit 2: Lingkunganku yang Bersih & Sehat (Minggu 6 – 8)'
+        if (weekNum <= 12) return 'Unit 3: Binatang Ciptaan Tuhan (Minggu 9 – 12)'
+        if (weekNum <= 14) return 'Unit 4: Kebutuhanku (Makanan Sehat & Pakaian) (Minggu 13 – 14)'
+        return 'Unit 5: Mitigasi Bencana & Fenomena Alam (Minggu 15 – 18)'
+      }
+
+      masterAtpItems.push({
+        learningObjectiveId: objective.id,
+        order: item.weekNum,
+        period: `Minggu ${item.weekNum}: ${item.topic} - ${item.subtopic}`,
+        unitTopic: getUnitTopic(item.weekNum),
+      })
 
       if (item.iktpItems?.length > 0) {
         for (const iktp of item.iktpItems) {
