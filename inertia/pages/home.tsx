@@ -39,7 +39,7 @@ function formatPackagePrice(pkg: PricingPackage) {
   if (pkg.priceMonthly === 0) {
     return { price: 'Gratis', period: '' }
   }
-  return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '/bulan' }
+  return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '' }
 }
 
 const expressTools = [
@@ -50,7 +50,7 @@ const expressTools = [
     color: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400',
     tag: 'Paling Populer',
     tagColor: 'bg-amber-300 text-neutral-950',
-    href: '/app/express/modul-ajar',
+    href: '/modul-ajar',
   },
   {
     title: 'Soal & Evaluasi',
@@ -59,7 +59,7 @@ const expressTools = [
     color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400',
     tag: 'Bank Soal',
     tagColor: 'bg-blue-200 text-neutral-950',
-    href: '/app/express/soal',
+    href: '/soal',
   },
   {
     title: 'LKPD Interaktif',
@@ -68,7 +68,7 @@ const expressTools = [
     color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400',
     tag: 'Siap Cetak',
     tagColor: 'bg-purple-200 text-neutral-950',
-    href: '/app/express/lkpd',
+    href: '/lkpd',
   },
   {
     title: 'Katrol Nilai Smart',
@@ -77,7 +77,7 @@ const expressTools = [
     color: 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400',
     tag: 'Formula Akurat',
     tagColor: 'bg-cyan-200 text-neutral-950',
-    href: '/app/express/katrol',
+    href: '/katrol',
   },
   {
     title: 'Prota & Promes',
@@ -86,7 +86,7 @@ const expressTools = [
     color: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400',
     tag: 'Format Resmi',
     tagColor: 'bg-emerald-200 text-neutral-950',
-    href: '/app/express/prota-promes',
+    href: '/prota-promes',
   },
   {
     title: 'Narasi Rapor AI',
@@ -95,7 +95,7 @@ const expressTools = [
     color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400',
     tag: 'Otomatis Kelas',
     tagColor: 'bg-rose-200 text-neutral-950',
-    href: '/app/express/rapor',
+    href: '/rapor',
   },
   {
     title: 'Jurnal Harian Guru',
@@ -104,7 +104,7 @@ const expressTools = [
     color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400',
     tag: 'Refleksi Harian',
     tagColor: 'bg-amber-200 text-neutral-950',
-    href: '/app/express/jurnal',
+    href: '/jurnal',
   },
   {
     title: 'Modul Projek P5',
@@ -113,7 +113,7 @@ const expressTools = [
     color: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400',
     tag: 'Kurikulum Merdeka',
     tagColor: 'bg-lime-200 text-neutral-950',
-    href: '/app/express/kokurikuler',
+    href: '/kokurikuler',
   },
 ]
 
@@ -183,9 +183,11 @@ function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-300 border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center font-black text-neutral-950 text-xl group-hover:-rotate-6 transition-transform">
-              <Sparkles className="w-6 h-6 text-emerald-950" />
-            </div>
+            <img
+              src="/images/logo.png"
+              alt="SiapAjar Logo"
+              className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+            />
             <div>
               <span className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight flex items-center gap-1.5">
                 SiapAjar
@@ -366,7 +368,14 @@ function InteractiveWindowMockup() {
           </div>
 
           <div className="flex-1 max-w-xs bg-white dark:bg-neutral-950 border border-black rounded-lg px-3 py-1 text-[11px] font-mono text-neutral-600 dark:text-neutral-300 truncate text-center">
-            siapajar.id/app/express/{activeTab}-ajar
+            siapajar.id/
+            {activeTab === 'modul'
+              ? 'modul-ajar'
+              : activeTab === 'lkpd'
+                ? 'lkpd'
+                : activeTab === 'soal'
+                  ? 'soal'
+                  : 'rapor'}
           </div>
 
           <div className="text-[10px] font-black text-neutral-900 dark:text-neutral-200 px-2 py-0.5 bg-white/70 dark:bg-neutral-700 rounded border border-black">
@@ -573,93 +582,96 @@ export default function Home({ packages }: HomeProps) {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto text-center space-y-8 relative z-10">
-          {/* Top Announcement Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
-          >
-            <Sparkles className="w-4 h-4 text-amber-700" />
-            <span>Platform Administrasi Guru AI Terlengkap • Bonus 3 Kredit Gratis</span>
-          </motion.div>
-
-          {/* Main Hero Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-950 dark:text-white max-w-4xl mx-auto leading-[1.15]"
-          >
-            Modul Ajar & Administrasi Guru Lengkap dalam{' '}
-            <span className="relative inline-block px-2 text-emerald-950 dark:text-emerald-950">
-              <span className="absolute inset-0 bg-emerald-300 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000000] -rotate-1 -z-10" />
-              3 Menit!
-            </span>
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base lg:text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl mx-auto font-medium leading-relaxed"
-          >
-            Susun Modul Ajar, Soal Evaluasi HOTS, LKPD, Jurnal Harian, Prota-Promes, dan Narasi
-            Rapor Kurikulum Merdeka secara otomatis. Tanpa ribet, siap print & supervisi.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
-          >
-            <Link
-              href="/signup"
-              className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-8 flex items-center justify-center gap-2 w-full sm:w-auto"
+      <section className="min-h-screen flex items-center pt-24 pb-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center relative z-10">
+          {/* Left Column: Headline, Subtitle, CTAs & Badges */}
+          <div className="lg:col-span-6 xl:col-span-6 text-center lg:text-left space-y-6">
+            {/* Top Announcement Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
             >
-              <Sparkles className="w-5 h-5 text-emerald-950" />
-              Mulai Buat Gratis Sekarang
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <a
-              href="#tools"
-              className="btn-kawaii-secondary text-sm sm:text-base py-3.5 px-6 flex items-center justify-center gap-2 w-full sm:w-auto"
+              <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
+            </motion.div>
+
+            {/* Main Hero Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-3xl sm:text-4xl md:text-5xl xl:text-5.5xl font-black tracking-tight text-neutral-950 dark:text-white leading-[1.15]"
             >
-              <BookOpen className="w-4 h-4" />
-              Lihat 8 Generator AI
-            </a>
-          </motion.div>
+              Modul Ajar & Administrasi Guru Lengkap dalam{' '}
+              <span className="relative inline-block px-2 text-emerald-950 dark:text-emerald-950 whitespace-nowrap">
+                <span className="absolute inset-0 bg-emerald-300 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000000] -rotate-1 -z-10" />
+                3 Menit!
+              </span>
+            </motion.h1>
 
-          {/* Trust Value Badges */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 pt-2"
-          >
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black" /> Gratis 3 Kredit untuk Guru
-              Baru
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black" /> Sesuai Standar Kurikulum
-              Merdeka
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black" /> Export Word & Cetak PDF
-            </span>
-          </motion.div>
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0"
+            >
+              Susun Modul Ajar, Soal Evaluasi HOTS, LKPD, Jurnal Harian, Prota-Promes, dan Narasi
+              Rapor Kurikulum Merdeka secara otomatis. Tanpa ribet, siap print & supervisi.
+            </motion.p>
 
-          {/* Interactive Window Mockup */}
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2"
+            >
+              <Link
+                href="/signup"
+                className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-7 flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <Sparkles className="w-4 h-4 text-emerald-950" />
+                Mulai Buat Gratis Sekarang
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a
+                href="#tools"
+                className="btn-kawaii-secondary text-sm sm:text-base py-3.5 px-6 flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <BookOpen className="w-4 h-4" />
+                Lihat 8 Generator AI
+              </a>
+            </motion.div>
+
+            {/* Trust Value Badges */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 text-xs font-bold text-neutral-600 dark:text-neutral-400 pt-2"
+            >
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Gratis 3 Kredit
+                untuk Guru Baru
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Sesuai Standar
+                BSKAP
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Export Word & PDF
+              </span>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Interactive Window Mockup */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="pt-8"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.6 }}
+            className="lg:col-span-6 xl:col-span-6 w-full max-w-xl mx-auto lg:max-w-none"
           >
             <InteractiveWindowMockup />
           </motion.div>
@@ -667,10 +679,7 @@ export default function Home({ packages }: HomeProps) {
       </section>
 
       {/* 8 Express Tools Grid Section */}
-      <section
-        id="tools"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-100/70 dark:bg-neutral-900/50 border-y-2 border-black"
-      >
+      <section id="tools" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <span className="badge-kawaii-emerald text-xs font-black">
@@ -1015,10 +1024,13 @@ export default function Home({ packages }: HomeProps) {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3 md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-300 border-2 border-white shadow-[2px_2px_0px_#ffffff] flex items-center justify-center font-black text-neutral-950 text-base">
-                <Sparkles className="w-4 h-4 text-emerald-950" />
-              </div>
-              <span className="text-xl font-black tracking-tight text-white">SiapAjar AI</span>
+              <img src="/images/logo.png" alt="SiapAjar Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+                SiapAjar
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400 text-emerald-950 font-black">
+                  AI
+                </span>
+              </span>
             </div>
             <p className="text-xs text-neutral-400 font-medium max-w-sm leading-relaxed">
               Platform generator dokumen pembelajaran dan administrasi guru otomatis berbasis
@@ -1032,22 +1044,22 @@ export default function Home({ packages }: HomeProps) {
             </h4>
             <ul className="space-y-2 text-xs text-neutral-400 font-medium">
               <li>
-                <Link href="/app/express/modul-ajar" className="hover:text-white transition-colors">
+                <Link href="/modul-ajar" className="hover:text-white transition-colors">
                   Modul Ajar & RPP
                 </Link>
               </li>
               <li>
-                <Link href="/app/express/soal" className="hover:text-white transition-colors">
+                <Link href="/soal" className="hover:text-white transition-colors">
                   Soal & Evaluasi HOTS
                 </Link>
               </li>
               <li>
-                <Link href="/app/express/lkpd" className="hover:text-white transition-colors">
+                <Link href="/lkpd" className="hover:text-white transition-colors">
                   Lembar LKPD Tematik
                 </Link>
               </li>
               <li>
-                <Link href="/app/express/katrol" className="hover:text-white transition-colors">
+                <Link href="/katrol" className="hover:text-white transition-colors">
                   Katrol Nilai Smart
                 </Link>
               </li>
