@@ -2,9 +2,29 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import PackageSubscription from '#models/package_subscription'
+import PaymentInvoice from '#models/payment_invoice'
+import CreditTransaction from '#models/credit_transaction'
 import { getFeatureLabel } from '#services/entitlement_service'
 
 export default class AccountBillingController {
+  async index({ inertia, auth }: HttpContext) {
+    const user = auth.user!
+    const invoices = await PaymentInvoice.query()
+      .where('user_id', user.id)
+      .orderBy('created_at', 'desc')
+      .limit(20)
+
+    const transactions = await CreditTransaction.query()
+      .where('user_id', user.id)
+      .orderBy('created_at', 'desc')
+      .limit(20)
+
+    return inertia.render('dashboard/billing/index', {
+      creditsBalance: user.creditsBalance ?? 0,
+      invoices: invoices.map((inv) => inv.toJSON()),
+      transactions: transactions.map((trx) => trx.toJSON()),
+    })
+  }
   async package({ inertia, auth }: HttpContext) {
     const user = auth.user!
     await user.load('package', (query) => query.preload('entitlements'))

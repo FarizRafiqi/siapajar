@@ -105,6 +105,9 @@ export default class GoogleAuthController {
       await user.save()
     }
 
+    const { creditService } = await import('#services/credit_service')
+    await creditService.grantSignupBonusIfEligible(user.id)
+
     await auth.use('web').login(user)
 
     if (isApi(ctx)) {

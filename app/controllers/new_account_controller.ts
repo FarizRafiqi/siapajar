@@ -26,6 +26,9 @@ export default class NewAccountController {
       })
     }
 
+    const { creditService } = await import('#services/credit_service')
+    await creditService.grantSignupBonusIfEligible(user.id)
+
     await auth.use('web').login(user)
     response.redirect().toRoute('dashboard')
   }
