@@ -917,14 +917,16 @@ export class PaymentInvoiceSchema extends BaseModel {
   static $columns = [
     'createdAt',
     'creditsAmount',
+    'gatewayTransactionId',
     'grossAmount',
     'id',
     'invoiceNo',
-    'mayarPaymentUrl',
-    'mayarTransactionId',
     'metadata',
     'packageName',
     'paidAt',
+    'paymentGateway',
+    'paymentMethod',
+    'paymentUrl',
     'status',
     'updatedAt',
     'userId',
@@ -935,21 +937,25 @@ export class PaymentInvoiceSchema extends BaseModel {
   @column()
   declare creditsAmount: number
   @column()
+  declare gatewayTransactionId: string | null
+  @column()
   declare grossAmount: number
   @column({ isPrimary: true })
   declare id: number
   @column()
   declare invoiceNo: string
   @column()
-  declare mayarPaymentUrl: string | null
-  @column()
-  declare mayarTransactionId: string | null
-  @column()
   declare metadata: any | null
   @column()
   declare packageName: string
   @column.dateTime()
   declare paidAt: DateTime | null
+  @column()
+  declare paymentGateway: string
+  @column()
+  declare paymentMethod: string | null
+  @column()
+  declare paymentUrl: string | null
   @column()
   declare status: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })

@@ -140,20 +140,20 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Tanggal Mengajar *
                 </label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Kelas / Rombel *
                 </label>
                 <input
@@ -161,13 +161,13 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
                   placeholder="Contoh: Kelas 1B atau Kelompok B2"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Mata Pelajaran / Tema *
                 </label>
                 <input
@@ -175,14 +175,14 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
                   placeholder="Contoh: Matematika / Tema Tanaman"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+              <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                 Topik / Materi yang Diajarkan *
               </label>
               <input
@@ -190,14 +190,14 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Contoh: Membedakan benda hidup dan tak hidup di sekitar sekolah"
-                className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Kehadiran Siswa
                 </label>
                 <input
@@ -205,12 +205,12 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={attendanceNotes}
                   onChange={(e) => setAttendanceNotes(e.target.value)}
                   placeholder="Contoh: 28 Hadir, 1 Sakit (Budi)"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Catatan Guru / Dinamika Khusus (Opsional)
                 </label>
                 <input
@@ -218,7 +218,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={teacherNotes}
                   onChange={(e) => setTeacherNotes(e.target.value)}
                   placeholder="Contoh: Siswa sangat aktif berdiskusi kelompok, waktu kurang 10 menit"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>

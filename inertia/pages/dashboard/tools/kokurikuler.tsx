@@ -162,13 +162,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Tema Utama Projek *
                 </label>
                 <select
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   {P5_THEMES.map((t) => (
                     <option key={t} value={t}>
@@ -179,13 +179,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Fase Kurikulum *
                 </label>
                 <select
                   value={phase}
                   onChange={(e) => setPhase(e.target.value)}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="Fondasi">Fase Fondasi (PAUD / TK / RA)</option>
                   <option value="A">Fase A (Kelas 1 - 2 SD)</option>
@@ -198,7 +198,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Judul Projek Kokurikuler *
                 </label>
                 <input
@@ -206,13 +206,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
                   placeholder="Contoh: Apotek Hidup Sekolahku / Daur Ulang Plastik Menjadi Pot Bunga"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Alokasi Waktu / Durasi
                 </label>
                 <input
@@ -220,7 +220,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   value={targetDuration}
                   onChange={(e) => setTargetDuration(e.target.value)}
                   placeholder="Contoh: 2 Pekan (24 JP) atau Sistem Blok 1 Pekan"
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>

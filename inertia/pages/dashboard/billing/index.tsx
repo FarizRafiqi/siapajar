@@ -360,7 +360,6 @@ export default function BillingIndex({
                         </>
                       ) : (
                         <>
-                          <QrCode className="w-4 h-4" />
                           Beli Sekarang
                           <ArrowRight className="w-4 h-4 ml-1" />
                         </>

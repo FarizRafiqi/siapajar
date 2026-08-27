@@ -102,7 +102,7 @@ export default function ProtaPromesExpress({
                 <select
                   value={academicYear}
                   onChange={(e) => setAcademicYear(e.target.value)}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="2024/2025">2024/2025</option>
                   <option value="2025/2026">2025/2026</option>
@@ -111,13 +111,13 @@ export default function ProtaPromesExpress({
               </div>
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Semester *
                 </label>
                 <select
                   value={semester}
                   onChange={(e) => setSemester(e.target.value as '1' | '2')}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="1">Semester 1 (Ganjil - Juli s/d Desember)</option>
                   <option value="2">Semester 2 (Genap - Januari s/d Juni)</option>
@@ -127,13 +127,13 @@ export default function ProtaPromesExpress({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Pilih Kelas / Kelompok *
                 </label>
                 <select
                   value={classId}
                   onChange={(e) => setClassId(e.target.value)}
-                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 >
                   {classes.map((c) => (
@@ -146,13 +146,13 @@ export default function ProtaPromesExpress({
 
               {!isTk && (
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Mata Pelajaran *
                   </label>
                   <select
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
                     {subjects.map((s) => (
                       <option key={s.id} value={s.name}>

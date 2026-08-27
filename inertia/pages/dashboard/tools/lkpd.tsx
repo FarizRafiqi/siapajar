@@ -194,7 +194,7 @@ export default function LkpdExpress({
                     <select
                       value={classId}
                       onChange={(e) => setClassId(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="">(Umum / Seluruh Kelas)</option>
                       {classes.map((cls) => (
@@ -206,13 +206,13 @@ export default function LkpdExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Kelompok Usia / Jenjang *
                     </label>
                     <select
                       value={ageGroup}
                       onChange={(e) => setAgeGroup(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="Kelompok A (4-5 Tahun)">Kelompok A (4-5 Tahun)</option>
                       <option value="Kelompok B (5-6 Tahun)">Kelompok B (5-6 Tahun)</option>
@@ -222,7 +222,7 @@ export default function LkpdExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Tema Utama LKPD *
                   </label>
                   <input
@@ -230,13 +230,13 @@ export default function LkpdExpress({
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
                     placeholder="Contoh: Binatang Ciptaan Allah / Tanaman Sayur / Aku dan Sekolahku"
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Sub-Tema (Opsional)
                   </label>
                   <input
@@ -244,7 +244,7 @@ export default function LkpdExpress({
                     value={subtheme}
                     onChange={(e) => setSubtheme(e.target.value)}
                     placeholder="Contoh: Kucing yang Lucu / Wortel yang Menyehatkan"
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 

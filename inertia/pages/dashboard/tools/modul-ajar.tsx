@@ -230,7 +230,7 @@ export default function ModulAjarExpress({
                     <select
                       value={classId}
                       onChange={(e) => setClassId(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       required
                     >
                       {classes.length === 0 ? (
@@ -247,13 +247,13 @@ export default function ModulAjarExpress({
 
                   {!isTk && (
                     <div>
-                      <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                         Mata Pelajaran *
                       </label>
                       <select
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                        className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         {subjects.map((sub) => (
                           <option key={sub.id} value={sub.name}>
@@ -265,13 +265,13 @@ export default function ModulAjarExpress({
                   )}
 
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Fase Kurikulum *
                     </label>
                     <select
                       value={phase}
                       onChange={(e) => setPhase(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       {isTk ? (
                         <option value="Fondasi">Fase Fondasi (TK / PAUD / RA)</option>
@@ -287,7 +287,7 @@ export default function ModulAjarExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     {isTk
                       ? 'Tema / Sub-Tema Pembelajaran *'
                       : 'Topik / Materi Utama Pembelajaran *'}
@@ -301,7 +301,7 @@ export default function ModulAjarExpress({
                         ? 'Contoh: Aku Sayang Bumi / Tanaman Hias / Diriku dan Keluargaku'
                         : 'Contoh: Mengenal Bilangan Cacah sampai 100 / Hak dan Kewajiban di Rumah'
                     }
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
                 </div>

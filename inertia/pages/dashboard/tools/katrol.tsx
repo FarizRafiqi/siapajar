@@ -142,13 +142,13 @@ export default function KatrolExpress() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Metode Katrol Nilai *
                   </label>
                   <select
                     value={method}
                     onChange={(e) => setMethod(e.target.value as any)}
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
                     <option value="linear">Linear Min-Max (Sangat Direkomendasikan)</option>
                     <option value="sqrt">Root Curve Normalization (√X × 10)</option>
@@ -158,7 +158,7 @@ export default function KatrolExpress() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     KKM / Batas Kelulusan (KKTP) *
                   </label>
                   <input
@@ -167,7 +167,7 @@ export default function KatrolExpress() {
                     onChange={(e) => setPassingGrade(Number(e.target.value))}
                     min={50}
                     max={100}
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
                 </div>
@@ -176,32 +176,32 @@ export default function KatrolExpress() {
               {method === 'linear' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Target Nilai Terendah Baru
                     </label>
                     <input
                       type="number"
                       value={targetMin}
                       onChange={(e) => setTargetMin(Number(e.target.value))}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Target Nilai Tertinggi Baru
                     </label>
                     <input
                       type="number"
                       value={targetMax}
                       onChange={(e) => setTargetMax(Number(e.target.value))}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Daftar Nama & Nilai Mentah Siswa *
                 </label>
                 <textarea
@@ -209,7 +209,7 @@ export default function KatrolExpress() {
                   value={rawInput}
                   onChange={(e) => setRawInput(e.target.value)}
                   placeholder="Format satu siswa per baris: Nama: Nilai (atau cukup angka baris per baris)"
-                  className="w-full rounded-2xl border-2 border-black bg-white dark:bg-neutral-950 p-3.5 text-xs font-mono text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                  className="w-full rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-3.5 text-xs font-mono text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 />
                 <p className="text-[11px] text-neutral-500 mt-1 font-medium">

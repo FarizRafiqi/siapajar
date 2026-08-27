@@ -204,7 +204,7 @@ export default function SoalExpress({
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       {subjects.map((sub) => (
                         <option key={sub.id} value={sub.name}>
@@ -215,13 +215,13 @@ export default function SoalExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jenjang / Kelas *
                     </label>
                     <select
                       value={gradeLevel}
                       onChange={(e) => setGradeLevel(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="PAUD / TK B (5-6 Tahun)">PAUD / TK B (5-6 Tahun)</option>
                       <option value="Kelas 1 SD / MI">Kelas 1 SD / MI</option>
@@ -239,13 +239,13 @@ export default function SoalExpress({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jenis Asesmen *
                     </label>
                     <select
                       value={assessmentType}
                       onChange={(e) => setAssessmentType(e.target.value)}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="Sumatif Lingkup Materi">
                         Sumatif Lingkup Materi (Ulangan Harian)
@@ -261,13 +261,13 @@ export default function SoalExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jumlah Butir Soal *
                     </label>
                     <select
                       value={questionCount}
                       onChange={(e) => setQuestionCount(Number(e.target.value))}
-                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value={5}>5 Butir Soal (Latihan Singkat)</option>
                       <option value={10}>10 Butir Soal (Standar Formatif)</option>
@@ -279,7 +279,7 @@ export default function SoalExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Topik / Kisi-kisi Materi Ujian *
                   </label>
                   <input
@@ -287,7 +287,7 @@ export default function SoalExpress({
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     placeholder="Contoh: Operasi Penjumlahan & Pengurangan, Nilai Tempat, Simbol Pancasila"
-                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
                 </div>
