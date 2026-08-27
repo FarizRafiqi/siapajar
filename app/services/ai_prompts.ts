@@ -352,3 +352,58 @@ export function mediaModulePrompt(params: {
     user: `Buatkan outline Media Ajar visual dan panduan Loose Parts untuk tema "${params.theme}"${subthemeText}.`,
   }
 }
+
+/** Katrol Nilai & Analisis Remedial Otomatis. */
+export function katrolPrompt(params: {
+  subject: string
+  topic: string
+  kktp: number
+  scores: Array<{ name: string; originalScore: number }>
+  method?: 'linear' | 'sqrt' | 'bonus'
+}): AiPrompt {
+  return {
+    system:
+      'Kamu konsultan asesmen Kurikulum Merdeka Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
+      '{"remedialAnalysis": string, "students": [{"name": string, "originalScore": number, "adjustedScore": number, "status": "Tuntas"|"Perlu Bimbingan", "remedialNotes": string}], "remedialActivities": string[], "enrichmentActivities": string[]}. ' +
+      'Berikan kalkulasi katrol nilai yang adil, manusiawi, dan saran tindak lanjut diagnostik bagi siswa yang belum mencapai KKTP.',
+    user: `Analisis dan hitung katrol nilai untuk mata pelajaran ${params.subject}, topik "${params.topic}", dengan batas KKTP ${params.kktp} menggunakan metode ${params.method || 'linear'}. Data siswa: ${JSON.stringify(params.scores)}`,
+  }
+}
+
+/** Jurnal Harian Mengajar & Refleksi Guru. */
+export function jurnalPrompt(params: {
+  subject: string
+  topic: string
+  date: string
+  grade: string
+  attendanceSummary?: string
+  lessonNotes?: string
+}): AiPrompt {
+  return {
+    system:
+      'Kamu asisten administrasi guru profesional Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
+      '{"tanggal": string, "mataPelajaran": string, "materi": string, "tujuanTercapai": string[], "kendalaPembelajaran": string[], "refleksiGuru": string, "tindakLanjut": string, "catatanKarakterSiswa": string}. ' +
+      'Bahasa Indonesia baku, formal, dan mencerminkan prinsip refleksi pedagogis Kurikulum Merdeka.',
+    user: `Buatkan Jurnal Mengajar dan Refleksi Guru untuk kelas ${params.grade}, mata pelajaran ${params.subject}, topik "${params.topic}" pada tanggal ${params.date}. Catatan tambahan: ${params.lessonNotes || 'Pembelajaran berjalan lancar, beberapa siswa aktif bertanya.'}`,
+  }
+}
+
+/** Modul Kokurikuler / P5 (Projek Penguatan Profil Pelajar Pancasila). */
+export function kokurikulerPrompt(params: {
+  theme: string
+  topic: string
+  phase: string
+  targetLevel: string
+  dimensions?: string[]
+}): AiPrompt {
+  const dims = params.dimensions?.join(', ') || 'Bergotong Royong, Kreatif, Bernalar Kritis'
+  return {
+    system:
+      'Kamu fasilitator Projek Penguatan Profil Pelajar Pancasila (P5) Kurikulum Merdeka Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
+      '{"judulProjek": string, "tema": string, "fase": string, "alokasiWaktu": string, "dimensiElemen": [{"dimensi": string, "elemen": string, "subElemen": string, "targetCapaian": string}], ' +
+      '"tahapanProjek": [{"tahap": "Pengenalan"|"Kontekstualisasi"|"Aksi"|"Refleksi"|"Tindak Lanjut", "namaAktivitas": string, "deskripsi": string, "durasi": string}], ' +
+      '"asesmen": {"formatif": string[], "sumatif": string, "rubrik": string[]}, "lembarRefleksiSiswa": string[]}. ' +
+      'Format lengkap, aplikatif, dan siap didownload/dicetak guru.',
+    user: `Buatkan Modul Projek P5 untuk Fase ${params.phase} (${params.targetLevel}) dengan Tema "${params.theme}", Topik "${params.topic}", Dimensi: ${dims}.`,
+  }
+}

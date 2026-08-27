@@ -26,6 +26,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/annual-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/annual-plans/show.tsx'))['default']>
     'dashboard/assessments/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/assessments/index.tsx'))['default']>
     'dashboard/assessments/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/assessments/show.tsx'))['default']>
+    'dashboard/billing/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/index.tsx'))['default']>
     'dashboard/billing/package': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/package.tsx'))['default']>
     'dashboard/billing/subscriptions': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/subscriptions.tsx'))['default']>
     'dashboard/billing/usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/billing/usage.tsx'))['default']>
@@ -58,6 +59,14 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/subjects/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/subjects/index.tsx'))['default']>
     'dashboard/teaching-modules/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/teaching-modules/index.tsx'))['default']>
     'dashboard/teaching-modules/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/teaching-modules/show.tsx'))['default']>
+    'dashboard/tools/jurnal': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/jurnal.tsx'))['default']>
+    'dashboard/tools/katrol': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/katrol.tsx'))['default']>
+    'dashboard/tools/kokurikuler': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/kokurikuler.tsx'))['default']>
+    'dashboard/tools/lkpd': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/lkpd.tsx'))['default']>
+    'dashboard/tools/modul-ajar': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/modul-ajar.tsx'))['default']>
+    'dashboard/tools/prota-promes': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/prota-promes.tsx'))['default']>
+    'dashboard/tools/rapor': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/rapor.tsx'))['default']>
+    'dashboard/tools/soal': ExtractProps<(typeof import('../../inertia/pages/dashboard/tools/soal.tsx'))['default']>
     'dashboard/weekly-lesson-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/weekly-lesson-plans/index.tsx'))['default']>
     'dashboard/weekly-lesson-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/weekly-lesson-plans/show.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>

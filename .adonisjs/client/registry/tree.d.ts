@@ -26,6 +26,22 @@ export interface ApiDefinition {
     students: {
       timeline: typeof routes['api.students.timeline']
     }
+    mayar: {
+      webhook: typeof routes['api.mayar.webhook']
+      checkout: typeof routes['api.mayar.checkout']
+      status: typeof routes['api.mayar.status']
+    }
+    express: {
+      katrol: {
+        generate: typeof routes['api.express.katrol.generate']
+      }
+      jurnal: {
+        generate: typeof routes['api.express.jurnal.generate']
+      }
+      kokurikuler: {
+        generate: typeof routes['api.express.kokurikuler.generate']
+      }
+    }
   }
   home: typeof routes['home']
   health: typeof routes['health']
@@ -56,10 +72,30 @@ export interface ApiDefinition {
     store: typeof routes['onboarding.store']
   }
   dashboard: typeof routes['dashboard']
+  billing: {
+    index: typeof routes['billing.index']
+  }
   account: {
     package: typeof routes['account.package']
     usage: typeof routes['account.usage']
     subscriptions: typeof routes['account.subscriptions']
+  }
+  express: {
+    modulAjar: typeof routes['express.modulAjar']
+    soal: typeof routes['express.soal']
+    protaPromes: typeof routes['express.protaPromes']
+    rapor: typeof routes['express.rapor']
+    katrol: typeof routes['express.katrol']
+    jurnal: typeof routes['express.jurnal']
+    kokurikuler: typeof routes['express.kokurikuler']
+  }
+  lkpd: {
+    index: typeof routes['lkpd.index']
+    show: typeof routes['lkpd.show']
+    export: typeof routes['lkpd.export']
+    exportPdf: typeof routes['lkpd.exportPdf']
+    destroy: typeof routes['lkpd.destroy']
+    generate: typeof routes['lkpd.generate']
   }
   glossary: {
     index: typeof routes['glossary.index']
@@ -162,14 +198,6 @@ export interface ApiDefinition {
     update: typeof routes['rpph.update']
     destroy: typeof routes['rpph.destroy']
     generate: typeof routes['rpph.generate']
-  }
-  lkpd: {
-    index: typeof routes['lkpd.index']
-    show: typeof routes['lkpd.show']
-    export: typeof routes['lkpd.export']
-    exportPdf: typeof routes['lkpd.exportPdf']
-    destroy: typeof routes['lkpd.destroy']
-    generate: typeof routes['lkpd.generate']
   }
   mediaModules: {
     index: typeof routes['media-modules.index']

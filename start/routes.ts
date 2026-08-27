@@ -12,6 +12,9 @@ import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 import db from '@adonisjs/lucid/services/db'
 
+const ExpressToolsController = () => import('#controllers/express_tools_controller')
+const MayarPaymentsController = () => import('#controllers/mayar_payments_controller')
+
 router.get('/', [controllers.Home, 'index']).as('home')
 router
   .get('/health', async ({ response }) => {
@@ -27,6 +30,9 @@ router
   .as('health')
 router.get('/privacy', ({ inertia }) => inertia.render('legal/privacy', {})).as('privacy')
 router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('terms')
+
+// Mayar Webhook (Public Endpoint)
+router.post('/api/webhooks/mayar', [MayarPaymentsController, 'webhook']).as('api.mayar.webhook')
 
 // MCP Discovery & HTTP Transport Routes
 router.get('/.well-known/mcp', [controllers.Mcp, 'wellKnown']).as('mcp.wellknown')
@@ -71,11 +77,51 @@ router
     // Dashboard
     router.get('/dashboard', [controllers.Dashboard, 'index']).as('dashboard')
 
+    // Billing & Top-Up Kredit (Mayar.id)
+    router.get('/billing', [controllers.AccountBilling, 'index']).as('billing.index')
+    router.post('/api/topup/mayar', [MayarPaymentsController, 'checkout']).as('api.mayar.checkout')
+    router
+      .get('/api/topup/invoices/:invoiceNo', [MayarPaymentsController, 'checkStatus'])
+      .as('api.mayar.status')
+
     router.get('/my-package', [controllers.AccountBilling, 'package']).as('account.package')
     router.get('/usage', [controllers.AccountBilling, 'usage']).as('account.usage')
     router
       .get('/subscriptions', [controllers.AccountBilling, 'subscriptions'])
       .as('account.subscriptions')
+
+    // Tool-First Plain Express Routes
+    router.get('/modul-ajar', [ExpressToolsController, 'modulAjar']).as('express.modulAjar')
+    router.get('/lkpd', [ExpressToolsController, 'lkpd']).as('lkpd.index')
+    router.get('/soal', [ExpressToolsController, 'soal']).as('express.soal')
+    router.get('/prota-promes', [ExpressToolsController, 'protaPromes']).as('express.protaPromes')
+    router.get('/rapor', [ExpressToolsController, 'rapor']).as('express.rapor')
+
+    router.get('/katrol', [ExpressToolsController, 'katrol']).as('express.katrol')
+    router
+      .post('/api/express/katrol/generate', [ExpressToolsController, 'generateKatrol'])
+      .as('api.express.katrol.generate')
+
+    router.get('/jurnal', [ExpressToolsController, 'jurnal']).as('express.jurnal')
+    router
+      .post('/api/express/jurnal/generate', [ExpressToolsController, 'generateJurnal'])
+      .as('api.express.jurnal.generate')
+
+    router.get('/kokurikuler', [ExpressToolsController, 'kokurikuler']).as('express.kokurikuler')
+    router
+      .post('/api/express/kokurikuler/generate', [ExpressToolsController, 'generateKokurikuler'])
+      .as('api.express.kokurikuler.generate')
+
+    // Panel Terstruktur Aliases
+    router.get('/panel/kurikulum', ({ response }) =>
+      response.redirect().toRoute('curriculum.index')
+    )
+    router.get('/panel/kelas', ({ response }) => response.redirect().toRoute('classes.index'))
+    router.get('/panel/siswa', ({ response }) => response.redirect().toRoute('classes.index'))
+    router.get('/panel/asesmen-paud', ({ response }) =>
+      response.redirect().toRoute('paud-assessments.index')
+    )
+    router.get('/panel/rapor', ({ response }) => response.redirect().toRoute('report-cards.index'))
 
     // Panduan istilah kurikulum
     router
@@ -260,7 +306,6 @@ router
     router.post('/rpph/generate', [controllers.DailyLessonPlans, 'generate']).as('rpph.generate')
 
     // LKPD (Lembar Kerja Peserta Didik / Lembar Aktivitas Anak)
-    router.get('/lkpd', [controllers.Lkpds, 'index']).as('lkpd.index')
     router.get('/lkpd/:id', [controllers.Lkpds, 'show']).as('lkpd.show')
     router.get('/lkpd/:id/export', [controllers.Lkpds, 'export']).as('lkpd.export')
     router.get('/lkpd/:id/export/pdf', [controllers.Lkpds, 'exportPdf']).as('lkpd.exportPdf')

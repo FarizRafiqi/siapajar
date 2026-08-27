@@ -187,6 +187,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'api.mayar.webhook': {
+    methods: ["POST"]
+    pattern: '/api/webhooks/mayar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
+    }
+  }
   'mcp.wellknown': {
     methods: ["GET","HEAD"]
     pattern: '/.well-known/mcp'
@@ -343,6 +355,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
     }
   }
+  'billing.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/billing'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['index']>>>
+    }
+  }
+  'api.mayar.checkout': {
+    methods: ["POST"]
+    pattern: '/api/topup/mayar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkout']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkout']>>>
+    }
+  }
+  'api.mayar.status': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/topup/invoices/:invoiceNo'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { invoiceNo: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkStatus']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkStatus']>>>
+    }
+  }
   'account.package': {
     methods: ["GET","HEAD"]
     pattern: '/my-package'
@@ -377,6 +425,138 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
+    }
+  }
+  'express.modulAjar': {
+    methods: ["GET","HEAD"]
+    pattern: '/modul-ajar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['modulAjar']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['modulAjar']>>>
+    }
+  }
+  'lkpd.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['lkpd']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['lkpd']>>>
+    }
+  }
+  'express.soal': {
+    methods: ["GET","HEAD"]
+    pattern: '/soal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['soal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['soal']>>>
+    }
+  }
+  'express.protaPromes': {
+    methods: ["GET","HEAD"]
+    pattern: '/prota-promes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['protaPromes']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['protaPromes']>>>
+    }
+  }
+  'express.rapor': {
+    methods: ["GET","HEAD"]
+    pattern: '/rapor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
+    }
+  }
+  'express.katrol': {
+    methods: ["GET","HEAD"]
+    pattern: '/katrol'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+    }
+  }
+  'api.express.katrol.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/katrol/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKatrol']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKatrol']>>>
+    }
+  }
+  'express.jurnal': {
+    methods: ["GET","HEAD"]
+    pattern: '/jurnal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+    }
+  }
+  'api.express.jurnal.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/jurnal/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateJurnal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateJurnal']>>>
+    }
+  }
+  'express.kokurikuler': {
+    methods: ["GET","HEAD"]
+    pattern: '/kokurikuler'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+    }
+  }
+  'api.express.kokurikuler.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/kokurikuler/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKokurikuler']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKokurikuler']>>>
     }
   }
   'glossary.index': {
@@ -1265,18 +1445,6 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateDailyLessonPlanValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'lkpd.index': {
-    methods: ["GET","HEAD"]
-    pattern: '/lkpd'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
     }
   }
   'lkpd.show': {

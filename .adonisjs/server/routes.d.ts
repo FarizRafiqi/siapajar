@@ -19,6 +19,7 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'api.mayar.webhook': { paramsTuple?: []; params?: {} }
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
@@ -32,9 +33,23 @@ export type ScannedRoutes = {
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'billing.index': { paramsTuple?: []; params?: {} }
+    'api.mayar.checkout': { paramsTuple?: []; params?: {} }
+    'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
     'account.package': { paramsTuple?: []; params?: {} }
     'account.usage': { paramsTuple?: []; params?: {} }
     'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'express.modulAjar': { paramsTuple?: []; params?: {} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'express.soal': { paramsTuple?: []; params?: {} }
+    'express.protaPromes': { paramsTuple?: []; params?: {} }
+    'express.rapor': { paramsTuple?: []; params?: {} }
+    'express.katrol': { paramsTuple?: []; params?: {} }
+    'api.express.katrol.generate': { paramsTuple?: []; params?: {} }
+    'express.jurnal': { paramsTuple?: []; params?: {} }
+    'api.express.jurnal.generate': { paramsTuple?: []; params?: {} }
+    'express.kokurikuler': { paramsTuple?: []; params?: {} }
+    'api.express.kokurikuler.generate': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }
@@ -109,7 +124,6 @@ export type ScannedRoutes = {
     'rpph.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.generate': { paramsTuple?: []; params?: {} }
-    'lkpd.index': { paramsTuple?: []; params?: {} }
     'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -190,11 +204,16 @@ export type ScannedRoutes = {
     'api.auth.logout': { paramsTuple?: []; params?: {} }
     'api.attendances.quickSubmit': { paramsTuple?: []; params?: {} }
     'api.assessments.quickCapture': { paramsTuple?: []; params?: {} }
+    'api.mayar.webhook': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
+    'api.mayar.checkout': { paramsTuple?: []; params?: {} }
+    'api.express.katrol.generate': { paramsTuple?: []; params?: {} }
+    'api.express.jurnal.generate': { paramsTuple?: []; params?: {} }
+    'api.express.kokurikuler.generate': { paramsTuple?: []; params?: {} }
     'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
@@ -256,9 +275,19 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'billing.index': { paramsTuple?: []; params?: {} }
+    'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
     'account.package': { paramsTuple?: []; params?: {} }
     'account.usage': { paramsTuple?: []; params?: {} }
     'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'express.modulAjar': { paramsTuple?: []; params?: {} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'express.soal': { paramsTuple?: []; params?: {} }
+    'express.protaPromes': { paramsTuple?: []; params?: {} }
+    'express.rapor': { paramsTuple?: []; params?: {} }
+    'express.katrol': { paramsTuple?: []; params?: {} }
+    'express.jurnal': { paramsTuple?: []; params?: {} }
+    'express.kokurikuler': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }
@@ -292,7 +321,6 @@ export type ScannedRoutes = {
     'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'lkpd.index': { paramsTuple?: []; params?: {} }
     'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -351,9 +379,19 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'billing.index': { paramsTuple?: []; params?: {} }
+    'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
     'account.package': { paramsTuple?: []; params?: {} }
     'account.usage': { paramsTuple?: []; params?: {} }
     'account.subscriptions': { paramsTuple?: []; params?: {} }
+    'express.modulAjar': { paramsTuple?: []; params?: {} }
+    'lkpd.index': { paramsTuple?: []; params?: {} }
+    'express.soal': { paramsTuple?: []; params?: {} }
+    'express.protaPromes': { paramsTuple?: []; params?: {} }
+    'express.rapor': { paramsTuple?: []; params?: {} }
+    'express.katrol': { paramsTuple?: []; params?: {} }
+    'express.jurnal': { paramsTuple?: []; params?: {} }
+    'express.kokurikuler': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }
@@ -387,7 +425,6 @@ export type ScannedRoutes = {
     'rpph.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'rpph.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'lkpd.index': { paramsTuple?: []; params?: {} }
     'lkpd.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lkpd.exportPdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

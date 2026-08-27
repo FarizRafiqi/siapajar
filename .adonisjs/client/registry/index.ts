@@ -96,6 +96,12 @@ const routes = {
     tokens: [{"old":"/terms","type":0,"val":"terms","end":""}],
     types: placeholder as Registry['terms']['types'],
   },
+  'api.mayar.webhook': {
+    methods: ["POST"],
+    pattern: '/api/webhooks/mayar',
+    tokens: [{"old":"/api/webhooks/mayar","type":0,"val":"api","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"webhooks","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"mayar","end":""}],
+    types: placeholder as Registry['api.mayar.webhook']['types'],
+  },
   'mcp.wellknown': {
     methods: ["GET","HEAD"],
     pattern: '/.well-known/mcp',
@@ -174,6 +180,24 @@ const routes = {
     tokens: [{"old":"/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['dashboard']['types'],
   },
+  'billing.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/billing',
+    tokens: [{"old":"/billing","type":0,"val":"billing","end":""}],
+    types: placeholder as Registry['billing.index']['types'],
+  },
+  'api.mayar.checkout': {
+    methods: ["POST"],
+    pattern: '/api/topup/mayar',
+    tokens: [{"old":"/api/topup/mayar","type":0,"val":"api","end":""},{"old":"/api/topup/mayar","type":0,"val":"topup","end":""},{"old":"/api/topup/mayar","type":0,"val":"mayar","end":""}],
+    types: placeholder as Registry['api.mayar.checkout']['types'],
+  },
+  'api.mayar.status': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/topup/invoices/:invoiceNo',
+    tokens: [{"old":"/api/topup/invoices/:invoiceNo","type":0,"val":"api","end":""},{"old":"/api/topup/invoices/:invoiceNo","type":0,"val":"topup","end":""},{"old":"/api/topup/invoices/:invoiceNo","type":0,"val":"invoices","end":""},{"old":"/api/topup/invoices/:invoiceNo","type":1,"val":"invoiceNo","end":""}],
+    types: placeholder as Registry['api.mayar.status']['types'],
+  },
   'account.package': {
     methods: ["GET","HEAD"],
     pattern: '/my-package',
@@ -191,6 +215,72 @@ const routes = {
     pattern: '/subscriptions',
     tokens: [{"old":"/subscriptions","type":0,"val":"subscriptions","end":""}],
     types: placeholder as Registry['account.subscriptions']['types'],
+  },
+  'express.modulAjar': {
+    methods: ["GET","HEAD"],
+    pattern: '/modul-ajar',
+    tokens: [{"old":"/modul-ajar","type":0,"val":"modul-ajar","end":""}],
+    types: placeholder as Registry['express.modulAjar']['types'],
+  },
+  'lkpd.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/lkpd',
+    tokens: [{"old":"/lkpd","type":0,"val":"lkpd","end":""}],
+    types: placeholder as Registry['lkpd.index']['types'],
+  },
+  'express.soal': {
+    methods: ["GET","HEAD"],
+    pattern: '/soal',
+    tokens: [{"old":"/soal","type":0,"val":"soal","end":""}],
+    types: placeholder as Registry['express.soal']['types'],
+  },
+  'express.protaPromes': {
+    methods: ["GET","HEAD"],
+    pattern: '/prota-promes',
+    tokens: [{"old":"/prota-promes","type":0,"val":"prota-promes","end":""}],
+    types: placeholder as Registry['express.protaPromes']['types'],
+  },
+  'express.rapor': {
+    methods: ["GET","HEAD"],
+    pattern: '/rapor',
+    tokens: [{"old":"/rapor","type":0,"val":"rapor","end":""}],
+    types: placeholder as Registry['express.rapor']['types'],
+  },
+  'express.katrol': {
+    methods: ["GET","HEAD"],
+    pattern: '/katrol',
+    tokens: [{"old":"/katrol","type":0,"val":"katrol","end":""}],
+    types: placeholder as Registry['express.katrol']['types'],
+  },
+  'api.express.katrol.generate': {
+    methods: ["POST"],
+    pattern: '/api/express/katrol/generate',
+    tokens: [{"old":"/api/express/katrol/generate","type":0,"val":"api","end":""},{"old":"/api/express/katrol/generate","type":0,"val":"express","end":""},{"old":"/api/express/katrol/generate","type":0,"val":"katrol","end":""},{"old":"/api/express/katrol/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['api.express.katrol.generate']['types'],
+  },
+  'express.jurnal': {
+    methods: ["GET","HEAD"],
+    pattern: '/jurnal',
+    tokens: [{"old":"/jurnal","type":0,"val":"jurnal","end":""}],
+    types: placeholder as Registry['express.jurnal']['types'],
+  },
+  'api.express.jurnal.generate': {
+    methods: ["POST"],
+    pattern: '/api/express/jurnal/generate',
+    tokens: [{"old":"/api/express/jurnal/generate","type":0,"val":"api","end":""},{"old":"/api/express/jurnal/generate","type":0,"val":"express","end":""},{"old":"/api/express/jurnal/generate","type":0,"val":"jurnal","end":""},{"old":"/api/express/jurnal/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['api.express.jurnal.generate']['types'],
+  },
+  'express.kokurikuler': {
+    methods: ["GET","HEAD"],
+    pattern: '/kokurikuler',
+    tokens: [{"old":"/kokurikuler","type":0,"val":"kokurikuler","end":""}],
+    types: placeholder as Registry['express.kokurikuler']['types'],
+  },
+  'api.express.kokurikuler.generate': {
+    methods: ["POST"],
+    pattern: '/api/express/kokurikuler/generate',
+    tokens: [{"old":"/api/express/kokurikuler/generate","type":0,"val":"api","end":""},{"old":"/api/express/kokurikuler/generate","type":0,"val":"express","end":""},{"old":"/api/express/kokurikuler/generate","type":0,"val":"kokurikuler","end":""},{"old":"/api/express/kokurikuler/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['api.express.kokurikuler.generate']['types'],
   },
   'glossary.index': {
     methods: ["GET","HEAD"],
@@ -635,12 +725,6 @@ const routes = {
     pattern: '/rpph/generate',
     tokens: [{"old":"/rpph/generate","type":0,"val":"rpph","end":""},{"old":"/rpph/generate","type":0,"val":"generate","end":""}],
     types: placeholder as Registry['rpph.generate']['types'],
-  },
-  'lkpd.index': {
-    methods: ["GET","HEAD"],
-    pattern: '/lkpd',
-    tokens: [{"old":"/lkpd","type":0,"val":"lkpd","end":""}],
-    types: placeholder as Registry['lkpd.index']['types'],
   },
   'lkpd.show': {
     methods: ["GET","HEAD"],
