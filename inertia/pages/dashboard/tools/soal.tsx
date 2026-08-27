@@ -14,6 +14,7 @@ import {
   ArrowDown,
   X,
   ListChecks,
+  Check,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
@@ -292,44 +293,86 @@ export default function SoalExpress({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
-                    Format Soal yang Diinginkan
-                  </label>
-                  <div className="flex flex-wrap gap-4 pt-1">
-                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                      <input
-                        type="checkbox"
-                        checked={questionTypes.pg}
-                        onChange={(e) =>
-                          setQuestionTypes((prev) => ({ ...prev, pg: e.target.checked }))
-                        }
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                      Pilihan Ganda (A-B-C-D)
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200">
+                      Format Soal yang Diinginkan
                     </label>
-                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                      <input
-                        type="checkbox"
-                        checked={questionTypes.isian}
-                        onChange={(e) =>
-                          setQuestionTypes((prev) => ({ ...prev, isian: e.target.checked }))
-                        }
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                      Isian Singkat
-                    </label>
-                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                      <input
-                        type="checkbox"
-                        checked={questionTypes.uraian}
-                        onChange={(e) =>
-                          setQuestionTypes((prev) => ({ ...prev, uraian: e.target.checked }))
-                        }
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                      Uraian / Esai Penalaran (HOTS)
-                    </label>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
+                      Pilih tipe instrumen penilaian yang akan di-generate AI
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setQuestionTypes((prev) => ({ ...prev, pg: !prev.pg }))}
+                      className={cn(
+                        'flex items-center gap-2.5 p-3 rounded-2xl border-2 transition-all text-left cursor-pointer text-xs select-none',
+                        questionTypes.pg
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] text-neutral-950 dark:text-white font-extrabold -translate-y-0.5'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-700 dark:text-neutral-300 font-medium'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all',
+                          questionTypes.pg
+                            ? 'bg-emerald-500 border-black dark:border-white text-white shadow-[1px_1px_0px_#000000] dark:shadow-[1px_1px_0px_#ffffff]'
+                            : 'border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-800'
+                        )}
+                      >
+                        {questionTypes.pg && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <span className="leading-snug">Pilihan Ganda (PG)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setQuestionTypes((prev) => ({ ...prev, isian: !prev.isian }))}
+                      className={cn(
+                        'flex items-center gap-2.5 p-3 rounded-2xl border-2 transition-all text-left cursor-pointer text-xs select-none',
+                        questionTypes.isian
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] text-neutral-950 dark:text-white font-extrabold -translate-y-0.5'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-700 dark:text-neutral-300 font-medium'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all',
+                          questionTypes.isian
+                            ? 'bg-emerald-500 border-black dark:border-white text-white shadow-[1px_1px_0px_#000000] dark:shadow-[1px_1px_0px_#ffffff]'
+                            : 'border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-800'
+                        )}
+                      >
+                        {questionTypes.isian && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <span className="leading-snug">Isian Singkat</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQuestionTypes((prev) => ({ ...prev, uraian: !prev.uraian }))
+                      }
+                      className={cn(
+                        'flex items-center gap-2.5 p-3 rounded-2xl border-2 transition-all text-left cursor-pointer text-xs select-none',
+                        questionTypes.uraian
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] text-neutral-950 dark:text-white font-extrabold -translate-y-0.5'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-700 dark:text-neutral-300 font-medium'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all',
+                          questionTypes.uraian
+                            ? 'bg-emerald-500 border-black dark:border-white text-white shadow-[1px_1px_0px_#000000] dark:shadow-[1px_1px_0px_#ffffff]'
+                            : 'border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-800'
+                        )}
+                      >
+                        {questionTypes.uraian && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <span className="leading-snug">Uraian / HOTS</span>
+                    </button>
                   </div>
                 </div>
 

@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Compass, Sparkles, RotateCw, Copy, Check, Printer } from 'lucide-react'
+import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
 
 interface KokurikulerProps {
@@ -225,11 +226,16 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-2">
-                Fokus Dimensi Profil Pelajar Pancasila (P5)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200">
+                  Fokus Dimensi Profil Pelajar Pancasila (P5)
+                </label>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
+                  Pilih satu atau beberapa dimensi karakter utama untuk modul projek ini
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 {[
                   'Beriman, Bertakwa kepada Tuhan YME, dan Berakhlak Mulia',
                   'Berkebinekaan Global',
@@ -237,20 +243,34 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   'Mandiri',
                   'Bernalar Kritis',
                   'Kreatif',
-                ].map((dim) => (
-                  <label
-                    key={dim}
-                    className="flex items-center gap-2 p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border-2 border-black text-xs font-bold text-neutral-800 dark:text-neutral-200 cursor-pointer shadow-[2px_2px_0px_#000000]"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedDimensions.includes(dim)}
-                      onChange={() => toggleDimension(dim)}
-                      className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4 border-2 border-black"
-                    />
-                    {dim}
-                  </label>
-                ))}
+                ].map((dim) => {
+                  const isChecked = selectedDimensions.includes(dim)
+                  return (
+                    <button
+                      key={dim}
+                      type="button"
+                      onClick={() => toggleDimension(dim)}
+                      className={cn(
+                        'flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left cursor-pointer text-xs select-none',
+                        isChecked
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] text-neutral-950 dark:text-white font-extrabold -translate-y-0.5'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-700 dark:text-neutral-300 font-medium'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all',
+                          isChecked
+                            ? 'bg-emerald-500 border-black dark:border-white text-white shadow-[1px_1px_0px_#000000] dark:shadow-[1px_1px_0px_#ffffff]'
+                            : 'border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-800'
+                        )}
+                      >
+                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <span className="leading-snug">{dim}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
