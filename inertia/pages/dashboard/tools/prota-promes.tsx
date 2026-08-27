@@ -62,15 +62,15 @@ export default function ProtaPromesExpress({
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
-          <div className="p-3.5 bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 rounded-2xl">
+        <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
+          <div className="p-3.5 bg-blue-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
             <CalendarDays className="w-7 h-7" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-xl font-black text-neutral-900 dark:text-white">
               Generator Program Tahunan (Prota) & Program Semester (Promes)
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
               Distribusi alokasi Jam Pelajaran (JP), pemetaan minggu efektif, dan jadwal materi
               mingguan
             </p>
@@ -78,13 +78,13 @@ export default function ProtaPromesExpress({
         </div>
 
         {/* Generator Form */}
-        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+          <div className="flex items-center justify-between border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
             <div>
-              <h3 className="font-bold text-neutral-900 dark:text-white text-base">
+              <h3 className="font-black text-neutral-900 dark:text-white text-base">
                 Parameter Kalender Akademik & Distribusi Materi
               </h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 font-medium">
                 Pilih tahun ajaran dan semester untuk menyusun matriks jadwal secara otomatis
               </p>
             </div>
@@ -96,13 +96,13 @@ export default function ProtaPromesExpress({
           <form onSubmit={handleGenerate} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Tahun Ajaran *
                 </label>
                 <select
                   value={academicYear}
                   onChange={(e) => setAcademicYear(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 >
                   <option value="2024/2025">2024/2025</option>
                   <option value="2025/2026">2025/2026</option>
@@ -111,13 +111,13 @@ export default function ProtaPromesExpress({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Semester *
                 </label>
                 <select
                   value={semester}
                   onChange={(e) => setSemester(e.target.value as '1' | '2')}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 >
                   <option value="1">Semester 1 (Ganjil - Juli s/d Desember)</option>
                   <option value="2">Semester 2 (Genap - Januari s/d Juni)</option>
@@ -127,13 +127,13 @@ export default function ProtaPromesExpress({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Pilih Kelas / Kelompok *
                 </label>
                 <select
                   value={classId}
                   onChange={(e) => setClassId(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   required
                 >
                   {classes.map((c) => (
@@ -146,13 +146,13 @@ export default function ProtaPromesExpress({
 
               {!isTk && (
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Mata Pelajaran *
                   </label>
                   <select
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   >
                     {subjects.map((s) => (
                       <option key={s.id} value={s.name}>
@@ -164,8 +164,8 @@ export default function ProtaPromesExpress({
               )}
             </div>
 
-            <div className="p-4 bg-blue-50 dark:bg-neutral-800/60 rounded-2xl border border-blue-100 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
-              <p className="font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+            <div className="p-4 bg-blue-50 dark:bg-neutral-800/80 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs text-neutral-800 dark:text-neutral-200 font-medium space-y-2">
+              <p className="font-black text-neutral-950 dark:text-white flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-blue-600" />
                 Fitur Unggulan Prota & Promes AI:
               </p>
@@ -180,7 +180,7 @@ export default function ProtaPromesExpress({
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <Link
                 href="/prota-promes"
                 className="text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 flex items-center gap-1"
@@ -190,7 +190,7 @@ export default function ProtaPromesExpress({
               <button
                 type="submit"
                 disabled={isGenerating}
-                className="btn-kawaii-primary w-full sm:w-auto"
+                className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isGenerating ? (
                   <>

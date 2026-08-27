@@ -159,29 +159,29 @@ export default function ModulAjarExpress({
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header & Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-2xl">
+            <div className="p-3 bg-emerald-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
               {isTk ? <CalendarRange className="w-6 h-6" /> : <BookOpen className="w-6 h-6" />}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white">
                 {isTk ? 'Generator Modul Ajar RPPM' : 'Generator Modul Ajar AI'}
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 1-Klik Jadi sesuai standar Kurikulum Merdeka Kemendikbudristek & Kemenag
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setActiveTab('create')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'create'
-                  ? 'bg-white dark:bg-neutral-900 text-emerald-800 dark:text-emerald-300 shadow-sm'
+                  ? 'bg-emerald-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -192,9 +192,9 @@ export default function ModulAjarExpress({
               type="button"
               onClick={() => setActiveTab('list')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'list'
-                  ? 'bg-white dark:bg-neutral-900 text-emerald-800 dark:text-emerald-300 shadow-sm'
+                  ? 'bg-emerald-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -206,13 +206,13 @@ export default function ModulAjarExpress({
         {activeTab === 'create' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form Box */}
-            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+              <div className="flex items-center justify-between border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
                 <div>
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-lg">
+                  <h3 className="font-black text-neutral-900 dark:text-white text-lg">
                     Form Pembuatan Kilat
                   </h3>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-500 font-medium">
                     Lengkapi info dasar materi, AI akan menyusun seluruh struktur modul
                   </p>
                 </div>
@@ -224,13 +224,13 @@ export default function ModulAjarExpress({
               <form onSubmit={handleGenerate} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Pilih Kelas / Rombel *
                     </label>
                     <select
                       value={classId}
                       onChange={(e) => setClassId(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                       required
                     >
                       {classes.length === 0 ? (
@@ -247,13 +247,13 @@ export default function ModulAjarExpress({
 
                   {!isTk && (
                     <div>
-                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                      <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                         Mata Pelajaran *
                       </label>
                       <select
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                        className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                       >
                         {subjects.map((sub) => (
                           <option key={sub.id} value={sub.name}>
@@ -265,13 +265,13 @@ export default function ModulAjarExpress({
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Fase Kurikulum *
                     </label>
                     <select
                       value={phase}
                       onChange={(e) => setPhase(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       {isTk ? (
                         <option value="Fondasi">Fase Fondasi (TK / PAUD / RA)</option>
@@ -287,7 +287,7 @@ export default function ModulAjarExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     {isTk
                       ? 'Tema / Sub-Tema Pembelajaran *'
                       : 'Topik / Materi Utama Pembelajaran *'}
@@ -301,16 +301,16 @@ export default function ModulAjarExpress({
                         ? 'Contoh: Aku Sayang Bumi / Tanaman Hias / Diriku dan Keluargaku'
                         : 'Contoh: Mengenal Bilangan Cacah sampai 100 / Hak dan Kewajiban di Rumah'
                     }
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     required
                   />
                 </div>
 
-                <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end gap-3">
+                <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end gap-3">
                   <button
                     type="submit"
                     disabled={isGenerating}
-                    className="btn-kawaii-primary w-full sm:w-auto"
+                    className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {isGenerating ? (
                       <>
@@ -329,8 +329,8 @@ export default function ModulAjarExpress({
             </div>
 
             {/* Sidebar Guide */}
-            <div className="bg-emerald-50/60 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-emerald-500/20 dark:border-neutral-800 space-y-4 text-xs text-neutral-700 dark:text-neutral-300">
-              <h4 className="font-bold text-sm text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
+            <div className="bg-emerald-50 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-4 text-xs text-neutral-800 dark:text-neutral-200 font-medium">
+              <h4 className="font-black text-sm text-neutral-950 dark:text-white flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-emerald-600" />
                 Struktur yang Dihasilkan:
               </h4>
@@ -342,26 +342,27 @@ export default function ModulAjarExpress({
                 <li>Asesmen Formatif, Sumatif, & Rubrik Penilaian</li>
                 <li>Pengayaan & Remedial Siap Cetak</li>
               </ul>
-              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-emerald-200 dark:border-neutral-700 text-xs">
-                💡 <strong>Tips:</strong> Setelah digenerate, Anda dapat langsung mengedit narasi di
-                web atau download file <strong>Word (.docx)</strong> dan <strong>PDF</strong> resmi.
+              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
+                <Sparkles className="w-4 h-4 text-amber-500 inline mr-1" /> <strong>Tips:</strong>{' '}
+                Setelah digenerate, Anda dapat langsung mengedit narasi di web atau download file{' '}
+                <strong>Word (.docx)</strong> dan <strong>PDF</strong> resmi.
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'list' && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 space-y-4 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 space-y-4 shadow-[4px_4px_0px_#000000]">
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari modul ajar, topik, atau mata pelajaran..."
-                  className="w-full rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 pl-10 pr-8 py-2 text-xs font-medium"
+                  className="w-full rounded-2xl border-2 border-black bg-neutral-50 dark:bg-neutral-950 pl-10 pr-8 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 />
                 {searchQuery && (
                   <button

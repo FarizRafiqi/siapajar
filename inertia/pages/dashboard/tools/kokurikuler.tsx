@@ -1,17 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import {
-  Compass,
-  Sparkles,
-  RotateCw,
-  Copy,
-  Check,
-  Printer,
-  Layers,
-  Award,
-  BookOpen,
-} from 'lucide-react'
+import { Compass, Sparkles, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface KokurikulerProps {
@@ -143,16 +133,16 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
           <div className="flex items-center gap-3.5">
-            <div className="p-3.5 bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 rounded-2xl">
+            <div className="p-3.5 bg-teal-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
               <Compass className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white">
                 Generator Modul Kokurikuler & P5 AI
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 Panduan projek kokurikuler lengkap dengan alur tahapan aksi, dimensi profil, dan
                 rubrik asesmen
               </p>
@@ -164,21 +154,21 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
         </div>
 
         {/* Form Box */}
-        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-          <h3 className="font-bold text-neutral-900 dark:text-white text-base">
+        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+          <h3 className="font-black text-neutral-900 dark:text-white text-base">
             Parameter Tema & Dimensi Profil Projek
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Tema Utama Projek *
                 </label>
                 <select
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 >
                   {P5_THEMES.map((t) => (
                     <option key={t} value={t}>
@@ -189,13 +179,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Fase Kurikulum *
                 </label>
                 <select
                   value={phase}
                   onChange={(e) => setPhase(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 >
                   <option value="Fondasi">Fase Fondasi (PAUD / TK / RA)</option>
                   <option value="A">Fase A (Kelas 1 - 2 SD)</option>
@@ -208,7 +198,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Judul Projek Kokurikuler *
                 </label>
                 <input
@@ -216,13 +206,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
                   placeholder="Contoh: Apotek Hidup Sekolahku / Daur Ulang Plastik Menjadi Pot Bunga"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Alokasi Waktu / Durasi
                 </label>
                 <input
@@ -230,16 +220,16 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   value={targetDuration}
                   onChange={(e) => setTargetDuration(e.target.value)}
                   placeholder="Contoh: 2 Pekan (24 JP) atau Sistem Blok 1 Pekan"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-2">
                 Fokus Dimensi Profil Pelajar Pancasila (P5)
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {[
                   'Beriman, Bertakwa kepada Tuhan YME, dan Berakhlak Mulia',
                   'Berkebinekaan Global',
@@ -250,13 +240,13 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                 ].map((dim) => (
                   <label
                     key={dim}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-800 dark:text-neutral-200 cursor-pointer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border-2 border-black text-xs font-bold text-neutral-800 dark:text-neutral-200 cursor-pointer shadow-[2px_2px_0px_#000000]"
                   >
                     <input
                       type="checkbox"
                       checked={selectedDimensions.includes(dim)}
                       onChange={() => toggleDimension(dim)}
-                      className="rounded text-teal-600 focus:ring-teal-500"
+                      className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4 border-2 border-black"
                     />
                     {dim}
                   </label>
@@ -264,11 +254,11 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
               </div>
             </div>
 
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+            <div className="pt-3 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-kawaii-primary w-full sm:w-auto"
+                className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isLoading ? (
                   <>
@@ -288,7 +278,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
 
         {/* Results */}
         {result && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 sm:p-8 space-y-6 shadow-[4px_4px_0px_#000000]">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
               <div>
                 <h4 className="font-bold text-neutral-900 dark:text-white text-base">

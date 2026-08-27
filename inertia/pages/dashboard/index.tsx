@@ -1,14 +1,10 @@
 import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   Users,
   BookOpen,
   FileQuestion,
-  Calendar,
   CalendarDays,
-  CalendarRange,
-  Plus,
   ArrowRight,
   FileSpreadsheet,
   Presentation,
@@ -19,7 +15,6 @@ import {
   Award,
   CheckCircle2,
   AlertCircle,
-  FileDown,
   ShieldCheck,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
@@ -210,17 +205,17 @@ export default function Dashboard({
 
       <div className="space-y-8 max-w-7xl mx-auto">
         {/* Welcome & Launchpad Hero */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-6 sm:p-10 text-white shadow-xl">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-black bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-6 sm:p-10 text-white shadow-[4px_4px_0px_#000000]">
           <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/30 backdrop-blur-md border border-emerald-300/30 text-xs font-semibold tracking-wide text-emerald-100">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-300 text-neutral-950 border-2 border-black text-xs font-black shadow-[2px_2px_0px_#000000]">
                 <Sparkles className="w-3.5 h-3.5" /> AI Asisten Administrasi Guru No. 1
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-xs">
                 {isAdmin ? 'Panel Kontrol Admin SiapAjar' : 'Mau Bikin Dokumen Apa Hari Ini?'}
               </h1>
-              <p className="text-emerald-100/90 text-sm leading-relaxed">
+              <p className="text-emerald-50 text-xs sm:text-sm leading-relaxed font-medium">
                 Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, bank soal, atau katrol
                 nilai hanya dalam hitungan detik.
               </p>
@@ -229,7 +224,7 @@ export default function Dashboard({
             <div className="flex items-center gap-3">
               <Link
                 href="/billing"
-                className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
+                className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-[2px_2px_0px_#000000] border-2 border-black transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4 text-emerald-600" />
                 Top-Up Saldo Kredit
@@ -242,11 +237,11 @@ export default function Dashboard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-lg font-black text-neutral-900 dark:text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-emerald-600" />
                 Launchpad Tool Kilat (1-Klik Jadi)
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 Akses langsung ke seluruh generator cerdas tanpa konfigurasi rumit
               </p>
             </div>
@@ -259,16 +254,13 @@ export default function Dashboard({
                 <Link
                   key={tool.href}
                   href={tool.href}
-                  className={cn(
-                    'group relative p-5 rounded-3xl bg-white dark:bg-neutral-900 border-2 border-neutral-100 dark:border-neutral-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between',
-                    tool.accentColor
-                  )}
+                  className="group relative p-5 rounded-3xl bg-white dark:bg-neutral-900 border-2 border-black shadow-[4px_4px_0px_#000000] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#000000] transition-all duration-200 flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div
                         className={cn(
-                          'p-3 rounded-2xl transition-transform group-hover:scale-110 duration-200',
+                          'p-3 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] transition-transform group-hover:scale-105 duration-200',
                           tool.iconColor
                         )}
                       >
@@ -277,16 +269,16 @@ export default function Dashboard({
                       <span className="badge-kawaii-emerald text-[10px]">{tool.badge}</span>
                     </div>
                     <div>
-                      <h3 className="font-bold text-neutral-900 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {tool.title}
                       </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2 font-medium">
                         {tool.desc}
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-4 mt-2 flex items-center text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform">
+                  <div className="pt-4 mt-2 flex items-center text-xs font-black text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform">
                     Buka Generator <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </div>
                 </Link>
@@ -297,17 +289,17 @@ export default function Dashboard({
 
         {/* Supervision & Accreditation Readiness Checklist */}
         {!isAdmin && (
-          <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 dark:border-neutral-800 pb-4">
+          <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
               <div className="flex items-center gap-3.5">
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-2xl">
+                <div className="p-3 bg-emerald-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  <h3 className="text-base font-black text-neutral-900 dark:text-white">
                     Checklist Kesiapan Supervisi & Akreditasi
                   </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                     Pantau kelengkapan berkas administrasi ajar Anda untuk evaluasi berkala
                   </p>
                 </div>
@@ -315,16 +307,16 @@ export default function Dashboard({
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                     {progressPercent}% Lengkap
                   </span>
-                  <span className="text-[11px] text-neutral-400 block">
+                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-bold block">
                     {completedCount} dari {checklistItems.length} Komponen
                   </span>
                 </div>
-                <div className="w-24 h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                <div className="w-24 h-3 bg-neutral-100 dark:bg-neutral-800 border-2 border-black rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    className="h-full bg-emerald-400 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -336,7 +328,7 @@ export default function Dashboard({
                 <Link
                   key={idx}
                   href={item.href}
-                  className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 hover:bg-white dark:hover:bg-neutral-800 hover:border-emerald-500/50 transition-all flex items-start gap-3 group"
+                  className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border-2 border-black shadow-[2px_2px_0px_#000000] hover:bg-white dark:hover:bg-neutral-800 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#000000] transition-all flex items-start gap-3 group"
                 >
                   <div className="pt-0.5">
                     {item.done ? (
@@ -349,10 +341,11 @@ export default function Dashboard({
                     <h4 className="text-xs font-bold text-neutral-900 dark:text-white group-hover:text-emerald-600 transition-colors">
                       {item.title}
                     </h4>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
                       {item.desc}
                     </p>
                   </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all mt-1" />
                 </Link>
               ))}
             </div>

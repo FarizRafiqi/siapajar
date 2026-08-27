@@ -134,29 +134,29 @@ export default function SoalExpress({
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header & Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 rounded-2xl">
+            <div className="p-3 bg-amber-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
               <FileQuestion className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white">
                 Generator Bank Soal, Kisi-kisi & Kunci Jawaban
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 Pilihan ganda HOTS, isian singkat, uraian, rubrik penilaian dan kisi-kisi otomatis
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setActiveTab('create')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'create'
-                  ? 'bg-white dark:bg-neutral-900 text-amber-800 dark:text-amber-300 shadow-sm'
+                  ? 'bg-amber-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -167,9 +167,9 @@ export default function SoalExpress({
               type="button"
               onClick={() => setActiveTab('list')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'list'
-                  ? 'bg-white dark:bg-neutral-900 text-amber-800 dark:text-amber-300 shadow-sm'
+                  ? 'bg-amber-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -180,13 +180,13 @@ export default function SoalExpress({
 
         {activeTab === 'create' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+              <div className="flex items-center justify-between border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
                 <div>
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-lg">
+                  <h3 className="font-black text-neutral-900 dark:text-white text-lg">
                     Form Generator Soal & Asesmen
                   </h3>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-500 font-medium">
                     Pilih tingkat kelas dan materi pokok untuk membuat paket evaluasi lengkap
                   </p>
                 </div>
@@ -198,13 +198,13 @@ export default function SoalExpress({
               <form onSubmit={handleGenerate} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Mata Pelajaran *
                     </label>
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       {subjects.map((sub) => (
                         <option key={sub.id} value={sub.name}>
@@ -215,13 +215,13 @@ export default function SoalExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jenjang / Kelas *
                     </label>
                     <select
                       value={gradeLevel}
                       onChange={(e) => setGradeLevel(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       <option value="PAUD / TK B (5-6 Tahun)">PAUD / TK B (5-6 Tahun)</option>
                       <option value="Kelas 1 SD / MI">Kelas 1 SD / MI</option>
@@ -239,13 +239,13 @@ export default function SoalExpress({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jenis Asesmen *
                     </label>
                     <select
                       value={assessmentType}
                       onChange={(e) => setAssessmentType(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       <option value="Sumatif Lingkup Materi">
                         Sumatif Lingkup Materi (Ulangan Harian)
@@ -261,13 +261,13 @@ export default function SoalExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Jumlah Butir Soal *
                     </label>
                     <select
                       value={questionCount}
                       onChange={(e) => setQuestionCount(Number(e.target.value))}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       <option value={5}>5 Butir Soal (Latihan Singkat)</option>
                       <option value={10}>10 Butir Soal (Standar Formatif)</option>
@@ -279,7 +279,7 @@ export default function SoalExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Topik / Kisi-kisi Materi Ujian *
                   </label>
                   <input
@@ -287,17 +287,17 @@ export default function SoalExpress({
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     placeholder="Contoh: Operasi Penjumlahan & Pengurangan, Nilai Tempat, Simbol Pancasila"
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Format Soal yang Diinginkan
                   </label>
                   <div className="flex flex-wrap gap-4 pt-1">
-                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
                       <input
                         type="checkbox"
                         checked={questionTypes.pg}
@@ -308,7 +308,7 @@ export default function SoalExpress({
                       />
                       Pilihan Ganda (A-B-C-D)
                     </label>
-                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
                       <input
                         type="checkbox"
                         checked={questionTypes.isian}
@@ -319,7 +319,7 @@ export default function SoalExpress({
                       />
                       Isian Singkat
                     </label>
-                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 dark:text-neutral-300">
                       <input
                         type="checkbox"
                         checked={questionTypes.uraian}
@@ -333,11 +333,11 @@ export default function SoalExpress({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+                <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
                   <button
                     type="submit"
                     disabled={isGenerating}
-                    className="btn-kawaii-primary w-full sm:w-auto"
+                    className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {isGenerating ? (
                       <>
@@ -356,8 +356,8 @@ export default function SoalExpress({
             </div>
 
             {/* Guide */}
-            <div className="bg-amber-50/60 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-amber-500/20 dark:border-neutral-800 space-y-4 text-xs text-neutral-700 dark:text-neutral-300">
-              <h4 className="font-bold text-sm text-amber-950 dark:text-amber-300 flex items-center gap-1.5">
+            <div className="bg-amber-50 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-4 text-xs text-neutral-800 dark:text-neutral-200 font-medium">
+              <h4 className="font-black text-sm text-neutral-950 dark:text-white flex items-center gap-1.5">
                 <ListChecks className="w-4 h-4 text-amber-600" />
                 Kelengkapan Paket Evaluasi:
               </h4>
@@ -367,16 +367,17 @@ export default function SoalExpress({
                 <li>Kunci Jawaban Lengkap & Pembahasan</li>
                 <li>Pedoman Penskoran & Rubrik Nilai</li>
               </ul>
-              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-amber-200 dark:border-neutral-700 text-xs">
-                ✨ <strong>Standar HOTS:</strong> Soal otomatis dilengkapi stimulus cerita / grafik
-                / tabel kontekstual sesuai standar Kurikulum Merdeka.
+              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
+                <Sparkles className="w-4 h-4 text-amber-500 inline mr-1" />{' '}
+                <strong>Standar HOTS:</strong> Soal otomatis dilengkapi stimulus cerita / grafik /
+                tabel kontekstual sesuai standar Kurikulum Merdeka.
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'list' && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 space-y-4 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 space-y-4 shadow-[4px_4px_0px_#000000]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />

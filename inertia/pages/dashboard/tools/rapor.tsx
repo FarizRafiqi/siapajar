@@ -57,15 +57,15 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
-          <div className="p-3.5 bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 rounded-2xl">
+        <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
+          <div className="p-3.5 bg-rose-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
             <Award className="w-7 h-7" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-xl font-black text-neutral-900 dark:text-white">
               Generator Narasi Deskripsi Rapor AI
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
               Otomatis mengubah akumulasi nilai TP dan catatan perkembangan menjadi narasi deskripsi
               rapor resmi
             </p>
@@ -73,13 +73,13 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
         </div>
 
         {/* Action Card */}
-        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+          <div className="flex items-center justify-between border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
             <div>
-              <h3 className="font-bold text-neutral-900 dark:text-white text-base">
+              <h3 className="font-black text-neutral-900 dark:text-white text-base">
                 Pilih Kelas & Periode Rapor
               </h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 font-medium">
                 Penyusunan narasi dilakukan secara otomatis untuk seluruh siswa di dalam kelas
               </p>
             </div>
@@ -91,13 +91,13 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
           <form onSubmit={handleGenerateAll} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Pilih Kelas / Rombel *
                 </label>
                 <select
                   value={classId}
                   onChange={(e) => setClassId(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   required
                 >
                   {classes.map((cls) => (
@@ -109,13 +109,13 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Semester Rapor *
                 </label>
                 <select
                   value={semester}
                   onChange={(e) => setSemester(e.target.value as '1' | '2')}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                 >
                   <option value="1">Semester 1 (Ganjil)</option>
                   <option value="2">Semester 2 (Genap / Kenaikan Kelas)</option>
@@ -123,8 +123,8 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
               </div>
             </div>
 
-            <div className="p-4 bg-rose-50 dark:bg-neutral-800/60 rounded-2xl border border-rose-100 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
-              <p className="font-bold text-rose-950 dark:text-rose-300 flex items-center gap-1.5">
+            <div className="p-4 bg-rose-50 dark:bg-neutral-800/80 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs text-neutral-800 dark:text-neutral-200 font-medium space-y-2">
+              <p className="font-black text-neutral-950 dark:text-white flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-rose-600" />
                 Ketentuan Narasi Kurikulum Merdeka:
               </p>
@@ -136,7 +136,7 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <Link
                 href="/report-cards"
                 className="text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 flex items-center gap-1"
@@ -146,7 +146,7 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
               <button
                 type="submit"
                 disabled={isGenerating || !classId}
-                className="btn-kawaii-primary w-full sm:w-auto"
+                className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isGenerating ? (
                   <>

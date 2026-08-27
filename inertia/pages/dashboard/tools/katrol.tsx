@@ -133,8 +133,8 @@ export default function KatrolExpress() {
 
         {/* Input & Form */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-5">
-            <h3 className="font-bold text-neutral-900 dark:text-white text-base flex items-center gap-2">
+          <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-5">
+            <h3 className="font-black text-neutral-900 dark:text-white text-base flex items-center gap-2">
               <Calculator className="w-4 h-4 text-cyan-600" />
               Pengaturan Formula & Target Nilai
             </h3>
@@ -142,13 +142,13 @@ export default function KatrolExpress() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Metode Katrol Nilai *
                   </label>
                   <select
                     value={method}
                     onChange={(e) => setMethod(e.target.value as any)}
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   >
                     <option value="linear">Linear Min-Max (Sangat Direkomendasikan)</option>
                     <option value="sqrt">Root Curve Normalization (√X × 10)</option>
@@ -158,7 +158,7 @@ export default function KatrolExpress() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     KKM / Batas Kelulusan (KKTP) *
                   </label>
                   <input
@@ -167,7 +167,7 @@ export default function KatrolExpress() {
                     onChange={(e) => setPassingGrade(Number(e.target.value))}
                     min={50}
                     max={100}
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     required
                   />
                 </div>
@@ -176,32 +176,32 @@ export default function KatrolExpress() {
               {method === 'linear' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Target Nilai Terendah Baru
                     </label>
                     <input
                       type="number"
                       value={targetMin}
                       onChange={(e) => setTargetMin(Number(e.target.value))}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold shadow-[2px_2px_0px_#000000]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Target Nilai Tertinggi Baru
                     </label>
                     <input
                       type="number"
                       value={targetMax}
                       onChange={(e) => setTargetMax(Number(e.target.value))}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold shadow-[2px_2px_0px_#000000]"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Daftar Nama & Nilai Mentah Siswa *
                 </label>
                 <textarea
@@ -209,19 +209,20 @@ export default function KatrolExpress() {
                   value={rawInput}
                   onChange={(e) => setRawInput(e.target.value)}
                   placeholder="Format satu siswa per baris: Nama: Nilai (atau cukup angka baris per baris)"
-                  className="w-full rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-3.5 text-xs font-mono text-neutral-900 dark:text-white"
+                  className="w-full rounded-2xl border-2 border-black bg-white dark:bg-neutral-950 p-3.5 text-xs font-mono text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   required
                 />
-                <p className="text-[11px] text-neutral-500 mt-1">
-                  💡 Tips: Anda bisa langsung copy-paste kolom nama dan nilai dari Microsoft Excel.
+                <p className="text-[11px] text-neutral-500 mt-1 font-medium">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Tips: Anda bisa
+                  langsung copy-paste kolom nama dan nilai dari Microsoft Excel.
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+              <div className="pt-3 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="btn-kawaii-primary w-full sm:w-auto"
+                  className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
                 >
                   {isLoading ? (
                     <>
@@ -240,8 +241,8 @@ export default function KatrolExpress() {
           </div>
 
           {/* Guide Card */}
-          <div className="bg-cyan-50/60 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-cyan-500/20 dark:border-neutral-800 space-y-4 text-xs text-neutral-700 dark:text-neutral-300">
-            <h4 className="font-bold text-sm text-cyan-950 dark:text-cyan-300 flex items-center gap-1.5">
+          <div className="bg-cyan-50 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-4 text-xs text-neutral-800 dark:text-neutral-200 font-medium">
+            <h4 className="font-black text-sm text-neutral-950 dark:text-white flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-cyan-600" />
               Kenapa Katrol Nilai SiapAjar Aman?
             </h4>
@@ -259,55 +260,60 @@ export default function KatrolExpress() {
                 kesukaran soal dan ketuntasan klasikal.
               </li>
             </ul>
-            <div className="p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-cyan-200 dark:border-neutral-700 text-xs">
-              📊 <strong>Integrasi Excel:</strong> Hasil dapat disalin langsung ke Excel tanpa
-              merusak format kolom.
+            <div className="p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
+              <Sparkles className="w-4 h-4 text-cyan-600 inline mr-1" />{' '}
+              <strong>Integrasi Excel:</strong> Hasil dapat disalin langsung ke Excel tanpa merusak
+              format kolom.
             </div>
           </div>
         </div>
 
         {/* Results Section */}
         {result && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 sm:p-8 space-y-6 shadow-[4px_4px_0px_#000000]">
             {/* Stat Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                <span className="text-[11px] text-neutral-500 block">Rata-rata Mentah</span>
-                <span className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000]">
+                <span className="text-[11px] text-neutral-500 block font-medium">
+                  Rata-rata Mentah
+                </span>
+                <span className="text-xl font-black text-neutral-900 dark:text-neutral-100">
                   {result.statistics.rawAverage}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                <span className="text-[11px] text-emerald-700 dark:text-emerald-300 block font-semibold">
+              <div className="p-4 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 border-2 border-black shadow-[2px_2px_0px_#000000]">
+                <span className="text-[11px] text-emerald-800 dark:text-emerald-200 block font-bold">
                   Rata-rata Katrol Baru
                 </span>
-                <span className="text-xl font-bold text-emerald-800 dark:text-emerald-200">
+                <span className="text-xl font-black text-emerald-900 dark:text-emerald-100">
                   {result.statistics.adjustedAverage}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                <span className="text-[11px] text-neutral-500 block">Rentang Nilai Mentah</span>
-                <span className="text-base font-bold text-neutral-800 dark:text-neutral-200">
+              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000]">
+                <span className="text-[11px] text-neutral-500 block font-medium">
+                  Rentang Nilai Mentah
+                </span>
+                <span className="text-base font-black text-neutral-900 dark:text-neutral-100">
                   {result.statistics.lowestRaw} - {result.statistics.highestRaw}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200 dark:border-cyan-800">
-                <span className="text-[11px] text-cyan-700 dark:text-cyan-300 block font-semibold">
+              <div className="p-4 rounded-2xl bg-cyan-100 dark:bg-cyan-950/80 border-2 border-black shadow-[2px_2px_0px_#000000]">
+                <span className="text-[11px] text-cyan-800 dark:text-cyan-200 block font-bold">
                   Rentang Nilai Baru
                 </span>
-                <span className="text-base font-bold text-cyan-800 dark:text-cyan-200">
+                <span className="text-base font-black text-cyan-900 dark:text-cyan-100">
                   {result.statistics.lowestAdjusted} - {result.statistics.highestAdjusted}
                 </span>
               </div>
             </div>
 
             {/* Justification Box */}
-            <div className="p-5 rounded-2xl bg-amber-50/70 dark:bg-neutral-800 border border-amber-200 dark:border-amber-900/50 space-y-2">
-              <h4 className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5 uppercase">
+            <div className="p-5 rounded-2xl bg-amber-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000] space-y-2">
+              <h4 className="text-xs font-black text-neutral-900 dark:text-amber-300 flex items-center gap-1.5 uppercase">
                 <HelpCircle className="w-4 h-4 text-amber-600" />
                 Narasi Justifikasi Akademik (Supervisi / Rapat Pleno)
               </h4>
-              <p className="text-xs text-neutral-800 dark:text-neutral-200 leading-relaxed italic whitespace-pre-line">
+              <p className="text-xs text-neutral-900 dark:text-neutral-100 font-medium leading-relaxed italic whitespace-pre-line">
                 &ldquo;{result.supervisionJustification}&rdquo;
               </p>
             </div>
@@ -315,7 +321,7 @@ export default function KatrolExpress() {
             {/* Table */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+                <h4 className="text-sm font-black text-neutral-900 dark:text-white">
                   Tabel Hasil Penyesuaian Nilai ({result.results.length} Siswa)
                 </h4>
                 <button

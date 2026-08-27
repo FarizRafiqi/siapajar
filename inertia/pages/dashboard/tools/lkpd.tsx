@@ -124,29 +124,29 @@ export default function LkpdExpress({
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header & Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 rounded-2xl">
+            <div className="p-3 bg-purple-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
               <FileSpreadsheet className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-                Generator LKPD & Lembar Aktivitas Siswa
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white">
+                Generator Lembar Kerja Siswa (LKPD)
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Aktivitas motorik halus, kognitif, menebalkan garis, mewarnai & stimulasi berpikir
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                Lembar aktivitas siap cetak bergambar kontekstual untuk PAUD & Fase Fondasi
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setActiveTab('create')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'create'
-                  ? 'bg-white dark:bg-neutral-900 text-purple-800 dark:text-purple-300 shadow-sm'
+                  ? 'bg-purple-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -157,9 +157,9 @@ export default function LkpdExpress({
               type="button"
               onClick={() => setActiveTab('list')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                'px-4 py-2 rounded-xl text-xs font-black transition-all',
                 activeTab === 'list'
-                  ? 'bg-white dark:bg-neutral-900 text-purple-800 dark:text-purple-300 shadow-sm'
+                  ? 'bg-purple-300 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
@@ -170,13 +170,13 @@ export default function LkpdExpress({
 
         {activeTab === 'create' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+            <div className="lg:col-span-2 bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+              <div className="flex items-center justify-between border-b-2 border-neutral-100 dark:border-neutral-800 pb-4">
                 <div>
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-lg">
+                  <h3 className="font-black text-neutral-900 dark:text-white text-lg">
                     Form Generator LKPD
                   </h3>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-500 font-medium">
                     AI akan menyusun tujuan, stimulus cerita, dan butir aktivitas siap print
                   </p>
                 </div>
@@ -188,13 +188,13 @@ export default function LkpdExpress({
               <form onSubmit={handleGenerate} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Pilih Kelas / Kelompok
                     </label>
                     <select
                       value={classId}
                       onChange={(e) => setClassId(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       <option value="">(Umum / Seluruh Kelas)</option>
                       {classes.map((cls) => (
@@ -206,13 +206,13 @@ export default function LkpdExpress({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Kelompok Usia / Jenjang *
                     </label>
                     <select
                       value={ageGroup}
                       onChange={(e) => setAgeGroup(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                      className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     >
                       <option value="Kelompok A (4-5 Tahun)">Kelompok A (4-5 Tahun)</option>
                       <option value="Kelompok B (5-6 Tahun)">Kelompok B (5-6 Tahun)</option>
@@ -222,7 +222,7 @@ export default function LkpdExpress({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Tema Utama LKPD *
                   </label>
                   <input
@@ -230,13 +230,13 @@ export default function LkpdExpress({
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
                     placeholder="Contoh: Binatang Ciptaan Allah / Tanaman Sayur / Aku dan Sekolahku"
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Sub-Tema (Opsional)
                   </label>
                   <input
@@ -244,15 +244,15 @@ export default function LkpdExpress({
                     value={subtheme}
                     onChange={(e) => setSubtheme(e.target.value)}
                     placeholder="Contoh: Kucing yang Lucu / Wortel yang Menyehatkan"
-                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-bold text-neutral-900 dark:text-white shadow-[2px_2px_0px_#000000]"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+                <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
                   <button
                     type="submit"
                     disabled={isGenerating}
-                    className="btn-kawaii-primary w-full sm:w-auto"
+                    className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {isGenerating ? (
                       <>
@@ -271,8 +271,8 @@ export default function LkpdExpress({
             </div>
 
             {/* Side Info */}
-            <div className="bg-purple-50/60 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-purple-500/20 dark:border-neutral-800 space-y-4 text-xs text-neutral-700 dark:text-neutral-300">
-              <h4 className="font-bold text-sm text-purple-950 dark:text-purple-300 flex items-center gap-1.5">
+            <div className="bg-purple-50 dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-4 text-xs text-neutral-800 dark:text-neutral-200 font-medium">
+              <h4 className="font-black text-sm text-neutral-950 dark:text-white flex items-center gap-1.5">
                 <Palette className="w-4 h-4 text-purple-600" />
                 Fitur Unggulan LKPD SiapAjar:
               </h4>
@@ -283,8 +283,9 @@ export default function LkpdExpress({
                 <li>Aktivitas kognitif & bahasa (Mencocokkan, berhitung)</li>
                 <li>Refleksi emosi anak (Emoji senyum/puas)</li>
               </ul>
-              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-purple-200 dark:border-neutral-700 text-xs">
-                📄 <strong>Langsung Cetak:</strong> Lembar aktivitas otomatis diformat ke ukuran A4
+              <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
+                <FileSpreadsheet className="w-4 h-4 text-purple-600 inline mr-1" />{' '}
+                <strong>Langsung Cetak:</strong> Lembar aktivitas otomatis diformat ke ukuran A4
                 siap diprint langsung untuk seluruh siswa di kelas.
               </div>
             </div>
@@ -292,16 +293,16 @@ export default function LkpdExpress({
         )}
 
         {activeTab === 'list' && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 space-y-4 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 space-y-4 shadow-[4px_4px_0px_#000000]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari tema LKPD..."
-                  className="w-full rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 pl-10 pr-8 py-2 text-xs font-medium"
+                  className="w-full rounded-2xl border-2 border-black bg-neutral-50 dark:bg-neutral-950 pl-10 pr-8 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 />
                 {searchQuery && (
                   <button

@@ -1,17 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import {
-  ClipboardList,
-  Sparkles,
-  RotateCw,
-  Copy,
-  Check,
-  Printer,
-  Calendar,
-  BookOpen,
-  UserCheck,
-} from 'lucide-react'
+import { ClipboardList, Sparkles, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SchoolClass {
@@ -121,16 +111,16 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000]">
           <div className="flex items-center gap-3.5">
-            <div className="p-3.5 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 rounded-2xl">
+            <div className="p-3.5 bg-indigo-200 text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-2xl">
               <ClipboardList className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white">
                 Generator Jurnal Harian Mengajar & Refleksi AI
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 Dokumentasi kegiatan pembelajaran harian, catatan perkembangan kelas, dan refleksi
                 tindak lanjut
               </p>
@@ -142,28 +132,28 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
         </div>
 
         {/* Input Form */}
-        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
-          <h3 className="font-bold text-neutral-900 dark:text-white text-base">
+        <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-6">
+          <h3 className="font-black text-neutral-900 dark:text-white text-base">
             Form Input Aktivitas Kelas Hari Ini
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Tanggal Mengajar *
                 </label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Kelas / Rombel *
                 </label>
                 <input
@@ -171,13 +161,13 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
                   placeholder="Contoh: Kelas 1B atau Kelompok B2"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Mata Pelajaran / Tema *
                 </label>
                 <input
@@ -185,14 +175,14 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
                   placeholder="Contoh: Matematika / Tema Tanaman"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+              <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                 Topik / Materi yang Diajarkan *
               </label>
               <input
@@ -200,14 +190,14 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Contoh: Membedakan benda hidup dan tak hidup di sekitar sekolah"
-                className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Kehadiran Siswa
                 </label>
                 <input
@@ -215,12 +205,12 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={attendanceNotes}
                   onChange={(e) => setAttendanceNotes(e.target.value)}
                   placeholder="Contoh: 28 Hadir, 1 Sakit (Budi)"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Catatan Guru / Dinamika Khusus (Opsional)
                 </label>
                 <input
@@ -228,16 +218,16 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   value={teacherNotes}
                   onChange={(e) => setTeacherNotes(e.target.value)}
                   placeholder="Contoh: Siswa sangat aktif berdiskusi kelompok, waktu kurang 10 menit"
-                  className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-medium"
+                  className="w-full rounded-xl border-2 border-black bg-white dark:bg-neutral-950 px-3.5 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 />
               </div>
             </div>
 
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+            <div className="pt-3 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-kawaii-primary w-full sm:w-auto"
+                className="btn-kawaii-primary w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isLoading ? (
                   <>
@@ -257,7 +247,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
 
         {/* Results */}
         {result && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 sm:p-8 space-y-6 shadow-[4px_4px_0px_#000000]">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
               <div>
                 <h4 className="font-bold text-neutral-900 dark:text-white text-base">
