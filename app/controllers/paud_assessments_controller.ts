@@ -127,12 +127,21 @@ export default class PaudAssessmentsController {
     const studentId = ctx.params.id
     const assessments = await PaudAssessment.query()
       .where('student_id', studentId)
+      .preload('learningObjective')
       .preload('attachments', (q) => q.orderBy('display_order'))
       .orderBy('date', 'desc')
 
     return ctx.response.ok({
       status: 'success',
       data: assessments.map((a) => {
+        const weekNum = Number(a.content?.weekNumber) || 2
+        const semNum = Number(a.content?.semesterNumber) || 1
+        const tpLabel = a.learningObjective
+          ? `${a.learningObjective.code} - ${a.learningObjective.title}`
+          : a.learningObjectiveId
+            ? `TP ${a.learningObjectiveId}`
+            : 'TP 1.3 - Capaian Pembelajaran'
+
         return {
           id: String(a.id),
           instrumentType: a.type,
@@ -142,7 +151,9 @@ export default class PaudAssessmentsController {
           activity: a.activity,
           notes: a.teacherNote,
           achievementStatus: a.achievementStatus,
-          tpCode: a.learningObjectiveId ? `TP ${a.learningObjectiveId}` : 'TP 1.3',
+          tpCode: tpLabel,
+          weekNumber: weekNum,
+          semesterNumber: semNum,
           attachments: a.attachments.map((att) => ({
             id: String(att.id),
             fileName: att.originalName,

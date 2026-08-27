@@ -471,7 +471,7 @@ function renderPdfObjectivesTable(
       tableY = doc.y
     }
 
-    doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+    doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#000000').stroke()
     doc
       .moveTo(leftX + colW[0], tableY)
       .lineTo(leftX + colW[0], tableY + rowHeight)
@@ -558,6 +558,43 @@ function renderPdfCpSection(
   }
 }
 
+function renderPdfSequenceTableHeader(
+  doc: typeof PDFDocument.prototype,
+  leftX: number,
+  width: number,
+  colW: number[],
+  tableY: number
+): number {
+  doc.fillColor('#047857').rect(leftX, tableY, width, 18).fill()
+  doc.strokeColor('#FFFFFF').lineWidth(0.8)
+  doc
+    .moveTo(leftX + colW[0], tableY)
+    .lineTo(leftX + colW[0], tableY + 18)
+    .stroke()
+  doc
+    .moveTo(leftX + colW[0] + colW[1], tableY)
+    .lineTo(leftX + colW[0] + colW[1], tableY + 18)
+    .stroke()
+  doc
+    .moveTo(leftX + colW[0] + colW[1] + colW[2], tableY)
+    .lineTo(leftX + colW[0] + colW[1] + colW[2], tableY + 18)
+    .stroke()
+
+  doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
+  doc.text('Urutan', leftX + 5, tableY + 5, { width: colW[0] - 10, align: 'center' })
+  doc.text('Kode TP', leftX + colW[0] + 5, tableY + 5, { width: colW[1] - 10, align: 'left' })
+  doc.text('Tujuan Pembelajaran (TP)', leftX + colW[0] + colW[1] + 5, tableY + 5, {
+    width: colW[2] - 10,
+    align: 'left',
+  })
+  doc.text('Topik / Alokasi Waktu', leftX + colW[0] + colW[1] + colW[2] + 5, tableY + 5, {
+    width: colW[3] - 10,
+    align: 'left',
+  })
+
+  return tableY + 18
+}
+
 function renderPdfSequenceSection(
   doc: typeof PDFDocument.prototype,
   sequences: Array<Record<string, any>>,
@@ -593,44 +630,45 @@ function renderPdfSequenceSection(
     doc.moveDown(0.3)
 
     if (items.length > 0) {
-      // Landscape width = 761.89pt -> Urutan (50pt) | Kode TP (100pt) | TP Title (611.89pt)
-      const colW = [50, 100, 611.89]
+      // Landscape width = 761.89pt -> Urutan (40pt) | Kode TP (90pt) | TP Title (451.89pt) | Topik/Periode (180pt)
+      const colW = [40, 90, 451.89, 180]
       let tableY = doc.y
 
-      doc.fillColor('#047857').rect(leftX, tableY, width, 18).fill()
-      doc.strokeColor('#FFFFFF').lineWidth(0.8)
-      doc
-        .moveTo(leftX + colW[0], tableY)
-        .lineTo(leftX + colW[0], tableY + 18)
-        .stroke()
-      doc
-        .moveTo(leftX + colW[0] + colW[1], tableY)
-        .lineTo(leftX + colW[0] + colW[1], tableY + 18)
-        .stroke()
+      tableY = renderPdfSequenceTableHeader(doc, leftX, width, colW, tableY)
 
-      doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
-      doc.text('Urutan', leftX + 5, tableY + 5, { width: colW[0] - 10, align: 'center' })
-      doc.text('Kode TP', leftX + colW[0] + 5, tableY + 5, { width: colW[1] - 10, align: 'left' })
-      doc.text('Tujuan Pembelajaran (TP)', leftX + colW[0] + colW[1] + 5, tableY + 5, {
-        width: colW[2] - 10,
-        align: 'left',
-      })
-
-      tableY += 18
-
+      let prevUnitTopic = ''
       for (const [idx, item] of items.entries()) {
+        if (item.unitTopic && item.unitTopic !== prevUnitTopic) {
+          prevUnitTopic = item.unitTopic
+          if (tableY + 20 > 510) {
+            doc.addPage()
+            tableY = renderPdfSequenceTableHeader(doc, leftX, width, colW, 40)
+          }
+          doc.fillColor('#ECFDF5').rect(leftX, tableY, width, 18).fill()
+          doc.rect(leftX, tableY, width, 18).lineWidth(0.5).strokeColor('#A7F3D0').stroke()
+          doc
+            .fillColor('#047857')
+            .font('Helvetica-Bold')
+            .fontSize(8.5)
+            .text(item.unitTopic, leftX + 8, tableY + 5, { width: width - 16, align: 'left' })
+          tableY += 18
+        }
+
         const cleanTitle =
           stripHtmlTags(item.title || '') || `Tujuan Pembelajaran #${item.learningObjectiveId}`
+        const periodText = item.period || item.topic || '-'
         doc.font('Helvetica').fontSize(8)
         const titleHeight = doc.heightOfString(cleanTitle, { width: colW[2] - 10 })
-        const rowHeight = Math.max(18, titleHeight + 6)
+        doc.font('Helvetica-Bold').fontSize(8)
+        const periodHeight = doc.heightOfString(periodText, { width: colW[3] - 10 })
+        const rowHeight = Math.max(18, titleHeight + 6, periodHeight + 6)
 
         if (tableY + rowHeight > 510) {
           doc.addPage()
-          tableY = doc.y
+          tableY = renderPdfSequenceTableHeader(doc, leftX, width, colW, 40)
         }
 
-        doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+        doc.rect(leftX, tableY, width, rowHeight).lineWidth(0.5).strokeColor('#000000').stroke()
         doc
           .moveTo(leftX + colW[0], tableY)
           .lineTo(leftX + colW[0], tableY + rowHeight)
@@ -638,6 +676,10 @@ function renderPdfSequenceSection(
         doc
           .moveTo(leftX + colW[0] + colW[1], tableY)
           .lineTo(leftX + colW[0] + colW[1], tableY + rowHeight)
+          .stroke()
+        doc
+          .moveTo(leftX + colW[0] + colW[1] + colW[2], tableY)
+          .lineTo(leftX + colW[0] + colW[1] + colW[2], tableY + rowHeight)
           .stroke()
 
         doc
@@ -664,6 +706,15 @@ function renderPdfSequenceSection(
             align: 'left',
           })
 
+        doc
+          .fillColor('#065F46')
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .text(periodText, leftX + colW[0] + colW[1] + colW[2] + 5, tableY + 4, {
+            width: colW[3] - 10,
+            align: 'left',
+          })
+
         tableY += rowHeight
       }
 
@@ -672,43 +723,155 @@ function renderPdfSequenceSection(
   }
 }
 
-function renderPdfPaudObjectivesRow(
+function renderPdfPaudGridHeader(
   doc: typeof PDFDocument.prototype,
-  cp: Record<string, any>,
-  objectives: Array<Record<string, any>>,
   leftX: number,
   width: number,
   colW: number[],
-  startTableY: number
+  chunkStart: number,
+  tableY: number
 ): number {
-  const obj4 = objectives.slice(0, 4)
+  const tpW = colW[2]
+  const tpStartX = leftX + colW[0] + colW[1]
+  const row1H = 14
+  const row2H = 12
+  const headerTotalH = row1H + row2H
+
+  // Row 1: Header Elemen, Sub-Elemen, TP 1..4
+  doc.fillColor('#047857').rect(leftX, tableY, width, row1H).fill()
+  doc.rect(leftX, tableY, width, row1H).lineWidth(0.5).strokeColor('#000000').stroke()
+  doc.strokeColor('#000000').lineWidth(0.5)
+  doc
+    .moveTo(leftX + colW[0], tableY)
+    .lineTo(leftX + colW[0], tableY + row1H)
+    .stroke()
+  doc
+    .moveTo(leftX + colW[0] + colW[1], tableY)
+    .lineTo(leftX + colW[0] + colW[1], tableY + row1H)
+    .stroke()
+  for (let i = 1; i <= 3; i++) {
+    const posX = tpStartX + i * tpW
+    doc
+      .moveTo(posX, tableY)
+      .lineTo(posX, tableY + row1H)
+      .stroke()
+  }
+
+  doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(7.5)
+  doc.text('Elemen', leftX + 4, tableY + 3.5, {
+    width: colW[0] - 8,
+    align: 'center',
+    lineBreak: false,
+  })
+  doc.text('Sub-Elemen CP', leftX + colW[0] + 4, tableY + 3.5, {
+    width: colW[1] - 8,
+    align: 'center',
+    lineBreak: false,
+  })
+
+  for (let i = 0; i < 4; i++) {
+    const posX = tpStartX + i * tpW
+    doc.text(`TP ${chunkStart + i + 1}`, posX + 4, tableY + 3.5, {
+      width: tpW - 8,
+      align: 'center',
+      lineBreak: false,
+    })
+  }
+
+  // Row 2: Sub-Header "Usia 4 – 6 Tahun (Kelompok A & B)"
+  const row2Y = tableY + row1H
+  doc
+    .rect(tpStartX, row2Y, width - colW[0] - colW[1], row2H)
+    .lineWidth(0.5)
+    .strokeColor('#000000')
+    .stroke()
+  doc
+    .fillColor('#F9FAFB')
+    .rect(tpStartX + 0.25, row2Y + 0.25, width - colW[0] - colW[1] - 0.5, row2H - 0.5)
+    .fill()
+  doc
+    .fillColor('#374151')
+    .font('Helvetica-Bold')
+    .fontSize(7)
+    .text('Usia 4 – 6 Tahun (Kelompok A & B)', tpStartX + 4, row2Y + 2.5, {
+      width: width - colW[0] - colW[1] - 8,
+      align: 'center',
+      lineBreak: false,
+    })
+
+  return tableY + headerTotalH
+}
+
+function renderPdfPaudTableChunk(
+  doc: typeof PDFDocument.prototype,
+  cp: Record<string, any>,
+  obj4: Array<Record<string, any>>,
+  chunkStart: number,
+  leftX: number,
+  width: number,
+  colW: number[]
+): number {
   const tpW = colW[2]
   const tpStartX = leftX + colW[0] + colW[1]
 
-  doc.font('Helvetica-Bold').fontSize(7.5)
-  const elemH = doc.heightOfString(cp.element || 'Elemen CP', { width: colW[0] - 10 })
-  doc.font('Helvetica').fontSize(7.5)
-  const subElemH = doc.heightOfString(cp.title || cp.element || '-', { width: colW[1] - 10 })
+  // 1. Pre-calculate Objective Row Height
+  doc.font('Helvetica-Bold').fontSize(6.5)
+  const elemH = doc.heightOfString(cp.element || 'Elemen CP', { width: colW[0] - 6, lineGap: 0.2 })
+  doc.font('Helvetica').fontSize(6.5)
+  const subElemH = doc.heightOfString(cp.title || cp.element || '-', {
+    width: colW[1] - 6,
+    lineGap: 0.2,
+  })
 
-  let maxObjH = Math.max(22, elemH + 8, subElemH + 8)
-
+  let maxObjH = Math.max(18, elemH + 4, subElemH + 4)
   for (let i = 0; i < 4; i++) {
     const obj = obj4[i]
     if (obj) {
       const t = stripHtmlTags(obj.title || '')
-      doc.font('Helvetica').fontSize(7.5)
-      const h = doc.heightOfString(t, { width: tpW - 10 })
-      if (h + 8 > maxObjH) maxObjH = h + 8
+      doc.font('Helvetica').fontSize(6.5)
+      const h = doc.heightOfString(t, { width: tpW - 6, lineGap: 0.2 })
+      if (h + 4 > maxObjH) maxObjH = h + 4
     }
   }
 
-  let tableY = startTableY
-  if (tableY + maxObjH > 510) {
-    doc.addPage()
-    tableY = doc.y
+  // 2. Pre-calculate IKTP Row Height
+  let maxIktpH = 18
+  const iktpTextList: string[] = []
+  doc.font('Helvetica').fontSize(5.5)
+
+  for (let i = 0; i < 4; i++) {
+    const obj = obj4[i]
+    if (obj && Array.isArray(obj.indicators) && obj.indicators.length > 0) {
+      const lines = obj.indicators
+        .map(
+          (ind: any, idx: number) =>
+            `${idx + 1}. ${ind.description} [${formatLabel(ind.evidenceType)}]`
+        )
+        .join('\n')
+      iktpTextList.push(lines)
+      const h = doc.heightOfString(lines, { width: tpW - 6, lineGap: 0.1 })
+      if (h + 4 > maxIktpH) maxIktpH = h + 4
+    } else {
+      iktpTextList.push('-')
+    }
   }
 
-  doc.rect(leftX, tableY, width, maxObjH).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+  const headerTotalH = 24
+  const titleBarH = 11
+  const totalChunkH = headerTotalH + maxObjH + titleBarH + maxIktpH
+
+  // If table chunk exceeds page height and we are NOT already at the top of a fresh page
+  if (doc.y + totalChunkH > 565 && doc.y > 120) {
+    doc.addPage()
+  }
+
+  let tableY = doc.y
+
+  // Render Header
+  tableY = renderPdfPaudGridHeader(doc, leftX, width, colW, chunkStart, tableY)
+
+  // Render Objectives Row
+  doc.rect(leftX, tableY, width, maxObjH).lineWidth(0.5).strokeColor('#000000').stroke()
   doc
     .moveTo(leftX + colW[0], tableY)
     .lineTo(leftX + colW[0], tableY + maxObjH)
@@ -729,16 +892,21 @@ function renderPdfPaudObjectivesRow(
   doc
     .fillColor('#065F46')
     .font('Helvetica-Bold')
-    .fontSize(7.5)
-    .text(cp.element || 'Elemen CP', leftX + 5, tableY + 5, { width: colW[0] - 10, align: 'left' })
+    .fontSize(6.5)
+    .text(cp.element || 'Elemen CP', leftX + 3, tableY + 2.5, {
+      width: colW[0] - 6,
+      align: 'left',
+      lineGap: 0.2,
+    })
 
   doc
     .fillColor('#111827')
     .font('Helvetica-Bold')
-    .fontSize(7.5)
-    .text(cp.title || cp.element || '-', leftX + colW[0] + 5, tableY + 5, {
-      width: colW[1] - 10,
+    .fontSize(6.5)
+    .text(cp.title || cp.element || '-', leftX + colW[0] + 3, tableY + 2.5, {
+      width: colW[1] - 6,
       align: 'left',
+      lineGap: 0.2,
     })
 
   for (let i = 0; i < 4; i++) {
@@ -748,82 +916,42 @@ function renderPdfPaudObjectivesRow(
       doc
         .fillColor('#1F2937')
         .font('Helvetica')
-        .fontSize(7.5)
-        .text(stripHtmlTags(obj.title || ''), posX + 5, tableY + 5, {
-          width: tpW - 10,
+        .fontSize(6.5)
+        .text(stripHtmlTags(obj.title || ''), posX + 3, tableY + 2.5, {
+          width: tpW - 6,
           align: 'left',
+          lineGap: 0.2,
         })
     }
   }
-  return tableY + maxObjH
-}
 
-function renderPdfPaudIktpRow(
-  doc: typeof PDFDocument.prototype,
-  objectives: Array<Record<string, any>>,
-  leftX: number,
-  width: number,
-  colW: number[],
-  startTableY: number
-): number {
-  const obj4 = objectives.slice(0, 4)
-  const tpW = colW[2]
-  const tpStartX = leftX + colW[0] + colW[1]
+  tableY += maxObjH
 
-  let tableY = startTableY
-  if (tableY + 18 > 510) {
-    doc.addPage()
-    tableY = doc.y
-  }
-
-  doc.rect(leftX, tableY, width, 18).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+  // Render IKTP Title Bar
+  doc.rect(leftX, tableY, width, titleBarH).lineWidth(0.5).strokeColor('#000000').stroke()
   doc
     .fillColor('#F3F4F6')
-    .rect(leftX + 0.25, tableY + 0.25, width - 0.5, 17.5)
+    .rect(leftX + 0.25, tableY + 0.25, width - 0.5, titleBarH - 0.5)
     .fill()
 
   doc
     .fillColor('#374151')
     .font('Helvetica-Bold')
-    .fontSize(7.5)
+    .fontSize(6)
     .text(
       'INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN (IKTP) & BUKTI ASESMEN',
-      leftX + 5,
-      tableY + 5.5,
+      leftX + 4,
+      tableY + 2,
       {
-        width: width - 10,
+        width: width - 8,
         align: 'center',
         lineBreak: false,
       }
     )
-  tableY += 18
+  tableY += titleBarH
 
-  let maxIktpH = 25
-  const iktpTextList: string[] = []
-  for (let i = 0; i < 4; i++) {
-    const obj = obj4[i]
-    if (obj && Array.isArray(obj.indicators) && obj.indicators.length > 0) {
-      const lines = obj.indicators
-        .map(
-          (ind: any, idx: number) =>
-            `${idx + 1}. ${ind.description} [${formatLabel(ind.evidenceType)}]`
-        )
-        .join('\n\n')
-      iktpTextList.push(lines)
-      doc.font('Helvetica').fontSize(7)
-      const h = doc.heightOfString(lines, { width: tpW - 10 })
-      if (h + 8 > maxIktpH) maxIktpH = h + 8
-    } else {
-      iktpTextList.push('-')
-    }
-  }
-
-  if (tableY + maxIktpH > 510) {
-    doc.addPage()
-    tableY = doc.y
-  }
-
-  doc.rect(leftX, tableY, width, maxIktpH).lineWidth(0.5).strokeColor('#D1D5DB').stroke()
+  // Render IKTP Content Row
+  doc.rect(leftX, tableY, width, maxIktpH).lineWidth(0.5).strokeColor('#000000').stroke()
   doc
     .moveTo(leftX + colW[0] + colW[1], tableY)
     .lineTo(leftX + colW[0] + colW[1], tableY + maxIktpH)
@@ -836,108 +964,20 @@ function renderPdfPaudIktpRow(
       .stroke()
   }
 
-  doc
-    .fillColor('#4B5563')
-    .font('Helvetica-Bold')
-    .fontSize(7)
-    .text('Indikator IKTP', leftX + 5, tableY + 5, { width: colW[0] + colW[1] - 10, align: 'left' })
-
   for (let i = 0; i < 4; i++) {
     const posX = tpStartX + i * tpW
     doc
       .fillColor('#374151')
       .font('Helvetica')
-      .fontSize(7)
-      .text(iktpTextList[i] || '-', posX + 5, tableY + 5, { width: tpW - 10, align: 'left' })
+      .fontSize(5.5)
+      .text(iktpTextList[i] || '-', posX + 3, tableY + 2, {
+        width: tpW - 6,
+        align: 'left',
+        lineGap: 0.1,
+      })
   }
 
   return tableY + maxIktpH
-}
-
-function renderPdfPaudSingleGrid(
-  doc: typeof PDFDocument.prototype,
-  cp: Record<string, any>,
-  leftX: number,
-  width: number,
-  colW: number[]
-) {
-  const objectives = Array.isArray(cp.learningObjectives) ? cp.learningObjectives : []
-  if (objectives.length === 0) return
-
-  let tableY = doc.y
-  if (tableY > 450) {
-    doc.addPage()
-    tableY = doc.y
-  }
-
-  const tpW = colW[2]
-  const tpStartX = leftX + colW[0] + colW[1]
-  const headerTotalH = 36 // 18pt Row 1 + 18pt Row 2
-
-  doc.fillColor('#047857').rect(leftX, tableY, width, headerTotalH).fill()
-  doc.strokeColor('#FFFFFF').lineWidth(0.8)
-  doc
-    .moveTo(leftX + colW[0], tableY)
-    .lineTo(leftX + colW[0], tableY + headerTotalH)
-    .stroke()
-  doc
-    .moveTo(leftX + colW[0] + colW[1], tableY)
-    .lineTo(leftX + colW[0] + colW[1], tableY + headerTotalH)
-    .stroke()
-  for (let i = 1; i <= 3; i++) {
-    const posX = tpStartX + i * tpW
-    doc
-      .moveTo(posX, tableY)
-      .lineTo(posX, tableY + 18)
-      .stroke()
-  }
-
-  doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
-  doc.text('Elemen', leftX + 5, tableY + 13, {
-    width: colW[0] - 10,
-    align: 'center',
-    lineBreak: false,
-  })
-  doc.text('Sub-Elemen CP', leftX + colW[0] + 5, tableY + 13, {
-    width: colW[1] - 10,
-    align: 'center',
-    lineBreak: false,
-  })
-
-  for (let i = 0; i < 4; i++) {
-    const posX = tpStartX + i * tpW
-    doc.text(`TP ${i + 1}`, posX + 5, tableY + 5, {
-      width: tpW - 10,
-      align: 'center',
-      lineBreak: false,
-    })
-  }
-
-  const row2Y = tableY + 18
-  doc
-    .rect(tpStartX, row2Y, width - colW[0] - colW[1], 18)
-    .lineWidth(0.5)
-    .strokeColor('#D1D5DB')
-    .stroke()
-  doc
-    .fillColor('#F9FAFB')
-    .rect(tpStartX + 0.25, row2Y + 0.25, width - colW[0] - colW[1] - 0.5, 17.5)
-    .fill()
-  doc
-    .fillColor('#374151')
-    .font('Helvetica-Bold')
-    .fontSize(7.5)
-    .text('Usia 4 – 6 Tahun (Kelompok A & B)', tpStartX + 5, row2Y + 5.5, {
-      width: width - colW[0] - colW[1] - 10,
-      align: 'center',
-      lineBreak: false,
-    })
-
-  tableY += headerTotalH
-
-  tableY = renderPdfPaudObjectivesRow(doc, cp, objectives, leftX, width, colW, tableY)
-  tableY = renderPdfPaudIktpRow(doc, objectives, leftX, width, colW, tableY)
-  doc.y = tableY + 14
 }
 
 function renderPdfPaudHorizontalGrid(
@@ -949,45 +989,62 @@ function renderPdfPaudHorizontalGrid(
   doc
     .fillColor('#047857')
     .font('Helvetica-Bold')
-    .fontSize(11)
-    .text('I. MATRIKS ALUR TUJUAN PEMBELAJARAN (ATP) - RA / TK FASE FONDASI', leftX, doc.y, {
+    .fontSize(10)
+    .text('I. MATRIKS CAPAIAN PEMBELAJARAN (CP), TP & IKTP - FASE FONDASI', leftX, doc.y, {
       width,
       align: 'left',
     })
-  doc.moveDown(0.4)
+  doc.y += 6
 
-  const colW = [100, 151.89, 127.5, 127.5, 127.5, 127.5]
+  const colW = [70, 115, 151.72, 151.72, 151.72, 151.72]
 
-  for (const cp of cps) {
-    if (doc.y > 450) doc.addPage()
+  for (const [cpIdx, cp] of cps.entries()) {
+    const allObjectives = Array.isArray(cp.learningObjectives) ? cp.learningObjectives : []
+    const obj4 = allObjectives.slice(0, 4)
+    const cpDesc = stripHtmlTags(cp.description || '-')
+
+    doc.font('Helvetica').fontSize(7)
+    const cpDescH = doc.heightOfString(cpDesc, { width, lineGap: 0.2 })
+
+    // Estimated full height of this Elemen (Banner + CP text + Table Chunk)
+    const elemFullEstimatedH = 14 + 3 + cpDescH + 6 + 220
+
+    if (cpIdx > 0 && doc.y + elemFullEstimatedH > 565 && doc.y > 60) {
+      doc.addPage()
+    } else if (cpIdx > 0) {
+      doc.y += 10
+    }
 
     const cpBoxY = doc.y
-    doc.fillColor('#059669').rect(leftX, cpBoxY, width, 20).fill()
+    doc.fillColor('#059669').rect(leftX, cpBoxY, width, 14).fill()
     doc
       .fillColor('#FFFFFF')
       .font('Helvetica-Bold')
-      .fontSize(9)
-      .text(`Elemen: ${cp.element || '-'} (${cp.code || 'CP'})`, leftX + 10, cpBoxY + 5, {
-        width: width - 20,
+      .fontSize(7.5)
+      .text(`ELEMEN ${cpIdx + 1}: ${cp.element || '-'}`, leftX + 6, cpBoxY + 3, {
+        width: width - 12,
         align: 'left',
       })
 
-    doc.y = cpBoxY + 25
+    doc.y = cpBoxY + 17
 
-    const cpDesc = stripHtmlTags(cp.description || '-')
     doc
       .fillColor('#1F2937')
       .font('Helvetica-Bold')
-      .fontSize(8.5)
+      .fontSize(7)
       .text('Capaian Pembelajaran (CP):', leftX, doc.y, { width, align: 'left' })
+    doc.y += 9
     doc
       .fillColor('#374151')
       .font('Helvetica')
-      .fontSize(8.5)
-      .text(cpDesc, leftX, doc.y + 12, { width, align: 'justify' })
-    doc.y = doc.y + Math.max(16, doc.heightOfString(cpDesc, { width }) + 14)
+      .fontSize(7)
+      .text(cpDesc, leftX, doc.y, { width, align: 'justify', lineGap: 0.2 })
+    doc.y += cpDescH + 6
 
-    renderPdfPaudSingleGrid(doc, cp, leftX, width, colW)
+    if (obj4.length > 0) {
+      const endTableY = renderPdfPaudTableChunk(doc, cp, obj4, 0, leftX, width, colW)
+      doc.y = endTableY + 6
+    }
   }
 }
 
@@ -998,67 +1055,80 @@ export async function exportCurriculumPdf(
   charge = true
 ) {
   if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' })
+  const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape' })
 
-  writeKop(doc, user, 'DOKUMEN CAPAIAN, TUJUAN & ALUR PEMBELAJARAN (CP, TP & ATP)')
+  const leftX = 30
+  const width = doc.page.width - 60
 
-  const leftX = 40
-  const width = doc.page.width - 80
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(12)
+    .fillColor('#111827')
+    .text((user as any).institutionName || user.schoolName || 'TK / Sekolah', { align: 'center' })
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor('#047857')
+    .text('DOKUMEN CAPAIAN, TUJUAN & ALUR PEMBELAJARAN (CP, TP & ATP)', { align: 'center' })
 
+  doc.y += 4
+
+  const isPaud = (user as any).educationLevel === 'paud' || true
+  const infoHeight = 32
   const startY = doc.y
-  const infoHeight = 38
-  doc.rect(leftX, startY, width, infoHeight).lineWidth(0.8).strokeColor('#059669').stroke()
-  doc.fillColor('#F0FDF4').rect(leftX, startY, width, infoHeight).fill()
 
-  const isPaud =
-    user.educationLevel === 'tk' ||
-    (user as any).institutionType === 'ra' ||
-    (user as any).institutionType === 'paud'
+  doc.rect(leftX, startY, width, infoHeight).lineWidth(0.5).strokeColor('#059669').stroke()
 
-  // 2-Column Metadata Box without "Format Layar"
-  doc.fillColor('#065F46').font('Helvetica-Bold').fontSize(8.5)
-  doc.text('Satuan Pendidikan', leftX + 12, startY + 8, { width: 110, align: 'left' })
-  doc.text(':', leftX + 125, startY + 8, { width: 10, align: 'left' })
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#065F46')
+  doc.text('Satuan Pendidikan', leftX + 10, startY + 6, { width: 110, align: 'left' })
+  doc.text(':', leftX + 122, startY + 6, { width: 8, align: 'left' })
   doc
     .font('Helvetica')
+    .fillColor('#111827')
     .text(
-      (user as any).institutionName || user.schoolName || 'TK / Sekolah',
-      leftX + 135,
-      startY + 8,
-      { width: 300, align: 'left' }
+      (user as any).institutionName || user.schoolName || 'TK Tunas Bangsa',
+      leftX + 132,
+      startY + 6,
+      {
+        width: 250,
+        align: 'left',
+      }
     )
 
-  doc.font('Helvetica-Bold')
-  doc.text('Jenjang / Fase', leftX + 12, startY + 22, { width: 110, align: 'left' })
-  doc.text(':', leftX + 125, startY + 22, { width: 10, align: 'left' })
+  doc.font('Helvetica-Bold').fillColor('#065F46')
+  doc.text('Jenjang / Fase', leftX + 10, startY + 18, { width: 110, align: 'left' })
+  doc.text(':', leftX + 122, startY + 18, { width: 8, align: 'left' })
   doc
     .font('Helvetica')
-    .text(isPaud ? 'PAUD / TK (Fase Fondasi)' : 'Sekolah Dasar (SD)', leftX + 135, startY + 22, {
-      width: 300,
+    .fillColor('#111827')
+    .text(isPaud ? 'TK / Fase Fondasi' : 'SD / Fase A', leftX + 132, startY + 18, {
+      width: 250,
       align: 'left',
     })
 
-  doc.font('Helvetica-Bold')
-  doc.text('Tanggal Cetak', leftX + 460, startY + 8, { width: 100, align: 'left' })
-  doc.text(':', leftX + 560, startY + 8, { width: 10, align: 'left' })
+  doc.font('Helvetica-Bold').fillColor('#065F46')
+  doc.text('Tanggal Cetak', leftX + 440, startY + 6, { width: 90, align: 'left' })
+  doc.text(':', leftX + 532, startY + 6, { width: 8, align: 'left' })
   doc
     .font('Helvetica')
-    .text(new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }), leftX + 570, startY + 8, {
-      width: 180,
+    .fillColor('#111827')
+    .text(new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }), leftX + 542, startY + 6, {
+      width: 200,
       align: 'left',
     })
 
-  doc.font('Helvetica-Bold')
-  doc.text('Versi Kurikulum', leftX + 460, startY + 22, { width: 100, align: 'left' })
-  doc.text(':', leftX + 560, startY + 22, { width: 10, align: 'left' })
+  doc.font('Helvetica-Bold').fillColor('#065F46')
+  doc.text('Versi Kurikulum', leftX + 440, startY + 18, { width: 90, align: 'left' })
+  doc.text(':', leftX + 532, startY + 18, { width: 8, align: 'left' })
   doc
     .font('Helvetica')
-    .text(user.curriculumVersion || 'Kurikulum Merdeka', leftX + 570, startY + 22, {
-      width: 180,
+    .fillColor('#111827')
+    .text(user.curriculumVersion || 'Kurikulum Merdeka', leftX + 542, startY + 18, {
+      width: 200,
       align: 'left',
     })
 
-  doc.y = startY + infoHeight + 14
+  doc.y = startY + infoHeight + 8
 
   if (isPaud) {
     renderPdfPaudHorizontalGrid(doc, cps, leftX, width)
@@ -1068,39 +1138,34 @@ export async function exportCurriculumPdf(
 
   renderPdfSequenceSection(doc, sequences, leftX, width)
 
-  if (doc.y > 430) doc.addPage()
+  if (doc.y > 450) doc.addPage()
 
-  const sigY = doc.y + 10
+  const sigY = doc.y + 14
   const sigW = width / 2
 
   doc.fillColor('#111827').font('Helvetica-Bold').fontSize(8.5)
   doc.text('Mengetahui,', leftX, sigY, { width: sigW, align: 'left' })
   doc.font('Helvetica').text('Kepala Sekolah', leftX, sigY + 12, { width: sigW, align: 'left' })
-  doc
-    .font('Helvetica-Bold')
-    .text('________________________', leftX, sigY + 46, { width: sigW, align: 'left' })
-  doc.font('Helvetica').text('NIP. ........................................', leftX, sigY + 58, {
+  doc.font('Helvetica').text('NIP. ........................................', leftX, sigY + 56, {
     width: sigW,
     align: 'left',
   })
 
   doc.font('Helvetica').fontSize(8.5)
-  doc.text(
-    `.................., ${new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}`,
-    leftX + sigW,
-    sigY,
-    { width: sigW, align: 'left' }
-  )
-  doc.text('Penyusun / Guru Kelas,', leftX + sigW, sigY + 12, { width: sigW, align: 'left' })
+  doc.text('Penyusun / Guru Kelas,', leftX + sigW, sigY, { width: sigW, align: 'left' })
+  doc.text(user.fullName || 'Guru Pengampu', leftX + sigW, sigY + 12, {
+    width: sigW,
+    align: 'left',
+  })
   doc
     .font('Helvetica-Bold')
-    .text(`( ${user.fullName || '........................'} )`, leftX + sigW, sigY + 46, {
+    .text(`( ${user.fullName || '........................'} )`, leftX + sigW, sigY + 44, {
       width: sigW,
       align: 'left',
     })
   doc
     .font('Helvetica')
-    .text('NIP. ........................................', leftX + sigW, sigY + 58, {
+    .text('NIP. ........................................', leftX + sigW, sigY + 56, {
       width: sigW,
       align: 'left',
     })

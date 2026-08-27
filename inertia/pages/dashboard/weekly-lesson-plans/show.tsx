@@ -113,9 +113,17 @@ export interface WorkflowData {
 interface WeeklyLessonPlanContent {
   theme?: string
   subtheme?: string
+  topic?: string
+  subtopic?: string
+  title?: string
   semester?: number
   weekNumber?: number
   groupContext?: string
+  allocation?: string
+  timeAllocation?: string
+  modelPembelajaran?: string
+  month?: string
+  grade?: string
   identification?: {
     studentCharacteristics?: string
     essentialMaterials?: string
@@ -450,24 +458,30 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                          <strong className="text-neutral-800 dark:text-neutral-200">
-                            Alat & Bahan:
-                          </strong>{' '}
-                          {detail.materials || '-'}
-                        </p>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                          <strong className="text-neutral-800 dark:text-neutral-200">
-                            Cara Bermain / Membuat:
-                          </strong>{' '}
-                          {detail.instructions || '-'}
-                        </p>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-300 italic">
-                          <strong className="text-neutral-800 dark:text-neutral-200 not-italic">
-                            Manfaat:
-                          </strong>{' '}
-                          {detail.benefits || '-'}
-                        </p>
+                        {detail.materials && (
+                          <p className="text-xs text-neutral-600 dark:text-neutral-300">
+                            <strong className="text-neutral-800 dark:text-neutral-200">
+                              Alat & Bahan:
+                            </strong>{' '}
+                            {detail.materials}
+                          </p>
+                        )}
+                        {detail.instructions && (
+                          <p className="text-xs text-neutral-600 dark:text-neutral-300">
+                            <strong className="text-neutral-800 dark:text-neutral-200">
+                              Cara Bermain / Membuat:
+                            </strong>{' '}
+                            {detail.instructions}
+                          </p>
+                        )}
+                        {detail.benefits && (
+                          <p className="text-xs text-neutral-600 dark:text-neutral-300 italic">
+                            <strong className="text-neutral-800 dark:text-neutral-200 not-italic">
+                              Manfaat:
+                            </strong>{' '}
+                            {detail.benefits}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -554,8 +568,59 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
 }
 
 function TabIdentificationSection({ editing, currentContent, data, setData }: TabExperienceProps) {
+  const topic = currentContent.topic || currentContent.theme || ''
+  const subtheme = currentContent.subtheme || currentContent.subtopic || ''
+  const allocation =
+    currentContent.allocation || currentContent.timeAllocation || '5 Hari x 180 Menit (15 JP)'
+  const model = currentContent.modelPembelajaran || 'Kolaboratif, STEAM'
+  const grade = currentContent.grade || currentContent.groupContext || 'Kelompok B (5-6 Tahun)'
+
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      {/* Informasi Umum & Topik Modul */}
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:col-span-2">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
+          <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          A.0. Informasi Umum & Tema Pembelajaran
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-xl bg-neutral-50 p-3.5 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 block mb-0.5">
+              Tema / Topik Utama
+            </span>
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {topic || 'Belum diatur'}
+            </span>
+          </div>
+
+          <div className="rounded-xl bg-purple-50/60 p-3.5 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-800/40">
+            <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 block mb-0.5">
+              Subtema / Subtopik
+            </span>
+            <span className="text-sm font-bold text-purple-900 dark:text-purple-200">
+              {subtheme || 'Belum diatur'}
+            </span>
+          </div>
+
+          <div className="rounded-xl bg-neutral-50 p-3.5 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 block mb-0.5">
+              Kelompok / Usia
+            </span>
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">{grade}</span>
+          </div>
+
+          <div className="rounded-xl bg-neutral-50 p-3.5 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 block mb-0.5">
+              Alokasi Waktu & Model
+            </span>
+            <span className="text-xs font-bold text-neutral-900 dark:text-white block">
+              {allocation}
+            </span>
+            <span className="text-[11px] text-neutral-600 dark:text-neutral-400">{model}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Karakteristik Peserta Didik */}
       <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
@@ -1749,9 +1814,14 @@ function RpmHeaderToolbar({
             <span className="rounded-md bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
               RPM KBC RA (Deep Learning)
             </span>
-            <span className="text-xs text-neutral-500">
+            <span className="text-xs text-neutral-600 dark:text-neutral-300 font-medium">
               {weeklyLessonPlan.schoolClass?.name || 'Kelompok B'}
             </span>
+            {weeklyLessonPlan.content?.weekNumber && (
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950/60 dark:text-emerald-300">
+                Minggu {weeklyLessonPlan.content.weekNumber}
+              </span>
+            )}
             <button
               type="button"
               onClick={onTogglePublish}
@@ -1765,9 +1835,17 @@ function RpmHeaderToolbar({
               {isPublished ? 'Terbit' : 'Draf'}
             </button>
           </div>
-          <h1 className="text-lg font-bold text-neutral-900 dark:text-white mt-0.5">
-            {theme} {subtheme ? `: ${subtheme}` : ''}
-          </h1>
+          <div className="mt-1 flex flex-wrap items-center gap-2.5">
+            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">{theme}</h1>
+            {subtheme ? (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-200/60 dark:border-purple-800/40">
+                <span className="font-semibold text-neutral-500 dark:text-neutral-400">
+                  Subtema:
+                </span>
+                <span>{subtheme}</span>
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -1883,8 +1961,10 @@ export default function WeeklyLessonPlanShow({
   }
 
   const currentContent = editing ? data.content : content
-  const theme = editing ? data.theme : weeklyLessonPlan.theme
-  const subtheme = currentContent.subtheme || ''
+  const theme = editing
+    ? data.theme
+    : currentContent.topic || currentContent.theme || weeklyLessonPlan.theme
+  const subtheme = currentContent.subtheme || currentContent.subtopic || ''
 
   const handleTogglePublish = () => {
     const nextStatus = isPublished ? 'draft' : 'published'

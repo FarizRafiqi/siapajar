@@ -51,7 +51,12 @@ interface Sequence {
   educationLevel: 'tk' | 'sd'
   groupContext: 'a' | 'b' | null
   status: string
-  items: Array<{ learningObjectiveId: number; order: number; period?: string }>
+  items: Array<{
+    learningObjectiveId: number
+    order: number
+    period?: string
+    unitTopic?: string
+  }>
 }
 interface Props {
   readonly cps: Cp[]
@@ -113,6 +118,7 @@ function ObjectiveCard({
   onToggleIndicators,
   onOpenIndicatorModal,
   onAddToAtp,
+  onDeleteObjective,
 }: Readonly<{
   objective: Objective
   isSelectedInAtp: boolean
@@ -120,6 +126,7 @@ function ObjectiveCard({
   onToggleIndicators: (id: number) => void
   onOpenIndicatorModal: (id: number) => void
   onAddToAtp: (id: number) => void
+  onDeleteObjective: (objective: Objective) => void
 }>) {
   const indicators = objective.indicators || []
 
@@ -185,6 +192,16 @@ function ObjectiveCard({
               <span>+ Pilih ke ATP</span>
             )}
           </button>
+
+          <button
+            type="button"
+            onClick={() => onDeleteObjective(objective)}
+            className="rounded-lg p-2 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
+            title="Hapus Tujuan Pembelajaran (TP)"
+            aria-label="Hapus TP"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
@@ -228,8 +245,31 @@ function SequenceCard({
   onRemoveItem: (seq: Sequence, objectiveId: number) => void
   onDeleteSequence: (seq: Sequence) => void
 }>) {
+  const groupedItems: Array<{
+    unitTopic?: string
+    items: Array<{ item: Sequence['items'][0]; globalIdx: number }>
+  }> = []
+
+  let currentGroup: {
+    unitTopic?: string
+    items: Array<{ item: Sequence['items'][0]; globalIdx: number }>
+  } | null = null
+
+  sequence.items?.forEach((item, idx) => {
+    const itemUnit = item.unitTopic || ''
+    if (!currentGroup || (currentGroup.unitTopic || '') !== itemUnit) {
+      currentGroup = {
+        unitTopic: item.unitTopic,
+        items: [{ item, globalIdx: idx }],
+      }
+      groupedItems.push(currentGroup)
+    } else {
+      currentGroup.items.push({ item, globalIdx: idx })
+    }
+  })
+
   return (
-    <div className="rounded-xl border border-neutral-300 bg-neutral-50 p-5 dark:border-neutral-800 dark:bg-neutral-800/40 space-y-3">
+    <div className="rounded-xl border border-neutral-300 bg-neutral-50 p-5 dark:border-neutral-800 dark:bg-neutral-800/40 space-y-4">
       <div className="flex items-center justify-between border-b border-neutral-200 pb-3 dark:border-neutral-700">
         <div>
           <h4 className="text-base font-bold text-neutral-900 dark:text-white">{sequence.title}</h4>
@@ -249,45 +289,81 @@ function SequenceCard({
         </button>
       </div>
 
-      <div className="space-y-2">
-        {sequence.items?.map((item, idx) => {
-          const targetObj = allObjectivesMap.get(item.learningObjectiveId)
-          return (
-            <div
-              key={`${sequence.id}-${item.learningObjectiveId}-${idx}`}
-              className="flex items-center justify-between gap-3 rounded-lg border border-neutral-300 bg-white p-3 text-sm dark:border-neutral-700 dark:bg-neutral-900"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-                  {idx + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  {targetObj ? (
-                    <p className="font-semibold text-neutral-900 dark:text-neutral-100">
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400 mr-2">
-                        {targetObj.code}
-                      </span>
-                      {stripHtml(targetObj.title)}
-                    </p>
-                  ) : (
-                    <p className="text-neutral-500">
-                      Tujuan Pembelajaran #{item.learningObjectiveId}
-                    </p>
-                  )}
+      <div className="space-y-4">
+        {groupedItems.map((group, gIdx) => (
+          <div key={`group-${sequence.id}-${gIdx}`} className="space-y-2">
+            {group.unitTopic && (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-emerald-100/70 px-3.5 py-2 border border-emerald-300/80 dark:bg-emerald-950/50 dark:border-emerald-800">
+                <div className="flex items-center gap-2 min-w-0">
+                  <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 truncate">
+                    {group.unitTopic}
+                  </span>
                 </div>
+                <span className="shrink-0 rounded-full bg-emerald-700 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-emerald-600">
+                  {group.items.length} TP
+                </span>
               </div>
+            )}
 
-              <button
-                type="button"
-                onClick={() => onRemoveItem(sequence, item.learningObjectiveId)}
-                className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-red-600 dark:hover:bg-neutral-800 dark:hover:text-red-400 transition-colors shrink-0"
-                title="Keluarkankan TP ini dari ATP"
-              >
-                <X className="h-4 w-4" />
-              </button>
+            <div className="space-y-2">
+              {group.items.map(({ item, globalIdx }) => {
+                const targetObj = allObjectivesMap.get(item.learningObjectiveId)
+                return (
+                  <div
+                    key={`${sequence.id}-${item.learningObjectiveId}-${globalIdx}`}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-neutral-300 bg-white p-3 text-sm dark:border-neutral-700 dark:bg-neutral-900 shadow-xs hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+                        {globalIdx + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        {targetObj ? (
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                {targetObj.code}
+                              </span>
+                              {item.period && (
+                                <span className="rounded-md bg-neutral-200 px-2 py-0.5 text-xs font-bold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
+                                  {item.period}
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-semibold text-neutral-900 dark:text-neutral-100 leading-relaxed">
+                              {stripHtml(targetObj.title)}
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            {item.period && (
+                              <span className="rounded-md bg-neutral-200 px-2 py-0.5 text-xs font-bold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 mb-1 inline-block">
+                                {item.period}
+                              </span>
+                            )}
+                            <p className="text-neutral-500">
+                              Tujuan Pembelajaran #{item.learningObjectiveId}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(sequence, item.learningObjectiveId)}
+                      className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-red-600 dark:hover:bg-neutral-800 dark:hover:text-red-400 transition-colors shrink-0"
+                      title="Keluarkankan TP ini dari ATP"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -472,6 +548,7 @@ function ExploreTab({
   onToggleIndicators,
   onOpenIndicatorModal,
   onAddToAtp,
+  onDeleteObjective,
 }: Readonly<{
   cps: Cp[]
   cp?: Cp
@@ -484,6 +561,7 @@ function ExploreTab({
   onToggleIndicators: (id: number) => void
   onOpenIndicatorModal: (id: number) => void
   onAddToAtp: (id: number) => void
+  onDeleteObjective: (objective: Objective) => void
 }>) {
   return (
     <div className="grid gap-5 lg:grid-cols-[18rem_1fr]">
@@ -585,6 +663,7 @@ function ExploreTab({
                   onToggleIndicators={onToggleIndicators}
                   onOpenIndicatorModal={onOpenIndicatorModal}
                   onAddToAtp={onAddToAtp}
+                  onDeleteObjective={onDeleteObjective}
                 />
               ))}
             </div>
@@ -616,6 +695,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
   const [showActionDropdown, setShowActionDropdown] = useState(false)
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
   const [sequenceToDelete, setSequenceToDelete] = useState<Sequence | null>(null)
+  const [objectiveToDelete, setObjectiveToDelete] = useState<Objective | null>(null)
 
   const objectiveForm = useForm<{
     cpId: number
@@ -748,6 +828,13 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
     })
   }
 
+  const handleDeleteObjective = () => {
+    if (!objectiveToDelete) return
+    router.delete(`/curriculum/objectives/${objectiveToDelete.id}`, {
+      onSuccess: () => setObjectiveToDelete(null),
+    })
+  }
+
   const allObjectivesMap = new Map<number, Objective>()
   cps.forEach((c) => {
     c.learningObjectives?.forEach((o) => {
@@ -813,7 +900,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                   />
                   <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-neutral-300 bg-white py-1.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
                     <a
-                      href="/curriculum/export/pdf?disposition=inline"
+                      href="/curriculum/print"
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => setShowActionDropdown(false)}
@@ -932,6 +1019,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               setShowIndicatorModal(true)
             }}
             onAddToAtp={addToAtp}
+            onDeleteObjective={setObjectiveToDelete}
           />
         )}
 
@@ -1216,6 +1304,39 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
               >
                 Ya, Hapus Alur ATP
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Konfirmasi Hapus Tujuan Pembelajaran (TP) */}
+      {objectiveToDelete && (
+        <Modal title="Hapus Tujuan Pembelajaran (TP)" onClose={() => setObjectiveToDelete(null)}>
+          <div className="space-y-5 text-sm">
+            <p className="text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed">
+              Apakah Anda yakin ingin menghapus Tujuan Pembelajaran{' '}
+              <strong className="text-neutral-900 dark:text-white">
+                &quot;{objectiveToDelete.code} - {stripHtml(objectiveToDelete.title)}&quot;
+              </strong>
+              ? Seluruh indikator IKTP yang ada di dalamnya juga akan terhapus.
+            </p>
+
+            <div className="flex justify-end gap-2.5 border-t border-neutral-200 dark:border-neutral-800 pt-4">
+              <button
+                type="button"
+                onClick={() => setObjectiveToDelete(null)}
+                className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteObjective}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 shadow"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Ya, Hapus TP</span>
               </button>
             </div>
           </div>

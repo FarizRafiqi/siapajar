@@ -6,6 +6,7 @@ import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import Semester from '#models/semester'
 import AssessmentAttachment from '#models/assessment_attachment'
+import LearningObjective from '#models/learning_objective'
 
 export default class PaudAssessment extends BaseModel {
   static readonly table = 'paud_assessments'
@@ -70,6 +71,9 @@ export default class PaudAssessment extends BaseModel {
 
   @belongsTo(() => Semester, { foreignKey: 'semesterId' })
   declare semester: BelongsTo<typeof Semester>
+
+  @belongsTo(() => LearningObjective, { foreignKey: 'learningObjectiveId' })
+  declare learningObjective: BelongsTo<typeof LearningObjective>
 
   @hasMany(() => AssessmentAttachment, { foreignKey: 'assessmentId' })
   declare attachments: HasMany<typeof AssessmentAttachment>

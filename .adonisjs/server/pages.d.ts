@@ -32,6 +32,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/classes/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/index.tsx'))['default']>
     'dashboard/classes/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/classes/show.tsx'))['default']>
     'dashboard/curriculum/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/curriculum/index.tsx'))['default']>
+    'dashboard/curriculum/print': ExtractProps<(typeof import('../../inertia/pages/dashboard/curriculum/print.tsx'))['default']>
     'dashboard/daily-lesson-plans/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/index.tsx'))['default']>
     'dashboard/daily-lesson-plans/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/daily-lesson-plans/show.tsx'))['default']>
     'dashboard/exams/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/exams/index.tsx'))['default']>

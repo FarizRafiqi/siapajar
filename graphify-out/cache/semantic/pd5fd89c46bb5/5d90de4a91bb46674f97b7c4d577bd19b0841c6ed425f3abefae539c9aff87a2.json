@@ -1,1 +1,175 @@
-{"nodes": [{"id": "public_images_problem_illustration_stressed_teacher", "label": "Stressed Teacher (Hijab, Batik Jacket)", "file_type": "image", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_admin_overload", "label": "Administrative Overload (concept)", "file_type": "concept", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_deadline_clocks", "label": "Deadline Clock Icons (multiple)", "file_type": "image", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_urgent_folders", "label": "Urgent File Folders (exclamation mark icons)", "file_type": "image", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_floating_documents", "label": "Floating Paper Documents", "file_type": "image", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_desk_workspace", "label": "Cluttered Desk with Laptop, Books, Notebook, Folders", "file_type": "image", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_marketing_problem_section", "label": "Landing Page Problem/Pain-Point Section", "file_type": "concept", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "public_images_problem_illustration_siapajar_education_domain", "label": "Indonesian Education / School Admin Domain (Siapajar)", "file_type": "concept", "source_file": "public/images/problem_illustration.png", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [{"source": "public_images_problem_illustration_stressed_teacher", "target": "public_images_problem_illustration_admin_overload", "relation": "conceptually_related_to", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_deadline_clocks", "target": "public_images_problem_illustration_admin_overload", "relation": "conceptually_related_to", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_urgent_folders", "target": "public_images_problem_illustration_admin_overload", "relation": "conceptually_related_to", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_floating_documents", "target": "public_images_problem_illustration_admin_overload", "relation": "conceptually_related_to", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_desk_workspace", "target": "public_images_problem_illustration_stressed_teacher", "relation": "conceptually_related_to", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_admin_overload", "target": "public_images_problem_illustration_marketing_problem_section", "relation": "rationale_for", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_stressed_teacher", "target": "public_images_problem_illustration_siapajar_education_domain", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}, {"source": "public_images_problem_illustration_marketing_problem_section", "target": "public_images_problem_illustration_siapajar_education_domain", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.65, "source_file": "public/images/problem_illustration.png", "source_location": null, "weight": 1.0}], "hyperedges": []}
+{
+  "nodes": [
+    {
+      "id": "public_images_problem_illustration_stressed_teacher",
+      "label": "Stressed Teacher (Hijab, Batik Jacket)",
+      "file_type": "image",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_admin_overload",
+      "label": "Administrative Overload (concept)",
+      "file_type": "concept",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_deadline_clocks",
+      "label": "Deadline Clock Icons (multiple)",
+      "file_type": "image",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_urgent_folders",
+      "label": "Urgent File Folders (exclamation mark icons)",
+      "file_type": "image",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_floating_documents",
+      "label": "Floating Paper Documents",
+      "file_type": "image",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_desk_workspace",
+      "label": "Cluttered Desk with Laptop, Books, Notebook, Folders",
+      "file_type": "image",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_marketing_problem_section",
+      "label": "Landing Page Problem/Pain-Point Section",
+      "file_type": "concept",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_problem_illustration_siapajar_education_domain",
+      "label": "Indonesian Education / School Admin Domain (Siapajar)",
+      "file_type": "concept",
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "public_images_problem_illustration_stressed_teacher",
+      "target": "public_images_problem_illustration_admin_overload",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_deadline_clocks",
+      "target": "public_images_problem_illustration_admin_overload",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_urgent_folders",
+      "target": "public_images_problem_illustration_admin_overload",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_floating_documents",
+      "target": "public_images_problem_illustration_admin_overload",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_desk_workspace",
+      "target": "public_images_problem_illustration_stressed_teacher",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_admin_overload",
+      "target": "public_images_problem_illustration_marketing_problem_section",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_stressed_teacher",
+      "target": "public_images_problem_illustration_siapajar_education_domain",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_problem_illustration_marketing_problem_section",
+      "target": "public_images_problem_illustration_siapajar_education_domain",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "public/images/problem_illustration.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

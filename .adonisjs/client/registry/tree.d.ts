@@ -66,10 +66,12 @@ export interface ApiDefinition {
   }
   curriculum: {
     index: typeof routes['curriculum.index']
+    print: typeof routes['curriculum.print']
     export: typeof routes['curriculum.export']
     exportPdf: typeof routes['curriculum.exportPdf']
     objectives: {
       store: typeof routes['curriculum.objectives.store']
+      destroy: typeof routes['curriculum.objectives.destroy']
     }
     sequences: {
       store: typeof routes['curriculum.sequences.store']

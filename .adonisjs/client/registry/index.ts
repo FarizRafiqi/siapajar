@@ -204,6 +204,12 @@ const routes = {
     tokens: [{"old":"/curriculum","type":0,"val":"curriculum","end":""}],
     types: placeholder as Registry['curriculum.index']['types'],
   },
+  'curriculum.print': {
+    methods: ["GET","HEAD"],
+    pattern: '/curriculum/print',
+    tokens: [{"old":"/curriculum/print","type":0,"val":"curriculum","end":""},{"old":"/curriculum/print","type":0,"val":"print","end":""}],
+    types: placeholder as Registry['curriculum.print']['types'],
+  },
   'curriculum.export': {
     methods: ["GET","HEAD"],
     pattern: '/curriculum/export',
@@ -239,6 +245,12 @@ const routes = {
     pattern: '/curriculum/objectives',
     tokens: [{"old":"/curriculum/objectives","type":0,"val":"curriculum","end":""},{"old":"/curriculum/objectives","type":0,"val":"objectives","end":""}],
     types: placeholder as Registry['curriculum.objectives.store']['types'],
+  },
+  'curriculum.objectives.destroy': {
+    methods: ["DELETE"],
+    pattern: '/curriculum/objectives/:id',
+    tokens: [{"old":"/curriculum/objectives/:id","type":0,"val":"curriculum","end":""},{"old":"/curriculum/objectives/:id","type":0,"val":"objectives","end":""},{"old":"/curriculum/objectives/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['curriculum.objectives.destroy']['types'],
   },
   'curriculum.sequences.store': {
     methods: ["POST"],

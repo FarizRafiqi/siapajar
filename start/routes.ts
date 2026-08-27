@@ -84,6 +84,7 @@ router
 
     // Kurikulum terkontrol: CP Fase Fondasi, TP, ATP, dan IKTP
     router.get('/curriculum', [controllers.Curriculum, 'index']).as('curriculum.index')
+    router.get('/curriculum/print', [controllers.Curriculum, 'print']).as('curriculum.print')
     router.get('/curriculum/export', [controllers.Curriculum, 'export']).as('curriculum.export')
     router
       .get('/curriculum/export/pdf', [controllers.Curriculum, 'exportPdf'])
@@ -100,6 +101,9 @@ router
     router
       .post('/curriculum/objectives', [controllers.Curriculum, 'storeObjective'])
       .as('curriculum.objectives.store')
+    router
+      .delete('/curriculum/objectives/:id', [controllers.Curriculum, 'destroyObjective'])
+      .as('curriculum.objectives.destroy')
     router
       .post('/curriculum/sequences', [controllers.Curriculum, 'storeSequence'])
       .as('curriculum.sequences.store')

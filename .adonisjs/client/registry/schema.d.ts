@@ -403,6 +403,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
     }
   }
+  'curriculum.print': {
+    methods: ["GET","HEAD"]
+    pattern: '/curriculum/print'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['print']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['print']>>>
+    }
+  }
   'curriculum.export': {
     methods: ["GET","HEAD"]
     pattern: '/curriculum/export'
@@ -473,6 +485,18 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/curriculum').createObjectiveValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeObjective']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['storeObjective']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'curriculum.objectives.destroy': {
+    methods: ["DELETE"]
+    pattern: '/curriculum/objectives/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroyObjective']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['destroyObjective']>>>
     }
   }
   'curriculum.sequences.store': {

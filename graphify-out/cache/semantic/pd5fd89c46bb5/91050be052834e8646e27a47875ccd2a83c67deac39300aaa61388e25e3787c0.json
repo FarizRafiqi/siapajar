@@ -1,1 +1,262 @@
-{"nodes": [{"id": "docs_roles_and_permissions_admin_role", "label": "Administrator Role", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Role Definitions", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_guru_role", "label": "Guru (Teacher) Role", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Role Definitions", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_kepala_sekolah_role", "label": "Kepala Sekolah (Principal) Role", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Role Definitions", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_orang_tua_role", "label": "Orang Tua (Parent) Role", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Role Definitions", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_role_middleware", "label": "role_middleware", "file_type": "code", "source_file": "docs/roles-and-permissions.md", "source_location": "Middleware Implementation", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_users_table", "label": "users Table", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Database Schema", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_packages_table", "label": "packages Table", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Database Schema", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_package_features", "label": "Package Features Matrix", "file_type": "concept", "source_file": "docs/roles-and-permissions.md", "source_location": "Package Features", "source_url": null, "captured_at": null, "author": null, "contributor": null}, {"id": "docs_roles_and_permissions_own_data_filter", "label": "Own Data Filter Pattern", "file_type": "rationale", "source_file": "docs/roles-and-permissions.md", "source_location": "Implementation Notes", "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Guru access is scoped by matching user_id on records so teachers only see/modify their own classes and documents; Admin bypasses this filter to see all data; Kepala Sekolah gets read-only visibility across all teachers without write access."}], "edges": [{"source": "docs_roles_and_permissions_admin_role", "target": "docs_roles_and_permissions_users_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Database Schema", "weight": 1.0}, {"source": "docs_roles_and_permissions_users_table", "target": "docs_roles_and_permissions_packages_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Users Table package_id FK", "weight": 1.0}, {"source": "docs_roles_and_permissions_guru_role", "target": "docs_roles_and_permissions_own_data_filter", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Implementation Notes #1", "weight": 1.0}, {"source": "docs_roles_and_permissions_admin_role", "target": "docs_roles_and_permissions_own_data_filter", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Implementation Notes #2", "weight": 1.0}, {"source": "docs_roles_and_permissions_kepala_sekolah_role", "target": "docs_roles_and_permissions_own_data_filter", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Implementation Notes #3", "weight": 1.0}, {"source": "docs_roles_and_permissions_role_middleware", "target": "docs_roles_and_permissions_admin_role", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Middleware Implementation", "weight": 1.0}, {"source": "docs_roles_and_permissions_role_middleware", "target": "docs_roles_and_permissions_guru_role", "relation": "implements", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Middleware Implementation", "weight": 1.0}, {"source": "docs_roles_and_permissions_package_features", "target": "docs_roles_and_permissions_packages_table", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md", "source_location": "Package Features", "weight": 1.0}, {"source": "docs_roles_and_permissions_orang_tua_role", "target": "docs_roles_and_permissions_own_data_filter", "relation": "references", "confidence": "AMBIGUOUS", "confidence_score": 0.2, "source_file": "docs/roles-and-permissions.md", "source_location": "Implementation Notes #4 (future feature)", "weight": 1.0}, {"source": "docs_roles_and_permissions_package_features", "target": "prd_siapajar_pricing_tiers", "relation": "shares_data_with", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "docs/roles-and-permissions.md", "source_location": "Package Features", "weight": 1.0}, {"source": "docs_roles_and_permissions_guru_role", "target": "prd_siapajar_modul_ajar", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "docs/roles-and-permissions.md", "source_location": "Modul Ajar permissions matrix", "weight": 1.0}, {"source": "docs_roles_and_permissions_guru_role", "target": "prd_siapajar_soal_generator", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "docs/roles-and-permissions.md", "source_location": "Bank Soal permissions matrix", "weight": 1.0}, {"source": "docs_roles_and_permissions_guru_role", "target": "prd_siapajar_prota", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "docs/roles-and-permissions.md", "source_location": "Prota permissions matrix", "weight": 1.0}, {"source": "docs_roles_and_permissions_kepala_sekolah_role", "target": "prd_siapajar_integrasi_rpt_digital", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "docs/roles-and-permissions.md", "source_location": "Persona Pak Hendra (PRD \u00a75.2)", "weight": 1.0}], "hyperedges": [{"id": "siapajar_role_permission_matrix", "label": "Four-Role Permission Matrix", "nodes": ["docs_roles_and_permissions_admin_role", "docs_roles_and_permissions_guru_role", "docs_roles_and_permissions_kepala_sekolah_role", "docs_roles_and_permissions_orang_tua_role"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/roles-and-permissions.md"}]}
+{
+  "nodes": [
+    {
+      "id": "docs_roles_and_permissions_admin_role",
+      "label": "Administrator Role",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Role Definitions",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_guru_role",
+      "label": "Guru (Teacher) Role",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Role Definitions",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_kepala_sekolah_role",
+      "label": "Kepala Sekolah (Principal) Role",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Role Definitions",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_orang_tua_role",
+      "label": "Orang Tua (Parent) Role",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Role Definitions",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_role_middleware",
+      "label": "role_middleware",
+      "file_type": "code",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Middleware Implementation",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_users_table",
+      "label": "users Table",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Database Schema",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_packages_table",
+      "label": "packages Table",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Database Schema",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_package_features",
+      "label": "Package Features Matrix",
+      "file_type": "concept",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Package Features",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_roles_and_permissions_own_data_filter",
+      "label": "Own Data Filter Pattern",
+      "file_type": "rationale",
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Implementation Notes",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Guru access is scoped by matching user_id on records so teachers only see/modify their own classes and documents; Admin bypasses this filter to see all data; Kepala Sekolah gets read-only visibility across all teachers without write access."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_roles_and_permissions_admin_role",
+      "target": "docs_roles_and_permissions_users_table",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Database Schema",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_users_table",
+      "target": "docs_roles_and_permissions_packages_table",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Users Table package_id FK",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_guru_role",
+      "target": "docs_roles_and_permissions_own_data_filter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Implementation Notes #1",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_admin_role",
+      "target": "docs_roles_and_permissions_own_data_filter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Implementation Notes #2",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_kepala_sekolah_role",
+      "target": "docs_roles_and_permissions_own_data_filter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Implementation Notes #3",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_role_middleware",
+      "target": "docs_roles_and_permissions_admin_role",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Middleware Implementation",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_role_middleware",
+      "target": "docs_roles_and_permissions_guru_role",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Middleware Implementation",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_package_features",
+      "target": "docs_roles_and_permissions_packages_table",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Package Features",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_orang_tua_role",
+      "target": "docs_roles_and_permissions_own_data_filter",
+      "relation": "references",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Implementation Notes #4 (future feature)",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_package_features",
+      "target": "prd_siapajar_pricing_tiers",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Package Features",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_guru_role",
+      "target": "prd_siapajar_modul_ajar",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Modul Ajar permissions matrix",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_guru_role",
+      "target": "prd_siapajar_soal_generator",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Bank Soal permissions matrix",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_guru_role",
+      "target": "prd_siapajar_prota",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Prota permissions matrix",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_roles_and_permissions_kepala_sekolah_role",
+      "target": "prd_siapajar_integrasi_rpt_digital",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "docs/roles-and-permissions.md",
+      "source_location": "Persona Pak Hendra (PRD \u00a75.2)",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "siapajar_role_permission_matrix",
+      "label": "Four-Role Permission Matrix",
+      "nodes": [
+        "docs_roles_and_permissions_admin_role",
+        "docs_roles_and_permissions_guru_role",
+        "docs_roles_and_permissions_kepala_sekolah_role",
+        "docs_roles_and_permissions_orang_tua_role"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/roles-and-permissions.md"
+    }
+  ]
+}

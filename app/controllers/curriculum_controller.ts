@@ -43,6 +43,27 @@ export default class CurriculumController {
     })
   }
 
+  async print({ inertia, auth }: HttpContext) {
+    const user = auth.user!
+    const { cps, sequences } = await this.exportData(user.id)
+    return inertia.render('dashboard/curriculum/print', {
+      cps,
+      sequences,
+      profile: {
+        institutionName: (user as any).institutionName || user.schoolName || 'TK Tunas Bangsa',
+        educationLevel:
+          user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK',
+        institutionType: user.institutionType || 'tk',
+        jenjangFase: `${user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK'} / Fase Fondasi`,
+        curriculumVersion: user.curriculumVersion || 'Kurikulum Merdeka',
+        teacherName: user.fullName || 'Guru Kelas',
+        teacherNip: (user as any).nip || '-',
+        principalName: (user as any).principalName || 'Kepala Sekolah',
+        principalNip: (user as any).principalNip || '-',
+      },
+    })
+  }
+
   async export({ response, auth }: HttpContext) {
     const user = auth.user!
     const { cps, sequences } = await this.exportData(user.id)
@@ -87,6 +108,30 @@ export default class CurriculumController {
     await LearningObjective.create({ ...data, userId: user.id, source: 'custom' })
     await recordUsage(user.id, 'custom_atp')
     session.flash('success', 'TP berhasil dibuat')
+    return response.redirect().back()
+  }
+
+  async destroyObjective({ params, response, session, auth }: HttpContext) {
+    const user = auth.user!
+    const objective = await LearningObjective.query()
+      .where('id', params.id)
+      .where((q) => {
+        if (user.role === 'admin') {
+          // admin can delete any
+        } else {
+          q.where('user_id', user.id).orWhereNull('user_id')
+        }
+      })
+      .first()
+
+    if (objective) {
+      await IktpIndicator.query().where('learning_objective_id', objective.id).delete()
+      await objective.delete()
+      session.flash('success', 'Tujuan Pembelajaran (TP) berhasil dihapus')
+    } else {
+      session.flash('error', 'Tujuan Pembelajaran tidak ditemukan')
+    }
+
     return response.redirect().back()
   }
 

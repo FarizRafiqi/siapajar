@@ -1,1 +1,549 @@
-{".adonisjs/client/data.d.ts":{"size":622,"mtime_ns":1785069874759017482,"word_count":67},".adonisjs/client/manifest.d.ts":{"size":257,"mtime_ns":1785069874760469313,"word_count":29},".adonisjs/client/registry/index.ts":{"size":12830,"mtime_ns":1785069876335427267,"word_count":681},".adonisjs/client/registry/schema.d.ts":{"size":12596,"mtime_ns":1785069876335427267,"word_count":1149},".adonisjs/client/registry/tree.d.ts":{"size":2507,"mtime_ns":1785069876335427267,"word_count":187},".adonisjs/server/controllers.ts":{"size":821,"mtime_ns":1785069874757993591,"word_count":63},".adonisjs/server/events.ts":{"size":99,"mtime_ns":1785069874754372353,"word_count":18},".adonisjs/server/listeners.ts":{"size":102,"mtime_ns":1785069874755342057,"word_count":18},".adonisjs/server/pages.d.ts":{"size":2651,"mtime_ns":1785069874763050504,"word_count":101},".adonisjs/server/routes.d.ts":{"size":7890,"mtime_ns":1785069876289904778,"word_count":869},"PRD-SiapAjar.md":{"size":57036,"mtime_ns":1783774406550273596,"word_count":8446,"hashes":{"prd-siapajar.md":"a0b8d25121386370f4da68455db384af22bebec5e036cb22836748217863ca79"}},"README.md":{"size":1853,"mtime_ns":1783774167453938046,"word_count":238,"hashes":{"readme.md":"b1a03a69bd7784b09e68c18c9a5e3100575152250e36746eb4ff11b465ceeda0"}},"ace.js":{"size":802,"mtime_ns":1780041923000000000,"word_count":97},"adonisrc.ts":{"size":4105,"mtime_ns":1783776422601675190,"word_count":344},"app/controllers/annual_plans_controller.ts":{"size":3797,"mtime_ns":1785069642679936580,"word_count":330},"app/controllers/classes_controller.ts":{"size":4405,"mtime_ns":1785069599456251676,"word_count":377},"app/controllers/dashboard_controller.ts":{"size":2812,"mtime_ns":1783869958792360732,"word_count":222},"app/controllers/exams_controller.ts":{"size":4179,"mtime_ns":1785069631755518316,"word_count":410},"app/controllers/new_account_controller.ts":{"size":540,"mtime_ns":1783859401378853683,"word_count":57},"app/controllers/onboarding_controller.ts":{"size":586,"mtime_ns":1783865432973948701,"word_count":60},"app/controllers/semester_plans_controller.ts":{"size":4429,"mtime_ns":1785069656672546995,"word_count":378},"app/controllers/session_controller.ts":{"size":641,"mtime_ns":1783857521071447584,"word_count":65},"app/controllers/settings_controller.ts":{"size":1269,"mtime_ns":1785067380372499428,"word_count":117},"app/controllers/subjects_controller.ts":{"size":3557,"mtime_ns":1785069607704145643,"word_count":355},"app/controllers/teaching_modules_controller.ts":{"size":4182,"mtime_ns":1785069619349190556,"word_count":356},"app/exceptions/handler.ts":{"size":1543,"mtime_ns":1780041923000000000,"word_count":216},"app/middleware/auth_middleware.ts":{"size":462,"mtime_ns":1780041923000000000,"word_count":55},"app/middleware/container_bindings_middleware.ts":{"size":619,"mtime_ns":1780041923000000000,"word_count":77},"app/middleware/guest_middleware.ts":{"size":863,"mtime_ns":1780041923000000000,"word_count":117},"app/middleware/inertia_middleware.ts":{"size":1703,"mtime_ns":1780041923000000000,"word_count":195},"app/middleware/onboarding_middleware.ts":{"size":786,"mtime_ns":1783869908382045576,"word_count":77},"app/middleware/role_middleware.ts":{"size":733,"mtime_ns":1783843036190067177,"word_count":80},"app/middleware/silent_auth_middleware.ts":{"size":453,"mtime_ns":1780041923000000000,"word_count":69},"app/models/academic_year.ts":{"size":935,"mtime_ns":1783843864539175832,"word_count":100},"app/models/annual_plan.ts":{"size":1209,"mtime_ns":1785068059087196508,"word_count":135},"app/models/exam.ts":{"size":1512,"mtime_ns":1785068049319199748,"word_count":182},"app/models/package.ts":{"size":1141,"mtime_ns":1783841377246306645,"word_count":130},"app/models/school_class.ts":{"size":1633,"mtime_ns":1783862066241879821,"word_count":175},"app/models/semester.ts":{"size":980,"mtime_ns":1783852714830757281,"word_count":103},"app/models/semester_plan.ts":{"size":1411,"mtime_ns":1785068060975902790,"word_count":158},"app/models/student.ts":{"size":796,"mtime_ns":1783852718523584021,"word_count":90},"app/models/subject.ts":{"size":912,"mtime_ns":1785068100925578920,"word_count":107},"app/models/teaching_module.ts":{"size":1317,"mtime_ns":1785068056805798219,"word_count":149},"app/models/user.ts":{"size":1995,"mtime_ns":1785068102109014940,"word_count":221},"app/transformers/user_transformer.ts":{"size":336,"mtime_ns":1780041923000000000,"word_count":32},"app/validators/annual_plan.ts":{"size":500,"mtime_ns":1783859438618845331,"word_count":32},"app/validators/class.ts":{"size":511,"mtime_ns":1785067032971569542,"word_count":32},"app/validators/exam.ts":{"size":707,"mtime_ns":1783862327541886743,"word_count":45},"app/validators/generate.ts":{"size":1226,"mtime_ns":1785066941971918656,"word_count":86},"app/validators/onboarding.ts":{"size":215,"mtime_ns":1783865440625949664,"word_count":17},"app/validators/semester_plan.ts":{"size":585,"mtime_ns":1783862050693879296,"word_count":36},"app/validators/settings.ts":{"size":935,"mtime_ns":1785067371946734503,"word_count":85},"app/validators/student.ts":{"size":229,"mtime_ns":1783862332716138971,"word_count":16},"app/validators/subject.ts":{"size":589,"mtime_ns":1783870390377054857,"word_count":36},"app/validators/teaching_module.ts":{"size":816,"mtime_ns":1783862057313879563,"word_count":43},"app/validators/user.ts":{"size":391,"mtime_ns":1780041923000000000,"word_count":36},"bin/console.ts":{"size":1350,"mtime_ns":1780041923000000000,"word_count":157},"bin/server.ts":{"size":1294,"mtime_ns":1780041923000000000,"word_count":155},"bin/test.ts":{"size":1719,"mtime_ns":1780041923000000000,"word_count":193},"config/app.ts":{"size":2012,"mtime_ns":1783829187600977260,"word_count":279},"config/auth.ts":{"size":1001,"mtime_ns":1783857516855448898,"word_count":109},"config/bodyparser.ts":{"size":1697,"mtime_ns":1780041923000000000,"word_count":198},"config/cors.ts":{"size":1186,"mtime_ns":1780041923000000000,"word_count":160},"config/database.ts":{"size":712,"mtime_ns":1783772238383148310,"word_count":69},"config/encryption.ts":{"size":784,"mtime_ns":1780041923000000000,"word_count":95},"config/hash.ts":{"size":2292,"mtime_ns":1780041923000000000,"word_count":307},"config/inertia.ts":{"size":359,"mtime_ns":1780041923000000000,"word_count":47},"config/logger.ts":{"size":1183,"mtime_ns":1780041923000000000,"word_count":137},"config/session.ts":{"size":1615,"mtime_ns":1780041923000000000,"word_count":226},"config/shield.ts":{"size":1815,"mtime_ns":1780041923000000000,"word_count":235},"config/static.ts":{"size":691,"mtime_ns":1780041923000000000,"word_count":88},"config/vite.ts":{"size":755,"mtime_ns":1780041923000000000,"word_count":105},"database/migrations/1761885935168_create_users_table.ts":{"size":562,"mtime_ns":1780041923000000000,"word_count":38},"database/migrations/1783840982859_create_packages_table.ts":{"size":858,"mtime_ns":1783841089394678024,"word_count":42},"database/migrations/1783840982860_alter_users_table.ts":{"size":693,"mtime_ns":1785068194435147744,"word_count":61},"database/migrations/1783857503536_create_remember_me_tokens_table.ts":{"size":647,"mtime_ns":1783870161864674244,"word_count":38},"database/migrations/1783857503537_add_onboarding_to_users_table.ts":{"size":513,"mtime_ns":1783869111104371126,"word_count":44},"database/migrations/1783900000001_create_academic_years_table.ts":{"size":440,"mtime_ns":1785068140063940038,"word_count":35},"database/migrations/1783900000002_create_semesters_table.ts":{"size":554,"mtime_ns":1785068126330503084,"word_count":36},"database/migrations/1783900000003_create_classes_table.ts":{"size":808,"mtime_ns":1785068136701985170,"word_count":55},"database/migrations/1783900000004_create_students_table.ts":{"size":615,"mtime_ns":1785068134822299557,"word_count":45},"database/migrations/1783900000005_create_teaching_modules_table.ts":{"size":806,"mtime_ns":1785068126338127282,"word_count":42},"database/migrations/1783900000006_create_exams_table.ts":{"size":794,"mtime_ns":1785068126340471023,"word_count":45},"database/migrations/1783900000007_create_annual_plans_table.ts":{"size":663,"mtime_ns":1785068126341878074,"word_count":37},"database/migrations/1783900000008_create_semester_plans_table.ts":{"size":768,"mtime_ns":1785068126342224018,"word_count":38},"database/migrations/1783900000009_create_subjects_table.ts":{"size":773,"mtime_ns":1785068139015168453,"word_count":52},"database/schema.ts":{"size":7728,"mtime_ns":1785068524689028700,"word_count":886},"database/schema_rules.ts":{"size":115,"mtime_ns":1780041923000000000,"word_count":12},"database/seeders/academic_seeder.ts":{"size":1279,"mtime_ns":1783844108745733791,"word_count":143},"database/seeders/database_seeder.ts":{"size":4110,"mtime_ns":1785068342759108239,"word_count":353},"database/seeders/subject_seeder.ts":{"size":744,"mtime_ns":1785067172111652431,"word_count":81},"docker-entrypoint.sh":{"size":444,"mtime_ns":1783857547047788061,"word_count":66,"hashes":{"docker-entrypoint.sh":"deb119f58c5eebc427eadb7dbd0dca51a712b4ebc231822d99b4e998c2cc2a37"}},"docs/roles-and-permissions.md":{"size":6287,"mtime_ns":1783848130070375264,"word_count":1197,"hashes":{"docs/roles-and-permissions.md":"91050be052834e8646e27a47875ccd2a83c67deac39300aaa61388e25e3787c0"}},"eslint.config.js":{"size":261,"mtime_ns":1780041923000000000,"word_count":28},"inertia/app.tsx":{"size":799,"mtime_ns":1783848851307826255,"word_count":84},"inertia/client.ts":{"size":201,"mtime_ns":1780041923000000000,"word_count":26},"inertia/components/dashboard/dashboard-wrapper.tsx":{"size":685,"mtime_ns":1783848425733930633,"word_count":79},"inertia/components/dashboard/header.tsx":{"size":2768,"mtime_ns":1783848436294363817,"word_count":232},"inertia/components/dashboard/sidebar.tsx":{"size":4887,"mtime_ns":1783870306523079301,"word_count":454},"inertia/components/ui/accordion.tsx":{"size":2069,"mtime_ns":1783835785085206376,"word_count":201},"inertia/components/ui/animated-number.tsx":{"size":1435,"mtime_ns":1783838391529972546,"word_count":154},"inertia/components/ui/aurora-background.tsx":{"size":1524,"mtime_ns":1783836698251069681,"word_count":130},"inertia/components/ui/infinite-moving-cards.tsx":{"size":1299,"mtime_ns":1783835865049070240,"word_count":141},"inertia/components/ui/magic-button.tsx":{"size":1582,"mtime_ns":1783836899331086792,"word_count":163},"inertia/components/ui/spotlight-card.tsx":{"size":1725,"mtime_ns":1783862095213879242,"word_count":157},"inertia/components/ui/text-generate-effect.tsx":{"size":971,"mtime_ns":1783834490740550303,"word_count":99},"inertia/components/ui/theme-toggle.tsx":{"size":1104,"mtime_ns":1783835765136612558,"word_count":109},"inertia/components/ui/tracing-beam.tsx":{"size":1367,"mtime_ns":1783862106349879600,"word_count":139},"inertia/layouts/dashboard.tsx":{"size":1106,"mtime_ns":1783848398606294155,"word_count":106},"inertia/layouts/default.tsx":{"size":2040,"mtime_ns":1783848675712036799,"word_count":160},"inertia/lib/utils.ts":{"size":166,"mtime_ns":1783834483688001819,"word_count":22},"inertia/pages/auth/login.tsx":{"size":5471,"mtime_ns":1783857662111402835,"word_count":369},"inertia/pages/auth/signup.tsx":{"size":6808,"mtime_ns":1783838859439740486,"word_count":435},"inertia/pages/dashboard/annual-plans/index.tsx":{"size":11459,"mtime_ns":1785066101127912245,"word_count":812},"inertia/pages/dashboard/annual-plans/show.tsx":{"size":6738,"mtime_ns":1785066156547891834,"word_count":518},"inertia/pages/dashboard/classes/index.tsx":{"size":17467,"mtime_ns":1785065808116020780,"word_count":1254},"inertia/pages/dashboard/classes/show.tsx":{"size":10583,"mtime_ns":1785065865582607332,"word_count":750},"inertia/pages/dashboard/exams/index.tsx":{"size":15720,"mtime_ns":1785066011323946700,"word_count":1118},"inertia/pages/dashboard/exams/show.tsx":{"size":13036,"mtime_ns":1785066058613140526,"word_count":953},"inertia/pages/dashboard/index.tsx":{"size":15303,"mtime_ns":1783870040258048025,"word_count":1090},"inertia/pages/dashboard/semester-plans/index.tsx":{"size":13091,"mtime_ns":1785066203907875004,"word_count":922},"inertia/pages/dashboard/semester-plans/show.tsx":{"size":7014,"mtime_ns":1785066233877442878,"word_count":541},"inertia/pages/dashboard/settings.tsx":{"size":9207,"mtime_ns":1785067428775429428,"word_count":643},"inertia/pages/dashboard/subjects/index.tsx":{"size":16511,"mtime_ns":1785066921979903170,"word_count":1200},"inertia/pages/dashboard/teaching-modules/index.tsx":{"size":14211,"mtime_ns":1785065924023979296,"word_count":984},"inertia/pages/dashboard/teaching-modules/show.tsx":{"size":8263,"mtime_ns":1785065957463161511,"word_count":630},"inertia/pages/errors/not_found.tsx":{"size":105,"mtime_ns":1783776540077995101,"word_count":14},"inertia/pages/errors/server_error.tsx":{"size":137,"mtime_ns":1783776538085638040,"word_count":15},"inertia/pages/home.tsx":{"size":49702,"mtime_ns":1783858879889965124,"word_count":4052},"inertia/pages/onboarding.tsx":{"size":14445,"mtime_ns":1783865881681965072,"word_count":996},"inertia/shims.ts":{"size":159,"mtime_ns":1780041923000000000,"word_count":20},"inertia/ssr.tsx":{"size":825,"mtime_ns":1783829187602847949,"word_count":89},"inertia/tsconfig.json":{"size":350,"mtime_ns":1783776448637653180,"word_count":25,"hashes":{"inertia/tsconfig.json":"f51ae6b0ee24826075842671cea7f1e585e2fd28a9da0715040adf8dc55beaa4"}},"package.json":{"size":2916,"mtime_ns":1783834471552741817,"word_count":201,"hashes":{"package.json":"33153c56fab6c465ef0498b6af7daa68a4619b6d501f1f8000b8cc12182f9f57"}},"providers/api_provider.ts":{"size":2404,"mtime_ns":1780041923000000000,"word_count":278},"public/images/hero_illustration.png":{"size":667540,"mtime_ns":1783837227723117011,"word_count":23267,"hashes":{"public/images/hero_illustration.png":"0b2751b5c19f9000e1d4c56a72d3c75c589851c3e870dcaecdc44559efa839aa"}},"public/images/problem_illustration.png":{"size":619540,"mtime_ns":1783837815929629889,"word_count":21114,"hashes":{"public/images/problem_illustration.png":"5d90de4a91bb46674f97b7c4d577bd19b0841c6ed425f3abefae539c9aff87a2"}},"start/env.ts":{"size":1397,"mtime_ns":1783772251711144666,"word_count":120},"start/kernel.ts":{"size":1286,"mtime_ns":1785067490459404668,"word_count":95},"start/routes.ts":{"size":5491,"mtime_ns":1785066903233122841,"word_count":195},"start/validator.ts":{"size":719,"mtime_ns":1780041923000000000,"word_count":88},"tests/bootstrap.ts":{"size":1238,"mtime_ns":1780041923000000000,"word_count":154},"tsconfig.inertia.json":{"size":179,"mtime_ns":1783776449760799358,"word_count":14,"hashes":{"tsconfig.inertia.json":"987ffa5aca7f14fec40fb90111b7e28b987f5f15fea735e81f4b0d7c96baf507"}},"tsconfig.json":{"size":186,"mtime_ns":1780041923000000000,"word_count":16,"hashes":{"tsconfig.json":"034a3946de8e4d9f71ead44237ec476971b5264577863a80c974e85e15c38f80"}},"vite.config.ts":{"size":694,"mtime_ns":1783829330740444002,"word_count":65}}
+{
+  ".adonisjs/client/data.d.ts": { "size": 622, "mtime_ns": 1785069874759017482, "word_count": 67 },
+  ".adonisjs/client/manifest.d.ts": {
+    "size": 257,
+    "mtime_ns": 1785069874760469313,
+    "word_count": 29
+  },
+  ".adonisjs/client/registry/index.ts": {
+    "size": 12830,
+    "mtime_ns": 1785069876335427267,
+    "word_count": 681
+  },
+  ".adonisjs/client/registry/schema.d.ts": {
+    "size": 12596,
+    "mtime_ns": 1785069876335427267,
+    "word_count": 1149
+  },
+  ".adonisjs/client/registry/tree.d.ts": {
+    "size": 2507,
+    "mtime_ns": 1785069876335427267,
+    "word_count": 187
+  },
+  ".adonisjs/server/controllers.ts": {
+    "size": 821,
+    "mtime_ns": 1785069874757993591,
+    "word_count": 63
+  },
+  ".adonisjs/server/events.ts": { "size": 99, "mtime_ns": 1785069874754372353, "word_count": 18 },
+  ".adonisjs/server/listeners.ts": {
+    "size": 102,
+    "mtime_ns": 1785069874755342057,
+    "word_count": 18
+  },
+  ".adonisjs/server/pages.d.ts": {
+    "size": 2651,
+    "mtime_ns": 1785069874763050504,
+    "word_count": 101
+  },
+  ".adonisjs/server/routes.d.ts": {
+    "size": 7890,
+    "mtime_ns": 1785069876289904778,
+    "word_count": 869
+  },
+  "PRD-SiapAjar.md": {
+    "size": 57036,
+    "mtime_ns": 1783774406550273596,
+    "word_count": 8446,
+    "hashes": {
+      "prd-siapajar.md": "a0b8d25121386370f4da68455db384af22bebec5e036cb22836748217863ca79"
+    }
+  },
+  "README.md": {
+    "size": 1853,
+    "mtime_ns": 1783774167453938046,
+    "word_count": 238,
+    "hashes": { "readme.md": "b1a03a69bd7784b09e68c18c9a5e3100575152250e36746eb4ff11b465ceeda0" }
+  },
+  "ace.js": { "size": 802, "mtime_ns": 1780041923000000000, "word_count": 97 },
+  "adonisrc.ts": { "size": 4105, "mtime_ns": 1783776422601675190, "word_count": 344 },
+  "app/controllers/annual_plans_controller.ts": {
+    "size": 3797,
+    "mtime_ns": 1785069642679936580,
+    "word_count": 330
+  },
+  "app/controllers/classes_controller.ts": {
+    "size": 4405,
+    "mtime_ns": 1785069599456251676,
+    "word_count": 377
+  },
+  "app/controllers/dashboard_controller.ts": {
+    "size": 2812,
+    "mtime_ns": 1783869958792360732,
+    "word_count": 222
+  },
+  "app/controllers/exams_controller.ts": {
+    "size": 4179,
+    "mtime_ns": 1785069631755518316,
+    "word_count": 410
+  },
+  "app/controllers/new_account_controller.ts": {
+    "size": 540,
+    "mtime_ns": 1783859401378853683,
+    "word_count": 57
+  },
+  "app/controllers/onboarding_controller.ts": {
+    "size": 586,
+    "mtime_ns": 1783865432973948701,
+    "word_count": 60
+  },
+  "app/controllers/semester_plans_controller.ts": {
+    "size": 4429,
+    "mtime_ns": 1785069656672546995,
+    "word_count": 378
+  },
+  "app/controllers/session_controller.ts": {
+    "size": 641,
+    "mtime_ns": 1783857521071447584,
+    "word_count": 65
+  },
+  "app/controllers/settings_controller.ts": {
+    "size": 1269,
+    "mtime_ns": 1785067380372499428,
+    "word_count": 117
+  },
+  "app/controllers/subjects_controller.ts": {
+    "size": 3557,
+    "mtime_ns": 1785069607704145643,
+    "word_count": 355
+  },
+  "app/controllers/teaching_modules_controller.ts": {
+    "size": 4182,
+    "mtime_ns": 1785069619349190556,
+    "word_count": 356
+  },
+  "app/exceptions/handler.ts": { "size": 1543, "mtime_ns": 1780041923000000000, "word_count": 216 },
+  "app/middleware/auth_middleware.ts": {
+    "size": 462,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 55
+  },
+  "app/middleware/container_bindings_middleware.ts": {
+    "size": 619,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 77
+  },
+  "app/middleware/guest_middleware.ts": {
+    "size": 863,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 117
+  },
+  "app/middleware/inertia_middleware.ts": {
+    "size": 1703,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 195
+  },
+  "app/middleware/onboarding_middleware.ts": {
+    "size": 786,
+    "mtime_ns": 1783869908382045576,
+    "word_count": 77
+  },
+  "app/middleware/role_middleware.ts": {
+    "size": 733,
+    "mtime_ns": 1783843036190067177,
+    "word_count": 80
+  },
+  "app/middleware/silent_auth_middleware.ts": {
+    "size": 453,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 69
+  },
+  "app/models/academic_year.ts": {
+    "size": 935,
+    "mtime_ns": 1783843864539175832,
+    "word_count": 100
+  },
+  "app/models/annual_plan.ts": { "size": 1209, "mtime_ns": 1785068059087196508, "word_count": 135 },
+  "app/models/exam.ts": { "size": 1512, "mtime_ns": 1785068049319199748, "word_count": 182 },
+  "app/models/package.ts": { "size": 1141, "mtime_ns": 1783841377246306645, "word_count": 130 },
+  "app/models/school_class.ts": {
+    "size": 1633,
+    "mtime_ns": 1783862066241879821,
+    "word_count": 175
+  },
+  "app/models/semester.ts": { "size": 980, "mtime_ns": 1783852714830757281, "word_count": 103 },
+  "app/models/semester_plan.ts": {
+    "size": 1411,
+    "mtime_ns": 1785068060975902790,
+    "word_count": 158
+  },
+  "app/models/student.ts": { "size": 796, "mtime_ns": 1783852718523584021, "word_count": 90 },
+  "app/models/subject.ts": { "size": 912, "mtime_ns": 1785068100925578920, "word_count": 107 },
+  "app/models/teaching_module.ts": {
+    "size": 1317,
+    "mtime_ns": 1785068056805798219,
+    "word_count": 149
+  },
+  "app/models/user.ts": { "size": 1995, "mtime_ns": 1785068102109014940, "word_count": 221 },
+  "app/transformers/user_transformer.ts": {
+    "size": 336,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 32
+  },
+  "app/validators/annual_plan.ts": {
+    "size": 500,
+    "mtime_ns": 1783859438618845331,
+    "word_count": 32
+  },
+  "app/validators/class.ts": { "size": 511, "mtime_ns": 1785067032971569542, "word_count": 32 },
+  "app/validators/exam.ts": { "size": 707, "mtime_ns": 1783862327541886743, "word_count": 45 },
+  "app/validators/generate.ts": { "size": 1226, "mtime_ns": 1785066941971918656, "word_count": 86 },
+  "app/validators/onboarding.ts": {
+    "size": 215,
+    "mtime_ns": 1783865440625949664,
+    "word_count": 17
+  },
+  "app/validators/semester_plan.ts": {
+    "size": 585,
+    "mtime_ns": 1783862050693879296,
+    "word_count": 36
+  },
+  "app/validators/settings.ts": { "size": 935, "mtime_ns": 1785067371946734503, "word_count": 85 },
+  "app/validators/student.ts": { "size": 229, "mtime_ns": 1783862332716138971, "word_count": 16 },
+  "app/validators/subject.ts": { "size": 589, "mtime_ns": 1783870390377054857, "word_count": 36 },
+  "app/validators/teaching_module.ts": {
+    "size": 816,
+    "mtime_ns": 1783862057313879563,
+    "word_count": 43
+  },
+  "app/validators/user.ts": { "size": 391, "mtime_ns": 1780041923000000000, "word_count": 36 },
+  "bin/console.ts": { "size": 1350, "mtime_ns": 1780041923000000000, "word_count": 157 },
+  "bin/server.ts": { "size": 1294, "mtime_ns": 1780041923000000000, "word_count": 155 },
+  "bin/test.ts": { "size": 1719, "mtime_ns": 1780041923000000000, "word_count": 193 },
+  "config/app.ts": { "size": 2012, "mtime_ns": 1783829187600977260, "word_count": 279 },
+  "config/auth.ts": { "size": 1001, "mtime_ns": 1783857516855448898, "word_count": 109 },
+  "config/bodyparser.ts": { "size": 1697, "mtime_ns": 1780041923000000000, "word_count": 198 },
+  "config/cors.ts": { "size": 1186, "mtime_ns": 1780041923000000000, "word_count": 160 },
+  "config/database.ts": { "size": 712, "mtime_ns": 1783772238383148310, "word_count": 69 },
+  "config/encryption.ts": { "size": 784, "mtime_ns": 1780041923000000000, "word_count": 95 },
+  "config/hash.ts": { "size": 2292, "mtime_ns": 1780041923000000000, "word_count": 307 },
+  "config/inertia.ts": { "size": 359, "mtime_ns": 1780041923000000000, "word_count": 47 },
+  "config/logger.ts": { "size": 1183, "mtime_ns": 1780041923000000000, "word_count": 137 },
+  "config/session.ts": { "size": 1615, "mtime_ns": 1780041923000000000, "word_count": 226 },
+  "config/shield.ts": { "size": 1815, "mtime_ns": 1780041923000000000, "word_count": 235 },
+  "config/static.ts": { "size": 691, "mtime_ns": 1780041923000000000, "word_count": 88 },
+  "config/vite.ts": { "size": 755, "mtime_ns": 1780041923000000000, "word_count": 105 },
+  "database/migrations/1761885935168_create_users_table.ts": {
+    "size": 562,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 38
+  },
+  "database/migrations/1783840982859_create_packages_table.ts": {
+    "size": 858,
+    "mtime_ns": 1783841089394678024,
+    "word_count": 42
+  },
+  "database/migrations/1783840982860_alter_users_table.ts": {
+    "size": 693,
+    "mtime_ns": 1785068194435147744,
+    "word_count": 61
+  },
+  "database/migrations/1783857503536_create_remember_me_tokens_table.ts": {
+    "size": 647,
+    "mtime_ns": 1783870161864674244,
+    "word_count": 38
+  },
+  "database/migrations/1783857503537_add_onboarding_to_users_table.ts": {
+    "size": 513,
+    "mtime_ns": 1783869111104371126,
+    "word_count": 44
+  },
+  "database/migrations/1783900000001_create_academic_years_table.ts": {
+    "size": 440,
+    "mtime_ns": 1785068140063940038,
+    "word_count": 35
+  },
+  "database/migrations/1783900000002_create_semesters_table.ts": {
+    "size": 554,
+    "mtime_ns": 1785068126330503084,
+    "word_count": 36
+  },
+  "database/migrations/1783900000003_create_classes_table.ts": {
+    "size": 808,
+    "mtime_ns": 1785068136701985170,
+    "word_count": 55
+  },
+  "database/migrations/1783900000004_create_students_table.ts": {
+    "size": 615,
+    "mtime_ns": 1785068134822299557,
+    "word_count": 45
+  },
+  "database/migrations/1783900000005_create_teaching_modules_table.ts": {
+    "size": 806,
+    "mtime_ns": 1785068126338127282,
+    "word_count": 42
+  },
+  "database/migrations/1783900000006_create_exams_table.ts": {
+    "size": 794,
+    "mtime_ns": 1785068126340471023,
+    "word_count": 45
+  },
+  "database/migrations/1783900000007_create_annual_plans_table.ts": {
+    "size": 663,
+    "mtime_ns": 1785068126341878074,
+    "word_count": 37
+  },
+  "database/migrations/1783900000008_create_semester_plans_table.ts": {
+    "size": 768,
+    "mtime_ns": 1785068126342224018,
+    "word_count": 38
+  },
+  "database/migrations/1783900000009_create_subjects_table.ts": {
+    "size": 773,
+    "mtime_ns": 1785068139015168453,
+    "word_count": 52
+  },
+  "database/schema.ts": { "size": 7728, "mtime_ns": 1785068524689028700, "word_count": 886 },
+  "database/schema_rules.ts": { "size": 115, "mtime_ns": 1780041923000000000, "word_count": 12 },
+  "database/seeders/academic_seeder.ts": {
+    "size": 1279,
+    "mtime_ns": 1783844108745733791,
+    "word_count": 143
+  },
+  "database/seeders/database_seeder.ts": {
+    "size": 4110,
+    "mtime_ns": 1785068342759108239,
+    "word_count": 353
+  },
+  "database/seeders/subject_seeder.ts": {
+    "size": 744,
+    "mtime_ns": 1785067172111652431,
+    "word_count": 81
+  },
+  "docker-entrypoint.sh": {
+    "size": 444,
+    "mtime_ns": 1783857547047788061,
+    "word_count": 66,
+    "hashes": {
+      "docker-entrypoint.sh": "deb119f58c5eebc427eadb7dbd0dca51a712b4ebc231822d99b4e998c2cc2a37"
+    }
+  },
+  "docs/roles-and-permissions.md": {
+    "size": 6287,
+    "mtime_ns": 1783848130070375264,
+    "word_count": 1197,
+    "hashes": {
+      "docs/roles-and-permissions.md": "91050be052834e8646e27a47875ccd2a83c67deac39300aaa61388e25e3787c0"
+    }
+  },
+  "eslint.config.js": { "size": 261, "mtime_ns": 1780041923000000000, "word_count": 28 },
+  "inertia/app.tsx": { "size": 799, "mtime_ns": 1783848851307826255, "word_count": 84 },
+  "inertia/client.ts": { "size": 201, "mtime_ns": 1780041923000000000, "word_count": 26 },
+  "inertia/components/dashboard/dashboard-wrapper.tsx": {
+    "size": 685,
+    "mtime_ns": 1783848425733930633,
+    "word_count": 79
+  },
+  "inertia/components/dashboard/header.tsx": {
+    "size": 2768,
+    "mtime_ns": 1783848436294363817,
+    "word_count": 232
+  },
+  "inertia/components/dashboard/sidebar.tsx": {
+    "size": 4887,
+    "mtime_ns": 1783870306523079301,
+    "word_count": 454
+  },
+  "inertia/components/ui/accordion.tsx": {
+    "size": 2069,
+    "mtime_ns": 1783835785085206376,
+    "word_count": 201
+  },
+  "inertia/components/ui/animated-number.tsx": {
+    "size": 1435,
+    "mtime_ns": 1783838391529972546,
+    "word_count": 154
+  },
+  "inertia/components/ui/aurora-background.tsx": {
+    "size": 1524,
+    "mtime_ns": 1783836698251069681,
+    "word_count": 130
+  },
+  "inertia/components/ui/infinite-moving-cards.tsx": {
+    "size": 1299,
+    "mtime_ns": 1783835865049070240,
+    "word_count": 141
+  },
+  "inertia/components/ui/magic-button.tsx": {
+    "size": 1582,
+    "mtime_ns": 1783836899331086792,
+    "word_count": 163
+  },
+  "inertia/components/ui/spotlight-card.tsx": {
+    "size": 1725,
+    "mtime_ns": 1783862095213879242,
+    "word_count": 157
+  },
+  "inertia/components/ui/text-generate-effect.tsx": {
+    "size": 971,
+    "mtime_ns": 1783834490740550303,
+    "word_count": 99
+  },
+  "inertia/components/ui/theme-toggle.tsx": {
+    "size": 1104,
+    "mtime_ns": 1783835765136612558,
+    "word_count": 109
+  },
+  "inertia/components/ui/tracing-beam.tsx": {
+    "size": 1367,
+    "mtime_ns": 1783862106349879600,
+    "word_count": 139
+  },
+  "inertia/layouts/dashboard.tsx": {
+    "size": 1106,
+    "mtime_ns": 1783848398606294155,
+    "word_count": 106
+  },
+  "inertia/layouts/default.tsx": {
+    "size": 2040,
+    "mtime_ns": 1783848675712036799,
+    "word_count": 160
+  },
+  "inertia/lib/utils.ts": { "size": 166, "mtime_ns": 1783834483688001819, "word_count": 22 },
+  "inertia/pages/auth/login.tsx": {
+    "size": 5471,
+    "mtime_ns": 1783857662111402835,
+    "word_count": 369
+  },
+  "inertia/pages/auth/signup.tsx": {
+    "size": 6808,
+    "mtime_ns": 1783838859439740486,
+    "word_count": 435
+  },
+  "inertia/pages/dashboard/annual-plans/index.tsx": {
+    "size": 11459,
+    "mtime_ns": 1785066101127912245,
+    "word_count": 812
+  },
+  "inertia/pages/dashboard/annual-plans/show.tsx": {
+    "size": 6738,
+    "mtime_ns": 1785066156547891834,
+    "word_count": 518
+  },
+  "inertia/pages/dashboard/classes/index.tsx": {
+    "size": 17467,
+    "mtime_ns": 1785065808116020780,
+    "word_count": 1254
+  },
+  "inertia/pages/dashboard/classes/show.tsx": {
+    "size": 10583,
+    "mtime_ns": 1785065865582607332,
+    "word_count": 750
+  },
+  "inertia/pages/dashboard/exams/index.tsx": {
+    "size": 15720,
+    "mtime_ns": 1785066011323946700,
+    "word_count": 1118
+  },
+  "inertia/pages/dashboard/exams/show.tsx": {
+    "size": 13036,
+    "mtime_ns": 1785066058613140526,
+    "word_count": 953
+  },
+  "inertia/pages/dashboard/index.tsx": {
+    "size": 15303,
+    "mtime_ns": 1783870040258048025,
+    "word_count": 1090
+  },
+  "inertia/pages/dashboard/semester-plans/index.tsx": {
+    "size": 13091,
+    "mtime_ns": 1785066203907875004,
+    "word_count": 922
+  },
+  "inertia/pages/dashboard/semester-plans/show.tsx": {
+    "size": 7014,
+    "mtime_ns": 1785066233877442878,
+    "word_count": 541
+  },
+  "inertia/pages/dashboard/settings.tsx": {
+    "size": 9207,
+    "mtime_ns": 1785067428775429428,
+    "word_count": 643
+  },
+  "inertia/pages/dashboard/subjects/index.tsx": {
+    "size": 16511,
+    "mtime_ns": 1785066921979903170,
+    "word_count": 1200
+  },
+  "inertia/pages/dashboard/teaching-modules/index.tsx": {
+    "size": 14211,
+    "mtime_ns": 1785065924023979296,
+    "word_count": 984
+  },
+  "inertia/pages/dashboard/teaching-modules/show.tsx": {
+    "size": 8263,
+    "mtime_ns": 1785065957463161511,
+    "word_count": 630
+  },
+  "inertia/pages/errors/not_found.tsx": {
+    "size": 105,
+    "mtime_ns": 1783776540077995101,
+    "word_count": 14
+  },
+  "inertia/pages/errors/server_error.tsx": {
+    "size": 137,
+    "mtime_ns": 1783776538085638040,
+    "word_count": 15
+  },
+  "inertia/pages/home.tsx": { "size": 49702, "mtime_ns": 1783858879889965124, "word_count": 4052 },
+  "inertia/pages/onboarding.tsx": {
+    "size": 14445,
+    "mtime_ns": 1783865881681965072,
+    "word_count": 996
+  },
+  "inertia/shims.ts": { "size": 159, "mtime_ns": 1780041923000000000, "word_count": 20 },
+  "inertia/ssr.tsx": { "size": 825, "mtime_ns": 1783829187602847949, "word_count": 89 },
+  "inertia/tsconfig.json": {
+    "size": 350,
+    "mtime_ns": 1783776448637653180,
+    "word_count": 25,
+    "hashes": {
+      "inertia/tsconfig.json": "f51ae6b0ee24826075842671cea7f1e585e2fd28a9da0715040adf8dc55beaa4"
+    }
+  },
+  "package.json": {
+    "size": 2916,
+    "mtime_ns": 1783834471552741817,
+    "word_count": 201,
+    "hashes": { "package.json": "33153c56fab6c465ef0498b6af7daa68a4619b6d501f1f8000b8cc12182f9f57" }
+  },
+  "providers/api_provider.ts": { "size": 2404, "mtime_ns": 1780041923000000000, "word_count": 278 },
+  "public/images/hero_illustration.png": {
+    "size": 667540,
+    "mtime_ns": 1783837227723117011,
+    "word_count": 23267,
+    "hashes": {
+      "public/images/hero_illustration.png": "0b2751b5c19f9000e1d4c56a72d3c75c589851c3e870dcaecdc44559efa839aa"
+    }
+  },
+  "public/images/problem_illustration.png": {
+    "size": 619540,
+    "mtime_ns": 1783837815929629889,
+    "word_count": 21114,
+    "hashes": {
+      "public/images/problem_illustration.png": "5d90de4a91bb46674f97b7c4d577bd19b0841c6ed425f3abefae539c9aff87a2"
+    }
+  },
+  "start/env.ts": { "size": 1397, "mtime_ns": 1783772251711144666, "word_count": 120 },
+  "start/kernel.ts": { "size": 1286, "mtime_ns": 1785067490459404668, "word_count": 95 },
+  "start/routes.ts": { "size": 5491, "mtime_ns": 1785066903233122841, "word_count": 195 },
+  "start/validator.ts": { "size": 719, "mtime_ns": 1780041923000000000, "word_count": 88 },
+  "tests/bootstrap.ts": { "size": 1238, "mtime_ns": 1780041923000000000, "word_count": 154 },
+  "tsconfig.inertia.json": {
+    "size": 179,
+    "mtime_ns": 1783776449760799358,
+    "word_count": 14,
+    "hashes": {
+      "tsconfig.inertia.json": "987ffa5aca7f14fec40fb90111b7e28b987f5f15fea735e81f4b0d7c96baf507"
+    }
+  },
+  "tsconfig.json": {
+    "size": 186,
+    "mtime_ns": 1780041923000000000,
+    "word_count": 16,
+    "hashes": {
+      "tsconfig.json": "034a3946de8e4d9f71ead44237ec476971b5264577863a80c974e85e15c38f80"
+    }
+  },
+  "vite.config.ts": { "size": 694, "mtime_ns": 1783829330740444002, "word_count": 65 }
+}

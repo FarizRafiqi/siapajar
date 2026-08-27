@@ -37,12 +37,14 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'documents.autosave': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'documents.status': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'documents.duplicate': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'curriculum.objectives.store': { paramsTuple?: []; params?: {} }
+    'curriculum.objectives.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'curriculum.sequences.store': { paramsTuple?: []; params?: {} }
     'curriculum.sequences.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'curriculum.sequences.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -259,6 +261,7 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
@@ -353,6 +356,7 @@ export type ScannedRoutes = {
     'account.subscriptions': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
+    'curriculum.print': { paramsTuple?: []; params?: {} }
     'curriculum.export': { paramsTuple?: []; params?: {} }
     'curriculum.exportPdf': { paramsTuple?: []; params?: {} }
     'classes.index': { paramsTuple?: []; params?: {} }
@@ -452,6 +456,7 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'mcp.handle': { paramsTuple?: []; params?: {} }
+    'curriculum.objectives.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'curriculum.sequences.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'classes.removeStudent': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'studentId': ParamValue} }

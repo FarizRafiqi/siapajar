@@ -2,12 +2,12 @@
 
 ## Role Definitions
 
-| Role | Code | Description |
-|------|------|-------------|
-| Administrator | `admin` | Full system access, manages all users and data |
-| Guru | `guru` | Teacher - manages own classes, teaching modules, exams |
-| Kepala Sekolah | `kepala_sekolah` | Principal - views all teacher data, reports |
-| Orang Tua | `orang_tua` | Parent - views child's data only (future feature) |
+| Role           | Code             | Description                                            |
+| -------------- | ---------------- | ------------------------------------------------------ |
+| Administrator  | `admin`          | Full system access, manages all users and data         |
+| Guru           | `guru`           | Teacher - manages own classes, teaching modules, exams |
+| Kepala Sekolah | `kepala_sekolah` | Principal - views all teacher data, reports            |
+| Orang Tua      | `orang_tua`      | Parent - views child's data only (future feature)      |
 
 ---
 
@@ -15,97 +15,98 @@
 
 ### Dashboard
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View Dashboard | ✅ | ✅ | ✅ | ❌ |
-| View All Stats | ✅ | ❌ (own only) | ✅ (all teachers) | ❌ |
-| View System Stats | ✅ | ❌ | ❌ | ❌ |
+| Feature           | admin | guru          | kepala_sekolah    | orang_tua |
+| ----------------- | ----- | ------------- | ----------------- | --------- |
+| View Dashboard    | ✅    | ✅            | ✅                | ❌        |
+| View All Stats    | ✅    | ❌ (own only) | ✅ (all teachers) | ❌        |
+| View System Stats | ✅    | ❌            | ❌                | ❌        |
 
 ### Kelas (Classes)
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Classes | ✅ | ❌ | ✅ | ❌ |
-| View Own Classes | ✅ | ✅ | ✅ | ❌ |
-| Create Class | ✅ | ✅ | ❌ | ❌ |
-| Edit Class | ✅ | ✅ (own) | ❌ | ❌ |
-| Delete Class | ✅ | ✅ (own) | ❌ | ❌ |
-| Add Student | ✅ | ✅ (own class) | ❌ | ❌ |
-| Remove Student | ✅ | ✅ (own class) | ❌ | ❌ |
+| Feature          | admin | guru           | kepala_sekolah | orang_tua |
+| ---------------- | ----- | -------------- | -------------- | --------- |
+| View All Classes | ✅    | ❌             | ✅             | ❌        |
+| View Own Classes | ✅    | ✅             | ✅             | ❌        |
+| Create Class     | ✅    | ✅             | ❌             | ❌        |
+| Edit Class       | ✅    | ✅ (own)       | ❌             | ❌        |
+| Delete Class     | ✅    | ✅ (own)       | ❌             | ❌        |
+| Add Student      | ✅    | ✅ (own class) | ❌             | ❌        |
+| Remove Student   | ✅    | ✅ (own class) | ❌             | ❌        |
 
 ### Modul Ajar (Teaching Modules)
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Modules | ✅ | ❌ | ✅ | ❌ |
-| View Own Modules | ✅ | ✅ | ✅ | ❌ |
-| Create Module | ✅ | ✅ | ❌ | ❌ |
-| Edit Module | ✅ | ✅ (own) | ❌ | ❌ |
-| Delete Module | ✅ | ✅ (own) | ❌ | ❌ |
-| Generate with AI | ✅ | ✅ | ❌ | ❌ |
-| Publish Module | ✅ | ✅ (own) | ❌ | ❌ |
+| Feature          | admin | guru     | kepala_sekolah | orang_tua |
+| ---------------- | ----- | -------- | -------------- | --------- |
+| View All Modules | ✅    | ❌       | ✅             | ❌        |
+| View Own Modules | ✅    | ✅       | ✅             | ❌        |
+| Create Module    | ✅    | ✅       | ❌             | ❌        |
+| Edit Module      | ✅    | ✅ (own) | ❌             | ❌        |
+| Delete Module    | ✅    | ✅ (own) | ❌             | ❌        |
+| Generate with AI | ✅    | ✅       | ❌             | ❌        |
+| Publish Module   | ✅    | ✅ (own) | ❌             | ❌        |
 
 ### Bank Soal (Exams)
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Exams | ✅ | ❌ | ✅ | ❌ |
-| View Own Exams | ✅ | ✅ | ✅ | ❌ |
-| Create Exam | ✅ | ✅ | ❌ | ❌ |
-| Edit Exam | ✅ | ✅ (own) | ❌ | ❌ |
-| Delete Exam | ✅ | ✅ (own) | ❌ | ❌ |
-| Generate with AI | ✅ | ✅ | ❌ | ❌ |
-| Export DOCX | ✅ | ✅ (own) | ✅ | ❌ |
-| Publish Exam | ✅ | ✅ (own) | ❌ | ❌ |
+| Feature          | admin | guru     | kepala_sekolah | orang_tua |
+| ---------------- | ----- | -------- | -------------- | --------- |
+| View All Exams   | ✅    | ❌       | ✅             | ❌        |
+| View Own Exams   | ✅    | ✅       | ✅             | ❌        |
+| Create Exam      | ✅    | ✅       | ❌             | ❌        |
+| Edit Exam        | ✅    | ✅ (own) | ❌             | ❌        |
+| Delete Exam      | ✅    | ✅ (own) | ❌             | ❌        |
+| Generate with AI | ✅    | ✅       | ❌             | ❌        |
+| Export DOCX      | ✅    | ✅ (own) | ✅             | ❌        |
+| Publish Exam     | ✅    | ✅ (own) | ❌             | ❌        |
 
 ### Prota (Annual Plans)
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Plans | ✅ | ❌ | ✅ | ❌ |
-| View Own Plans | ✅ | ✅ | ✅ | ❌ |
-| Create Plan | ✅ | ✅ | ❌ | ❌ |
-| Edit Plan | ✅ | ✅ (own) | ❌ | ❌ |
-| Delete Plan | ✅ | ✅ (own) | ❌ | ❌ |
-| Generate with AI | ✅ | ✅ | ❌ | ❌ |
-| Export DOCX | ✅ | ✅ (own) | ✅ | ❌ |
+| Feature          | admin | guru     | kepala_sekolah | orang_tua |
+| ---------------- | ----- | -------- | -------------- | --------- |
+| View All Plans   | ✅    | ❌       | ✅             | ❌        |
+| View Own Plans   | ✅    | ✅       | ✅             | ❌        |
+| Create Plan      | ✅    | ✅       | ❌             | ❌        |
+| Edit Plan        | ✅    | ✅ (own) | ❌             | ❌        |
+| Delete Plan      | ✅    | ✅ (own) | ❌             | ❌        |
+| Generate with AI | ✅    | ✅       | ❌             | ❌        |
+| Export DOCX      | ✅    | ✅ (own) | ✅             | ❌        |
 
 ### Promes (Semester Plans)
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Plans | ✅ | ❌ | ✅ | ❌ |
-| View Own Plans | ✅ | ✅ | ✅ | ❌ |
-| Create Plan | ✅ | ✅ | ❌ | ❌ |
-| Edit Plan | ✅ | ✅ (own) | ❌ | ❌ |
-| Delete Plan | ✅ | ✅ (own) | ❌ | ❌ |
-| Generate with AI | ✅ | ✅ | ❌ | ❌ |
-| Export DOCX | ✅ | ✅ (own) | ✅ | ❌ |
+| Feature          | admin | guru     | kepala_sekolah | orang_tua |
+| ---------------- | ----- | -------- | -------------- | --------- |
+| View All Plans   | ✅    | ❌       | ✅             | ❌        |
+| View Own Plans   | ✅    | ✅       | ✅             | ❌        |
+| Create Plan      | ✅    | ✅       | ❌             | ❌        |
+| Edit Plan        | ✅    | ✅ (own) | ❌             | ❌        |
+| Delete Plan      | ✅    | ✅ (own) | ❌             | ❌        |
+| Generate with AI | ✅    | ✅       | ❌             | ❌        |
+| Export DOCX      | ✅    | ✅ (own) | ✅             | ❌        |
 
 ### User Management
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| View All Users | ✅ | ❌ | ❌ | ❌ |
-| Create User | ✅ | ❌ | ❌ | ❌ |
-| Edit User | ✅ | ❌ | ❌ | ❌ |
-| Delete User | ✅ | ❌ | ❌ | ❌ |
-| Change Role | ✅ | ❌ | ❌ | ❌ |
-| Assign Package | ✅ | ❌ | ❌ | ❌ |
+| Feature        | admin | guru | kepala_sekolah | orang_tua |
+| -------------- | ----- | ---- | -------------- | --------- |
+| View All Users | ✅    | ❌   | ❌             | ❌        |
+| Create User    | ✅    | ❌   | ❌             | ❌        |
+| Edit User      | ✅    | ❌   | ❌             | ❌        |
+| Delete User    | ✅    | ❌   | ❌             | ❌        |
+| Change Role    | ✅    | ❌   | ❌             | ❌        |
+| Assign Package | ✅    | ❌   | ❌             | ❌        |
 
 ### Settings & Profile
 
-| Feature | admin | guru | kepala_sekolah | orang_tua |
-|---------|-------|------|----------------|-----------|
-| Edit Own Profile | ✅ | ✅ | ✅ | ✅ |
-| Change Password | ✅ | ✅ | ✅ | ✅ |
-| View Package | ✅ | ✅ | ✅ | ✅ |
+| Feature          | admin | guru | kepala_sekolah | orang_tua |
+| ---------------- | ----- | ---- | -------------- | --------- |
+| Edit Own Profile | ✅    | ✅   | ✅             | ✅        |
+| Change Password  | ✅    | ✅   | ✅             | ✅        |
+| View Package     | ✅    | ✅   | ✅             | ✅        |
 
 ---
 
 ## Route Protection
 
 ### Public Routes (No Auth)
+
 - `GET /` - Landing page
 - `GET /login` - Login page
 - `POST /login` - Login handler
@@ -113,11 +114,13 @@
 - `POST /signup` - Signup handler
 
 ### Auth Required
+
 - `POST /logout` - Logout handler
 - `GET /dashboard` - Dashboard
 - All `/dashboard/*` routes
 
 ### Role-Based Routes (Future)
+
 ```
 /admin/*          → admin only
 /teacher/*        → guru only
@@ -143,11 +146,13 @@
 router.use([() => import('#middleware/role_middleware')])
 
 // Admin only routes
-router.get('/admin/users', '#controllers/users_controller.index')
+router
+  .get('/admin/users', '#controllers/users_controller.index')
   .use(middleware.role({ roles: ['admin'] }))
 
 // Guru only routes
-router.post('/teaching-modules', '#controllers/teaching_modules_controller.store')
+router
+  .post('/teaching-modules', '#controllers/teaching_modules_controller.store')
   .use(middleware.role({ roles: ['guru'] }))
 ```
 
@@ -156,6 +161,7 @@ router.post('/teaching-modules', '#controllers/teaching_modules_controller.store
 ## Database Schema
 
 ### Users Table
+
 ```sql
 users (
   id SERIAL PRIMARY KEY,
@@ -170,6 +176,7 @@ users (
 ```
 
 ### Packages Table
+
 ```sql
 packages (
   id SERIAL PRIMARY KEY,
@@ -190,13 +197,13 @@ packages (
 
 ## Package Features
 
-| Feature | Free | Basic | Pro | Sekolah |
-|---------|------|-------|-----|---------|
-| Max Kelas | 1 | 3 | 10 | Unlimited |
-| Max Siswa/Kelas | 15 | 30 | 40 | Unlimited |
-| Modul Ajar AI | 5/month | 20/month | Unlimited | Unlimited |
-| Soal AI | 5/month | 20/month | Unlimited | Unlimited |
-| Export DOCX | ❌ | ✅ | ✅ | ✅ |
-| Priority Support | ❌ | ❌ | ✅ | ✅ |
-| Price (Rp/month) | 0 | 25,000 | 45,000 | 300,000 |
-| Price (Rp/year) | 0 | 250,000 | 450,000 | 3,000,000 |
+| Feature          | Free    | Basic    | Pro       | Sekolah   |
+| ---------------- | ------- | -------- | --------- | --------- |
+| Max Kelas        | 1       | 3        | 10        | Unlimited |
+| Max Siswa/Kelas  | 15      | 30       | 40        | Unlimited |
+| Modul Ajar AI    | 5/month | 20/month | Unlimited | Unlimited |
+| Soal AI          | 5/month | 20/month | Unlimited | Unlimited |
+| Export DOCX      | ❌      | ✅       | ✅        | ✅        |
+| Priority Support | ❌      | ❌       | ✅        | ✅        |
+| Price (Rp/month) | 0       | 25,000   | 45,000    | 300,000   |
+| Price (Rp/year)  | 0       | 250,000  | 450,000   | 3,000,000 |
