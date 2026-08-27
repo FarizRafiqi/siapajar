@@ -42,7 +42,7 @@ export default function Login() {
           </div>
 
           {/* Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <div className="card-kawaii p-8 bg-white dark:bg-neutral-900">
             <Form route="session.store">
               {({ processing, errors }) => (
                 <div className="space-y-5">
@@ -50,7 +50,7 @@ export default function Login() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
                     >
                       Email
                     </label>
@@ -61,16 +61,18 @@ export default function Login() {
                       autoComplete="username"
                       placeholder="nama@guru.sch.id"
                       data-invalid={errors.email ? 'true' : undefined}
-                      className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
                     />
-                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.email}</p>
+                    )}
                   </div>
 
                   {/* Password */}
                   <div>
                     <label
                       htmlFor="password"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
                     >
                       Password
                     </label>
@@ -81,10 +83,10 @@ export default function Login() {
                       autoComplete="current-password"
                       placeholder="Masukkan password"
                       data-invalid={errors.password ? 'true' : undefined}
-                      className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
                     />
                     {errors.password && (
-                      <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.password}</p>
                     )}
                   </div>
 
@@ -98,14 +100,14 @@ export default function Login() {
                         margin: 0,
                         fontWeight: 'normal',
                       }}
-                      className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none"
+                      className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer select-none"
                     >
                       <input
                         type="checkbox"
                         name="remember"
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        className="w-4 h-4 rounded-lg border-2 border-neutral-300 dark:border-neutral-600 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                       />
-                      <span>Ingat saya</span>
+                      <span>Ingat saya di perangkat ini</span>
                     </label>
                   </div>
 
@@ -113,24 +115,26 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={processing}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    className="btn-kawaii-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
                   >
                     <LogIn className="w-4 h-4" />
-                    {processing ? 'Masuk...' : 'Masuk'}
+                    {processing ? 'Memproses Masuk...' : 'Masuk Sekarang'}
                   </button>
                 </div>
               )}
             </Form>
 
             <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-              <span className="text-xs font-medium text-gray-400 dark:text-gray-500">ATAU</span>
-              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+              <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                ATAU
+              </span>
+              <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
             </div>
 
             <a
               href="/auth/google/redirect"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-neutral-200 bg-white px-4 py-3 text-xs font-bold text-neutral-800 transition-all hover:bg-neutral-50 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 shadow-xs active:translate-y-0.5"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -150,18 +154,18 @@ export default function Login() {
                   d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.28 6.61l4.01 3.1C6.23 6.88 8.88 4.77 12 4.77z"
                 />
               </svg>
-              Masuk dengan Google
+              Masuk Cepat dengan Google
             </a>
           </div>
 
           {/* Footer */}
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+          <p className="text-center text-xs text-neutral-500 dark:text-neutral-400 mt-6">
             Belum punya akun?{' '}
             <Link
               href="/signup"
-              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-extrabold"
             >
-              Daftar gratis
+              Daftar akun gratis di sini
             </Link>
           </p>
         </motion.div>

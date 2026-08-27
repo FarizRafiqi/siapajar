@@ -15,6 +15,7 @@ interface User {
   role: string
   educationLevel: 'tk' | 'sd' | null
   avatarUrl: string | null
+  creditsBalance?: number
 }
 
 interface DashboardLayoutProps {
@@ -83,6 +84,7 @@ export default function DashboardLayout({
             onMenuClick={() => setMobileMenuOpen(true)}
             showTour={isTourAvailable}
             onTourClick={startTour}
+            creditsBalance={user.creditsBalance}
           />
         </div>
         <main className="p-4 sm:p-6 print:p-0 print:m-0">{children}</main>

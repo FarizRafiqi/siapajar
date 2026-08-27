@@ -259,3 +259,89 @@ textarea[data-invalid='true'] + div {
 .dark .dashboard-data-table td {
   border-color: rgb(64 64 64);
 }
+
+/* ─── SiapAjar × NeedMCP Kawaii Pop Theme Utilities ────────────────── */
+:root {
+  /* SiapAjar Signature Primary & Secondary */
+  --color-siapajar-emerald: #059669;
+  --color-siapajar-emerald-dark: #064e3b;
+  --color-siapajar-amber: #f59e0b;
+
+  /* Kawaii Pop Playful Accents */
+  --color-kawaii-coral: #f8be9e;
+  --color-kawaii-sky: #70d6ff;
+  --color-kawaii-yellow: #ffd670;
+  --color-kawaii-mint: #bcffbe;
+  --color-kawaii-pink: #ff7096;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family:
+    'Nunito',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+body {
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.shadow-kawaii-sticker {
+  box-shadow: 3px 3px 0px rgba(6, 78, 59, 0.25);
+}
+
+.dark .shadow-kawaii-sticker {
+  box-shadow: 3px 3px 0px rgba(52, 211, 153, 0.25);
+}
+
+/* SiapAjar Signature Primary Button (Emerald Pop) */
+.btn-kawaii-primary {
+  @apply inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-150 border-2 border-emerald-700/20 text-sm;
+}
+
+/* SiapAjar Signature Amber Button (Golden Pop) */
+.btn-kawaii-amber {
+  @apply inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-150 border-2 border-amber-600/20 text-sm;
+}
+
+/* Kawaii Playful Coral & Sky Accent Buttons */
+.btn-kawaii-coral {
+  @apply inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-2xl bg-[#f8be9e] hover:bg-[#f6b08c] text-neutral-950 border-2 border-neutral-950 shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-150 text-sm;
+}
+
+.btn-kawaii-sky {
+  @apply inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-2xl bg-[#70d6ff] hover:bg-[#52caff] text-neutral-950 border-2 border-neutral-950 shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-150 text-sm;
+}
+
+.btn-kawaii-secondary {
+  @apply inline-flex items-center justify-center gap-2 font-semibold px-4 py-2.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-100 border-2 border-neutral-200 dark:border-neutral-700 shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-150 text-sm;
+}
+
+.card-kawaii {
+  @apply bg-white dark:bg-neutral-900 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800/80 shadow-sm hover:shadow-md hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-200;
+}
+
+.badge-kawaii-emerald {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-950 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-800 shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-amber {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-950 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800 shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-coral {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#f8be9e]/30 text-neutral-900 dark:text-neutral-100 border border-[#f8be9e] shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-sky {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#70d6ff]/30 text-neutral-900 dark:text-neutral-100 border border-[#70d6ff] shrink-0 whitespace-nowrap;
+}

@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react'
-import { CircleHelp, Menu, Moon, Sun } from 'lucide-react'
+import { Link, usePage } from '@inertiajs/react'
+import { CircleHelp, Menu, Moon, Sun, Sparkles, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   onMenuClick?: () => void
   showTour?: boolean
   onTourClick?: () => void
+  creditsBalance?: number
 }
 
 export default function Header({
@@ -16,6 +17,7 @@ export default function Header({
   onMenuClick,
   showTour,
   onTourClick,
+  creditsBalance,
 }: Readonly<HeaderProps>) {
   const [darkMode, setDarkMode] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
@@ -83,6 +85,24 @@ export default function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* Saldo Kredit Kawaii Badge */}
+        {creditsBalance !== undefined && (
+          <Link
+            href="/billing"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 border-2 border-emerald-500/20 text-emerald-900 dark:text-emerald-200 transition-all text-xs font-bold shrink-0 shadow-xs active:translate-y-0.5"
+            title="Klik untuk top-up kredit"
+          >
+            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+            <span className="font-extrabold">{creditsBalance}</span>
+            <span className="hidden xs:inline text-neutral-600 dark:text-neutral-300 font-medium">
+              Kredit
+            </span>
+            <span className="ml-1 flex items-center justify-center h-4 w-4 rounded-full bg-emerald-600 text-white dark:bg-emerald-500">
+              <Plus className="h-3 w-3" />
+            </span>
+          </Link>
+        )}
+
         <div ref={helpRef} className="relative">
           <button
             type="button"

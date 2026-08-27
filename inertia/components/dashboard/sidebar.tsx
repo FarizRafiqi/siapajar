@@ -5,7 +5,6 @@ import {
   BookOpen,
   FileQuestion,
   Calendar,
-  CalendarDays,
   CalendarRange,
   ClipboardList,
   ClipboardCheck,
@@ -62,33 +61,51 @@ type NavigationEntry =
 
 const guruSdNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
-  { name: 'Kelas', href: '/classes', icon: Users },
-  { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
   {
-    name: 'Perencanaan',
-    items: [
-      { name: 'Modul Ajar', href: '/teaching-modules', icon: BookOpen },
-      { name: 'Protah', href: '/annual-plans', icon: Calendar },
-      { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
-    ],
-  },
-  {
-    name: 'Asesmen & Laporan',
-    items: [
-      { name: 'Bank Soal', href: '/exams', icon: FileQuestion },
-      { name: 'Penilaian', href: '/assessments', icon: ClipboardCheck },
-      { name: 'Rapor Perkembangan', href: '/report-cards', icon: Award },
-    ],
-  },
-  {
-    name: 'Akun',
+    name: 'Tool Instan (Express)',
     items: [
       {
-        name: 'Paket Saya',
-        href: '/my-package',
-        icon: Package,
-        activeHrefs: ['/usage', '/subscriptions'],
+        name: 'Modul Ajar',
+        href: '/modul-ajar',
+        icon: BookOpen,
+        activeHrefs: ['/teaching-modules'],
+      },
+      { name: 'LKPD Siswa', href: '/lkpd', icon: FileSpreadsheet, activeHrefs: ['/lkpds'] },
+      { name: 'Bank Soal AI', href: '/soal', icon: FileQuestion, activeHrefs: ['/exams'] },
+      {
+        name: 'Prota & Promes',
+        href: '/prota-promes',
+        icon: Calendar,
+        activeHrefs: ['/annual-plans', '/semester-plans'],
+      },
+      { name: 'Rapor Narasi', href: '/rapor', icon: Award, activeHrefs: ['/report-cards'] },
+      { name: 'Katrol Nilai', href: '/katrol', icon: ClipboardCheck },
+      { name: 'Jurnal Mengajar', href: '/jurnal', icon: ClipboardList },
+      { name: 'Kokurikuler (P5)', href: '/kokurikuler', icon: Presentation },
+    ],
+  },
+  {
+    name: 'Panel Terstruktur',
+    items: [
+      { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
+      {
+        name: 'Kelas & Siswa',
+        href: '/classes',
+        icon: Users,
+        activeHrefs: ['/panel/kelas', '/students'],
+      },
+      { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
+      { name: 'Daftar Penilaian', href: '/assessments', icon: ClipboardCheck },
+    ],
+  },
+  {
+    name: 'Akun & Kredit',
+    items: [
+      {
+        name: 'Beli Kredit & Paket',
+        href: '/billing',
+        icon: Sparkles,
+        activeHrefs: ['/my-package', '/usage', '/subscriptions'],
       },
     ],
   },
@@ -96,39 +113,49 @@ const guruSdNavigation: NavigationEntry[] = [
 
 const guruTkNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'CP, TP & ATP', href: '/curriculum', icon: Route },
-  { name: 'Kelompok', href: '/classes', icon: Users },
   {
-    name: 'Perencanaan',
-    items: [
-      { name: 'Modul Ajar (RPM)', href: '/rppm', icon: CalendarRange },
-      { name: 'Protah', href: '/annual-plans', icon: Calendar },
-      { name: 'Promes', href: '/semester-plans', icon: CalendarDays },
-    ],
-  },
-  {
-    name: 'Bahan Ajar',
-    items: [
-      { name: 'LKPD Anak', href: '/lkpd', icon: FileSpreadsheet },
-      { name: 'Media Ajar', href: '/media-modules', icon: Presentation },
-    ],
-  },
-  {
-    name: 'Asesmen & Laporan',
-    items: [
-      { name: 'Soal RA/TK', href: '/exams', icon: FileQuestion },
-      { name: 'Asesmen PAUD', href: '/paud-assessments', icon: ClipboardList },
-      { name: 'Rapor Perkembangan', href: '/report-cards', icon: Award },
-    ],
-  },
-  {
-    name: 'Akun',
+    name: 'Tool Instan (Express)',
     items: [
       {
-        name: 'Paket Saya',
-        href: '/my-package',
-        icon: Package,
-        activeHrefs: ['/usage', '/subscriptions'],
+        name: 'Modul Ajar (RPPM)',
+        href: '/modul-ajar',
+        icon: CalendarRange,
+        activeHrefs: ['/rppm', '/rpm', '/teaching-modules'],
+      },
+      { name: 'LKPD Anak PAUD', href: '/lkpd', icon: FileSpreadsheet, activeHrefs: ['/lkpds'] },
+      { name: 'Bank Soal Bergambar', href: '/soal', icon: FileQuestion, activeHrefs: ['/exams'] },
+      {
+        name: 'Prota & Promes',
+        href: '/prota-promes',
+        icon: Calendar,
+        activeHrefs: ['/annual-plans', '/semester-plans'],
+      },
+      {
+        name: 'Rapor Narasi PAUD',
+        href: '/rapor',
+        icon: Award,
+        activeHrefs: ['/report-cards', '/paud/reports'],
+      },
+      { name: 'Jurnal Harian PAUD', href: '/jurnal', icon: ClipboardList },
+      { name: 'Kokurikuler / P5', href: '/kokurikuler', icon: Presentation },
+    ],
+  },
+  {
+    name: 'Panel Terstruktur',
+    items: [
+      { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
+      { name: 'Kelompok & Siswa', href: '/classes', icon: Users, activeHrefs: ['/panel/kelas'] },
+      { name: 'Asesmen Harian PAUD', href: '/paud-assessments', icon: ClipboardList },
+    ],
+  },
+  {
+    name: 'Akun & Kredit',
+    items: [
+      {
+        name: 'Beli Kredit & Paket',
+        href: '/billing',
+        icon: Sparkles,
+        activeHrefs: ['/my-package', '/usage', '/subscriptions'],
       },
     ],
   },

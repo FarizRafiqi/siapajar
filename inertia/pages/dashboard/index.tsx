@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
+import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   Users,
@@ -11,6 +12,15 @@ import {
   ArrowRight,
   FileSpreadsheet,
   Presentation,
+  Sparkles,
+  TrendingUp,
+  ClipboardList,
+  Compass,
+  Award,
+  CheckCircle2,
+  AlertCircle,
+  FileDown,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -57,523 +67,361 @@ interface DashboardProps {
   readonly recentMediaModules?: RecentItem[]
 }
 
-const sdStatCards = [
-  { key: 'classes', label: 'Kelas', icon: Users, color: 'emerald', href: '/classes' },
-  { key: 'students', label: 'Siswa', icon: Users, color: 'blue', href: '/classes' },
-  {
-    key: 'teachingModules',
-    label: 'Modul Ajar',
-    icon: BookOpen,
-    color: 'purple',
-    href: '/teaching-modules',
-  },
-  { key: 'exams', label: 'Bank Soal', icon: FileQuestion, color: 'orange', href: '/exams' },
-  { key: 'annualPlans', label: 'Protah', icon: Calendar, color: 'pink', href: '/annual-plans' },
-  {
-    key: 'semesterPlans',
-    label: 'Promes',
-    icon: CalendarDays,
-    color: 'cyan',
-    href: '/semester-plans',
-  },
-]
-
-const tkStatCards = [
-  { key: 'classes', label: 'Kelompok', icon: Users, color: 'emerald', href: '/classes' },
-  { key: 'students', label: 'Anak Didik', icon: Users, color: 'blue', href: '/classes' },
-  { key: 'lkpds', label: 'LKPD Anak', icon: FileSpreadsheet, color: 'purple', href: '/lkpd' },
-  {
-    key: 'mediaModules',
-    label: 'Media Ajar',
-    icon: Presentation,
-    color: 'orange',
-    href: '/media-modules',
-  },
-  { key: 'weeklyLessonPlans', label: 'RPPM', icon: CalendarRange, color: 'pink', href: '/rppm' },
-  { key: 'dailyLessonPlans', label: 'RPPH', icon: CalendarDays, color: 'cyan', href: '/rpph' },
-]
-
-const colorMap: Record<string, { bg: string; icon: string; text: string }> = {
-  emerald: {
-    bg: 'bg-emerald-200 dark:bg-emerald-900/60',
-    icon: 'text-emerald-700 dark:text-emerald-300',
-    text: 'text-emerald-700 dark:text-emerald-300',
-  },
-  blue: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    icon: 'text-blue-600 dark:text-blue-400',
-    text: 'text-blue-600 dark:text-blue-400',
-  },
-  purple: {
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    icon: 'text-purple-600 dark:text-purple-400',
-    text: 'text-purple-600 dark:text-purple-400',
-  },
-  orange: {
-    bg: 'bg-orange-100 dark:bg-orange-900/30',
-    icon: 'text-orange-600 dark:text-orange-400',
-    text: 'text-orange-600 dark:text-orange-400',
-  },
-  pink: {
-    bg: 'bg-pink-100 dark:bg-pink-900/30',
-    icon: 'text-pink-600 dark:text-pink-400',
-    text: 'text-pink-600 dark:text-pink-400',
-  },
-  cyan: {
-    bg: 'bg-cyan-100 dark:bg-cyan-900/30',
-    icon: 'text-cyan-600 dark:text-cyan-400',
-    text: 'text-cyan-600 dark:text-cyan-400',
-  },
-}
-
 export default function Dashboard({
   role,
   educationLevel,
   stats,
   adminStats,
-  recentTeachingModules,
-  recentExams,
+  recentTeachingModules = [],
+  recentExams = [],
   recentLkpds = [],
   recentMediaModules = [],
-}: DashboardProps) {
+}: Readonly<DashboardProps>) {
   const isAdmin = role === 'admin'
   const isTk = educationLevel === 'tk'
-  const statCards = isTk ? tkStatCards : sdStatCards
+
+  // Supervision Checklist State calculation
+  const hasModules = (stats?.teachingModules ?? 0) > 0 || (stats?.weeklyLessonPlans ?? 0) > 0
+  const hasPlans = (stats?.annualPlans ?? 0) > 0 || (stats?.semesterPlans ?? 0) > 0
+  const hasAssessments = (stats?.exams ?? 0) > 0 || (stats?.paudAssessments ?? 0) > 0
+  const hasLkpds = (stats?.lkpds ?? 0) > 0
+
+  const checklistItems = [
+    {
+      title: isTk ? 'Modul Ajar / RPPM Mingguan' : 'Modul Ajar Pembelajaran',
+      desc: isTk ? 'Rencana kegiatan mingguan terstandar' : 'Perangkat ajar lengkap komponen inti',
+      done: hasModules,
+      href: isTk ? '/modul-ajar' : '/modul-ajar',
+    },
+    {
+      title: 'Distribusi Waktu Prota & Promes',
+      desc: 'Alokasi pekan efektif & kalender akademik',
+      done: hasPlans,
+      href: '/prota-promes',
+    },
+    {
+      title: 'Bank Soal & Asesmen Sumatif / Formatif',
+      desc: 'Kisi-kisi, instrumen evaluasi & rubrik penilaian',
+      done: hasAssessments,
+      href: '/soal',
+    },
+    {
+      title: isTk ? 'Lembar Kerja Anak (LKPD)' : 'Lembar Kerja Peserta Didik (LKPD)',
+      desc: 'Aktivitas pengayaan & stimulus bernalar',
+      done: hasLkpds,
+      href: '/lkpd',
+    },
+    {
+      title: 'Jurnal Harian Mengajar & Refleksi Guru',
+      desc: 'Notula dinamika kelas & tindak lanjut',
+      done: true,
+      href: '/jurnal',
+    },
+    {
+      title: 'Modul Projek Kokurikuler (P5 / P2RA)',
+      desc: 'Alur aksi kontekstual & pameran karya',
+      done: true,
+      href: '/kokurikuler',
+    },
+  ]
+
+  const completedCount = checklistItems.filter((i) => i.done).length
+  const progressPercent = Math.round((completedCount / checklistItems.length) * 100)
+
+  // 8 Tool-First Express Tools
+  const expressTools = [
+    {
+      title: isTk ? 'Modul Ajar RPPM' : 'Modul Ajar AI',
+      desc: 'Perangkat ajar lengkap 1-klik jadi',
+      icon: BookOpen,
+      href: '/modul-ajar',
+      badge: '1 Kredit',
+      accentColor: 'from-emerald-500/15 to-emerald-500/5 hover:border-emerald-500/60',
+      iconColor: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300',
+    },
+    {
+      title: 'LKPD & Lembar Aktivitas',
+      desc: 'Menebalkan, mewarnai & kognitif siap cetak',
+      icon: FileSpreadsheet,
+      href: '/lkpd',
+      badge: '1 Kredit',
+      accentColor: 'from-purple-500/15 to-purple-500/5 hover:border-purple-500/60',
+      iconColor: 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300',
+    },
+    {
+      title: 'Bank Soal & Kisi-Kisi',
+      desc: 'PG, isian, uraian HOTS & rubrik penilaian',
+      icon: FileQuestion,
+      href: '/soal',
+      badge: '1 Kredit',
+      accentColor: 'from-amber-500/15 to-amber-500/5 hover:border-amber-500/60',
+      iconColor: 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300',
+    },
+    {
+      title: 'Prota & Promes',
+      desc: 'Distribusi pekan efektif & alokasi JP',
+      icon: CalendarDays,
+      href: '/prota-promes',
+      badge: '1 Kredit',
+      accentColor: 'from-blue-500/15 to-blue-500/5 hover:border-blue-500/60',
+      iconColor: 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300',
+    },
+    {
+      title: 'Narasi Deskripsi Rapor',
+      desc: 'Deskripsi capaian TP otomatis & apresiatif',
+      icon: Award,
+      href: '/rapor',
+      badge: '1 Kredit / Anak',
+      accentColor: 'from-rose-500/15 to-rose-500/5 hover:border-rose-500/60',
+      iconColor: 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300',
+    },
+    {
+      title: 'Katrol Nilai Transparan',
+      desc: 'Kalkulator normalisasi adil + justifikasi supervisi',
+      icon: TrendingUp,
+      href: '/katrol',
+      badge: '1 Kredit',
+      accentColor: 'from-cyan-500/15 to-cyan-500/5 hover:border-cyan-500/60',
+      iconColor: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300',
+    },
+    {
+      title: 'Jurnal Harian Mengajar',
+      desc: 'Dokumentasi kelas & catatan refleksi guru',
+      icon: ClipboardList,
+      href: '/jurnal',
+      badge: '1 Kredit',
+      accentColor: 'from-indigo-500/15 to-indigo-500/5 hover:border-indigo-500/60',
+      iconColor: 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300',
+    },
+    {
+      title: 'Modul Kokurikuler (P5)',
+      desc: 'Alur tahapan projek, dimensi profil & rubrik',
+      icon: Compass,
+      href: '/kokurikuler',
+      badge: '1 Kredit',
+      accentColor: 'from-teal-500/15 to-teal-500/5 hover:border-teal-500/60',
+      iconColor: 'bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300',
+    },
+  ]
 
   return (
-    <DashboardWrapper title="Dashboard">
-      <Head title="Dashboard" />
+    <DashboardWrapper title="Dashboard SiapAjar">
+      <Head title="Dashboard - SiapAjar" />
 
-      <div className="space-y-6">
-        {/* Welcome */}
-        <div data-tour="welcome">
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            {isAdmin ? 'Admin Dashboard' : 'Selamat Datang!'}
-          </h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            {isAdmin
-              ? 'Kelola sistem SiapAjar'
-              : 'Kelola administrasi sekolah & pembelajaran Anda dengan mudah'}
-          </p>
-        </div>
+      <div className="space-y-8 max-w-7xl mx-auto">
+        {/* Welcome & Launchpad Hero */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-6 sm:p-10 text-white shadow-xl">
+          <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/30 backdrop-blur-md border border-emerald-300/30 text-xs font-semibold tracking-wide text-emerald-100">
+                <Sparkles className="w-3.5 h-3.5" /> AI Asisten Administrasi Guru No. 1
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                {isAdmin ? 'Panel Kontrol Admin SiapAjar' : 'Mau Bikin Dokumen Apa Hari Ini?'}
+              </h1>
+              <p className="text-emerald-100/90 text-sm leading-relaxed">
+                Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, bank soal, atau katrol
+                nilai hanya dalam hitungan detik.
+              </p>
+            </div>
 
-        {/* Admin Stats */}
-        {isAdmin && adminStats && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Total Users
-                  </p>
-                  <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
-                    {adminStats.users}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-emerald-200 p-3 dark:bg-emerald-900/60">
-                  <Users className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Total Guru
-                  </p>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {adminStats.guru}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-blue-100 p-3 dark:bg-blue-900/30">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Total LKPD Anak
-                  </p>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                    {adminStats.lkpds}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
-                  <FileSpreadsheet className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Total Media Ajar
-                  </p>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                    {adminStats.mediaModules}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-orange-100 p-3 dark:bg-orange-900/30">
-                  <Presentation className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/billing"
+                className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                Top-Up Saldo Kredit
+              </Link>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Stat Cards - Guru only */}
-        {!isAdmin && (
-          <div
-            data-tour="stat-cards"
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {statCards.map((card) => {
-              const colors = colorMap[card.color]
-              const value = stats[card.key as keyof Stats] || 0
+        {/* Express Tools Launchpad Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-emerald-600" />
+                Launchpad Tool Kilat (1-Klik Jadi)
+              </h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Akses langsung ke seluruh generator cerdas tanpa konfigurasi rumit
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {expressTools.map((tool) => {
+              const Icon = tool.icon
               return (
                 <Link
-                  key={card.key}
-                  href={card.href}
-                  className="block rounded-xl border border-neutral-300 bg-white p-6 transition-all hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900"
+                  key={tool.href}
+                  href={tool.href}
+                  className={cn(
+                    'group relative p-5 rounded-3xl bg-white dark:bg-neutral-900 border-2 border-neutral-100 dark:border-neutral-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between',
+                    tool.accentColor
+                  )}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={cn(
+                          'p-3 rounded-2xl transition-transform group-hover:scale-110 duration-200',
+                          tool.iconColor
+                        )}
+                      >
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="badge-kawaii-emerald text-[10px]">{tool.badge}</span>
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                        {card.label}
+                      <h3 className="font-bold text-neutral-900 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                        {tool.title}
+                      </h3>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                        {tool.desc}
                       </p>
-                      <p className={cn('text-3xl font-bold', colors.text)}>{value}</p>
                     </div>
-                    <div className={cn('rounded-xl p-3', colors.bg)}>
-                      <card.icon className={cn('h-6 w-6', colors.icon)} />
-                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-2 flex items-center text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform">
+                    Buka Generator <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </div>
                 </Link>
               )
             })}
           </div>
-        )}
+        </div>
 
-        {/* Quick Actions - Guru only */}
+        {/* Supervision & Accreditation Readiness Checklist */}
         {!isAdmin && (
-          <div
-            data-tour="quick-actions"
-            className="rounded-xl border border-neutral-300 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900"
-          >
-            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
-              Aksi Cepat
-            </h3>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Link
-                href="/classes"
-                className="flex items-center gap-3 rounded-lg border border-neutral-300 p-4 transition-all hover:border-emerald-500 hover:bg-emerald-100 dark:border-neutral-700 dark:hover:border-emerald-400 dark:hover:bg-emerald-900/40"
-              >
-                <div className="rounded-lg bg-emerald-200 p-2 dark:bg-emerald-900/60">
-                  <Plus className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
+          <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 dark:border-neutral-800 pb-4">
+              <div className="flex items-center gap-3.5">
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-2xl">
+                  <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-white">
-                    {isTk ? 'Buat Kelompok' : 'Buat Kelas'}
-                  </p>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                    Checklist Kesiapan Supervisi & Akreditasi
+                  </h3>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Tambah {isTk ? 'kelompok' : 'kelas'} baru
+                    Pantau kelengkapan berkas administrasi ajar Anda untuk evaluasi berkala
                   </p>
                 </div>
-              </Link>
+              </div>
 
-              {isTk ? (
-                <>
-                  <Link
-                    href="/lkpd"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-purple-300 hover:bg-purple-50 dark:border-neutral-700 dark:hover:border-purple-600 dark:hover:bg-purple-900/20"
-                  >
-                    <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
-                      <FileSpreadsheet className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">Buat LKPD Anak</p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Aktivitas Menebalkan & Mewarnai
-                      </p>
-                    </div>
-                  </Link>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    {progressPercent}% Lengkap
+                  </span>
+                  <span className="text-[11px] text-neutral-400 block">
+                    {completedCount} dari {checklistItems.length} Komponen
+                  </span>
+                </div>
+                <div className="w-24 h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+            </div>
 
-                  <Link
-                    href="/media-modules"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-orange-300 hover:bg-orange-50 dark:border-neutral-700 dark:hover:border-orange-600 dark:hover:bg-orange-900/20"
-                  >
-                    <div className="rounded-lg bg-orange-100 p-2 dark:bg-orange-900/30">
-                      <Presentation className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        Buat Media Ajar
-                      </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Slide Visual & Loose Parts
-                      </p>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/rppm"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-pink-300 hover:bg-pink-50 dark:border-neutral-700 dark:hover:border-pink-600 dark:hover:bg-pink-900/20"
-                  >
-                    <div className="rounded-lg bg-pink-100 p-2 dark:bg-pink-900/30">
-                      <CalendarRange className="h-5 w-5 text-pink-600 dark:text-pink-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        Buat RPPM & RPPH
-                      </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Rencana Mingguan & Harian
-                      </p>
-                    </div>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/teaching-modules"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-purple-300 hover:bg-purple-50 dark:border-neutral-700 dark:hover:border-purple-600 dark:hover:bg-purple-900/20"
-                  >
-                    <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
-                      <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">Modul Ajar</p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Generate dengan AI
-                      </p>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/exams"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-orange-300 hover:bg-orange-50 dark:border-neutral-700 dark:hover:border-orange-600 dark:hover:bg-orange-900/20"
-                  >
-                    <div className="rounded-lg bg-orange-100 p-2 dark:bg-orange-900/30">
-                      <FileQuestion className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">Buat Soal</p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        PTS/PAS dengan AI
-                      </p>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/annual-plans"
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-all hover:border-pink-300 hover:bg-pink-50 dark:border-neutral-700 dark:hover:border-pink-600 dark:hover:bg-pink-900/20"
-                  >
-                    <div className="rounded-lg bg-pink-100 p-2 dark:bg-pink-900/30">
-                      <Calendar className="h-5 w-5 text-pink-600 dark:text-pink-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        Program Tahunan
-                      </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Rencana setahun
-                      </p>
-                    </div>
-                  </Link>
-                </>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {checklistItems.map((item, idx) => (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 hover:bg-white dark:hover:bg-neutral-800 hover:border-emerald-500/50 transition-all flex items-start gap-3 group"
+                >
+                  <div className="pt-0.5">
+                    {item.done ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-amber-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-neutral-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                      {item.title}
+                    </h4>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {item.desc}
+                    </p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Recent Items - TK/RA & SD */}
-        {!isAdmin && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {isTk ? (
-              <>
-                {/* Recent LKPD */}
-                <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <FileSpreadsheet className="h-5 w-5 text-purple-600" /> LKPD Terbaru
-                    </h3>
-                    <Link
-                      href="/lkpd"
-                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                    >
-                      Lihat Semua <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                  {recentLkpds.length === 0 ? (
-                    <p className="py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Belum ada LKPD
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {recentLkpds.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/lkpd/${item.id}`}
-                          className="flex items-center justify-between rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-                        >
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {item.title}
-                            </p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                              Tema: {item.theme || '-'}
-                            </p>
-                          </div>
-                          <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                            LKPD
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+        {/* Admin Stats Section */}
+        {isAdmin && adminStats && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    Total Users
+                  </p>
+                  <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300">
+                    {adminStats.users}
+                  </p>
                 </div>
-
-                {/* Recent Media Modules */}
-                <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <Presentation className="h-5 w-5 text-orange-600" /> Media Ajar Terbaru
-                    </h3>
-                    <Link
-                      href="/media-modules"
-                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                    >
-                      Lihat Semua <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                  {recentMediaModules.length === 0 ? (
-                    <p className="py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Belum ada media ajar
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {recentMediaModules.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/media-modules/${item.id}`}
-                          className="flex items-center justify-between rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-                        >
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {item.title}
-                            </p>
-                          </div>
-                          <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
-                            Slide Visual
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                <div className="rounded-2xl bg-emerald-100 p-3 dark:bg-emerald-900/60">
+                  <Users className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
                 </div>
-              </>
-            ) : (
-              <>
-                {/* Recent Teaching Modules */}
-                <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                      Modul Ajar Terbaru
-                    </h3>
-                    <Link
-                      href="/teaching-modules"
-                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                    >
-                      Lihat Semua <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                  {recentTeachingModules.length === 0 ? (
-                    <p className="py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Belum ada modul ajar
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {recentTeachingModules.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/teaching-modules/${item.id}`}
-                          className="flex items-center justify-between rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-                        >
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {item.title}
-                            </p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                              {item.subject}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              'rounded-full px-2 py-1 text-xs font-medium',
-                              item.status === 'published'
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                            )}
-                          >
-                            {item.status === 'published' ? 'Published' : 'Draft'}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+              </div>
+            </div>
+            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    Total Guru Aktif
+                  </p>
+                  <p className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
+                    {adminStats.guru}
+                  </p>
                 </div>
-
-                {/* Recent Exams */}
-                <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                      Soal Terbaru
-                    </h3>
-                    <Link
-                      href="/exams"
-                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                    >
-                      Lihat Semua <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                  {recentExams.length === 0 ? (
-                    <p className="py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Belum ada soal
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {recentExams.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/exams/${item.id}`}
-                          className="flex items-center justify-between rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-                        >
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {item.title}
-                            </p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                              {item.type}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              'rounded-full px-2 py-1 text-xs font-medium',
-                              item.status === 'published'
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                            )}
-                          >
-                            {item.status === 'published' ? 'Published' : 'Draft'}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                <div className="rounded-2xl bg-blue-100 p-3 dark:bg-blue-900/30">
+                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-              </>
-            )}
+              </div>
+            </div>
+            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    Total LKPD Terbuat
+                  </p>
+                  <p className="text-2xl font-extrabold text-purple-600 dark:text-purple-400">
+                    {adminStats.lkpds}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-purple-100 p-3 dark:bg-purple-900/30">
+                  <FileSpreadsheet className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </div>
+            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    Media Ajar & Slide
+                  </p>
+                  <p className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
+                    {adminStats.mediaModules}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-orange-100 p-3 dark:bg-orange-900/30">
+                  <Presentation className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
