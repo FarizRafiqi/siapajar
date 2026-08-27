@@ -105,89 +105,101 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
       <Head title={assessment.title} />
 
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/assessments"
-            className="rounded-lg border border-neutral-200 p-2 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              {assessment.title}
-            </h2>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              {assessment.subject} • Kelas {assessment.schoolClass.name} •{' '}
-              {new Date(assessment.date).toLocaleDateString('id-ID')} • {filledCount} dari{' '}
-              {totalCount} terisi
-            </p>
+        {/* Header toolbar */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/assessments"
+              className="btn-kawaii-secondary !p-2.5 !rounded-2xl"
+              title="Kembali ke Daftar Penilaian"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+                {assessment.title}
+              </h2>
+              <p className="text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                {assessment.subject} • Kelas {assessment.schoolClass.name} •{' '}
+                {new Date(assessment.date).toLocaleDateString('id-ID')} •{' '}
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {filledCount} dari {totalCount} terisi
+                </span>
+              </p>
+            </div>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            <Download className="h-4 w-4" />
-            Export XLSX
-          </button>
-          <a
-            href={`/assessments/${assessment.id}/export/pdf?disposition=inline`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            <Download className="h-4 w-4" /> PDF
-          </a>
-          <a
-            href={`/assessments/${assessment.id}/export/docx`}
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            DOCX
-          </a>
-          <button
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? 'Menyimpan...' : 'Simpan Semua'}
-          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="btn-kawaii-secondary !py-2.5 !px-3.5 !text-xs font-bold"
+            >
+              <Download className="h-4 w-4" />
+              Export XLSX
+            </button>
+            <a
+              href={`/assessments/${assessment.id}/export/pdf?disposition=inline`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-kawaii-secondary !py-2.5 !px-3.5 !text-xs font-bold"
+            >
+              <Download className="h-4 w-4" /> PDF
+            </a>
+            <a
+              href={`/assessments/${assessment.id}/export/docx`}
+              className="btn-kawaii-secondary !py-2.5 !px-3.5 !text-xs font-bold"
+            >
+              DOCX
+            </a>
+            <button
+              type="button"
+              onClick={handleSaveAll}
+              disabled={saving}
+              className="btn-kawaii-primary !py-2.5 !px-4 !text-xs font-bold disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? 'Menyimpan...' : 'Simpan Semua'}
+            </button>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        {/* Data Table */}
+        <div className="overflow-hidden rounded-3xl border-2 border-black bg-white shadow-[4px_4px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[4px_4px_0px_#ffffff]">
           <div className="overflow-x-auto">
-            <table className="dashboard-data-table w-full">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <tr className="border-b-2 border-black bg-emerald-100 dark:border-white dark:bg-neutral-800">
+                  <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                     No
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                  <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                     NIS
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Nama
+                  <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Nama Siswa
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Nilai
+                  <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Nilai (0 - 100)
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Catatan
+                  <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Catatan Perkembangan
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y-2 divide-black/10 dark:divide-white/10">
                 {assessment.scores.map((score, index) => (
                   <tr
                     key={score.id}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                    className="transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60"
                   >
-                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm font-bold text-neutral-900 dark:text-white">
                       {index + 1}
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-600 dark:text-neutral-400">
                       {score.student.nis}
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm font-bold text-neutral-900 dark:text-white">
                       {score.student.fullName}
                     </td>
                     <td className="px-4 py-3">
@@ -202,7 +214,7 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
                         onChange={(e) => handleValueChange(score.studentId, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(e, index)}
                         onBlur={handleSaveAll}
-                        className="w-20 rounded-lg border border-neutral-300 px-2 py-1.5 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        className="w-24 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-sm font-black text-neutral-900 focus:shadow-[2px_2px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white dark:focus:shadow-[2px_2px_0px_#ffffff]"
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -211,8 +223,8 @@ export default function AssessmentShow({ assessment }: AssessmentShowProps) {
                         value={values[score.studentId]?.note ?? ''}
                         onChange={(e) => handleNoteChange(score.studentId, e.target.value)}
                         onBlur={handleSaveAll}
-                        className="w-full min-w-[160px] rounded-lg border border-neutral-300 px-2 py-1.5 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-                        placeholder="opsional"
+                        className="w-full min-w-[200px] rounded-xl border-2 border-black bg-white px-3 py-1.5 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:shadow-[2px_2px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white dark:focus:shadow-[2px_2px_0px_#ffffff]"
+                        placeholder="Tambahkan catatan (opsional)..."
                       />
                     </td>
                   </tr>
