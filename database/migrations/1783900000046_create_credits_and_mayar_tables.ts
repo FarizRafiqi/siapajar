@@ -40,8 +40,10 @@ export default class extends BaseSchema {
       table.integer('credits_amount').notNullable().defaultTo(0)
       table.integer('gross_amount').notNullable()
       table.string('status', 30).notNullable().defaultTo('pending') // 'pending' | 'paid' | 'expired' | 'failed'
-      table.string('mayar_transaction_id', 128).nullable()
-      table.text('mayar_payment_url').nullable()
+      table.string('payment_gateway', 50).notNullable().defaultTo('mayar') // 'mayar' | 'midtrans' | 'xendit' | 'tripay'
+      table.string('gateway_transaction_id', 128).nullable()
+      table.text('payment_url').nullable()
+      table.string('payment_method', 50).nullable()
       table.timestamp('paid_at', { useTz: true }).nullable()
       table.jsonb('metadata').nullable()
       table.timestamp('created_at', { useTz: true }).notNullable()

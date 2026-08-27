@@ -43,14 +43,15 @@ export class MayarService {
       packageName: params.packageName,
       creditsAmount: params.creditsAmount,
       grossAmount: params.grossAmount,
+      paymentGateway: 'mayar',
       status: 'pending',
     })
     await invoice.save()
 
     if (!this.apiKey) {
       // Jika API Key belum diset (misalnya mode demo lokal), generate mock link
-      invoice.mayarPaymentUrl = `${params.redirectUrl}?mock_invoice=${invoice.invoiceNo}`
-      invoice.mayarTransactionId = `mock_trx_${invoiceNo}`
+      invoice.paymentUrl = `${params.redirectUrl}?mock_invoice=${invoice.invoiceNo}`
+      invoice.gatewayTransactionId = `mock_trx_${invoiceNo}`
       await invoice.save()
       return invoice
     }
@@ -87,8 +88,8 @@ export class MayarService {
 
       const json = (await response.json()) as { statusCode?: number; data?: any; message?: string }
       if (response.ok && json.data) {
-        invoice.mayarPaymentUrl = json.data.link || json.data.paymentUrl || json.data.url
-        invoice.mayarTransactionId = json.data.id || json.data.transactionId
+        invoice.paymentUrl = json.data.link || json.data.paymentUrl || json.data.url
+        invoice.gatewayTransactionId = json.data.id || json.data.transactionId
         invoice.metadata = json.data
         await invoice.save()
       } else {
@@ -122,16 +123,16 @@ export class MayarService {
     const transactionData = payload.data || payload
     const extraData = transactionData.extraData || {}
 
-    // Cari invoice berdasarkan invoice_no di extraData atau mayar transaction ID
+    // Cari invoice berdasarkan invoice_no di extraData atau gateway transaction ID
     const invoiceNo = extraData.invoiceNo
-    const mayarTrxId = transactionData.id || transactionData.transactionId
+    const gatewayTrxId = transactionData.id || transactionData.transactionId
 
     let invoice: PaymentInvoice | null = null
     if (invoiceNo) {
       invoice = await PaymentInvoice.query().where('invoiceNo', invoiceNo).first()
     }
-    if (!invoice && mayarTrxId) {
-      invoice = await PaymentInvoice.query().where('mayarTransactionId', mayarTrxId).first()
+    if (!invoice && gatewayTrxId) {
+      invoice = await PaymentInvoice.query().where('gatewayTransactionId', gatewayTrxId).first()
     }
 
     if (!invoice) {
@@ -145,6 +146,9 @@ export class MayarService {
 
     invoice.status = 'paid'
     invoice.paidAt = DateTime.now()
+    if (transactionData.paymentMethod) {
+      invoice.paymentMethod = transactionData.paymentMethod
+    }
     const currentMeta = invoice.metadata ?? {}
     invoice.metadata = { ...currentMeta, webhookReceived: payload }
     await invoice.save()
@@ -155,7 +159,7 @@ export class MayarService {
       invoice.creditsAmount,
       'topup',
       `Top-up ${invoice.packageName} (${invoice.creditsAmount} Kredit) - ${invoice.invoiceNo}`,
-      { invoiceNo: invoice.invoiceNo, mayarTransactionId: mayarTrxId }
+      { invoiceNo: invoice.invoiceNo, gatewayTransactionId: gatewayTrxId, gateway: 'mayar' }
     )
 
     return invoice

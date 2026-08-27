@@ -27,11 +27,17 @@ export default class PaymentInvoice extends BaseModel {
   @column()
   declare status: 'pending' | 'paid' | 'expired' | 'failed'
 
-  @column({ columnName: 'mayar_transaction_id' })
-  declare mayarTransactionId: string | null
+  @column({ columnName: 'payment_gateway' })
+  declare paymentGateway: string
 
-  @column({ columnName: 'mayar_payment_url' })
-  declare mayarPaymentUrl: string | null
+  @column({ columnName: 'gateway_transaction_id' })
+  declare gatewayTransactionId: string | null
+
+  @column({ columnName: 'payment_url' })
+  declare paymentUrl: string | null
+
+  @column({ columnName: 'payment_method' })
+  declare paymentMethod: string | null
 
   @column.dateTime({ columnName: 'paid_at' })
   declare paidAt: DateTime | null

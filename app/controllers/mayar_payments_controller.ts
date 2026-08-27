@@ -59,7 +59,7 @@ export default class MayarPaymentsController {
       return response.ok({
         success: true,
         invoiceNo: invoice.invoiceNo,
-        paymentUrl: invoice.mayarPaymentUrl,
+        paymentUrl: invoice.paymentUrl,
         creditsAmount: invoice.creditsAmount,
         grossAmount: invoice.grossAmount,
       })
