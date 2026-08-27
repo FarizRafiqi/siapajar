@@ -46,7 +46,7 @@ export default function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white/80 px-4 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/80 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-[#FAF7F2]/90 px-4 backdrop-blur-md dark:border-neutral-800 dark:bg-[#121214]/90 sm:px-6">
       {/* Left: Menu button (mobile) + Breadcrumbs + Title */}
       <div className="flex min-w-0 items-center gap-3">
         <button

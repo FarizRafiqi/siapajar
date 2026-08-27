@@ -58,7 +58,7 @@ export default function DashboardLayout({
   }, [flash])
 
   return (
-    <div className="dashboard-shell min-h-screen bg-neutral-50 dark:bg-neutral-900">
+    <div className="dashboard-shell min-h-screen bg-[#FAF7F2] dark:bg-[#121214] text-neutral-900 dark:text-neutral-100">
       {/* Sidebar */}
       <div className="print:hidden">
         <Sidebar
