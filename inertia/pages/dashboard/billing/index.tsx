@@ -296,18 +296,20 @@ export default function BillingIndex({
                   )}
                 >
                   {isPopular && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-300 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-full border-2 border-black shadow-[2px_2px_0px_#000000]">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 bg-amber-300 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-full border-2 border-black shadow-[2px_2px_0px_#000000] whitespace-nowrap text-center flex items-center justify-center">
                       Paling Populer
                     </div>
                   )}
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <h4 className="font-extrabold text-neutral-900 dark:text-white text-base">
                         {tier.name}
                       </h4>
                       {tier.discountBadge && (
-                        <span className="badge-kawaii-amber text-[10px]">{tier.discountBadge}</span>
+                        <span className="badge-kawaii-amber text-[10px] shrink-0 whitespace-nowrap text-center flex items-center justify-center">
+                          {tier.discountBadge}
+                        </span>
                       )}
                     </div>
 
