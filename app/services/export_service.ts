@@ -4738,6 +4738,12 @@ export async function exportNarrativeReport(
       new Paragraph({ text: item.element, heading: HeadingLevel.HEADING_3 }),
       new Paragraph({ text: item.content.trim() || 'Belum ada narasi yang disetujui.' }),
     ]),
+    new Paragraph({ heading: HeadingLevel.HEADING_2, text: 'Refleksi Orang Tua' }),
+    new Paragraph({
+      text:
+        narrative.parentReflection?.trim() ||
+        '................................................................................................................................................................................................................................................................................................................',
+    }),
   ]
   return documentFromChildren(children)
 }

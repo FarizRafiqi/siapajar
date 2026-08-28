@@ -2,6 +2,7 @@ import db from '@adonisjs/lucid/services/db'
 import Student from '#models/student'
 import PaudAssessment from '#models/paud_assessment'
 import ReportNarrative from '#models/report_narrative'
+import ParentReflection from '#models/parent_reflection'
 
 export interface SubjectAverage {
   subject: string
@@ -117,6 +118,8 @@ export interface PaudStudentNarrative {
   studentId: number
   nis: string
   fullName: string
+  parentPhone: string | null
+  parentReflection: string
   entries: { type: string; typeLabel: string; date: string; content: Record<string, unknown> }[]
   narratives: {
     id: number | null
@@ -146,6 +149,10 @@ export async function compileNarrativeReport(
     .where('class_id', classId)
     .where('semester_id', semesterId)
     .where('user_id', userId)
+  const parentReflections = await ParentReflection.query()
+    .where('class_id', classId)
+    .where('semester_id', semesterId)
+    .where('user_id', userId)
 
   const byStudent = new Map<number, PaudAssessment[]>()
   for (const assessment of assessments) {
@@ -160,26 +167,31 @@ export async function compileNarrativeReport(
     'Jati Diri',
     'Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni',
   ]
-  return students.map((student) => ({
-    studentId: student.id,
-    nis: student.nis,
-    fullName: student.fullName,
-    entries: (byStudent.get(student.id) ?? []).map((a) => ({
-      type: a.type,
-      typeLabel: PAUD_TYPE_LABELS[a.type] ?? a.type,
-      date: a.date.toISODate() ?? '',
-      content: a.content,
-    })),
-    narratives: elements.map((element) => {
-      const saved = savedNarratives.find(
-        (item) => item.studentId === student.id && item.element === element
-      )
-      return {
-        id: saved?.id ?? null,
-        element,
-        content: saved?.content ?? '',
-        status: saved?.status ?? 'draft',
-      }
-    }),
-  }))
+  return students.map((student) => {
+    const reflection = parentReflections.find((r) => r.studentId === student.id)
+    return {
+      studentId: student.id,
+      nis: student.nis,
+      fullName: student.fullName,
+      parentPhone: student.parentPhone ?? null,
+      parentReflection: reflection?.content ?? '',
+      entries: (byStudent.get(student.id) ?? []).map((a) => ({
+        type: a.type,
+        typeLabel: PAUD_TYPE_LABELS[a.type] ?? a.type,
+        date: a.date.toISODate() ?? '',
+        content: a.content,
+      })),
+      narratives: elements.map((element) => {
+        const saved = savedNarratives.find(
+          (item) => item.studentId === student.id && item.element === element
+        )
+        return {
+          id: saved?.id ?? null,
+          element,
+          content: saved?.content ?? '',
+          status: saved?.status ?? 'draft',
+        }
+      }),
+    }
+  })
 }

@@ -24,6 +24,7 @@ import {
   FileSpreadsheet,
   Presentation,
   Route,
+  MessageSquare,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { cn } from '~/lib/utils'
@@ -90,6 +91,11 @@ const guruSdNavigation: NavigationEntry[] = [
         icon: Package,
         activeHrefs: ['/usage', '/subscriptions'],
       },
+      {
+        name: 'WhatsApp',
+        href: '/whatsapp',
+        icon: MessageSquare,
+      },
     ],
   },
 ]
@@ -129,6 +135,11 @@ const guruTkNavigation: NavigationEntry[] = [
         href: '/my-package',
         icon: Package,
         activeHrefs: ['/usage', '/subscriptions'],
+      },
+      {
+        name: 'WhatsApp',
+        href: '/whatsapp',
+        icon: MessageSquare,
       },
     ],
   },

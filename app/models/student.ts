@@ -18,6 +18,9 @@ export default class Student extends BaseModel {
   @column()
   declare nisn: string | null
 
+  @column({ columnName: 'parent_phone' })
+  declare parentPhone: string | null
+
   @column({ columnName: 'full_name' })
   declare fullName: string
 

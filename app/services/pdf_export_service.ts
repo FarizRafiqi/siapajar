@@ -357,6 +357,17 @@ export async function exportNarrativeReportPdf(
     doc.moveDown(0.5)
   }
 
+  doc.moveDown(0.75)
+  doc.font('Helvetica-Bold').fontSize(12).text('Refleksi Orang Tua')
+  doc.font('Helvetica').fontSize(10)
+  if (narrative.parentReflection?.trim()) {
+    doc.text(narrative.parentReflection.trim())
+  } else {
+    doc.text(
+      '................................................................................................................................................................................................................................................................................................................'
+    )
+  }
+
   return toBuffer(doc)
 }
 
