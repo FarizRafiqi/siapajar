@@ -1,6 +1,12 @@
 import Package from '#models/package'
+import type User from '#models/user'
 
 export class PackageRepository {
+  async loadUserPackageWithEntitlements(user: User) {
+    await user.load('package', (query) => query.preload('entitlements'))
+    return user.package
+  }
+
   async listActive() {
     return Package.query().where('is_active', true).orderBy('sort_order', 'asc')
   }

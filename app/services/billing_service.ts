@@ -8,6 +8,8 @@ import { packageSubscriptionRepository } from '#repositories/package_subscriptio
 import type { PackageSubscriptionRepository } from '#repositories/package_subscription_repository'
 import { usageEventRepository } from '#repositories/usage_event_repository'
 import type { UsageEventRepository } from '#repositories/usage_event_repository'
+import { packageRepository } from '#repositories/package_repository'
+import type { PackageRepository } from '#repositories/package_repository'
 import { getFeatureLabel } from '#services/entitlement_service'
 
 export type BillingPaginationInput = {
@@ -22,7 +24,8 @@ export class BillingService {
     private readonly invoices: PaymentInvoiceRepository = paymentInvoiceRepository,
     private readonly transactions: CreditTransactionRepository = creditTransactionRepository,
     private readonly subscriptions: PackageSubscriptionRepository = packageSubscriptionRepository,
-    private readonly usageEvents: UsageEventRepository = usageEventRepository
+    private readonly usageEvents: UsageEventRepository = usageEventRepository,
+    private readonly packages: PackageRepository = packageRepository
   ) {}
 
   async getOverview(user: User) {
@@ -44,7 +47,7 @@ export class BillingService {
     const subscriptionPage = this.normalizePage(input.subscriptionPage)
     const subscriptionPerPage = this.normalizePerPage(input.subscriptionPerPage)
 
-    await user.load('package', (query) => query.preload('entitlements'))
+    await this.packages.loadUserPackageWithEntitlements(user)
 
     const [invoices, activeSubscription, subscriptions] = await Promise.all([
       this.invoices.paginateForUser(user.id, invoicePage, invoicePerPage),
@@ -64,7 +67,7 @@ export class BillingService {
 
   async getUsagePage(user: User) {
     const periodStart = DateTime.now().startOf('month').toISODate()!
-    await user.load('package', (query) => query.preload('entitlements'))
+    await this.packages.loadUserPackageWithEntitlements(user)
 
     const usage = await this.usageEvents.summarizeForUserPeriod(user.id, periodStart)
     const limits = new Map(

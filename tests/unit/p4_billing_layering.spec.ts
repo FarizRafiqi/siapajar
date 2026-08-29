@@ -68,6 +68,18 @@ test.group('P4 billing layering', () => {
       const source = await readProjectFile(`app/services/${service}`)
       assert.notMatch(source, /\.query\s*\(/)
     }
+
+    const billingService = await readProjectFile('app/services/billing_service.ts')
+    assert.notMatch(billingService, /\.load\(['"]package['"]/)
+    assert.include(billingService, 'loadUserPackageWithEntitlements')
+  })
+
+  test('keeps the package and entitlement preload behind a named repository method', async ({
+    assert,
+  }) => {
+    const packageRepository = await readProjectFile('app/repositories/package_repository.ts')
+    assert.include(packageRepository, 'loadUserPackageWithEntitlements')
+    assert.match(packageRepository, /preload\(['"]entitlements['"]\)/)
   })
 
   test('allows simple model operations to remain in services', async ({ assert }) => {
