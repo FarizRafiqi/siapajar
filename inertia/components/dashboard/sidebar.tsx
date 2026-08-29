@@ -433,6 +433,12 @@ function persistSidebarMode(mode: SidebarMode) {
   }
 }
 
+const SIDEBAR_DESKTOP_MEDIA_QUERY = '(min-width: 768px)'
+const SIDEBAR_TOOLTIP_VIEWPORT_GUTTER = 12
+const SIDEBAR_TOOLTIP_GAP = 10
+const SIDEBAR_TOOLTIP_FALLBACK_WIDTH = 220
+const SIDEBAR_TOOLTIP_FALLBACK_HEIGHT = 32
+
 function SidebarNavigationTooltip({
   label,
   collapsed,
@@ -443,17 +449,74 @@ function SidebarNavigationTooltip({
   children: ReactElement
 }>) {
   const triggerRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+  const [isDesktopViewport, setIsDesktopViewport] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia(SIDEBAR_DESKTOP_MEDIA_QUERY).matches
+  )
+  const tooltipEnabled = collapsed && isDesktopViewport
 
   const updatePosition = useCallback(() => {
-    if (!collapsed || !triggerRef.current) return
+    if (!tooltipEnabled || !triggerRef.current || typeof window === 'undefined') return
 
     const rect = triggerRef.current.getBoundingClientRect()
-    setPosition({ top: rect.top + rect.height / 2, left: rect.right + 10 })
-  }, [collapsed])
+    const tooltipWidth = tooltipRef.current?.offsetWidth ?? SIDEBAR_TOOLTIP_FALLBACK_WIDTH
+    const tooltipHeight = tooltipRef.current?.offsetHeight ?? SIDEBAR_TOOLTIP_FALLBACK_HEIGHT
+    const maxLeft = Math.max(
+      SIDEBAR_TOOLTIP_VIEWPORT_GUTTER,
+      window.innerWidth - tooltipWidth - SIDEBAR_TOOLTIP_VIEWPORT_GUTTER
+    )
+    const minTop = SIDEBAR_TOOLTIP_VIEWPORT_GUTTER + tooltipHeight / 2
+    const maxTop = Math.max(
+      minTop,
+      window.innerHeight - SIDEBAR_TOOLTIP_VIEWPORT_GUTTER - tooltipHeight / 2
+    )
+    const nextPosition = {
+      top: Math.min(maxTop, Math.max(minTop, rect.top + rect.height / 2)),
+      left: Math.min(
+        maxLeft,
+        Math.max(SIDEBAR_TOOLTIP_VIEWPORT_GUTTER, rect.right + SIDEBAR_TOOLTIP_GAP)
+      ),
+    }
+
+    setPosition((currentPosition) =>
+      currentPosition?.top === nextPosition.top && currentPosition.left === nextPosition.left
+        ? currentPosition
+        : nextPosition
+    )
+  }, [tooltipEnabled])
 
   useEffect(() => {
-    if (!position || !collapsed) return
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+
+    const mediaQuery = window.matchMedia(SIDEBAR_DESKTOP_MEDIA_QUERY)
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      setIsDesktopViewport(event.matches)
+    }
+
+    setIsDesktopViewport(mediaQuery.matches)
+    mediaQuery.addEventListener('change', handleViewportChange)
+
+    return () => mediaQuery.removeEventListener('change', handleViewportChange)
+  }, [])
+
+  useEffect(() => {
+    if (!tooltipEnabled) {
+      setPosition(null)
+      return
+    }
+
+    if (!position) return
+
+    // Recalculate once the portaled tooltip has its actual rendered dimensions.
+    updatePosition()
+  }, [position, tooltipEnabled, updatePosition])
+
+  useEffect(() => {
+    if (!tooltipEnabled) return
 
     const reposition = () => updatePosition()
     window.addEventListener('resize', reposition)
@@ -463,11 +526,7 @@ function SidebarNavigationTooltip({
       window.removeEventListener('resize', reposition)
       document.removeEventListener('scroll', reposition, true)
     }
-  }, [collapsed, position, updatePosition])
-
-  useEffect(() => {
-    if (!collapsed) setPosition(null)
-  }, [collapsed])
+  }, [tooltipEnabled, updatePosition])
 
   return (
     <div
@@ -479,11 +538,12 @@ function SidebarNavigationTooltip({
       onBlur={() => setPosition(null)}
     >
       {children}
-      {collapsed && position && typeof document !== 'undefined'
+      {tooltipEnabled && position && typeof document !== 'undefined'
         ? createPortal(
             <div
+              ref={tooltipRef}
               role="tooltip"
-              className="pointer-events-none fixed z-[100] -translate-y-1/2 whitespace-nowrap rounded-lg border border-white/20 bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white shadow-[2px_2px_0px_#000000]"
+              className="pointer-events-none fixed z-[100] max-w-[calc(100vw-1.5rem)] -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap rounded-lg border border-white/20 bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white shadow-[2px_2px_0px_#000000]"
               style={{ top: position.top, left: position.left }}
             >
               {label}
