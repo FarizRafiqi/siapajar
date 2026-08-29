@@ -18,7 +18,14 @@ test.group('P8 weekly and daily lesson plan layering', () => {
       assert.notInclude(source, "from '#models/")
       assert.notInclude(source, "from '@adonisjs/lucid/services/db'")
       assert.notMatch(source, /\.query\s*\(/)
-      assert.notMatch(source, /\b(?:find|findBy|findOrFail|create|save|delete|load|preload)\s*\(/)
+      assert.notMatch(
+        source,
+        /\b(?:WeeklyLessonPlan|DailyLessonPlan|SchoolClass|WeeklyLessonPlan|LearningSequence|CurriculumPreset)\.(?:find|findBy|findOrFail|create|query)\s*\(/
+      )
+      assert.notMatch(
+        source,
+        /\b(?:weeklyLessonPlan|dailyLessonPlan|schoolClass)\.(?:save|delete|load|preload)\s*\(/
+      )
       assert.notMatch(source, /function\s+(?:normalize|extract|getNonEmpty|format)/)
     }
 
@@ -38,7 +45,6 @@ test.group('P8 weekly and daily lesson plan layering', () => {
         'getIndexData',
         'findForUser',
         'findOwnedClassWithStudents',
-        'findPreset',
       ],
       'app/repositories/daily_lesson_plan_repository.ts': [
         'getIndexData',

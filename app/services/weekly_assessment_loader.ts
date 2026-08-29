@@ -1,6 +1,7 @@
-import PaudAssessment from '#models/paud_assessment'
-import Student from '#models/student'
+import type PaudAssessment from '#models/paud_assessment'
+import type Student from '#models/student'
 import type WeeklyLessonPlan from '#models/weekly_lesson_plan'
+import { weeklyAssessmentRepository } from '#repositories/weekly_assessment_repository'
 import { parseAssessmentContent } from '#services/paud_assessment_export_service'
 
 export interface AnecdoteItem {
@@ -67,39 +68,13 @@ export async function loadWeeklyPlanAssessments(
 ): Promise<LoadedWeeklyAssessments> {
   const userId = weeklyPlan.userId
   const classId = weeklyPlan.classId
+  const { classStudents, assessments } = await weeklyAssessmentRepository.findForWeeklyPlan(
+    userId,
+    classId,
+    weeklyPlan.weekStartDate
+  )
 
-  let classStudents: Student[] = []
-  if (classId) {
-    classStudents = await Student.query().where('class_id', classId).orderBy('full_name', 'asc')
-  }
-
-  if (!userId || !classId) {
-    return formatLoadedAssessments([], weeklyPlan, classStudents)
-  }
-
-  let query = PaudAssessment.query()
-    .where('user_id', userId)
-    .where('class_id', classId)
-    .preload('student')
-    .preload('attachments', (q) => q.orderBy('display_order', 'asc'))
-    .orderBy('date', 'asc')
-
-  if (weeklyPlan.weekStartDate) {
-    const startDate = weeklyPlan.weekStartDate.startOf('day')
-    const endDate = startDate.plus({ days: 6 }).endOf('day')
-
-    const dateFiltered = await query
-      .clone()
-      .where('date', '>=', startDate.toISODate()!)
-      .where('date', '<=', endDate.toISODate()!)
-
-    if (dateFiltered.length > 0) {
-      return formatLoadedAssessments(dateFiltered, weeklyPlan, classStudents)
-    }
-  }
-
-  const allAssessments = await query
-  return formatLoadedAssessments(allAssessments, weeklyPlan, classStudents)
+  return formatLoadedAssessments(assessments, weeklyPlan, classStudents)
 }
 
 function processAnecdote(
