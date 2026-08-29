@@ -1,16 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import SchoolClass from '#models/school_class'
-import TeachingModule from '#models/teaching_module'
-import Exam from '#models/exam'
-import AnnualPlan from '#models/annual_plan'
-import SemesterPlan from '#models/semester_plan'
-import WeeklyLessonPlan from '#models/weekly_lesson_plan'
-import DailyLessonPlan from '#models/daily_lesson_plan'
-import PaudAssessment from '#models/paud_assessment'
-import Student from '#models/student'
-import User from '#models/user'
-import Lkpd from '#models/lkpd'
-import MediaModule from '#models/media_module'
+import { dashboardService } from '#services/dashboard_service'
 
 export default class DashboardController {
   async panel({ inertia, auth, response }: HttpContext) {
@@ -24,49 +13,8 @@ export default class DashboardController {
       return response.redirect().toRoute('principal.index')
     }
 
-    const [
-      totalClasses,
-      totalStudents,
-      totalTeachingModules,
-      totalExams,
-      totalAnnualPlans,
-      totalSemesterPlans,
-      totalWeeklyLessonPlans,
-      totalDailyLessonPlans,
-      totalPaudAssessments,
-      totalLkpds,
-      totalMediaModules,
-    ] = await Promise.all([
-      SchoolClass.query().where('user_id', user.id).count('* as total'),
-      Student.query()
-        .whereHas('schoolClass', (query) => query.where('user_id', user.id))
-        .count('* as total'),
-      TeachingModule.query().where('user_id', user.id).count('* as total'),
-      Exam.query().where('user_id', user.id).count('* as total'),
-      AnnualPlan.query().where('user_id', user.id).count('* as total'),
-      SemesterPlan.query().where('user_id', user.id).count('* as total'),
-      WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      PaudAssessment.query().where('user_id', user.id).count('* as total'),
-      Lkpd.query().where('user_id', user.id).count('* as total'),
-      MediaModule.query().where('user_id', user.id).count('* as total'),
-    ])
-
     return inertia.render('dashboard/panel/index', {
-      educationLevel: user.educationLevel,
-      stats: {
-        classes: Number(totalClasses[0].$extras.total),
-        students: Number(totalStudents[0].$extras.total),
-        teachingModules: Number(totalTeachingModules[0].$extras.total),
-        exams: Number(totalExams[0].$extras.total),
-        annualPlans: Number(totalAnnualPlans[0].$extras.total),
-        semesterPlans: Number(totalSemesterPlans[0].$extras.total),
-        weeklyLessonPlans: Number(totalWeeklyLessonPlans[0].$extras.total),
-        dailyLessonPlans: Number(totalDailyLessonPlans[0].$extras.total),
-        paudAssessments: Number(totalPaudAssessments[0].$extras.total),
-        lkpds: Number(totalLkpds[0].$extras.total),
-        mediaModules: Number(totalMediaModules[0].$extras.total),
-      },
+      ...(await dashboardService.getPanelData(user)),
     })
   }
 
@@ -77,116 +25,6 @@ export default class DashboardController {
       return response.redirect().toRoute('principal.index')
     }
 
-    const isAdmin = user.isAdmin
-    const isTk = user.educationLevel === 'tk'
-
-    const [
-      totalClasses,
-      totalStudents,
-      totalTeachingModules,
-      totalExams,
-      totalAnnualPlans,
-      totalSemesterPlans,
-      totalWeeklyLessonPlans,
-      totalDailyLessonPlans,
-      totalPaudAssessments,
-      totalLkpds,
-      totalMediaModules,
-    ] = await Promise.all([
-      isAdmin
-        ? SchoolClass.query().count('* as total')
-        : SchoolClass.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? Student.query().count('* as total')
-        : Student.query()
-            .whereHas('schoolClass', (q) => q.where('user_id', user.id))
-            .count('* as total'),
-      isAdmin
-        ? TeachingModule.query().count('* as total')
-        : TeachingModule.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? Exam.query().count('* as total')
-        : Exam.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? AnnualPlan.query().count('* as total')
-        : AnnualPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? SemesterPlan.query().count('* as total')
-        : SemesterPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? WeeklyLessonPlan.query().count('* as total')
-        : WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? DailyLessonPlan.query().count('* as total')
-        : DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? PaudAssessment.query().count('* as total')
-        : PaudAssessment.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? Lkpd.query().count('* as total')
-        : Lkpd.query().where('user_id', user.id).count('* as total'),
-      isAdmin
-        ? MediaModule.query().count('* as total')
-        : MediaModule.query().where('user_id', user.id).count('* as total'),
-    ])
-
-    let adminStats = null
-    if (isAdmin) {
-      const [totalUsers, totalGuru, totalAdmin] = await Promise.all([
-        User.query().count('* as total'),
-        User.query().where('role', 'guru').count('* as total'),
-        User.query().where('role', 'admin').count('* as total'),
-      ])
-      adminStats = {
-        users: Number(totalUsers[0].$extras.total),
-        guru: Number(totalGuru[0].$extras.total),
-        admin: Number(totalAdmin[0].$extras.total),
-        lkpds: Number(totalLkpds[0].$extras.total),
-        mediaModules: Number(totalMediaModules[0].$extras.total),
-      }
-    }
-
-    const recentTeachingModules = await TeachingModule.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(5)
-
-    const recentExams = await Exam.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(5)
-
-    const recentLkpds = await Lkpd.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(5)
-
-    const recentMediaModules = await MediaModule.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(5)
-
-    return inertia.render('dashboard/index', {
-      role: user.role,
-      educationLevel: user.educationLevel,
-      stats: {
-        classes: Number(totalClasses[0].$extras.total),
-        students: Number(totalStudents[0].$extras.total),
-        teachingModules: Number(totalTeachingModules[0].$extras.total),
-        exams: Number(totalExams[0].$extras.total),
-        annualPlans: Number(totalAnnualPlans[0].$extras.total),
-        semesterPlans: Number(totalSemesterPlans[0].$extras.total),
-        weeklyLessonPlans: Number(totalWeeklyLessonPlans[0].$extras.total),
-        dailyLessonPlans: Number(totalDailyLessonPlans[0].$extras.total),
-        paudAssessments: Number(totalPaudAssessments[0].$extras.total),
-        lkpds: Number(totalLkpds[0].$extras.total),
-        mediaModules: Number(totalMediaModules[0].$extras.total),
-      },
-      adminStats,
-      recentTeachingModules: isTk ? [] : recentTeachingModules.map((m) => m.toJSON()),
-      recentExams: isTk ? [] : recentExams.map((e) => e.toJSON()),
-      recentLkpds: isTk ? recentLkpds.map((l) => l.toJSON()) : [],
-      recentMediaModules: isTk ? recentMediaModules.map((m) => m.toJSON()) : [],
-    })
+    return inertia.render('dashboard/index', await dashboardService.getPageData(user))
   }
 }
