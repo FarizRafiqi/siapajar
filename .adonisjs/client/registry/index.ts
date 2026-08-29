@@ -102,6 +102,12 @@ const routes = {
     tokens: [{"old":"/api/webhooks/mayar","type":0,"val":"api","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"webhooks","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"mayar","end":""}],
     types: placeholder as Registry['api.mayar.webhook']['types'],
   },
+  'api.packages.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/packages',
+    tokens: [{"old":"/api/packages","type":0,"val":"api","end":""},{"old":"/api/packages","type":0,"val":"packages","end":""}],
+    types: placeholder as Registry['api.packages.index']['types'],
+  },
   'mcp.wellknown': {
     methods: ["GET","HEAD"],
     pattern: '/.well-known/mcp',

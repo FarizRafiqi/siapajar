@@ -34,6 +34,9 @@ router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('ter
 // Mayar Webhook (Public Endpoint)
 router.post('/api/webhooks/mayar', [MayarPaymentsController, 'webhook']).as('api.mayar.webhook')
 
+// Public Packages Endpoint
+router.get('/api/packages', [controllers.Home, 'packages']).as('api.packages.index')
+
 // MCP Discovery & HTTP Transport Routes
 router.get('/.well-known/mcp', [controllers.Mcp, 'wellKnown']).as('mcp.wellknown')
 router.any('/mcp', [controllers.Mcp, 'handle']).use(middleware.mcpRateLimit()).as('mcp.handle')

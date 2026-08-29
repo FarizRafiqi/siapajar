@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import SchoolClass from '#models/school_class'
 import Subject from '#models/subject'
 import TeachingModule from '#models/teaching_module'
+import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 import Exam from '#models/exam'
 import Lkpd from '#models/lkpd'
 import AnnualPlan from '#models/annual_plan'
@@ -26,17 +27,55 @@ export default class ExpressToolsController {
       .where('is_active', true)
       .orderBy('name')
 
-    const recentModules = await TeachingModule.query()
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .orderBy('created_at', 'desc')
-      .limit(10)
+    let recentModules: Array<{
+      id: number
+      title: string
+      subject: string
+      phase: string
+      status: string
+      createdAt: string
+      schoolClass?: any
+    }> = []
+
+    if (isTk) {
+      const plans = await WeeklyLessonPlan.query()
+        .where('user_id', user.id)
+        .preload('schoolClass')
+        .orderBy('created_at', 'desc')
+        .limit(20)
+
+      recentModules = plans.map((p) => ({
+        id: p.id,
+        title: p.theme || 'Modul Ajar RPPM',
+        subject: (p.content as any)?.subject || 'Tematik PAUD KBC',
+        phase: 'Fondasi',
+        status: p.status || 'published',
+        createdAt: p.createdAt ? p.createdAt.toISO() || '' : '',
+        schoolClass: p.schoolClass ? p.schoolClass.toJSON() : undefined,
+      }))
+    } else {
+      const modules = await TeachingModule.query()
+        .where('user_id', user.id)
+        .preload('schoolClass')
+        .orderBy('created_at', 'desc')
+        .limit(20)
+
+      recentModules = modules.map((m) => ({
+        id: m.id,
+        title: m.title || 'Modul Ajar',
+        subject: m.subject || '',
+        phase: m.phase || '',
+        status: m.status || 'published',
+        createdAt: m.createdAt ? m.createdAt.toISO() || '' : '',
+        schoolClass: m.schoolClass ? m.schoolClass.toJSON() : undefined,
+      }))
+    }
 
     return inertia.render('dashboard/tools/modul-ajar', {
       isTk,
       classes: classes.map((c) => c.toJSON()),
       subjects: subjects.map((s) => s.toJSON()),
-      recentModules: recentModules.map((m) => m.toJSON()),
+      recentModules,
     })
   }
 
@@ -157,12 +196,7 @@ export default class ExpressToolsController {
       return response.badRequest({ message: 'Data nilai dan mata pelajaran wajib diisi' })
     }
 
-    if (!(await creditService.hasEnoughCredits(user.id, 1))) {
-      return response.paymentRequired({
-        message: 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.',
-      })
-    }
-
+    // Katrol is a free utility tool (0 credits)
     try {
       const prompt = katrolPrompt({
         subject,
@@ -177,12 +211,6 @@ export default class ExpressToolsController {
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
-
-      await creditService.deductCredits(
-        user.id,
-        1,
-        `Katrol Nilai & Remedial: ${subject} (${scores.length} siswa)`
-      )
 
       return response.ok({
         success: true,
@@ -278,7 +306,7 @@ export default class ExpressToolsController {
   }
 
   /**
-   * Generate Modul Kokurikuler / P5 AI
+   * Generate Modul Kokurikuler / P5 AI (2 Kredit)
    */
   async generateKokurikuler({ request, response, auth }: HttpContext) {
     const user = auth.user!
@@ -294,9 +322,9 @@ export default class ExpressToolsController {
       return response.badRequest({ message: 'Tema dan topik proyek wajib diisi' })
     }
 
-    if (!(await creditService.hasEnoughCredits(user.id, 1))) {
+    if (!(await creditService.hasEnoughCredits(user.id, 2))) {
       return response.paymentRequired({
-        message: 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.',
+        message: 'Saldo kredit Anda tidak mencukupi (butuh 2 kredit). Silakan top-up kredit.',
       })
     }
 
@@ -318,7 +346,7 @@ export default class ExpressToolsController {
 
       await creditService.deductCredits(
         user.id,
-        1,
+        2,
         `Modul Projek P5 / Kokurikuler: ${theme} - ${topic}`
       )
 

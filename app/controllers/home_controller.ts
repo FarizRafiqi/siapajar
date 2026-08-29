@@ -9,4 +9,9 @@ export default class HomeController {
       packages: packages.map((p) => p.toJSON()),
     })
   }
+
+  async packages({ response }: HttpContext) {
+    const packages = await Package.query().where('is_active', true).orderBy('sort_order', 'asc')
+    return response.ok(packages.map((p) => p.toJSON()))
+  }
 }

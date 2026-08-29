@@ -31,6 +31,9 @@ export interface ApiDefinition {
       checkout: typeof routes['api.mayar.checkout']
       status: typeof routes['api.mayar.status']
     }
+    packages: {
+      index: typeof routes['api.packages.index']
+    }
     express: {
       katrol: {
         generate: typeof routes['api.express.katrol.generate']

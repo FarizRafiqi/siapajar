@@ -20,6 +20,7 @@ export type ScannedRoutes = {
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
     'api.mayar.webhook': { paramsTuple?: []; params?: {} }
+    'api.packages.index': { paramsTuple?: []; params?: {} }
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
@@ -266,6 +267,7 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'api.packages.index': { paramsTuple?: []; params?: {} }
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }
@@ -370,6 +372,7 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
+    'api.packages.index': { paramsTuple?: []; params?: {} }
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'coming-soon': { paramsTuple?: []; params?: {} }

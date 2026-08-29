@@ -199,6 +199,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
     }
   }
+  'api.packages.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/packages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['packages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['packages']>>>
+    }
+  }
   'mcp.wellknown': {
     methods: ["GET","HEAD"]
     pattern: '/.well-known/mcp'

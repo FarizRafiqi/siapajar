@@ -15,32 +15,45 @@ export default class MayarPaymentsController {
 
     const { packageName, packageId } = request.only(['packageName', 'packageId'])
 
-    // Tentukan harga dan kredit berdasarkan paket
-    const topupPackages: Record<string, { name: string; credits: number; price: number }> = {
-      topup_pemula: { name: 'Paket Pemula', credits: 15, price: 15000 },
-      topup_sahabat: { name: 'Paket Sahabat Guru', credits: 45, price: 35000 },
-      topup_teladan: { name: 'Paket Guru Teladan', credits: 100, price: 65000 },
-      sekolah: { name: 'Paket Sekolah', credits: 500, price: 250000 },
+    // Query paket langsung dari database
+    let pkg: Package | null = null
+    if (packageId && !Number.isNaN(Number(packageId))) {
+      pkg = await Package.find(Number(packageId))
     }
 
-    let selected = topupPackages[packageName]
-    if (!selected && packageId) {
-      const pkg = await Package.find(packageId)
-      if (pkg) {
-        let pkgCredits = 100
-        if (pkg.name === 'topup_pemula') pkgCredits = 15
-        else if (pkg.name === 'topup_sahabat') pkgCredits = 45
+    if (!pkg && (packageName || packageId)) {
+      const identifier = String(packageName || packageId).trim()
+      pkg = await Package.query()
+        .where('name', identifier)
+        .orWhere('name', identifier.toLowerCase().replace(/\s+/g, '_'))
+        .first()
+    }
 
-        selected = {
-          name: pkg.displayName,
-          credits: pkgCredits,
-          price: pkg.priceMonthly,
-        }
+    // Default fallback ke paket aktif & ter-highlight bila tidak ditentukan
+    if (!pkg) {
+      pkg =
+        (await Package.query().where('is_active', true).where('is_highlighted', true).first()) ||
+        (await Package.query().where('is_active', true).first())
+    }
+
+    if (!pkg) {
+      return response.badRequest({
+        success: false,
+        message: 'Paket langganan atau top-up tidak ditemukan di database.',
+      })
+    }
+
+    // Tentukan jumlah kredit dari features atau nama paket
+    let creditsAmount = 35
+    if (pkg.name === 'guru_aktif' || pkg.name === 'topup_pemula') creditsAmount = 15
+    else if (pkg.name === 'guru_pro' || pkg.name === 'topup_sahabat') creditsAmount = 35
+    else if (pkg.name === 'paket_sekolah' || pkg.name === 'sekolah') creditsAmount = 120
+    else {
+      const creditFeature = (pkg.features || []).find((f: string) => /kredit/i.test(f))
+      if (creditFeature) {
+        const match = creditFeature.match(/(\d+)\s*kredit/i)
+        if (match) creditsAmount = Number.parseInt(match[1], 10)
       }
-    }
-
-    if (!selected) {
-      selected = topupPackages.topup_sahabat // Default fallback
     }
 
     const redirectUrl = `${request.header('origin') || 'http://localhost:3333'}/billing?status=success`
@@ -50,9 +63,9 @@ export default class MayarPaymentsController {
         userId: user.id,
         userName: user.fullName || user.email.split('@')[0],
         userEmail: user.email,
-        packageName: selected.name,
-        creditsAmount: selected.credits,
-        grossAmount: selected.price,
+        packageName: pkg.displayName || pkg.name,
+        creditsAmount: creditsAmount,
+        grossAmount: pkg.priceMonthly,
         redirectUrl,
       })
 
