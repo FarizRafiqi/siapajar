@@ -100,6 +100,17 @@ const guruSdNavigation: NavigationEntry[] = [
       { name: 'Daftar Penilaian', href: '/assessments', icon: ClipboardCheck },
     ],
   },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/my-package',
+        icon: Package,
+        activeHrefs: ['/billing', '/usage', '/subscriptions'],
+      },
+    ],
+  },
 ]
 
 const guruTkNavigation: NavigationEntry[] = [
@@ -138,6 +149,17 @@ const guruTkNavigation: NavigationEntry[] = [
       { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
       { name: 'Kelompok & Siswa', href: '/classes', icon: Users, activeHrefs: ['/panel/kelas'] },
       { name: 'Asesmen Harian PAUD', href: '/paud-assessments', icon: ClipboardList },
+    ],
+  },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/my-package',
+        icon: Package,
+        activeHrefs: ['/billing', '/usage', '/subscriptions'],
+      },
     ],
   },
 ]
@@ -224,12 +246,12 @@ function renderNavigationItem(
         'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
         isActive
           ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
-          : 'font-medium text-emerald-100 hover:bg-emerald-700/60 hover:text-white'
+          : 'font-medium text-white hover:bg-emerald-700/60 hover:text-white'
       )}
       title={collapsed ? item.name : undefined}
     >
       <item.icon
-        className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-neutral-950' : 'text-emerald-300')}
+        className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-neutral-950' : 'text-white')}
       />
       <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
     </Link>
@@ -360,65 +382,68 @@ export default function Sidebar({
       >
         {/* Logo */}
         <div
-          className="flex h-16 items-center border-b border-emerald-800/80 dark:border-emerald-950/80"
-          style={{
-            paddingLeft: collapsed ? 0 : '1rem',
-            paddingRight: collapsed ? 0 : '0.75rem',
-            justifyContent: collapsed ? 'center' : 'space-between',
-          }}
+          className={cn(
+            'flex h-16 items-center border-b border-emerald-800/80 dark:border-emerald-950/80',
+            collapsed ? 'justify-center px-0' : 'justify-between pl-4 pr-2'
+          )}
         >
           {collapsed ? (
-            /* Collapsed state: hanya tampil tombol expand, centered */
+            /* Collapsed state: logo berubah menjadi tombol expand saat di-hover */
             <>
               <button
                 type="button"
-                onClick={onToggle}
-                className="hidden md:flex items-center justify-center rounded-lg p-2 text-emerald-200 hover:bg-emerald-700/60 hover:text-white transition-colors"
+                onClick={() => {
+                  setLogoHovered(false)
+                  onToggle?.()
+                }}
+                onMouseEnter={() => setLogoHovered(true)}
+                onMouseLeave={() => setLogoHovered(false)}
+                className="group relative hidden h-10 w-10 items-center justify-center rounded-xl p-1 transition-colors hover:bg-emerald-700/60 md:flex"
                 title="Buka sidebar"
               >
-                <PanelLeftOpen className="h-5 w-5" />
+                <img
+                  src="/images/logo.png"
+                  alt="SiapAjar Logo"
+                  className={cn(
+                    'absolute h-8 w-8 object-contain drop-shadow-sm transition-all duration-200',
+                    logoHovered ? 'scale-75 opacity-0' : 'scale-100 opacity-100'
+                  )}
+                />
+                <PanelLeftOpen
+                  className={cn(
+                    'h-6 w-6 text-white transition-all duration-200',
+                    logoHovered ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
+                  )}
+                />
               </button>
               {/* Mobile close button (hanya muncul di mobile) */}
               <button
                 type="button"
                 onClick={onMobileClose}
-                className="flex items-center justify-center rounded-lg p-2 text-emerald-200 hover:bg-emerald-700/60 hover:text-white transition-colors md:hidden"
+                className="flex items-center justify-center rounded-lg p-2 text-white hover:bg-emerald-700/60 hover:text-white transition-colors md:hidden"
               >
                 <X className="h-5 w-5" />
               </button>
             </>
           ) : (
-            /* Expanded state: logo dengan hover collapse effect */
+            /* Expanded state: tombol collapse berada di sisi kanan logo */
             <>
+              <Link href="/dashboard" className="hidden min-w-0 items-center gap-2.5 md:flex">
+                <img
+                  src="/images/logo.png"
+                  alt="SiapAjar Logo"
+                  className="h-8 w-8 flex-shrink-0 object-contain drop-shadow-sm"
+                />
+                <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
+              </Link>
               <button
                 type="button"
                 onClick={onToggle}
-                onMouseEnter={() => setLogoHovered(true)}
-                onMouseLeave={() => setLogoHovered(false)}
-                className="hidden md:flex items-center gap-2.5 rounded-lg px-1 py-1 transition-all group"
+                className="hidden rounded-lg p-2 text-white transition-colors hover:bg-emerald-700/60 md:flex"
                 title="Tutup sidebar"
+                aria-label="Tutup sidebar"
               >
-                <div className="relative h-8 w-8 flex-shrink-0">
-                  <img
-                    src="/images/logo.png"
-                    alt="SiapAjar Logo"
-                    className={cn(
-                      'absolute inset-0 h-8 w-8 object-contain drop-shadow-sm transition-all duration-200',
-                      logoHovered ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      'absolute inset-0 flex items-center justify-center transition-all duration-200',
-                      logoHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                    )}
-                  >
-                    <PanelLeftClose className="h-6 w-6 text-emerald-200 group-hover:text-white" />
-                  </div>
-                </div>
-                <span className="text-lg font-black tracking-tight text-white group-hover:text-emerald-100 transition-colors">
-                  SiapAjar
-                </span>
+                <PanelLeftClose className="h-5 w-5" />
               </button>
               {/* Logo untuk mobile (non-clickable untuk collapse, pakai Link) */}
               <Link href="/dashboard" className="flex items-center gap-2.5 md:hidden">
@@ -433,7 +458,7 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={onMobileClose}
-                className="rounded-lg p-1.5 text-emerald-200 hover:bg-emerald-800 hover:text-white md:hidden"
+                className="rounded-lg p-1.5 text-white hover:bg-emerald-800 hover:text-white md:hidden"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -472,7 +497,7 @@ export default function Sidebar({
                       }))
                     }
                     className={cn(
-                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-black uppercase tracking-wider text-emerald-200/70 hover:bg-emerald-800/40 hover:text-white',
+                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-black uppercase tracking-wider text-white hover:bg-emerald-800/40 hover:text-white',
                       collapsed && 'md:hidden',
                       groupIsActive && 'text-amber-300'
                     )}
@@ -525,13 +550,13 @@ export default function Sidebar({
               )}
               <div className={cn('flex-1 overflow-hidden text-left', collapsed && 'md:hidden')}>
                 <p className="truncate text-sm font-bold text-white">{user.fullName}</p>
-                <p className="truncate text-xs text-emerald-200/80 font-medium">
+                <p className="truncate text-xs font-medium text-white">
                   {roleLabels[user.role] || user.role}
                 </p>
               </div>
               <ChevronRight
                 className={cn(
-                  'h-4 w-4 flex-shrink-0 text-emerald-300 transition-transform',
+                  'h-4 w-4 flex-shrink-0 text-white transition-transform',
                   collapsed && 'md:hidden',
                   dropdownOpen && 'rotate-180'
                 )}

@@ -18,6 +18,7 @@ import {
   Coins,
   Rocket,
   Zap,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -62,6 +63,16 @@ interface DashboardProps {
   readonly recentExams: RecentItem[]
   readonly recentLkpds?: RecentItem[]
   readonly recentMediaModules?: RecentItem[]
+}
+
+interface ExpressTool {
+  title: string
+  desc: string
+  icon: LucideIcon
+  href: string
+  badge?: string
+  accentColor: string
+  iconColor: string
 }
 
 export default function Dashboard({
@@ -126,13 +137,13 @@ export default function Dashboard({
   const progressPercent = Math.round((completedCount / checklistItems.length) * 100)
 
   // 8 Tool-First Express Tools
-  const expressTools = [
+  const expressTools: ExpressTool[] = [
     {
       title: isTk ? 'Modul Ajar RPPM' : 'Modul Ajar AI',
       desc: 'Perangkat ajar lengkap 1-klik jadi',
       icon: BookOpen,
       href: '/modul-ajar',
-      badge: '1 Kredit',
+      badge: 'Paling Populer',
       accentColor: 'from-emerald-500/15 to-emerald-500/5 hover:border-emerald-500/60',
       iconColor: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300',
     },
@@ -141,7 +152,6 @@ export default function Dashboard({
       desc: 'Menebalkan, mewarnai & kognitif siap cetak',
       icon: FileSpreadsheet,
       href: '/lkpd',
-      badge: '1 Kredit',
       accentColor: 'from-purple-500/15 to-purple-500/5 hover:border-purple-500/60',
       iconColor: 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300',
     },
@@ -150,7 +160,6 @@ export default function Dashboard({
       desc: 'PG, isian, uraian HOTS & rubrik penilaian',
       icon: FileQuestion,
       href: '/soal',
-      badge: '1 Kredit',
       accentColor: 'from-amber-500/15 to-amber-500/5 hover:border-amber-500/60',
       iconColor: 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300',
     },
@@ -159,7 +168,6 @@ export default function Dashboard({
       desc: 'Distribusi pekan efektif & alokasi JP',
       icon: CalendarDays,
       href: '/prota-promes',
-      badge: '1 Kredit',
       accentColor: 'from-blue-500/15 to-blue-500/5 hover:border-blue-500/60',
       iconColor: 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300',
     },
@@ -168,7 +176,6 @@ export default function Dashboard({
       desc: 'Deskripsi capaian TP otomatis & apresiatif',
       icon: Award,
       href: '/rapor',
-      badge: '1 Kredit / Anak',
       accentColor: 'from-rose-500/15 to-rose-500/5 hover:border-rose-500/60',
       iconColor: 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300',
     },
@@ -177,7 +184,6 @@ export default function Dashboard({
       desc: 'Kalkulator normalisasi adil + justifikasi supervisi',
       icon: TrendingUp,
       href: '/katrol',
-      badge: '1 Kredit',
       accentColor: 'from-cyan-500/15 to-cyan-500/5 hover:border-cyan-500/60',
       iconColor: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300',
     },
@@ -186,7 +192,6 @@ export default function Dashboard({
       desc: 'Dokumentasi kelas & catatan refleksi guru',
       icon: ClipboardList,
       href: '/jurnal',
-      badge: '1 Kredit',
       accentColor: 'from-indigo-500/15 to-indigo-500/5 hover:border-indigo-500/60',
       iconColor: 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300',
     },
@@ -195,7 +200,6 @@ export default function Dashboard({
       desc: 'Alur tahapan projek, dimensi profil & rubrik',
       icon: Compass,
       href: '/kokurikuler',
-      badge: '1 Kredit',
       accentColor: 'from-teal-500/15 to-teal-500/5 hover:border-teal-500/60',
       iconColor: 'bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300',
     },
@@ -224,13 +228,14 @@ export default function Dashboard({
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/billing"
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-topup-modal'))}
                 className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-[2px_2px_0px_#000000] border-2 border-black transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <Coins className="w-4 h-4 text-emerald-600" />
                 Top-Up Saldo Kredit
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -268,7 +273,9 @@ export default function Dashboard({
                       >
                         <Icon className="w-6 h-6" />
                       </div>
-                      <span className="badge-kawaii-emerald text-[10px]">{tool.badge}</span>
+                      {tool.badge && (
+                        <span className="badge-kawaii-emerald text-[10px]">{tool.badge}</span>
+                      )}
                     </div>
                     <div>
                       <h3 className="font-extrabold text-neutral-900 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
