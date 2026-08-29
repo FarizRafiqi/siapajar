@@ -1,10 +1,12 @@
 import School from '#models/school'
 
 export class SchoolRepository {
+  async findDuplicateByNormalizedName(normalizedName: string) {
+    return School.query().whereRaw('LOWER(name) = ?', [normalizedName.toLowerCase()]).first()
+  }
+
   async findOrCreateByNormalizedName(normalizedName: string) {
-    let school = await School.query()
-      .whereRaw('LOWER(name) = ?', [normalizedName.toLowerCase()])
-      .first()
+    let school = await this.findDuplicateByNormalizedName(normalizedName)
 
     school ??= await School.create({ name: normalizedName })
 
