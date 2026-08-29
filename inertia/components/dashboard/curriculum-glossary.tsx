@@ -99,23 +99,23 @@ export default function CurriculumGlossary() {
   return (
     <section
       data-tour="curriculum-glossary"
-      className="rounded-2xl border border-neutral-300 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm"
+      className="card-kawaii overflow-hidden p-4 sm:p-6"
       aria-labelledby="curriculum-glossary-title"
     >
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200 pb-5 dark:border-neutral-800">
+      <div className="flex flex-col gap-4 border-b-2 border-neutral-200 pb-5 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-emerald-100 p-3 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+          <div className="rounded-2xl border-2 border-black bg-[#f8be9e] p-3 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-[#f8be9e] dark:shadow-[2px_2px_0px_#ffffff]">
             <BookOpen className="h-6 w-6" />
           </div>
           <div>
             <h3
               id="curriculum-glossary-title"
-              className="text-xl font-bold text-neutral-900 dark:text-white"
+              className="text-xl font-black text-neutral-900 dark:text-white"
             >
               Glosarium Kurikulum
             </h3>
-            <p className="mt-0.5 text-sm text-neutral-700 dark:text-neutral-300">
+            <p className="mt-0.5 text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Kamus rujukan lengkap pengertian istilah CP, TP, ATP, IKTP, dan dokumen perencanaan
               SiapAjar.
             </p>
@@ -130,7 +130,7 @@ export default function CurriculumGlossary() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari istilah..."
-            className="w-full rounded-xl border border-neutral-300 bg-neutral-50 pl-9 pr-3 py-2 text-sm font-medium text-neutral-900 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400"
+            className="w-full rounded-2xl border-2 border-black bg-neutral-50 py-2 pl-11 pr-3 text-sm font-semibold text-neutral-900 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:border-white dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400 dark:focus:border-emerald-400"
           />
         </div>
       </div>
@@ -143,32 +143,42 @@ export default function CurriculumGlossary() {
             return (
               <div
                 key={item.code}
-                className="rounded-xl border border-neutral-300 bg-neutral-50/60 transition-all dark:border-neutral-800 dark:bg-neutral-800/40 overflow-hidden"
+                className="overflow-hidden rounded-2xl border-2 border-black bg-[#70d6ff]/15 transition-colors hover:bg-[#70d6ff]/25 dark:border-white dark:bg-sky-950/30 dark:hover:bg-sky-950/50"
               >
                 <button
                   type="button"
                   onClick={() => toggleTerm(item.code)}
-                  className="flex w-full items-center justify-between gap-3 p-4 text-left hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80"
+                  className="flex w-full items-center justify-between gap-3 p-4 text-left hover:bg-white/60 dark:hover:bg-neutral-900/50"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-extrabold text-white shrink-0">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span
+                      className={`shrink-0 ${
+                        item.category === 'Struktur Utama'
+                          ? 'badge-kawaii-sky'
+                          : item.category === 'Asesmen & Bukti'
+                            ? 'badge-kawaii-coral'
+                            : item.category === 'Dokumen Perencanaan'
+                              ? 'badge-kawaii-amber'
+                              : 'badge-kawaii-emerald'
+                      } !rounded-xl !px-2.5 !py-1 !text-xs`}
+                    >
                       {item.code}
                     </span>
-                    <span className="text-sm font-bold text-neutral-900 dark:text-white truncate">
+                    <span className="truncate text-base font-bold text-neutral-900 dark:text-white">
                       {item.title}
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-300 transition-transform duration-200 ${
+                    className={`h-5 w-5 shrink-0 text-neutral-800 transition-transform duration-200 dark:text-neutral-200 ${
                       isOpen ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
 
                 {isOpen && (
-                  <div className="border-t border-neutral-200 bg-white p-4 text-sm font-medium text-neutral-800 dark:border-neutral-700/80 dark:bg-neutral-900 dark:text-neutral-200 leading-relaxed">
+                  <div className="border-t-2 border-black/10 bg-white p-4 text-sm font-medium leading-relaxed text-neutral-800 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-200">
                     <p>{item.description}</p>
-                    <span className="mt-3 inline-block rounded bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                    <span className="badge-kawaii-emerald mt-3 !rounded-xl !px-2.5 !py-1 !text-xs">
                       Kategori: {item.category}
                     </span>
                   </div>
@@ -177,8 +187,11 @@ export default function CurriculumGlossary() {
             )
           })
         ) : (
-          <div className="col-span-full rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
-            Tidak ada istilah yang cocok dengan kata kunci &quot;{searchQuery}&quot;.
+          <div className="col-span-full rounded-2xl border-2 border-dashed border-black bg-[#ffd670]/20 p-8 text-center dark:border-white dark:bg-amber-950/30">
+            <BookOpen className="mx-auto h-9 w-9 text-neutral-800 dark:text-neutral-200" />
+            <p className="mt-3 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+              Tidak ada istilah yang cocok dengan kata kunci &quot;{searchQuery}&quot;.
+            </p>
           </div>
         )}
       </div>
