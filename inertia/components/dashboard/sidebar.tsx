@@ -519,12 +519,13 @@ function SidebarNavigationTooltip({
     if (!tooltipEnabled) return
 
     const reposition = () => updatePosition()
+    const closeOnScroll = () => setPosition(null)
     window.addEventListener('resize', reposition)
-    document.addEventListener('scroll', reposition, true)
+    document.addEventListener('scroll', closeOnScroll, true)
 
     return () => {
       window.removeEventListener('resize', reposition)
-      document.removeEventListener('scroll', reposition, true)
+      document.removeEventListener('scroll', closeOnScroll, true)
     }
   }, [tooltipEnabled, updatePosition])
 
