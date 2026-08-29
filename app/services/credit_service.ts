@@ -1,8 +1,11 @@
-import db from '@adonisjs/lucid/services/db'
 import User from '#models/user'
 import CreditTransaction from '#models/credit_transaction'
+import { creditRepository } from '#repositories/credit_repository'
+import type { CreditRepository } from '#repositories/credit_repository'
 
 export class CreditService {
+  constructor(private readonly repository: CreditRepository = creditRepository) {}
+
   /**
    * Mengambil saldo kredit terkini milik user
    */
@@ -32,35 +35,14 @@ export class CreditService {
       throw new Error('Jumlah kredit yang dikurangi harus lebih dari 0')
     }
 
-    return await db.transaction(async (trx) => {
-      const user = await User.query({ client: trx }).where('id', userId).forUpdate().firstOrFail()
+    const result = await this.repository.deductCredits(userId, amount, description, metadata)
+    if (!result.transaction) {
+      throw new Error(
+        `Saldo kredit tidak mencukupi. Anda memiliki ${result.currentBalance} kredit, dibutuhkan ${amount} kredit.`
+      )
+    }
 
-      const currentBalance = user.creditsBalance ?? 0
-      if (currentBalance < amount) {
-        throw new Error(
-          `Saldo kredit tidak mencukupi. Anda memiliki ${currentBalance} kredit, dibutuhkan ${amount} kredit.`
-        )
-      }
-
-      const newBalance = currentBalance - amount
-      user.creditsBalance = newBalance
-      user.useTransaction(trx)
-      await user.save()
-
-      const transaction = new CreditTransaction()
-      transaction.useTransaction(trx)
-      transaction.fill({
-        userId: user.id,
-        amount: -amount,
-        balanceAfter: newBalance,
-        type: 'usage',
-        description,
-        metadata: metadata ?? null,
-      })
-      await transaction.save()
-
-      return transaction
-    })
+    return result.transaction
   }
 
   /**
@@ -77,30 +59,7 @@ export class CreditService {
       throw new Error('Jumlah kredit yang ditambahkan harus lebih dari 0')
     }
 
-    return await db.transaction(async (trx) => {
-      const user = await User.query({ client: trx }).where('id', userId).forUpdate().firstOrFail()
-
-      const currentBalance = user.creditsBalance ?? 0
-      const newBalance = currentBalance + amount
-
-      user.creditsBalance = newBalance
-      user.useTransaction(trx)
-      await user.save()
-
-      const transaction = new CreditTransaction()
-      transaction.useTransaction(trx)
-      transaction.fill({
-        userId: user.id,
-        amount,
-        balanceAfter: newBalance,
-        type,
-        description,
-        metadata: metadata ?? null,
-      })
-      await transaction.save()
-
-      return transaction
-    })
+    return this.repository.addCredits(userId, amount, type, description, metadata)
   }
 
   /**

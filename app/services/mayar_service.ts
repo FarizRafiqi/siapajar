@@ -3,6 +3,11 @@ import crypto from 'node:crypto'
 import env from '#start/env'
 import PaymentInvoice from '#models/payment_invoice'
 import { creditService } from '#services/credit_service'
+import type User from '#models/user'
+import { packageRepository } from '#repositories/package_repository'
+import type { PackageRepository } from '#repositories/package_repository'
+import { paymentInvoiceRepository } from '#repositories/payment_invoice_repository'
+import type { PaymentInvoiceRepository } from '#repositories/payment_invoice_repository'
 
 export interface CreateInvoiceParams {
   userId: number
@@ -16,6 +21,11 @@ export interface CreateInvoiceParams {
 }
 
 export class MayarService {
+  constructor(
+    private readonly packages: PackageRepository = packageRepository,
+    private readonly invoices: PaymentInvoiceRepository = paymentInvoiceRepository
+  ) {}
+
   private get apiKey(): string {
     return env.get('MAYAR_API_KEY') || ''
   }
@@ -26,6 +36,33 @@ export class MayarService {
 
   private get webhookToken(): string {
     return env.get('MAYAR_WEBHOOK_TOKEN') || ''
+  }
+
+  async createCheckout(
+    user: User,
+    input: { packageName?: unknown; packageId?: unknown; redirectUrl: string }
+  ) {
+    const packageId =
+      typeof input.packageId === 'string' || typeof input.packageId === 'number'
+        ? input.packageId
+        : null
+    const packageName = typeof input.packageName === 'string' ? input.packageName : null
+    const pkg = await this.packages.findForCheckout(packageId, packageName)
+
+    if (!pkg) {
+      throw new Error('Paket langganan atau top-up tidak ditemukan di database.')
+    }
+
+    const creditsAmount = this.getCreditsAmount(pkg.name, pkg.features)
+    return this.createInvoice({
+      userId: user.id,
+      userName: user.fullName || user.email.split('@')[0],
+      userEmail: user.email,
+      packageName: pkg.displayName || pkg.name,
+      creditsAmount,
+      grossAmount: pkg.priceMonthly,
+      redirectUrl: input.redirectUrl,
+    })
   }
 
   /**
@@ -108,6 +145,10 @@ export class MayarService {
     return invoice
   }
 
+  async findInvoiceForUser(invoiceNo: string, userId: number) {
+    return this.invoices.findOwnedByInvoiceNo(invoiceNo, userId)
+  }
+
   /**
    * Memvalidasi Webhook Secret / Token dari Mayar
    */
@@ -127,13 +168,7 @@ export class MayarService {
     const invoiceNo = extraData.invoiceNo
     const gatewayTrxId = transactionData.id || transactionData.transactionId
 
-    let invoice: PaymentInvoice | null = null
-    if (invoiceNo) {
-      invoice = await PaymentInvoice.query().where('invoiceNo', invoiceNo).first()
-    }
-    if (!invoice && gatewayTrxId) {
-      invoice = await PaymentInvoice.query().where('gatewayTransactionId', gatewayTrxId).first()
-    }
+    const invoice = await this.invoices.findByWebhookReference(invoiceNo, gatewayTrxId)
 
     if (!invoice) {
       return null
@@ -163,6 +198,16 @@ export class MayarService {
     )
 
     return invoice
+  }
+
+  private getCreditsAmount(packageName: string, features: string[]) {
+    if (packageName === 'guru_aktif' || packageName === 'topup_pemula') return 15
+    if (packageName === 'guru_pro' || packageName === 'topup_sahabat') return 35
+    if (packageName === 'paket_sekolah' || packageName === 'sekolah') return 120
+
+    const creditFeature = (features || []).find((feature) => /kredit/i.test(feature))
+    const match = creditFeature?.match(/(\d+)\s*kredit/i)
+    return match ? Number.parseInt(match[1], 10) : 35
   }
 }
 
