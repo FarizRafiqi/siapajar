@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon'
 import AiJob from '#models/ai_job'
-import User from '#models/user'
 
 export type CreateAiJobData = {
   jobKey: string
@@ -23,22 +22,6 @@ export class AiJobRepository {
         availableAt: DateTime.now(),
       }
     )
-  }
-
-  async findByJobKeyOrFail(jobKey: string) {
-    return AiJob.findByOrFail('job_key', jobKey)
-  }
-
-  async findById(id: number) {
-    return AiJob.find(id)
-  }
-
-  async findOwner(userId: number) {
-    return User.find(userId)
-  }
-
-  async findOwnerOrFail(userId: number) {
-    return User.findOrFail(userId)
   }
 
   async resetFailed(job: AiJob) {

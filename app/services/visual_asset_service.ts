@@ -3,12 +3,9 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
-import type { VisualAssetKind, VisualAssetSource } from '#models/visual_asset'
+import VisualAsset, { type VisualAssetKind, type VisualAssetSource } from '#models/visual_asset'
 import type User from '#models/user'
-import {
-  visualAssetRepository,
-  type VisualAssetPersistenceData,
-} from '#repositories/visual_asset_repository'
+import { visualAssetRepository } from '#repositories/visual_asset_repository'
 
 const MAX_SVG_BYTES = 512 * 1024
 const MAX_RASTER_BYTES = 8 * 1024 * 1024
@@ -227,12 +224,12 @@ export async function persistVisualAsset(options: PersistVisualAssetOptions) {
   const storagePath = `public/uploads/visual-assets/${options.user.id}/${fileName}`
   await writeFile(resolve(process.cwd(), storagePath), content)
 
-  const data: VisualAssetPersistenceData = {
+  const data = {
     userId: options.user.id,
     schoolId: options.user.schoolId,
     source: options.source,
     kind: options.kind,
-    status: 'ready',
+    status: 'ready' as const,
     mimeType,
     url: `/uploads/visual-assets/${options.user.id}/${fileName}`,
     storagePath,
@@ -246,7 +243,7 @@ export async function persistVisualAsset(options: PersistVisualAssetOptions) {
     error: null,
     metadata,
   }
-  return visualAssetRepository.createReadyAsset(data)
+  return VisualAsset.create(data)
 }
 
 export async function persistUploadedVisualAsset(options: {
@@ -277,12 +274,12 @@ export async function persistUploadedVisualAsset(options: {
   const storagePath = `public/uploads/visual-assets/${options.user.id}/${fileName}`
   await writeFile(resolve(process.cwd(), storagePath), content)
 
-  const data: VisualAssetPersistenceData = {
+  const data = {
     userId: options.user.id,
     schoolId: options.user.schoolId,
-    source: 'user_upload',
-    kind: 'raster',
-    status: 'ready',
+    source: 'user_upload' as const,
+    kind: 'raster' as const,
+    status: 'ready' as const,
     mimeType,
     url: `/uploads/visual-assets/${options.user.id}/${fileName}`,
     storagePath,
@@ -296,7 +293,7 @@ export async function persistUploadedVisualAsset(options: {
     error: null,
     metadata: { originalName: options.originalName || null },
   }
-  return visualAssetRepository.createUploadedAsset(data)
+  return VisualAsset.create(data)
 }
 
 export async function readSvgAsset(value: string) {

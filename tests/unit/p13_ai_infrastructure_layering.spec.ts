@@ -23,7 +23,7 @@ test.group('P13 AI and infrastructure layering', () => {
     assert.include(routes, '#services/health_service')
   })
 
-  test('keeps AI, asset, and background persistence behind named repositories', async ({
+  test('keeps complex persistence behind repositories and simple operations local', async ({
     assert,
   }) => {
     const persistenceConsumers = [
@@ -35,19 +35,28 @@ test.group('P13 AI and infrastructure layering', () => {
       'app/jobs/generate_ai_image.ts',
       'app/jobs/generate_ai_svg.ts',
       'app/jobs/generate_narratives.ts',
-      'app/jobs/write_audit_log.ts',
     ]
 
     for (const path of persistenceConsumers) {
       const source = await readProjectFile(path)
 
       assert.notMatch(source, /\.query\s*\(/)
-      assert.notMatch(
-        source,
-        /\b(?:AiJob|User|AiSetting|VisualAsset|ReportNarrative|AuditLog)\.(?:find|findBy|findOrFail|findByOrFail|firstOrCreate|create|updateOrCreate|query)\s*\(/
-      )
       assert.include(source, '#repositories/')
     }
+
+    const aiQueueService = await readProjectFile('app/services/ai_queue_service.ts')
+    assert.include(aiQueueService, "import AiJob from '#models/ai_job'")
+    assert.include(aiQueueService, "import User from '#models/user'")
+    assert.include(aiQueueService, 'User.findOrFail(')
+    assert.include(aiQueueService, 'AiJob.find(')
+
+    const visualAssetService = await readProjectFile('app/services/visual_asset_service.ts')
+    assert.match(visualAssetService, /import VisualAsset(?:,|\s+from)/)
+    assert.include(visualAssetService, 'VisualAsset.create(data)')
+
+    const auditJob = await readProjectFile('app/jobs/write_audit_log.ts')
+    assert.include(auditJob, "import AuditLog from '#models/audit_log'")
+    assert.include(auditJob, 'AuditLog.create(')
   })
 
   test('defines named repositories for AI and infrastructure persistence', async ({ assert }) => {
@@ -55,20 +64,11 @@ test.group('P13 AI and infrastructure layering', () => {
       'app/repositories/ai_setting_repository.ts': ['current'],
       'app/repositories/ai_job_repository.ts': [
         'findOrCreate',
-        'findByJobKeyOrFail',
-        'findById',
-        'findOwner',
-        'findOwnerOrFail',
         'markProcessing',
         'markCompleted',
         'markFailed',
       ],
-      'app/repositories/visual_asset_repository.ts': [
-        'findCached',
-        'createReadyAsset',
-        'createUploadedAsset',
-      ],
-      'app/repositories/audit_log_repository.ts': ['record'],
+      'app/repositories/visual_asset_repository.ts': ['findCached'],
       'app/repositories/infrastructure_repository.ts': ['pingDatabase'],
       'app/repositories/report_card_repository.ts': ['upsertGeneratedNarrative'],
     }

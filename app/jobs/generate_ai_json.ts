@@ -1,5 +1,7 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
+import AiJob from '#models/ai_job'
+import User from '#models/user'
 import { callAiJson } from '#services/ai_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
 import { aiJobRepository } from '#repositories/ai_job_repository'
@@ -24,9 +26,9 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
   }
 
   static async executeDirect(payload: GenerateAiJsonPayload) {
-    const job = await aiJobRepository.findByJobKeyOrFail(payload.jobKey)
+    const job = await AiJob.findByOrFail('job_key', payload.jobKey)
     if (job.status === 'completed') return
-    const owner = await aiJobRepository.findOwner(payload.userId)
+    const owner = await User.find(payload.userId)
     if (!owner) throw new Error('AI job owner not found')
     await aiJobRepository.markProcessing(job)
     try {

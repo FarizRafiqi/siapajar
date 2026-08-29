@@ -1,5 +1,7 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
+import AiJob from '#models/ai_job'
+import User from '#models/user'
 import { generateConfiguredSvg } from '#services/ai_service'
 import { persistVisualAsset } from '#services/visual_asset_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
@@ -24,9 +26,9 @@ export default class GenerateAiSvg extends Job<GenerateAiSvgPayload> {
   }
 
   async execute() {
-    const job = await aiJobRepository.findByJobKeyOrFail(this.payload.jobKey)
+    const job = await AiJob.findByOrFail('job_key', this.payload.jobKey)
     if (job.status === 'completed') return
-    const user = await aiJobRepository.findOwnerOrFail(this.payload.userId)
+    const user = await User.findOrFail(this.payload.userId)
     const setting = await aiSettingRepository.current()
     await aiJobRepository.markProcessing(job)
     try {

@@ -1,6 +1,6 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import { auditLogRepository } from '#repositories/audit_log_repository'
+import AuditLog from '#models/audit_log'
 
 export interface AuditLogPayload {
   actorId?: number | null
@@ -22,7 +22,7 @@ export default class WriteAuditLog extends Job<AuditLogPayload> {
   }
 
   async execute() {
-    await auditLogRepository.record({
+    await AuditLog.create({
       actorId: this.payload.actorId ?? null,
       action: this.payload.action,
       entityType: this.payload.entityType ?? null,

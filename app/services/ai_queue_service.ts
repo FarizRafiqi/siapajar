@@ -3,6 +3,8 @@ import GenerateAiJson from '#jobs/generate_ai_json'
 import GenerateAiImage from '#jobs/generate_ai_image'
 import GenerateAiSvg from '#jobs/generate_ai_svg'
 import { createHash } from 'node:crypto'
+import AiJob from '#models/ai_job'
+import User from '#models/user'
 import { reserveUsage, releaseUsageReservation } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
 import { aiJobRepository } from '#repositories/ai_job_repository'
@@ -42,7 +44,7 @@ class AiQueueService {
     featureKey?: string
   }): Promise<T> {
     if (!options.userId) throw new Error('AI jobs require an authenticated user')
-    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
+    const owner = await User.findOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(`${options.userId}:${options.combo}:${options.systemPrompt}:${options.userPrompt}`)
       .digest('hex')
@@ -101,7 +103,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await aiJobRepository.findById(job.id)
+      const current = await AiJob.find(job.id)
       if (current?.status === 'completed') return current.result as T
       if (current?.status === 'failed') throw new Error(current.error ?? 'AI job failed')
       await new Promise((resolve) => setTimeout(resolve, 250))
@@ -115,7 +117,7 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI image jobs require an authenticated user')
-    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
+    const owner = await User.findOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(`${options.userId}:siapajar-image:${options.prompt}`)
       .digest('hex')
@@ -161,7 +163,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await aiJobRepository.findById(job.id)
+      const current = await AiJob.find(job.id)
       if (current?.status === 'completed') return normalizeVisualResult(current.result)
       if (current?.status === 'failed') throw new Error(current.error ?? 'AI image job failed')
       await new Promise((resolve) => setTimeout(resolve, 250))
@@ -179,7 +181,7 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI visual jobs require an authenticated user')
-    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
+    const owner = await User.findOrFail(options.userId)
     const request: VisualAssetRequest = {
       userId: options.userId,
       prompt: options.prompt,
@@ -229,7 +231,7 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI SVG jobs require an authenticated user')
-    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
+    const owner = await User.findOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(
         `${options.userId}:siapajar-svg:${options.prompt}:${JSON.stringify(options.metadata || {})}`
@@ -271,7 +273,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await aiJobRepository.findById(job.id)
+      const current = await AiJob.find(job.id)
       if (current?.status === 'completed') {
         return normalizeVisualResult(current.result)
       }

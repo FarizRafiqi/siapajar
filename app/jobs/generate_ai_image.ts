@@ -1,5 +1,7 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
+import AiJob from '#models/ai_job'
+import User from '#models/user'
 import { generateConfiguredImage } from '#services/ai_service'
 import { persistVisualAsset } from '#services/visual_asset_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
@@ -22,9 +24,9 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
   }
 
   static async executeDirect(payload: GenerateAiImagePayload) {
-    const job = await aiJobRepository.findByJobKeyOrFail(payload.jobKey)
+    const job = await AiJob.findByOrFail('job_key', payload.jobKey)
     if (job.status === 'completed') return
-    const user = await aiJobRepository.findOwnerOrFail(payload.userId)
+    const user = await User.findOrFail(payload.userId)
     const setting = await aiSettingRepository.current()
     await aiJobRepository.markProcessing(job)
     try {
