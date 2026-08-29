@@ -25,6 +25,7 @@ test.group('P6 classes and students layering', () => {
       'findClassDuplicate',
       'findStudentForUser',
       'findStudentDuplicate',
+      'getStudentsData',
     ]) {
       assert.match(source, new RegExp(`(?:async )?${method}\\s*\\(`))
     }
@@ -35,6 +36,8 @@ test.group('P6 classes and students layering', () => {
 
     assert.notInclude(source, "from '@adonisjs/lucid/services/db'")
     assert.notMatch(source, /\b(?:whereHas|preload|forUpdate|groupBy|join)\s*\(/)
+    assert.notInclude(source, 'PaudAssessment.query()')
+    assert.notInclude(source, "Student.query().where('class_id', classId)")
     assert.include(source, '#repositories/class_repository')
   })
 
@@ -43,7 +46,6 @@ test.group('P6 classes and students layering', () => {
   }) => {
     const source = await readProjectFile('app/services/classes_service.ts')
 
-    assert.include(source, 'SchoolClass.find')
     assert.include(source, 'SchoolClass.create')
     assert.include(source, 'Student.create')
     assert.include(source, '.save()')

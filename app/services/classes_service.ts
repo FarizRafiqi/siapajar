@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon'
 import AcademicYear from '#models/academic_year'
-import PaudAssessment from '#models/paud_assessment'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
 import User from '#models/user'
@@ -88,11 +87,10 @@ export class ClassesService {
   }
 
   async getStudentsData(user: User, classId: string | number) {
-    const schoolClass = await SchoolClass.find(classId)
-    const students = await Student.query().where('class_id', classId).orderBy('full_name', 'asc')
-    const assessments = await PaudAssessment.query()
-      .where('user_id', user.id)
-      .where('class_id', classId)
+    const { schoolClass, students, assessments } = await this.repository.getStudentsData(
+      user.id,
+      classId
+    )
     const assessmentCounts: Record<number, number> = {}
 
     assessments.forEach((assessment) => {

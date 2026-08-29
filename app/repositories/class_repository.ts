@@ -1,4 +1,5 @@
 import SchoolClass from '#models/school_class'
+import PaudAssessment from '#models/paud_assessment'
 import Student from '#models/student'
 import WeeklyLessonPlan from '#models/weekly_lesson_plan'
 
@@ -18,6 +19,20 @@ export class ClassRepository {
     }
 
     return query.first()
+  }
+
+  async getStudentsData(userId: number, classId: string | number) {
+    const schoolClass = await this.findOwnedClass(userId, classId)
+    if (!schoolClass) {
+      return { schoolClass: null, students: [], assessments: [] }
+    }
+
+    const [students, assessments] = await Promise.all([
+      Student.query().where('class_id', schoolClass.id).orderBy('full_name', 'asc'),
+      PaudAssessment.query().where('user_id', userId).where('class_id', schoolClass.id),
+    ])
+
+    return { schoolClass, students, assessments }
   }
 
   async findLatestPlanForClass(userId: number, classId: string | number) {
