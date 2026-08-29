@@ -79,6 +79,55 @@ router
 
     // Dashboard
     router.get('/dashboard', [controllers.Dashboard, 'index']).as('dashboard')
+    router
+      .get('/panel', ({ response }) => response.redirect().toRoute('panel.dashboard'))
+      .as('panel.index')
+    router.get('/panel/dashboard', [controllers.Dashboard, 'panel']).as('panel.dashboard')
+
+    // Panel Lengkap — halaman terstruktur tetap berada di bawah /panel/*.
+    // Route kanonis tanpa prefiks tetap dipertahankan untuk tautan lama dan redirect internal.
+    router
+      .group(() => {
+        router.get('/curriculum', [controllers.Curriculum, 'index']).as('panel.curriculum.index')
+        router.get('/classes', [controllers.Classes, 'index']).as('panel.classes.index')
+        router.get('/subjects', [controllers.Subjects, 'index']).as('panel.subjects.index')
+        router
+          .get('/glossary', ({ inertia }) => inertia.render('dashboard/glossary/index', {}))
+          .as('panel.glossary.index')
+        router
+          .get('/teaching-modules', [controllers.TeachingModules, 'index'])
+          .as('panel.teaching-modules.index')
+        router
+          .get('/annual-plans', [controllers.AnnualPlans, 'index'])
+          .as('panel.annual-plans.index')
+        router
+          .get('/semester-plans', [controllers.SemesterPlans, 'index'])
+          .as('panel.semester-plans.index')
+        router.get('/rppm', [controllers.WeeklyLessonPlans, 'index']).as('panel.rppm.index')
+        router.get('/rpph', [controllers.DailyLessonPlans, 'index']).as('panel.rpph.index')
+        router.get('/lkpd', [controllers.Lkpds, 'index']).as('panel.lkpd.index')
+        router
+          .get('/media-modules', [controllers.MediaModules, 'index'])
+          .as('panel.media-modules.index')
+        router.get('/exams', [controllers.Exams, 'index']).as('panel.exams.index')
+        router.get('/assessments', [controllers.Assessments, 'index']).as('panel.assessments.index')
+        router
+          .get('/paud-assessments', [controllers.PaudAssessments, 'index'])
+          .as('panel.paud-assessments.index')
+        router
+          .get('/report-cards', [controllers.ReportCards, 'index'])
+          .as('panel.report-cards.index')
+        router.get('/jurnal', [ExpressToolsController, 'jurnal']).as('panel.jurnal.index')
+        router
+          .get('/kokurikuler', [ExpressToolsController, 'kokurikuler'])
+          .as('panel.kokurikuler.index')
+        router.get('/katrol', [ExpressToolsController, 'katrol']).as('panel.katrol.index')
+        router
+          .get('/my-package', [controllers.AccountBilling, 'package'])
+          .as('panel.account.package')
+        router.get('/settings', [controllers.Settings, 'index']).as('panel.settings.index')
+      })
+      .prefix('/panel')
 
     // Billing & Top-Up Kredit (Mayar.id)
     router.get('/billing', [controllers.AccountBilling, 'package']).as('billing.index')
@@ -115,16 +164,14 @@ router
       .post('/api/express/kokurikuler/generate', [ExpressToolsController, 'generateKokurikuler'])
       .as('api.express.kokurikuler.generate')
 
-    // Panel Terstruktur Aliases
-    router.get('/panel/kurikulum', ({ response }) =>
-      response.redirect().toRoute('curriculum.index')
-    )
-    router.get('/panel/kelas', ({ response }) => response.redirect().toRoute('classes.index'))
-    router.get('/panel/siswa', ({ response }) => response.redirect().toRoute('classes.index'))
-    router.get('/panel/asesmen-paud', ({ response }) =>
-      response.redirect().toRoute('paud-assessments.index')
-    )
-    router.get('/panel/rapor', ({ response }) => response.redirect().toRoute('report-cards.index'))
+    // Panel Terstruktur Aliases lama — tetap render halaman, bukan melempar user ke route lain.
+    router.get('/panel/kurikulum', [controllers.Curriculum, 'index']).as('panel.legacy.kurikulum')
+    router.get('/panel/kelas', [controllers.Classes, 'index']).as('panel.legacy.kelas')
+    router.get('/panel/siswa', [controllers.Classes, 'index']).as('panel.legacy.siswa')
+    router
+      .get('/panel/asesmen-paud', [controllers.PaudAssessments, 'index'])
+      .as('panel.legacy.asesmen-paud')
+    router.get('/panel/rapor', [controllers.ReportCards, 'index']).as('panel.legacy.rapor')
 
     // Panduan istilah kurikulum
     router

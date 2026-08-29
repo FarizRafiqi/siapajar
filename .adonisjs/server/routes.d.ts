@@ -34,6 +34,28 @@ export type ScannedRoutes = {
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'panel.index': { paramsTuple?: []; params?: {} }
+    'panel.dashboard': { paramsTuple?: []; params?: {} }
+    'panel.curriculum.index': { paramsTuple?: []; params?: {} }
+    'panel.classes.index': { paramsTuple?: []; params?: {} }
+    'panel.subjects.index': { paramsTuple?: []; params?: {} }
+    'panel.glossary.index': { paramsTuple?: []; params?: {} }
+    'panel.teaching-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.annual-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.semester-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.rppm.index': { paramsTuple?: []; params?: {} }
+    'panel.rpph.index': { paramsTuple?: []; params?: {} }
+    'panel.lkpd.index': { paramsTuple?: []; params?: {} }
+    'panel.media-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.exams.index': { paramsTuple?: []; params?: {} }
+    'panel.assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.report-cards.index': { paramsTuple?: []; params?: {} }
+    'panel.jurnal.index': { paramsTuple?: []; params?: {} }
+    'panel.kokurikuler.index': { paramsTuple?: []; params?: {} }
+    'panel.katrol.index': { paramsTuple?: []; params?: {} }
+    'panel.account.package': { paramsTuple?: []; params?: {} }
+    'panel.settings.index': { paramsTuple?: []; params?: {} }
     'billing.index': { paramsTuple?: []; params?: {} }
     'api.mayar.checkout': { paramsTuple?: []; params?: {} }
     'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
@@ -51,6 +73,11 @@ export type ScannedRoutes = {
     'api.express.jurnal.generate': { paramsTuple?: []; params?: {} }
     'express.kokurikuler': { paramsTuple?: []; params?: {} }
     'api.express.kokurikuler.generate': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kurikulum': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kelas': { paramsTuple?: []; params?: {} }
+    'panel.legacy.siswa': { paramsTuple?: []; params?: {} }
+    'panel.legacy.asesmen-paud': { paramsTuple?: []; params?: {} }
+    'panel.legacy.rapor': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }
@@ -277,6 +304,28 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'panel.index': { paramsTuple?: []; params?: {} }
+    'panel.dashboard': { paramsTuple?: []; params?: {} }
+    'panel.curriculum.index': { paramsTuple?: []; params?: {} }
+    'panel.classes.index': { paramsTuple?: []; params?: {} }
+    'panel.subjects.index': { paramsTuple?: []; params?: {} }
+    'panel.glossary.index': { paramsTuple?: []; params?: {} }
+    'panel.teaching-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.annual-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.semester-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.rppm.index': { paramsTuple?: []; params?: {} }
+    'panel.rpph.index': { paramsTuple?: []; params?: {} }
+    'panel.lkpd.index': { paramsTuple?: []; params?: {} }
+    'panel.media-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.exams.index': { paramsTuple?: []; params?: {} }
+    'panel.assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.report-cards.index': { paramsTuple?: []; params?: {} }
+    'panel.jurnal.index': { paramsTuple?: []; params?: {} }
+    'panel.kokurikuler.index': { paramsTuple?: []; params?: {} }
+    'panel.katrol.index': { paramsTuple?: []; params?: {} }
+    'panel.account.package': { paramsTuple?: []; params?: {} }
+    'panel.settings.index': { paramsTuple?: []; params?: {} }
     'billing.index': { paramsTuple?: []; params?: {} }
     'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
     'account.package': { paramsTuple?: []; params?: {} }
@@ -290,6 +339,11 @@ export type ScannedRoutes = {
     'express.katrol': { paramsTuple?: []; params?: {} }
     'express.jurnal': { paramsTuple?: []; params?: {} }
     'express.kokurikuler': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kurikulum': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kelas': { paramsTuple?: []; params?: {} }
+    'panel.legacy.siswa': { paramsTuple?: []; params?: {} }
+    'panel.legacy.asesmen-paud': { paramsTuple?: []; params?: {} }
+    'panel.legacy.rapor': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }
@@ -382,6 +436,28 @@ export type ScannedRoutes = {
     'auth.google.callback': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'panel.index': { paramsTuple?: []; params?: {} }
+    'panel.dashboard': { paramsTuple?: []; params?: {} }
+    'panel.curriculum.index': { paramsTuple?: []; params?: {} }
+    'panel.classes.index': { paramsTuple?: []; params?: {} }
+    'panel.subjects.index': { paramsTuple?: []; params?: {} }
+    'panel.glossary.index': { paramsTuple?: []; params?: {} }
+    'panel.teaching-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.annual-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.semester-plans.index': { paramsTuple?: []; params?: {} }
+    'panel.rppm.index': { paramsTuple?: []; params?: {} }
+    'panel.rpph.index': { paramsTuple?: []; params?: {} }
+    'panel.lkpd.index': { paramsTuple?: []; params?: {} }
+    'panel.media-modules.index': { paramsTuple?: []; params?: {} }
+    'panel.exams.index': { paramsTuple?: []; params?: {} }
+    'panel.assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.paud-assessments.index': { paramsTuple?: []; params?: {} }
+    'panel.report-cards.index': { paramsTuple?: []; params?: {} }
+    'panel.jurnal.index': { paramsTuple?: []; params?: {} }
+    'panel.kokurikuler.index': { paramsTuple?: []; params?: {} }
+    'panel.katrol.index': { paramsTuple?: []; params?: {} }
+    'panel.account.package': { paramsTuple?: []; params?: {} }
+    'panel.settings.index': { paramsTuple?: []; params?: {} }
     'billing.index': { paramsTuple?: []; params?: {} }
     'api.mayar.status': { paramsTuple: [ParamValue]; params: {'invoiceNo': ParamValue} }
     'account.package': { paramsTuple?: []; params?: {} }
@@ -395,6 +471,11 @@ export type ScannedRoutes = {
     'express.katrol': { paramsTuple?: []; params?: {} }
     'express.jurnal': { paramsTuple?: []; params?: {} }
     'express.kokurikuler': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kurikulum': { paramsTuple?: []; params?: {} }
+    'panel.legacy.kelas': { paramsTuple?: []; params?: {} }
+    'panel.legacy.siswa': { paramsTuple?: []; params?: {} }
+    'panel.legacy.asesmen-paud': { paramsTuple?: []; params?: {} }
+    'panel.legacy.rapor': { paramsTuple?: []; params?: {} }
     'glossary.index': { paramsTuple?: []; params?: {} }
     'curriculum.index': { paramsTuple?: []; params?: {} }
     'curriculum.print': { paramsTuple?: []; params?: {} }

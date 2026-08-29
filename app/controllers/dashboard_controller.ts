@@ -13,6 +13,63 @@ import Lkpd from '#models/lkpd'
 import MediaModule from '#models/media_module'
 
 export default class DashboardController {
+  async panel({ inertia, auth, response }: HttpContext) {
+    const user = auth.user!
+
+    if (user.isAdmin) {
+      return response.redirect().toRoute('dashboard')
+    }
+
+    if (user.isKepalaSekolah) {
+      return response.redirect().toRoute('principal.index')
+    }
+
+    const [
+      totalClasses,
+      totalStudents,
+      totalTeachingModules,
+      totalExams,
+      totalAnnualPlans,
+      totalSemesterPlans,
+      totalWeeklyLessonPlans,
+      totalDailyLessonPlans,
+      totalPaudAssessments,
+      totalLkpds,
+      totalMediaModules,
+    ] = await Promise.all([
+      SchoolClass.query().where('user_id', user.id).count('* as total'),
+      Student.query()
+        .whereHas('schoolClass', (query) => query.where('user_id', user.id))
+        .count('* as total'),
+      TeachingModule.query().where('user_id', user.id).count('* as total'),
+      Exam.query().where('user_id', user.id).count('* as total'),
+      AnnualPlan.query().where('user_id', user.id).count('* as total'),
+      SemesterPlan.query().where('user_id', user.id).count('* as total'),
+      WeeklyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      DailyLessonPlan.query().where('user_id', user.id).count('* as total'),
+      PaudAssessment.query().where('user_id', user.id).count('* as total'),
+      Lkpd.query().where('user_id', user.id).count('* as total'),
+      MediaModule.query().where('user_id', user.id).count('* as total'),
+    ])
+
+    return inertia.render('dashboard/panel/index', {
+      educationLevel: user.educationLevel,
+      stats: {
+        classes: Number(totalClasses[0].$extras.total),
+        students: Number(totalStudents[0].$extras.total),
+        teachingModules: Number(totalTeachingModules[0].$extras.total),
+        exams: Number(totalExams[0].$extras.total),
+        annualPlans: Number(totalAnnualPlans[0].$extras.total),
+        semesterPlans: Number(totalSemesterPlans[0].$extras.total),
+        weeklyLessonPlans: Number(totalWeeklyLessonPlans[0].$extras.total),
+        dailyLessonPlans: Number(totalDailyLessonPlans[0].$extras.total),
+        paudAssessments: Number(totalPaudAssessments[0].$extras.total),
+        lkpds: Number(totalLkpds[0].$extras.total),
+        mediaModules: Number(totalMediaModules[0].$extras.total),
+      },
+    })
+  }
+
   async index({ inertia, auth, response }: HttpContext) {
     const user = auth.user!
 

@@ -46,6 +46,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/lkpd/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/lkpd/show.tsx'))['default']>
     'dashboard/media-modules/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/media-modules/index.tsx'))['default']>
     'dashboard/media-modules/show': ExtractProps<(typeof import('../../inertia/pages/dashboard/media-modules/show.tsx'))['default']>
+    'dashboard/panel/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/panel/index.tsx'))['default']>
     'dashboard/paud-assessments/components/ai-assessment-modal': ExtractProps<(typeof import('../../inertia/pages/dashboard/paud-assessments/components/ai-assessment-modal.tsx'))['default']>
     'dashboard/paud-assessments/components/bundle-export-modal': ExtractProps<(typeof import('../../inertia/pages/dashboard/paud-assessments/components/bundle-export-modal.tsx'))['default']>
     'dashboard/paud-assessments/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/paud-assessments/index.tsx'))['default']>
