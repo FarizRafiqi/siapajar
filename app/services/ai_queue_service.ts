@@ -1,13 +1,11 @@
 import env from '#start/env'
-import AiJob from '#models/ai_job'
-import User from '#models/user'
 import GenerateAiJson from '#jobs/generate_ai_json'
 import GenerateAiImage from '#jobs/generate_ai_image'
 import GenerateAiSvg from '#jobs/generate_ai_svg'
 import { createHash } from 'node:crypto'
-import { DateTime } from 'luxon'
 import { reserveUsage, releaseUsageReservation } from '#services/entitlement_service'
 import { auditService } from '#services/audit_service'
+import { aiJobRepository } from '#repositories/ai_job_repository'
 import {
   chooseVisualSource,
   resolveKnownVisualAsset,
@@ -44,33 +42,23 @@ class AiQueueService {
     featureKey?: string
   }): Promise<T> {
     if (!options.userId) throw new Error('AI jobs require an authenticated user')
-    const owner = await User.findOrFail(options.userId)
+    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(`${options.userId}:${options.combo}:${options.systemPrompt}:${options.userPrompt}`)
       .digest('hex')
-    const job = await AiJob.firstOrCreate(
-      { jobKey },
-      {
-        jobKey,
-        userId: options.userId,
-        combo: options.combo,
-        status: 'pending',
-        attempts: 0,
-        payload: {
-          systemPrompt: options.systemPrompt,
-          userPrompt: options.userPrompt,
-          featureKey: options.featureKey || 'ai_generation_monthly',
-        },
-        availableAt: DateTime.now(),
-      }
-    )
+    const job = await aiJobRepository.findOrCreate({
+      jobKey,
+      userId: options.userId,
+      combo: options.combo,
+      payload: {
+        systemPrompt: options.systemPrompt,
+        userPrompt: options.userPrompt,
+        featureKey: options.featureKey || 'ai_generation_monthly',
+      },
+    })
     if (job.status !== 'completed') {
       if (job.status === 'failed') {
-        job.status = 'pending'
-        job.error = null
-        job.startedAt = null
-        job.finishedAt = null
-        await job.save()
+        await aiJobRepository.resetFailed(job)
       }
       const featureKey = options.featureKey || 'ai_generation_monthly'
       const reserved = await reserveUsage(owner, featureKey, jobKey, 1, {
@@ -113,7 +101,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await AiJob.find(job.id)
+      const current = await aiJobRepository.findById(job.id)
       if (current?.status === 'completed') return current.result as T
       if (current?.status === 'failed') throw new Error(current.error ?? 'AI job failed')
       await new Promise((resolve) => setTimeout(resolve, 250))
@@ -127,29 +115,19 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI image jobs require an authenticated user')
-    const owner = await User.findOrFail(options.userId)
+    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(`${options.userId}:siapajar-image:${options.prompt}`)
       .digest('hex')
-    const job = await AiJob.firstOrCreate(
-      { jobKey },
-      {
-        jobKey,
-        userId: options.userId,
-        combo: 'siapajar-image',
-        status: 'pending',
-        attempts: 0,
-        payload: { prompt: options.prompt },
-        availableAt: DateTime.now(),
-      }
-    )
+    const job = await aiJobRepository.findOrCreate({
+      jobKey,
+      userId: options.userId,
+      combo: 'siapajar-image',
+      payload: { prompt: options.prompt },
+    })
     if (job.status !== 'completed') {
       if (job.status === 'failed') {
-        job.status = 'pending'
-        job.error = null
-        job.startedAt = null
-        job.finishedAt = null
-        await job.save()
+        await aiJobRepository.resetFailed(job)
       }
       const reserved = await reserveUsage(owner, 'ai_image_generation_monthly', jobKey, 1, {
         combo: 'siapajar-image',
@@ -183,7 +161,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await AiJob.find(job.id)
+      const current = await aiJobRepository.findById(job.id)
       if (current?.status === 'completed') return normalizeVisualResult(current.result)
       if (current?.status === 'failed') throw new Error(current.error ?? 'AI image job failed')
       await new Promise((resolve) => setTimeout(resolve, 250))
@@ -201,7 +179,7 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI visual jobs require an authenticated user')
-    const owner = await User.findOrFail(options.userId)
+    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
     const request: VisualAssetRequest = {
       userId: options.userId,
       prompt: options.prompt,
@@ -251,28 +229,22 @@ class AiQueueService {
     timeoutMs?: number
   }): Promise<VisualAssetResult | null> {
     if (!options.userId) throw new Error('AI SVG jobs require an authenticated user')
-    const owner = await User.findOrFail(options.userId)
+    const owner = await aiJobRepository.findOwnerOrFail(options.userId)
     const jobKey = createHash('sha256')
       .update(
         `${options.userId}:siapajar-svg:${options.prompt}:${JSON.stringify(options.metadata || {})}`
       )
       .digest('hex')
-    const job = await AiJob.firstOrCreate(
-      { jobKey },
-      {
-        jobKey,
-        userId: options.userId,
-        combo: 'siapajar-svg',
-        status: 'pending',
-        attempts: 0,
-        payload: {
-          prompt: options.prompt,
-          purpose: options.purpose || 'generic',
-          metadata: options.metadata || {},
-        },
-        availableAt: DateTime.now(),
-      }
-    )
+    const job = await aiJobRepository.findOrCreate({
+      jobKey,
+      userId: options.userId,
+      combo: 'siapajar-svg',
+      payload: {
+        prompt: options.prompt,
+        purpose: options.purpose || 'generic',
+        metadata: options.metadata || {},
+      },
+    })
     if (job.status !== 'completed') {
       const reserved = await reserveUsage(owner, 'ai_svg_generation_monthly', jobKey, 1, {
         combo: 'siapajar-svg',
@@ -299,7 +271,7 @@ class AiQueueService {
     }
     const deadline = Date.now() + (options.timeoutMs ?? 120_000)
     while (Date.now() < deadline) {
-      const current = await AiJob.find(job.id)
+      const current = await aiJobRepository.findById(job.id)
       if (current?.status === 'completed') {
         return normalizeVisualResult(current.result)
       }

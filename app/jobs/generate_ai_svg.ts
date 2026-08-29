@@ -1,12 +1,10 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import { DateTime } from 'luxon'
-import AiJob from '#models/ai_job'
-import AiSetting from '#models/ai_setting'
-import User from '#models/user'
 import { generateConfiguredSvg } from '#services/ai_service'
 import { persistVisualAsset } from '#services/visual_asset_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
+import { aiJobRepository } from '#repositories/ai_job_repository'
+import { aiSettingRepository } from '#repositories/ai_setting_repository'
 
 export interface GenerateAiSvgPayload {
   jobKey: string
@@ -26,14 +24,11 @@ export default class GenerateAiSvg extends Job<GenerateAiSvgPayload> {
   }
 
   async execute() {
-    const job = await AiJob.findByOrFail('job_key', this.payload.jobKey)
+    const job = await aiJobRepository.findByJobKeyOrFail(this.payload.jobKey)
     if (job.status === 'completed') return
-    const user = await User.findOrFail(this.payload.userId)
-    const setting = await AiSetting.current()
-    job.status = 'processing'
-    job.attempts += 1
-    job.startedAt = DateTime.now()
-    await job.save()
+    const user = await aiJobRepository.findOwnerOrFail(this.payload.userId)
+    const setting = await aiSettingRepository.current()
+    await aiJobRepository.markProcessing(job)
     try {
       const generated = await generateConfiguredSvg(this.payload.prompt)
       const asset = await persistVisualAsset({
@@ -47,21 +42,19 @@ export default class GenerateAiSvg extends Job<GenerateAiSvgPayload> {
         svg: generated.svg,
         viewBox: generated.viewBox || null,
       })
-      job.result = {
+      const result = {
         url: asset.url,
         assetId: asset.id,
         kind: asset.kind,
         source: asset.source,
       }
-      job.status = 'completed'
-      job.finishedAt = DateTime.now()
-      await job.save()
+      await aiJobRepository.markCompleted(job, result)
       await commitUsageReservation(this.payload.jobKey)
     } catch (error) {
-      job.status = 'failed'
-      job.error = error instanceof Error ? error.message : 'AI SVG job failed'
-      job.finishedAt = DateTime.now()
-      await job.save()
+      await aiJobRepository.markFailed(
+        job,
+        error instanceof Error ? error.message : 'AI SVG job failed'
+      )
       await releaseUsageReservation(this.payload.jobKey)
       throw error
     }

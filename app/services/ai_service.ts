@@ -1,7 +1,7 @@
 import env from '#start/env'
-import AiSetting from '#models/ai_setting'
 import { callCodex, generateCodexImage } from '#services/codex_service'
 import { DateTime } from 'luxon'
+import { aiSettingRepository } from '#repositories/ai_setting_repository'
 
 /** Error yang aman ditampilkan langsung ke guru — bukan stack trace. */
 export class AiServiceError extends Error {}
@@ -60,7 +60,7 @@ export function getAggregatorApiKey(gateway: AiGateway | null): string | undefin
 }
 
 async function resolveProvider(): Promise<ResolvedProvider> {
-  const setting = await AiSetting.current()
+  const setting = await aiSettingRepository.current()
 
   // ROUTER_API_KEY hanya dipakai 9router. Aggregator punya key sendiri.
   let envFallback: string | undefined
@@ -547,7 +547,7 @@ async function refreshGeminiAccessToken(resolved: ResolvedProvider): Promise<str
   if (!payload.access_token)
     throw new AiServiceError('Google tidak mengembalikan access token Gemini.')
 
-  const setting = await AiSetting.current()
+  const setting = await aiSettingRepository.current()
   setting.oauthAccessToken = payload.access_token
   setting.oauthExpiresAt = DateTime.now().plus({ seconds: payload.expires_in || 3600 })
   await setting.save()

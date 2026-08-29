@@ -77,6 +77,21 @@ export class ReportCardRepository {
   async findOwnedNarrative(narrativeId: string | number, userId: number) {
     return ReportNarrative.query().where('id', narrativeId).where('user_id', userId).first()
   }
+
+  async upsertGeneratedNarrative(data: {
+    userId: number
+    classId: number
+    studentId: number
+    semesterId: number
+    element: string
+    content: string
+    status: 'draft' | 'approved'
+  }) {
+    return ReportNarrative.updateOrCreate(
+      { studentId: data.studentId, semesterId: data.semesterId, element: data.element },
+      data
+    )
+  }
 }
 
 export const reportCardRepository = new ReportCardRepository()

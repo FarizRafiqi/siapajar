@@ -1,7 +1,7 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import ReportNarrative from '#models/report_narrative'
 import { compileNarrativeReport } from '#services/report_card_service'
+import { reportCardRepository } from '#repositories/report_card_repository'
 
 interface GenerateNarrativesPayload {
   userId: number
@@ -41,20 +41,17 @@ export default class GenerateNarratives extends Job<GenerateNarrativesPayload> {
         .filter(Boolean)
         .join('. ')
       for (const element of elements) {
-        await ReportNarrative.updateOrCreate(
-          { studentId: student.studentId, semesterId: this.payload.semesterId, element },
-          {
-            userId: this.payload.userId,
-            classId: this.payload.classId,
-            studentId: student.studentId,
-            semesterId: this.payload.semesterId,
-            element,
-            content: evidence
-              ? `Draft ${element.toLowerCase()} berdasarkan bukti observasi: ${evidence}.`
-              : '',
-            status: 'draft',
-          }
-        )
+        await reportCardRepository.upsertGeneratedNarrative({
+          userId: this.payload.userId,
+          classId: this.payload.classId,
+          studentId: student.studentId,
+          semesterId: this.payload.semesterId,
+          element,
+          content: evidence
+            ? `Draft ${element.toLowerCase()} berdasarkan bukti observasi: ${evidence}.`
+            : '',
+          status: 'draft',
+        })
       }
     }
   }

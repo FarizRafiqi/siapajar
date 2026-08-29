@@ -9,8 +9,8 @@
 
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
+import { healthService } from '#services/health_service'
 import router from '@adonisjs/core/services/router'
-import db from '@adonisjs/lucid/services/db'
 
 const ExpressToolsController = () => import('#controllers/express_tools_controller')
 const MayarPaymentsController = () => import('#controllers/mayar_payments_controller')
@@ -20,7 +20,7 @@ router
   .get('/health', async ({ response }) => {
     try {
       const { default: redis } = await import('@adonisjs/redis/services/main')
-      await db.rawQuery('select 1')
+      await healthService.checkDatabase()
       await redis.ping()
       return response.ok({ status: 'ok', database: 'ok', redis: 'ok' })
     } catch {
