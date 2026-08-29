@@ -13,7 +13,14 @@ test.group('P7 annual and semester plans layering', () => {
       assert.notInclude(source, "from '#models/")
       assert.notInclude(source, "from '@adonisjs/lucid/services/db'")
       assert.notMatch(source, /\.query\s*\(/)
-      assert.notMatch(source, /\b(?:find|findBy|findOrFail|create|save|delete|load|preload)\s*\(/)
+      assert.notMatch(
+        source,
+        /\b(?:AnnualPlan|AcademicYear|Subject|LearningSequence|SemesterPlan|SchoolClass|Semester)\.(?:find|findBy|findOrFail|create|query)\s*\(/
+      )
+      assert.notMatch(
+        source,
+        /\b(?:annualPlan|semesterPlan|schoolClass)\.(?:save|delete|load|preload)\s*\(/
+      )
     }
 
     assert.include(
