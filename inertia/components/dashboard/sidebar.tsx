@@ -9,20 +9,21 @@ import {
   ClipboardList,
   ClipboardCheck,
   Award,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   LogOut,
   Settings,
   Library,
   Shield,
   Package,
-  Sparkles,
+  Coins,
   School,
   X,
   FileSpreadsheet,
   Presentation,
   Route,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronRight,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { cn } from '~/lib/utils'
@@ -43,6 +44,7 @@ interface SidebarProps {
   onToggle?: () => void
   mobileOpen?: boolean
   onMobileClose?: () => void
+  onTopupClick?: () => void
 }
 
 type NavigationItem = {
@@ -79,7 +81,7 @@ const guruSdNavigation: NavigationEntry[] = [
         activeHrefs: ['/annual-plans', '/semester-plans'],
       },
       { name: 'Rapor Narasi', href: '/rapor', icon: Award, activeHrefs: ['/report-cards'] },
-      { name: 'Katrol Nilai', href: '/katrol', icon: ClipboardCheck },
+      { name: 'Katrol Nilai Transparan', href: '/katrol', icon: ClipboardCheck },
       { name: 'Jurnal Mengajar', href: '/jurnal', icon: ClipboardList },
       { name: 'Kokurikuler (P5)', href: '/kokurikuler', icon: Presentation },
     ],
@@ -96,17 +98,6 @@ const guruSdNavigation: NavigationEntry[] = [
       },
       { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
       { name: 'Daftar Penilaian', href: '/assessments', icon: ClipboardCheck },
-    ],
-  },
-  {
-    name: 'Akun & Kredit',
-    items: [
-      {
-        name: 'Beli Kredit & Paket',
-        href: '/billing',
-        icon: Sparkles,
-        activeHrefs: ['/my-package', '/usage', '/subscriptions'],
-      },
     ],
   },
 ]
@@ -136,6 +127,7 @@ const guruTkNavigation: NavigationEntry[] = [
         icon: Award,
         activeHrefs: ['/report-cards', '/paud/reports'],
       },
+      { name: 'Katrol Nilai Transparan', href: '/katrol', icon: ClipboardCheck },
       { name: 'Jurnal Harian PAUD', href: '/jurnal', icon: ClipboardList },
       { name: 'Kokurikuler / P5', href: '/kokurikuler', icon: Presentation },
     ],
@@ -146,17 +138,6 @@ const guruTkNavigation: NavigationEntry[] = [
       { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
       { name: 'Kelompok & Siswa', href: '/classes', icon: Users, activeHrefs: ['/panel/kelas'] },
       { name: 'Asesmen Harian PAUD', href: '/paud-assessments', icon: ClipboardList },
-    ],
-  },
-  {
-    name: 'Akun & Kredit',
-    items: [
-      {
-        name: 'Beli Kredit & Paket',
-        href: '/billing',
-        icon: Sparkles,
-        activeHrefs: ['/my-package', '/usage', '/subscriptions'],
-      },
     ],
   },
 ]
@@ -182,7 +163,7 @@ const adminNavigation: NavigationEntry[] = [
     items: [
       { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
       { name: 'Preset Kurikulum', href: '/admin/curriculum-presets', icon: Library },
-      { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Sparkles },
+      { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Coins },
     ],
   },
 ]
@@ -203,29 +184,52 @@ function renderNavigationItem(
   item: NavigationItem,
   currentUrl: string,
   collapsed: boolean,
-  onMobileClose?: () => void
+  onMobileClose?: () => void,
+  onTopupClick?: () => void
 ): ReactElement {
   const isActive = isNavigationItemActive(item, currentUrl)
+  const isBilling = item.href === '/billing'
+
+  if (isBilling) {
+    return (
+      <button
+        key={item.name}
+        type="button"
+        onClick={() => {
+          onMobileClose?.()
+          if (onTopupClick) {
+            onTopupClick()
+          } else {
+            window.dispatchEvent(new CustomEvent('open-topup-modal'))
+          }
+        }}
+        className={cn(
+          'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all text-left',
+          'bg-emerald-700/50 hover:bg-emerald-600/70 text-amber-300 hover:text-amber-200 border border-emerald-500/30 shadow-xs'
+        )}
+        title={collapsed ? item.name : undefined}
+      >
+        <item.icon className="h-5 w-5 flex-shrink-0 text-amber-300" />
+        <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
+      </button>
+    )
+  }
+
   return (
     <Link
       key={item.name}
       href={item.href}
       onClick={onMobileClose}
       className={cn(
-        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
         isActive
-          ? 'bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-900/70 dark:text-emerald-100'
-          : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800/80 dark:hover:text-white'
+          ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
+          : 'font-medium text-emerald-100 hover:bg-emerald-700/60 hover:text-white'
       )}
       title={collapsed ? item.name : undefined}
     >
       <item.icon
-        className={cn(
-          'h-5 w-5 flex-shrink-0',
-          isActive
-            ? 'text-emerald-600 dark:text-emerald-400'
-            : 'text-neutral-500 dark:text-neutral-400'
-        )}
+        className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-neutral-950' : 'text-emerald-300')}
       />
       <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
     </Link>
@@ -238,6 +242,7 @@ export default function Sidebar({
   onToggle,
   mobileOpen = false,
   onMobileClose,
+  onTopupClick,
 }: Readonly<SidebarProps>) {
   const page = usePage()
   const currentUrl = page.url
@@ -258,6 +263,7 @@ export default function Sidebar({
   }
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [logoHovered, setLogoHovered] = useState(false)
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return { Akun: true }
     try {
@@ -287,14 +293,24 @@ export default function Sidebar({
   useEffect(() => {
     if (activeGroupNames.length === 0) return
     setCollapsedGroups((previous) => {
+      let changed = false
       const next = { ...previous }
-      for (const groupName of activeGroupNames) next[groupName] = false
-      return next
+      for (const groupName of activeGroupNames) {
+        if (next[groupName]) {
+          next[groupName] = false
+          changed = true
+        }
+      }
+      return changed ? next : previous
     })
   }, [activeGroupNames])
 
   useEffect(() => {
-    window.localStorage.setItem('siapajar:sidebar-groups', JSON.stringify(collapsedGroups))
+    try {
+      window.localStorage.setItem('siapajar:sidebar-groups', JSON.stringify(collapsedGroups))
+    } catch {
+      // ignore
+    }
   }, [collapsedGroups])
 
   useEffect(() => {
@@ -328,14 +344,14 @@ export default function Sidebar({
         <div
           onClick={onMobileClose}
           aria-hidden="true"
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
         />
       )}
 
       <aside
         data-tour="sidebar"
         className={cn(
-          'fixed left-0 top-0 z-50 h-screen w-64 border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950',
+          'fixed left-0 top-0 z-50 h-screen w-64 border-r-2 border-black/30 bg-[#047857] text-white transition-transform duration-300 dark:border-black dark:bg-[#064e3b]',
           'md:transition-all',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           'md:translate-x-0',
@@ -343,44 +359,86 @@ export default function Sidebar({
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4 dark:border-neutral-800">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <img
-              src="/images/logo.png"
-              alt="SiapAjar Logo"
-              className="h-8 w-8 object-contain drop-shadow-sm"
-            />
-            <span
-              className={cn(
-                'text-lg font-bold text-neutral-900 dark:text-white tracking-tight',
-                collapsed && 'md:hidden'
-              )}
-            >
-              SiapAjar
-            </span>
-          </Link>
-          <div className={cn('flex items-center', collapsed && 'md:w-full md:justify-center')}>
-            {/* Desktop collapse toggle */}
-            <button
-              type="button"
-              onClick={onToggle}
-              className="hidden rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 md:block"
-            >
-              {collapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
-            </button>
-            {/* Mobile close button */}
-            <button
-              type="button"
-              onClick={onMobileClose}
-              className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 md:hidden"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+        <div
+          className="flex h-16 items-center border-b border-emerald-800/80 dark:border-emerald-950/80"
+          style={{
+            paddingLeft: collapsed ? 0 : '1rem',
+            paddingRight: collapsed ? 0 : '0.75rem',
+            justifyContent: collapsed ? 'center' : 'space-between',
+          }}
+        >
+          {collapsed ? (
+            /* Collapsed state: hanya tampil tombol expand, centered */
+            <>
+              <button
+                type="button"
+                onClick={onToggle}
+                className="hidden md:flex items-center justify-center rounded-lg p-2 text-emerald-200 hover:bg-emerald-700/60 hover:text-white transition-colors"
+                title="Buka sidebar"
+              >
+                <PanelLeftOpen className="h-5 w-5" />
+              </button>
+              {/* Mobile close button (hanya muncul di mobile) */}
+              <button
+                type="button"
+                onClick={onMobileClose}
+                className="flex items-center justify-center rounded-lg p-2 text-emerald-200 hover:bg-emerald-700/60 hover:text-white transition-colors md:hidden"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </>
+          ) : (
+            /* Expanded state: logo dengan hover collapse effect */
+            <>
+              <button
+                type="button"
+                onClick={onToggle}
+                onMouseEnter={() => setLogoHovered(true)}
+                onMouseLeave={() => setLogoHovered(false)}
+                className="hidden md:flex items-center gap-2.5 rounded-lg px-1 py-1 transition-all group"
+                title="Tutup sidebar"
+              >
+                <div className="relative h-8 w-8 flex-shrink-0">
+                  <img
+                    src="/images/logo.png"
+                    alt="SiapAjar Logo"
+                    className={cn(
+                      'absolute inset-0 h-8 w-8 object-contain drop-shadow-sm transition-all duration-200',
+                      logoHovered ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      'absolute inset-0 flex items-center justify-center transition-all duration-200',
+                      logoHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    )}
+                  >
+                    <PanelLeftClose className="h-6 w-6 text-emerald-200 group-hover:text-white" />
+                  </div>
+                </div>
+                <span className="text-lg font-black tracking-tight text-white group-hover:text-emerald-100 transition-colors">
+                  SiapAjar
+                </span>
+              </button>
+              {/* Logo untuk mobile (non-clickable untuk collapse, pakai Link) */}
+              <Link href="/dashboard" className="flex items-center gap-2.5 md:hidden">
+                <img
+                  src="/images/logo.png"
+                  alt="SiapAjar Logo"
+                  className="h-8 w-8 object-contain drop-shadow-sm"
+                />
+                <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
+              </Link>
+              {/* Mobile close button */}
+              <button
+                type="button"
+                onClick={onMobileClose}
+                className="rounded-lg p-1.5 text-emerald-200 hover:bg-emerald-800 hover:text-white md:hidden"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Navigation */}
@@ -392,7 +450,7 @@ export default function Sidebar({
               String(event.currentTarget.scrollTop)
             )
           }}
-          className="space-y-1 overflow-y-auto px-3 py-4"
+          className="space-y-1 overflow-y-auto px-3 py-4 custom-scrollbar"
           style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
         >
           {navigation.map((entry) => {
@@ -414,9 +472,9 @@ export default function Sidebar({
                       }))
                     }
                     className={cn(
-                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:bg-neutral-100 dark:text-neutral-500 dark:hover:bg-neutral-900',
+                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-black uppercase tracking-wider text-emerald-200/70 hover:bg-emerald-800/40 hover:text-white',
                       collapsed && 'md:hidden',
-                      groupIsActive && 'text-emerald-600 dark:text-emerald-400'
+                      groupIsActive && 'text-amber-300'
                     )}
                   >
                     {entry.name}
@@ -432,24 +490,24 @@ export default function Sidebar({
                     className={cn('space-y-1', !groupIsOpen && 'hidden')}
                   >
                     {entry.items.map((item) =>
-                      renderNavigationItem(item, currentUrl, collapsed, onMobileClose)
+                      renderNavigationItem(item, currentUrl, collapsed, onMobileClose, onTopupClick)
                     )}
                   </div>
                 </div>
               )
             }
-            return renderNavigationItem(entry, currentUrl, collapsed, onMobileClose)
+            return renderNavigationItem(entry, currentUrl, collapsed, onMobileClose, onTopupClick)
           })}
         </nav>
 
         {/* User section */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-emerald-800/80 bg-emerald-950/60 p-3 dark:border-emerald-950/80">
           <div className="relative" ref={dropdownRef} data-tour="profile-menu">
             <button
               type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
               className={cn(
-                'flex w-full cursor-pointer items-center gap-3 rounded-lg p-1 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                'flex w-full cursor-pointer items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-emerald-900/60',
                 collapsed && 'md:justify-center'
               )}
               title={collapsed ? user.fullName : undefined}
@@ -458,24 +516,22 @@ export default function Sidebar({
                 <img
                   src={user.avatarUrl}
                   alt={user.fullName ?? 'Avatar'}
-                  className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
+                  className="h-9 w-9 flex-shrink-0 rounded-full object-cover border border-emerald-400/40"
                 />
               ) : (
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-black text-neutral-950 border border-emerald-300">
                   {user.initials}
                 </div>
               )}
               <div className={cn('flex-1 overflow-hidden text-left', collapsed && 'md:hidden')}>
-                <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  {user.fullName}
-                </p>
-                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="truncate text-sm font-bold text-white">{user.fullName}</p>
+                <p className="truncate text-xs text-emerald-200/80 font-medium">
                   {roleLabels[user.role] || user.role}
                 </p>
               </div>
               <ChevronRight
                 className={cn(
-                  'h-4 w-4 flex-shrink-0 text-neutral-400 transition-transform',
+                  'h-4 w-4 flex-shrink-0 text-emerald-300 transition-transform',
                   collapsed && 'md:hidden',
                   dropdownOpen && 'rotate-180'
                 )}
@@ -484,14 +540,14 @@ export default function Sidebar({
 
             {/* Dropdown position (bottom-full on mobile, left-full on desktop) */}
             {dropdownOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900 md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48">
+              <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-2xl border-2 border-black bg-white shadow-[4px_4px_0px_#000000] dark:border-neutral-700 dark:bg-neutral-900 md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48">
                 <Link
                   href="/settings"
                   onClick={() => {
                     setDropdownOpen(false)
                     onMobileClose?.()
                   }}
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >
                   <Settings className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                   Pengaturan
@@ -502,7 +558,7 @@ export default function Sidebar({
                     setDropdownOpen(false)
                     router.post('/logout')
                   }}
-                  className="flex w-full items-center gap-2 border-t border-neutral-100 px-3 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-800 dark:text-red-400 dark:hover:bg-red-950"
+                  className="flex w-full items-center gap-2 border-t border-neutral-100 px-4 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-800 dark:text-red-400 dark:hover:bg-red-950"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout

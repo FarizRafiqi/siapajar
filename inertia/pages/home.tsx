@@ -1,7 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import {
-  Sparkles,
   BookOpen,
   FileSpreadsheet,
   Layers,
@@ -19,9 +18,9 @@ import {
   Printer,
   FileCode,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
-import { sanitizeRichText } from '~/lib/rich-text'
+import { cn } from '~/lib/utils'
 
 interface PricingPackage {
   id: number
@@ -117,27 +116,6 @@ const expressTools = [
   },
 ]
 
-const steps = [
-  {
-    num: '01',
-    title: 'Pilih Generator yang Anda Butuhkan',
-    desc: 'Pilih dari 8 generator administrasi: Modul Ajar, Soal Evaluasi, LKPD, Jurnal, Prota-Promes, atau Rapor.',
-    color: 'bg-amber-300 text-neutral-950',
-  },
-  {
-    num: '02',
-    title: 'Isi Parameter Ringkas',
-    desc: 'Cukup masukkan jenjang kelas, tema / topik materi pokok, dan preferensi alokasi waktu.',
-    color: 'bg-emerald-300 text-neutral-950',
-  },
-  {
-    num: '03',
-    title: 'AI Buatkan Dokumen Siap Pakai',
-    desc: 'Dalam 45 detik, dokumen lengkap terstruktur standar BSKAP langsung siap disalin, diedit, atau dicetak.',
-    color: 'bg-cyan-300 text-neutral-950',
-  },
-]
-
 const faqs = [
   {
     q: 'Apakah dokumen yang dihasilkan sesuai dengan Kurikulum Merdeka?',
@@ -189,11 +167,8 @@ function Navbar() {
               className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
             />
             <div>
-              <span className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight flex items-center gap-1.5">
+              <span className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight">
                 SiapAjar
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400 text-emerald-950 border border-black font-black">
-                  AI
-                </span>
               </span>
             </div>
           </Link>
@@ -204,7 +179,7 @@ function Navbar() {
               href="#tools"
               className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors"
             >
-              8 Generator AI
+              Generator AI
             </a>
             <a
               href="#cara-kerja"
@@ -238,11 +213,7 @@ function Navbar() {
                 >
                   Masuk
                 </Link>
-                <Link
-                  href="/signup"
-                  className="btn-kawaii-primary text-xs font-black py-2.5 px-5 flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
+                <Link href="/signup" className="btn-kawaii-primary text-xs font-black py-2.5 px-5">
                   Daftar Gratis
                 </Link>
               </div>
@@ -253,6 +224,7 @@ function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <ThemeToggle />
             <button
+              type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="p-2.5 bg-white dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-xl text-neutral-900 dark:text-white"
               aria-label="Toggle Menu"
@@ -277,7 +249,7 @@ function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
             >
-              8 Generator AI
+              Generator AI
             </a>
             <a
               href="#cara-kerja"
@@ -323,7 +295,7 @@ function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="btn-kawaii-primary text-center text-xs py-3"
                   >
-                    Daftar Gratis (Dapat 3 Kredit)
+                    Daftar Gratis (3 Kredit)
                   </Link>
                 </>
               )}
@@ -335,16 +307,76 @@ function Navbar() {
   )
 }
 
-function InteractiveWindowMockup() {
-  const [activeTab, setActiveTab] = useState<'modul' | 'soal' | 'lkpd' | 'rapor'>('modul')
+function TypewriterHeading({ text }: Readonly<{ text: string }>) {
+  const [displayText, setDisplayText] = useState('')
+  const [isTyping, setIsTyping] = useState(true)
+
+  useEffect(() => {
+    setDisplayText('')
+    setIsTyping(true)
+    let index = 0
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        setDisplayText(text.slice(0, index + 1))
+        index++
+      } else {
+        setIsTyping(false)
+        clearInterval(interval)
+      }
+    }, 32)
+
+    return () => clearInterval(interval)
+  }, [text])
 
   return (
-    <div className="relative mx-auto w-full max-w-2xl">
+    <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white min-h-[1.75rem] flex items-center flex-wrap">
+      <span>{displayText}</span>
+      {isTyping && (
+        <span className="inline-block w-2 h-4 sm:h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse rounded-xs" />
+      )}
+    </h4>
+  )
+}
+
+const MOCKUP_TOOLS = [
+  { key: 'modul', name: 'Modul Ajar RPPM', icon: BookOpen, tag: 'PAUD / TK B' },
+  { key: 'lkpd', name: 'LKPD Siswa', icon: Layers, tag: 'Tematik' },
+  { key: 'soal', name: 'Bank Soal HOTS', icon: FileCode, tag: 'Otomatis' },
+  { key: 'rapor', name: 'Narasi Rapor AI', icon: FileText, tag: 'Autentik' },
+]
+
+function InteractiveWindowMockup() {
+  const [activeTool, setActiveTool] = useState<'modul' | 'lkpd' | 'soal' | 'rapor'>('modul')
+
+  const tools = MOCKUP_TOOLS
+
+  // Auto-loop typewriter preview every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTool((prev) => {
+        const nextIndex = (MOCKUP_TOOLS.findIndex((t) => t.key === prev) + 1) % MOCKUP_TOOLS.length
+        return MOCKUP_TOOLS[nextIndex].key as 'modul' | 'lkpd' | 'soal' | 'rapor'
+      })
+    }, 7000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const toolPathMap: Record<string, string> = {
+    modul: 'modul-ajar',
+    lkpd: 'lkpd',
+    soal: 'soal',
+    rapor: 'rapor',
+  }
+  const activeToolPath = toolPathMap[activeTool] ?? 'modul-ajar'
+
+  return (
+    <div className="relative mx-auto w-full max-w-3xl">
       {/* Decorative floating badges */}
       <motion.div
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute -top-6 -right-2 sm:-right-6 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+        className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
       >
         <Zap className="w-4 h-4 text-amber-700" /> Selesai dalam 45 Detik!
       </motion.div>
@@ -352,185 +384,226 @@ function InteractiveWindowMockup() {
       <motion.div
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute -bottom-5 -left-2 sm:-left-6 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+        className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
       >
-        <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Sesuai Standar BSKAP
+        <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Standar BSKAP & Kemenag
       </motion.div>
 
-      {/* Main Window */}
+      {/* Main Window Frame */}
       <div className="rounded-3xl border-2 border-black bg-white dark:bg-neutral-900 shadow-[8px_8px_0px_#000000] overflow-hidden">
         {/* Window Titlebar */}
-        <div className="bg-emerald-300 dark:bg-neutral-800 border-b-2 border-black px-4 py-3 flex items-center justify-between gap-2">
+        <div className="bg-[#047857] dark:bg-[#064e3b] border-b-2 border-black px-4 py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded-full bg-rose-400 border border-black inline-block" />
             <span className="w-3.5 h-3.5 rounded-full bg-amber-400 border border-black inline-block" />
             <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 border border-black inline-block" />
           </div>
 
-          <div className="flex-1 max-w-xs bg-white dark:bg-neutral-950 border border-black rounded-lg px-3 py-1 text-[11px] font-mono text-neutral-600 dark:text-neutral-300 truncate text-center">
-            siapajar.id/
-            {activeTab === 'modul'
-              ? 'modul-ajar'
-              : activeTab === 'lkpd'
-                ? 'lkpd'
-                : activeTab === 'soal'
-                  ? 'soal'
-                  : 'rapor'}
+          <div className="flex-1 max-w-xs bg-emerald-950/60 border border-emerald-700/60 rounded-xl px-3 py-1 text-[11px] font-mono text-emerald-200 truncate text-center">
+            {`app.siapajar.id/${activeToolPath}`}
           </div>
 
-          <div className="text-[10px] font-black text-neutral-900 dark:text-neutral-200 px-2 py-0.5 bg-white/70 dark:bg-neutral-700 rounded border border-black">
-            LIVE PREVIEW
+          <div className="text-[10px] font-black text-neutral-950 px-2 py-0.5 bg-amber-300 rounded border border-black">
+            DASHBOARD GURU
           </div>
         </div>
 
-        {/* Tab Bar */}
-        <div className="flex items-center border-b-2 border-black bg-neutral-50 dark:bg-neutral-950 overflow-x-auto px-2 pt-2 gap-1.5 scrollbar-none">
-          {[
-            { key: 'modul', label: 'Modul Ajar', icon: BookOpen },
-            { key: 'soal', label: 'Soal Evaluasi', icon: FileCode },
-            { key: 'lkpd', label: 'Lembar LKPD', icon: Layers },
-            { key: 'rapor', label: 'Narasi Rapor', icon: FileText },
-          ].map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.key
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-3 py-2 rounded-t-xl text-xs font-black flex items-center gap-1.5 border-t-2 border-x-2 transition-all shrink-0 ${
-                  isActive
-                    ? 'bg-white dark:bg-neutral-900 border-black text-neutral-950 dark:text-white -mb-[2px] shadow-[2px_-2px_0px_#000000]'
-                    : 'bg-transparent border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
+        {/* Dashboard Grid Layout (Left Mini Sidebar + Main Content) */}
+        <div className="grid grid-cols-12 min-h-[360px]">
+          {/* Mini Sidebar on Left */}
+          <div className="col-span-4 sm:col-span-3 border-r-2 border-black bg-[#047857] dark:bg-[#064e3b] p-2.5 sm:p-3 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200/90 px-2 py-1">
+                Alat Cepat
+              </p>
+              {tools.map((t) => {
+                const Icon = t.icon
+                const isSelected = activeTool === t.key
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setActiveTool(t.key as any)}
+                    className={cn(
+                      'w-full text-left p-2 rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer',
+                      isSelected
+                        ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
+                        : 'font-semibold text-emerald-100/90 hover:bg-emerald-600 hover:text-white'
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        'w-4 h-4 shrink-0',
+                        isSelected ? 'text-neutral-950' : 'text-emerald-300'
+                      )}
+                    />
+                    <span className="truncate hidden sm:inline">{t.name}</span>
+                  </button>
+                )
+              })}
+            </div>
 
-        {/* Window Content */}
-        <div className="p-4 sm:p-6 space-y-4 text-left">
-          {activeTab === 'modul' && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="badge-kawaii-blue text-[11px] font-black">
-                  Fase D • Kelas 7 SMP • 2 JP (80 Menit)
-                </span>
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> Siap Cetak
-                </span>
-              </div>
-              <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white">
-                MODUL AJAR: Tata Surya & Gravitasi Bumi
-              </h4>
-              <div className="bg-neutral-50 dark:bg-neutral-950 p-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 text-xs space-y-2 text-neutral-700 dark:text-neutral-300">
-                <p className="font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  <strong>Tujuan Pembelajaran:</strong> Peserta didik mampu menganalisis
-                  karakteristik planet serta pengaruh gaya gravitasi bumi.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                  <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <span className="font-bold text-[10px] text-neutral-500 block uppercase">
-                      Kegiatan Inti
+            {/* Bottom Credits in Sidebar */}
+            <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center">
+              <span className="text-[10px] font-black text-amber-300 block">3 Kredit Aktif</span>
+              <span className="text-[9px] text-emerald-200 font-medium">Siap Digunakan</span>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="col-span-8 sm:col-span-9 p-4 sm:p-6 bg-[#FAF7F2] dark:bg-neutral-900 text-left flex flex-col justify-between overflow-hidden">
+            <AnimatePresence mode="wait">
+              {activeTool === 'modul' && (
+                <motion.div
+                  key="modul"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-emerald text-[11px] font-black">
+                      Fase Fondasi • TK B (5-6 Tahun) • 1 Pekan
                     </span>
-                    <span className="text-[11px]">Eksperimen Mini Massa & Kecepatan Jatuh</span>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <span className="font-bold text-[10px] text-neutral-500 block uppercase">
-                      Asesmen Formatif
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      ✓ Selesai Terarsip
                     </span>
-                    <span className="text-[11px]">Rubrik Observasi Diskusi Kelompok</span>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
+                  <TypewriterHeading text="MODUL AJAR: Tanaman Sayur Ciptaan Allah" />
+                  <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                    <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                      <span>
+                        <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
+                        sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu berkreasi
+                        cap sayur.
+                      </span>
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
+                        <span className="font-black text-[10px] text-emerald-800 dark:text-emerald-300 block uppercase">
+                          Kegiatan Inti
+                        </span>
+                        <span className="text-[11px] font-medium">
+                          Eksplorasi Mencuci & Mengupas Wortel
+                        </span>
+                      </div>
+                      <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
+                        <span className="font-black text-[10px] text-amber-800 dark:text-amber-300 block uppercase">
+                          Asesmen Formatif
+                        </span>
+                        <span className="text-[11px] font-medium">
+                          Catatan Anekdot & Rubrik Ceklis
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
-          {activeTab === 'soal' && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="badge-kawaii-amber text-[11px] font-black">
-                  Sumatif Tengah Semester • 10 Butir HOTS
-                </span>
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                  Kunci Jawaban Lengkap
-                </span>
-              </div>
-              <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white">
-                Bank Soal: Matematika - Pecahan & Desimal
-              </h4>
-              <div className="bg-neutral-50 dark:bg-neutral-950 p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 text-xs space-y-2">
-                <p className="font-bold text-neutral-900 dark:text-white">
-                  1. Ibu membeli 2½ kg gula pasir dan 1,75 kg tepung terigu...
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <span className="p-1.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-                    A. 4,25 kg
-                  </span>
-                  <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
-                    B. 4,25 kg (Kunci: B)
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+              {activeTool === 'lkpd' && (
+                <motion.div
+                  key="lkpd"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-purple text-[11px] font-black">
+                      LKPD Tematik • Mode Siap Cetak
+                    </span>
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      Format Standar A4
+                    </span>
+                  </div>
+                  <TypewriterHeading text="LKPD: Menghitung & Mengelompokkan Buah" />
+                  <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                    <p className="font-bold text-neutral-900 dark:text-white">
+                      Instruksi Mandiri Siswa:
+                    </p>
+                    <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                      1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
+                    </p>
+                    <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                      2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
 
-          {activeTab === 'lkpd' && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="badge-kawaii-purple text-[11px] font-black">
-                  LKPD Tematik • PAUD / TK B (5-6 Tahun)
-                </span>
-                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">
-                  Format Siap Print
-                </span>
-              </div>
-              <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white">
-                LKPD: Tanaman Sayur Ciptaan Allah
-              </h4>
-              <div className="bg-neutral-50 dark:bg-neutral-950 p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 text-xs space-y-1.5 text-neutral-700 dark:text-neutral-300">
-                <p className="font-bold text-neutral-900 dark:text-white">Aktivitas Mandiri:</p>
-                <p className="text-[11px]">
-                  1. Hubungkan gambar sayuran dengan jumlah angka yang sesuai di sebelah kanan!
-                </p>
-                <p className="text-[11px]">
-                  2. Warnai wortel dengan warna oranye dan daun dengan warna hijau rapi!
-                </p>
-              </div>
-            </div>
-          )}
+              {activeTool === 'soal' && (
+                <motion.div
+                  key="soal"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-blue text-[11px] font-black">
+                      Sumatif Tengah Semester • 10 Butir HOTS
+                    </span>
+                    <span className="badge-kawaii-emerald text-[10px] font-black">
+                      Kunci & Rubrik Siap
+                    </span>
+                  </div>
+                  <TypewriterHeading text="EVALUASI: Matematika & Pengukuran" />
+                  <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                    <p className="font-bold text-neutral-900 dark:text-white">
+                      1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
+                      pita adalah...
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
+                        A. 325 cm
+                      </span>
+                      <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
+                        B. 425 cm (Kunci: B)
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
-          {activeTab === 'rapor' && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="badge-kawaii-rose text-[11px] font-black">
-                  Narasi Rapor Otomatis • Semester 1
-                </span>
-                <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
-                  Bahasa Apresiatif
-                </span>
-              </div>
-              <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white">
-                Narasi Capaian Pembelajaran Siswa
-              </h4>
-              <div className="bg-neutral-50 dark:bg-neutral-950 p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
-                &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
-                sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian pengerjaan
-                mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
-              </div>
-            </div>
-          )}
+              {activeTool === 'rapor' && (
+                <motion.div
+                  key="rapor"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-rose text-[11px] font-black">
+                      Narasi Rapor Otomatis • Semester 1
+                    </span>
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      Bahasa Positif
+                    </span>
+                  </div>
+                  <TypewriterHeading text="RAPOR: Deskripsi Capaian Pembelajaran Siswa" />
+                  <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                    &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
+                    sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
+                    pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* Bottom Action Bar */}
-          <div className="pt-2 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 text-[11px]">
-            <span className="text-neutral-500 font-medium">✓ Hasil siap salin ke Word & Excel</span>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-lg bg-emerald-200 text-neutral-950 border border-black font-bold text-[10px] flex items-center gap-1">
-                <Printer className="w-3 h-3" /> Cetak PDF
-              </span>
+            {/* Bottom Action Row inside Mockup */}
+            <div className="pt-2 mt-4 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 text-[11px]">
+              <span className="text-neutral-500 font-bold">✓ Siap salin & cetak Word/PDF</span>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-xl bg-emerald-300 text-neutral-950 border-2 border-black font-black text-[11px] flex items-center gap-1 shadow-[1px_1px_0px_#000000]">
+                  <Printer className="w-3.5 h-3.5" /> Download .DOCX
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -539,11 +612,12 @@ function InteractiveWindowMockup() {
   )
 }
 
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
   const [open, setOpen] = useState(false)
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000000] overflow-hidden transition-all">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="w-full p-5 text-left font-black text-sm sm:text-base text-neutral-900 dark:text-white flex items-center justify-between gap-4"
       >
@@ -592,7 +666,7 @@ export default function Home({ packages }: HomeProps) {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
             >
-              <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+              <Zap className="w-4 h-4 text-amber-700 shrink-0" />
               <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
             </motion.div>
 
@@ -603,11 +677,7 @@ export default function Home({ packages }: HomeProps) {
               transition={{ delay: 0.1 }}
               className="text-3xl sm:text-4xl md:text-5xl xl:text-5.5xl font-black tracking-tight text-neutral-950 dark:text-white leading-[1.15]"
             >
-              Modul Ajar & Administrasi Guru Lengkap dalam{' '}
-              <span className="relative inline-block px-2 text-emerald-950 dark:text-emerald-950 whitespace-nowrap">
-                <span className="absolute inset-0 bg-emerald-300 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000000] -rotate-1 -z-10" />
-                3 Menit!
-              </span>
+              Modul Ajar & Administrasi Guru Lengkap dalam 3 Menit!
             </motion.h1>
 
             {/* Subtitle */}
@@ -632,8 +702,7 @@ export default function Home({ packages }: HomeProps) {
                 href="/signup"
                 className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-7 flex items-center justify-center gap-2 w-full sm:w-auto"
               >
-                <Sparkles className="w-4 h-4 text-emerald-950" />
-                Mulai Buat Gratis Sekarang
+                <span>Mulai Buat Gratis Sekarang</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
@@ -641,7 +710,7 @@ export default function Home({ packages }: HomeProps) {
                 className="btn-kawaii-secondary text-sm sm:text-base py-3.5 px-6 flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <BookOpen className="w-4 h-4" />
-                Lihat 8 Generator AI
+                <span>Eksplorasi Fitur</span>
               </a>
             </motion.div>
 
@@ -666,70 +735,78 @@ export default function Home({ packages }: HomeProps) {
             </motion.div>
           </div>
 
-          {/* Right Column: Interactive Window Mockup */}
+          {/* Right Column: Interactive Kawaii Window Mockup */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.6 }}
-            className="lg:col-span-6 xl:col-span-6 w-full max-w-xl mx-auto lg:max-w-none"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="lg:col-span-6 xl:col-span-6 flex justify-center"
           >
             <InteractiveWindowMockup />
           </motion.div>
         </div>
       </section>
 
-      {/* 8 Express Tools Grid Section */}
-      <section id="tools" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
+      {/* Feature Highlights Grid */}
+      <section
+        id="tools"
+        className="py-20 px-4 sm:px-6 lg:px-8 border-t-2 border-black bg-white dark:bg-neutral-900"
+      >
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <span className="badge-kawaii-emerald text-xs font-black">
-              8 GENERATOR DALAM 1 PLATFORM
-            </span>
+            <span className="badge-kawaii-emerald text-xs font-black">ALAT PRAKTIS</span>
             <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
-              Semua Kebutuhan Guru Ada di SiapAjar
+              Semua Kebutuhan Guru Dalam Satu Tempat
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto font-medium">
-              Dirancang khusus untuk menghemat waktu guru dari beban administrasi yang
-              berulang-ulang setiap semester.
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+              Hemat waktu berharga Anda hingga 90% dan fokuskan energi pada interaksi mendalam
+              bersama peserta didik.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {expressTools.map((tool) => {
               const Icon = tool.icon
               return (
                 <div
                   key={tool.title}
-                  className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-1 transition-all flex flex-col justify-between group"
+                  className="bg-[#FAF7F2] dark:bg-neutral-950 rounded-3xl border-2 border-black p-6 flex flex-col justify-between shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-1 transition-all relative"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div
-                        className={`p-3 rounded-2xl border-2 border-black ${tool.color} shadow-[2px_2px_0px_#000000]`}
+                        className={cn(
+                          'w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000000]',
+                          tool.color
+                        )}
                       >
-                        <Icon className="w-6 h-6" />
+                        <Icon className="w-6 h-6 shrink-0" />
                       </div>
-                      <span
-                        className={`text-[10px] font-black px-2.5 py-1 rounded-full border border-black ${tool.tagColor}`}
-                      >
-                        {tool.tag}
-                      </span>
+                      {tool.tag && (
+                        <span
+                          className={cn(
+                            'px-2.5 py-0.5 rounded-full border-2 border-black text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000]',
+                            tool.tagColor
+                          )}
+                        >
+                          {tool.tag}
+                        </span>
+                      )}
                     </div>
-
-                    <div>
-                      <h3 className="font-black text-base text-neutral-950 dark:text-white group-hover:text-emerald-600 transition-colors">
+                    <div className="space-y-1.5">
+                      <h3 className="font-black text-lg text-neutral-950 dark:text-white">
                         {tool.title}
                       </h3>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1.5 leading-relaxed font-medium">
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium">
                         {tool.desc}
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t-2 border-neutral-100 dark:border-neutral-800">
+                  <div className="pt-6">
                     <Link
                       href={tool.href}
-                      className="text-xs font-black text-neutral-900 dark:text-white group-hover:text-emerald-600 flex items-center justify-between"
+                      className="text-xs font-black text-neutral-950 dark:text-white inline-flex items-center gap-1.5 hover:gap-2.5 transition-all group hover:text-emerald-600 dark:hover:text-emerald-400"
                     >
                       <span>Coba Generator</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -742,73 +819,39 @@ export default function Home({ packages }: HomeProps) {
         </div>
       </section>
 
-      {/* Cara Kerja 3 Langkah */}
-      <section id="cara-kerja" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <span className="badge-kawaii-amber text-xs font-black">CARA KERJA CEPAT</span>
-            <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
-              Cukup 3 Langkah Sederhana
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto font-medium">
-              Tidak perlu keahlian prompt engineering yang rumit. Cukup pilih dan isi formulir ramah
-              guru.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {steps.map((s) => (
-              <div
-                key={s.num}
-                className="bg-white dark:bg-neutral-900 p-6 sm:p-7 rounded-3xl border-2 border-black shadow-[4px_4px_0px_#000000] space-y-4 relative"
-              >
-                <div
-                  className={`w-12 h-12 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center font-black text-lg ${s.color}`}
-                >
-                  {s.num}
-                </div>
-                <h3 className="font-black text-base sm:text-lg text-neutral-950 dark:text-white">
-                  {s.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed">
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing / Kredit Section */}
+      {/* Pricing Section */}
       <section
         id="pricing"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-50 dark:bg-neutral-900/60 border-t-2 border-black"
+        className="py-20 px-4 sm:px-6 lg:px-8 border-t-2 border-black bg-[#FAF7F2] dark:bg-neutral-950"
       >
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <span className="badge-kawaii-emerald text-xs font-black">PILIHAN PAKET & HARGA</span>
+            <span className="badge-kawaii-amber text-xs font-black">HARGA TERJANGKAU</span>
             <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
-              Top Up Kredit Fleksibel & Transparan
+              Pilihan Paket Tanpa Komitmen Ribet
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto font-medium">
-              Bayar hanya untuk dokumen yang Anda buat. Tanpa langganan bulanan yang menjebak.
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+              Pilih paket sesuai kebutuhan mengajar Anda. Mulai dari gratis hingga akses lengkap
+              sekolah.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {packages && packages.length > 0
               ? packages.map((pkg) => {
                   const { price, period } = formatPackagePrice(pkg)
+                  const isPopular = pkg.isHighlighted
                   return (
                     <div
                       key={pkg.id}
-                      className={`bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 flex flex-col justify-between relative transition-all ${
-                        pkg.isHighlighted
-                          ? 'shadow-[6px_6px_0px_#000000] ring-4 ring-emerald-300 dark:ring-emerald-500'
-                          : 'shadow-[4px_4px_0px_#000000]'
-                      }`}
+                      className={cn(
+                        'rounded-3xl border-2 border-black p-6 sm:p-7 flex flex-col justify-between relative transition-all',
+                        isPopular
+                          ? 'bg-[#047857] text-white shadow-[6px_6px_0px_#000000]'
+                          : 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-[4px_4px_0px_#000000]'
+                      )}
                     >
-                      {pkg.isHighlighted && (
+                      {isPopular && (
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
                           Paling Populer
                         </div>
@@ -816,31 +859,65 @@ export default function Home({ packages }: HomeProps) {
 
                       <div className="space-y-4">
                         <div>
-                          <h3 className="font-black text-lg text-neutral-950 dark:text-white">
+                          <h3
+                            className={cn(
+                              'font-black text-xl',
+                              isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                            )}
+                          >
                             {pkg.displayName}
                           </h3>
                           {pkg.description && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-medium">
+                            <p
+                              className={cn(
+                                'text-xs mt-1 font-medium',
+                                isPopular
+                                  ? 'text-emerald-200/90'
+                                  : 'text-neutral-500 dark:text-neutral-400'
+                              )}
+                            >
                               {pkg.description}
                             </p>
                           )}
                         </div>
 
                         <div className="py-2">
-                          <span className="text-3xl font-black text-neutral-950 dark:text-white">
+                          <span
+                            className={cn(
+                              'text-3.5xl font-black',
+                              isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                            )}
+                          >
                             {price}
                           </span>
                           {period && (
-                            <span className="text-xs text-neutral-500 font-bold ml-1">
+                            <span
+                              className={cn(
+                                'text-xs font-bold ml-1',
+                                isPopular ? 'text-emerald-200' : 'text-neutral-500'
+                              )}
+                            >
                               {period}
                             </span>
                           )}
                         </div>
 
-                        <div className="space-y-2 pt-2 border-t-2 border-neutral-100 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                        <div
+                          className={cn(
+                            'space-y-2.5 pt-3 border-t-2 text-xs font-medium',
+                            isPopular
+                              ? 'border-emerald-700/60 text-emerald-100'
+                              : 'border-neutral-100 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
+                          )}
+                        >
                           {pkg.features.map((feat) => (
                             <div key={feat} className="flex items-center gap-2">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <CheckCircle2
+                                className={cn(
+                                  'w-4 h-4 shrink-0',
+                                  isPopular ? 'text-amber-300' : 'text-emerald-600'
+                                )}
+                              />
                               <span>{feat}</span>
                             </div>
                           ))}
@@ -850,11 +927,14 @@ export default function Home({ packages }: HomeProps) {
                       <div className="pt-6">
                         <Link
                           href="/signup"
-                          className={`w-full text-center text-xs py-3 block ${
-                            pkg.isHighlighted ? 'btn-kawaii-primary' : 'btn-kawaii-secondary'
-                          }`}
+                          className={cn(
+                            'w-full text-center text-xs font-black py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
+                            isPopular
+                              ? 'bg-amber-300 hover:bg-amber-400 text-neutral-950'
+                              : 'bg-white hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white'
+                          )}
                         >
-                          {pkg.ctaLabel || 'Pilih Paket Ini'}
+                          Pilih Paket Ini
                         </Link>
                       </div>
                     </div>
@@ -960,7 +1040,7 @@ export default function Home({ packages }: HomeProps) {
                           tier.highlight ? 'btn-kawaii-primary' : 'btn-kawaii-secondary'
                         }`}
                       >
-                        Pilih Paket
+                        Pilih Paket Ini
                       </Link>
                     </div>
                   </div>
@@ -993,10 +1073,6 @@ export default function Home({ packages }: HomeProps) {
       {/* Final CTA Banner */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-amber-300 dark:bg-emerald-950 border-t-2 border-black">
         <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black shadow-[6px_6px_0px_#000000] p-8 sm:p-12 text-center space-y-6">
-          <div className="inline-flex p-3 bg-emerald-200 text-neutral-950 border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000000]">
-            <Sparkles className="w-8 h-8 text-emerald-950" />
-          </div>
-
           <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white max-w-xl mx-auto leading-tight">
             Siap Menghemat Waktu Administrasi Anda Hari Ini?
           </h2>
@@ -1011,8 +1087,7 @@ export default function Home({ packages }: HomeProps) {
               href="/signup"
               className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-8 flex items-center justify-center gap-2 w-full sm:w-auto"
             >
-              <Sparkles className="w-4 h-4" />
-              Daftar Sekarang (Gratis 3 Kredit)
+              <span>Daftar Sekarang (Gratis 3 Kredit)</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1025,12 +1100,7 @@ export default function Home({ packages }: HomeProps) {
           <div className="space-y-3 md:col-span-2">
             <div className="flex items-center gap-2.5">
               <img src="/images/logo.png" alt="SiapAjar Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                SiapAjar
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400 text-emerald-950 font-black">
-                  AI
-                </span>
-              </span>
+              <span className="text-xl font-black tracking-tight text-white">SiapAjar</span>
             </div>
             <p className="text-xs text-neutral-400 font-medium max-w-sm leading-relaxed">
               Platform generator dokumen pembelajaran dan administrasi guru otomatis berbasis

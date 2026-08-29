@@ -1,198 +1,279 @@
 import { Head, Link } from '@inertiajs/react'
 import { Form } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Zap, Gift, CheckCircle2, ArrowRight } from 'lucide-react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
 
 export default function Signup() {
   return (
     <>
-      <Head title="Daftar — SiapAjar" />
+      <Head title="Daftar Akun Gratis — SiapAjar" />
 
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 bg-dot-grid flex items-center justify-center px-4 py-12">
-        {/* Top right: theme toggle */}
-        <div className="fixed top-4 right-4">
+      <div className="min-h-screen bg-[#fbfbee] dark:bg-neutral-950 flex flex-col justify-between p-4 sm:p-6 lg:p-10 relative">
+        {/* Top Right: Theme Toggle */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
           <ThemeToggle />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <img
-                src="/images/logo.png"
-                alt="SiapAjar Logo"
-                className="w-10 h-10 object-contain drop-shadow-sm"
-              />
-              <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent tracking-tight">
-                SiapAjar
-              </span>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mt-4">
-              Buat Akun Gratis
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Mulai kelola administrasi dalam 2 menit.
-            </p>
-          </div>
+        {/* Main Content Container */}
+        <div className="max-w-5xl w-full mx-auto my-auto py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Left Column: Deep Emerald Branding Card */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="lg:col-span-5 h-full bg-[#047857] dark:bg-[#064e3b] rounded-3xl border-2 border-black p-6 sm:p-8 text-white shadow-[6px_6px_0px_#000000] flex flex-col justify-between relative overflow-hidden"
+            >
+              {/* Decorative Glow */}
+              <div className="absolute -top-12 -right-12 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
 
-          {/* Card */}
-          <div className="card-kawaii p-8 bg-white dark:bg-neutral-900">
-            <Form route="new_account.store">
-              {({ processing, errors }) => (
-                <div className="space-y-5">
-                  {/* Full Name */}
-                  <div>
-                    <label
-                      htmlFor="fullName"
-                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
-                    >
-                      Nama Lengkap
-                    </label>
-                    <input
-                      id="fullName"
-                      type="text"
-                      name="fullName"
-                      placeholder="Nama lengkap Anda"
-                      data-invalid={errors.fullName ? 'true' : undefined}
-                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
+              <div className="relative z-10 space-y-6">
+                {/* Logo & Badge */}
+                <div className="space-y-3">
+                  <Link href="/" className="inline-flex items-center gap-3">
+                    <img
+                      src="/images/logo.png"
+                      alt="SiapAjar Logo"
+                      className="w-10 h-10 object-contain drop-shadow-md rounded-xl bg-white p-1 border-2 border-black shadow-[2px_2px_0px_#000000]"
                     />
-                    {errors.fullName && (
-                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.fullName}</p>
-                    )}
-                  </div>
+                    <span className="text-2xl font-black tracking-tight text-white">SiapAjar</span>
+                  </Link>
 
-                  {/* Email */}
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
-                    >
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      name="email"
-                      autoComplete="email"
-                      placeholder="nama@guru.sch.id"
-                      data-invalid={errors.email ? 'true' : undefined}
-                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
-                    />
-                    {errors.email && (
-                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.email}</p>
-                    )}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-[11px] font-black shadow-[2px_2px_0px_#000000]">
+                    <Gift className="w-3.5 h-3.5" />
+                    <span>Daftar Gratis • Langsung Pakai</span>
                   </div>
-
-                  {/* Password */}
-                  <div>
-                    <label
-                      htmlFor="password"
-                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
-                    >
-                      Password
-                    </label>
-                    <input
-                      id="password"
-                      type="password"
-                      name="password"
-                      autoComplete="new-password"
-                      placeholder="Minimal 8 karakter"
-                      data-invalid={errors.password ? 'true' : undefined}
-                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
-                    />
-                    {errors.password && (
-                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.password}</p>
-                    )}
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div>
-                    <label
-                      htmlFor="passwordConfirmation"
-                      className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1.5"
-                    >
-                      Konfirmasi Password
-                    </label>
-                    <input
-                      id="passwordConfirmation"
-                      type="password"
-                      name="passwordConfirmation"
-                      autoComplete="new-password"
-                      placeholder="Ulangi password"
-                      data-invalid={errors.passwordConfirmation ? 'true' : undefined}
-                      className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
-                    />
-                    {errors.passwordConfirmation && (
-                      <p className="text-rose-500 text-xs mt-1 font-bold">
-                        {errors.passwordConfirmation}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    disabled={processing}
-                    className="btn-kawaii-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    {processing ? 'Mendaftarkan Akun...' : 'Daftar Gratis Sekarang'}
-                  </button>
                 </div>
-              )}
-            </Form>
 
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                ATAU
-              </span>
-              <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
-            </div>
+                {/* Hero Headline */}
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                    Susun Administrasi Ajar Lebih Cepat & Rapi.
+                  </h2>
+                  <p className="text-xs sm:text-sm text-emerald-100/90 font-medium mt-2 leading-relaxed">
+                    Dapatkan akses ke seluruh generator cerdas SiapAjar untuk menyusun Modul Ajar,
+                    RPPM, LKPD, Bank Soal, hingga Narasi Rapor dalam hitungan detik.
+                  </p>
+                </div>
 
-            <a
-              href="/auth/google/redirect"
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-neutral-200 bg-white px-4 py-3 text-xs font-bold text-neutral-800 transition-all hover:bg-neutral-50 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 shadow-xs active:translate-y-0.5"
+                {/* Feature Highlights */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3 bg-white/10 border border-white/15 rounded-2xl p-3 backdrop-blur-xs">
+                    <div className="p-2 rounded-xl bg-amber-300 text-neutral-950 border border-black shrink-0 shadow-[1px_1px_0px_#000000]">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">3 Kredit Starter Tersedia</h4>
+                      <p className="text-[11px] text-emerald-200/80">
+                        Langsung coba generate dokumen tanpa biaya awal
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-white/10 border border-white/15 rounded-2xl p-3 backdrop-blur-xs">
+                    <div className="p-2 rounded-xl bg-emerald-300 text-neutral-950 border border-black shrink-0 shadow-[1px_1px_0px_#000000]">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Export Word (.docx) & PDF</h4>
+                      <p className="text-[11px] text-emerald-200/80">
+                        Dokumen rapi berstandar kurikulum nasional
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Guarantee */}
+              <div className="relative z-10 pt-6 mt-6 border-t-2 border-emerald-700/60 flex items-center justify-between text-xs font-bold text-emerald-200">
+                <span>🛡️ Tanpa Kartu Kredit</span>
+                <span className="text-amber-300">Aman & Terpercaya</span>
+              </div>
+            </motion.div>
+
+            {/* Right Column: Signup Form Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="lg:col-span-7 h-full bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 sm:p-8 lg:p-10 shadow-[6px_6px_0px_#000000] text-neutral-900 dark:text-white flex flex-col justify-between"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="#4285F4"
-                  d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46c-.28 1.5-1.13 2.77-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.07 7.94-2.92l-3.88-3c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.1C3.26 21.3 7.31 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.29 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.4-2.29v-3.1H1.28A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.28 5.39z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.28 6.61l4.01 3.1C6.23 6.88 8.88 4.77 12 4.77z"
-                />
-              </svg>
-              Daftar Cepat dengan Google
-            </a>
+              <div>
+                <div className="mb-6">
+                  <h1 className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight">
+                    Buat Akun Gratis
+                  </h1>
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 font-medium">
+                    Mulai kelola administrasi dalam 2 menit.
+                  </p>
+                </div>
+
+                <Form route="new_account.store">
+                  {({ processing, errors }) => (
+                    <div className="space-y-4">
+                      {/* Full Name */}
+                      <div>
+                        <label
+                          htmlFor="fullName"
+                          className="block text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 mb-1.5"
+                        >
+                          Nama Lengkap
+                        </label>
+                        <input
+                          id="fullName"
+                          type="text"
+                          name="fullName"
+                          placeholder="Nama lengkap Anda"
+                          data-invalid={errors.fullName ? 'true' : undefined}
+                          className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
+                        />
+                        {errors.fullName && (
+                          <p className="text-rose-500 text-xs mt-1.5 font-bold">
+                            {errors.fullName}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label
+                          htmlFor="email"
+                          className="block text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 mb-1.5"
+                        >
+                          Email
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          name="email"
+                          autoComplete="email"
+                          placeholder="nama@guru.sch.id"
+                          data-invalid={errors.email ? 'true' : undefined}
+                          className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
+                        />
+                        {errors.email && (
+                          <p className="text-rose-500 text-xs mt-1.5 font-bold">{errors.email}</p>
+                        )}
+                      </div>
+
+                      {/* Grid Password & Confirm Password */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Password */}
+                        <div>
+                          <label
+                            htmlFor="password"
+                            className="block text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 mb-1.5"
+                          >
+                            Password
+                          </label>
+                          <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            autoComplete="new-password"
+                            placeholder="Minimal 8 karakter"
+                            data-invalid={errors.password ? 'true' : undefined}
+                            className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
+                          />
+                          {errors.password && (
+                            <p className="text-rose-500 text-xs mt-1.5 font-bold">
+                              {errors.password}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div>
+                          <label
+                            htmlFor="passwordConfirmation"
+                            className="block text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 mb-1.5"
+                          >
+                            Konfirmasi Password
+                          </label>
+                          <input
+                            id="passwordConfirmation"
+                            type="password"
+                            name="passwordConfirmation"
+                            autoComplete="new-password"
+                            placeholder="Ulangi password"
+                            data-invalid={errors.passwordConfirmation ? 'true' : undefined}
+                            className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
+                          />
+                          {errors.passwordConfirmation && (
+                            <p className="text-rose-500 text-xs mt-1.5 font-bold">
+                              {errors.passwordConfirmation}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Submit Button */}
+                      <button
+                        type="submit"
+                        disabled={processing}
+                        className="btn-kawaii-primary w-full h-12 flex items-center justify-center gap-2 text-sm sm:text-base font-bold disabled:opacity-50 mt-2"
+                      >
+                        <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        {processing ? 'Mendaftarkan Akun...' : 'Daftar Gratis Sekarang'}
+                      </button>
+                    </div>
+                  )}
+                </Form>
+
+                <div className="my-6 flex items-center gap-3">
+                  <div className="h-0.5 flex-1 bg-neutral-200 dark:bg-neutral-800" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    ATAU
+                  </span>
+                  <div className="h-0.5 flex-1 bg-neutral-200 dark:bg-neutral-800" />
+                </div>
+
+                {/* Google Fast Signup */}
+                <a
+                  href="/auth/google/redirect"
+                  className="flex w-full h-12 items-center justify-center gap-3 rounded-2xl border-2 border-black bg-white dark:bg-neutral-800 px-4 text-sm sm:text-base font-bold text-neutral-950 dark:text-white transition-all hover:bg-neutral-100 dark:hover:bg-neutral-700 shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#4285F4"
+                      d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46c-.28 1.5-1.13 2.77-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.07 7.94-2.92l-3.88-3c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.1C3.26 21.3 7.31 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.29 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.4-2.29v-3.1H1.28A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.28 5.39z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.28 6.61l4.01 3.1C6.23 6.88 8.88 4.77 12 4.77z"
+                    />
+                  </svg>
+                  <span>Daftar dengan Google</span>
+                </a>
+              </div>
+
+              {/* Footer Switch */}
+              <p className="text-center text-xs text-neutral-600 dark:text-neutral-400 mt-6 font-medium">
+                Sudah punya akun SiapAjar?{' '}
+                <Link
+                  href="/login"
+                  className="text-emerald-700 dark:text-emerald-400 hover:underline font-black inline-flex items-center gap-1"
+                >
+                  Masuk di sini <ArrowRight className="w-3.5 h-3.5 inline" />
+                </Link>
+              </p>
+            </motion.div>
           </div>
+        </div>
 
-          {/* Footer */}
-          <p className="text-center text-xs text-neutral-500 dark:text-neutral-400 mt-6">
-            Sudah punya akun?{' '}
-            <Link
-              href="/login"
-              className="text-emerald-600 dark:text-emerald-400 hover:underline font-extrabold"
-            >
-              Masuk di sini
-            </Link>
-          </p>
-        </motion.div>
+        {/* Bottom copyright */}
+        <div className="text-center text-[11px] text-neutral-500 font-medium py-2">
+          © {new Date().getFullYear()} SiapAjar. Platform Administrasi Terpadu Kurikulum Merdeka.
+        </div>
       </div>
     </>
   )

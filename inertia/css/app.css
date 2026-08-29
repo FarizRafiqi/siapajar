@@ -8,7 +8,7 @@
   max-width: min(22rem, calc(100vw - 2rem));
 }
 .driver-popover-title {
-  color: #064e3b;
+  color: #047857;
   font-size: 1rem;
 }
 .driver-popover-description {
@@ -57,7 +57,7 @@
 }
 ::selection {
   background-color: rgba(16, 185, 129, 0.2);
-  color: #064e3b;
+  color: #047857;
 }
 
 /* Keep interactive affordances consistent across the dashboard. */
@@ -264,7 +264,7 @@ textarea[data-invalid='true'] + div {
 :root {
   /* SiapAjar Signature Primary & Secondary */
   --color-siapajar-emerald: #059669;
-  --color-siapajar-emerald-dark: #064e3b;
+  --color-siapajar-emerald-dark: #047857;
   --color-siapajar-amber: #f59e0b;
 
   /* Kawaii Pop Playful Accents */
