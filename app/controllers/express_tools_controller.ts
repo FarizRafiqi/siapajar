@@ -42,7 +42,6 @@ export default class ExpressToolsController {
         .where('user_id', user.id)
         .preload('schoolClass')
         .orderBy('created_at', 'desc')
-        .limit(20)
 
       recentModules = plans.map((p) => ({
         id: p.id,
@@ -58,7 +57,6 @@ export default class ExpressToolsController {
         .where('user_id', user.id)
         .preload('schoolClass')
         .orderBy('created_at', 'desc')
-        .limit(20)
 
       recentModules = modules.map((m) => ({
         id: m.id,
@@ -85,10 +83,7 @@ export default class ExpressToolsController {
   async lkpd({ inertia, auth }: HttpContext) {
     const user = auth.user!
     const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const recentLkpds = await Lkpd.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(10)
+    const recentLkpds = await Lkpd.query().where('user_id', user.id).orderBy('created_at', 'desc')
 
     return inertia.render('dashboard/tools/lkpd', {
       classes: classes.map((c) => c.toJSON()),
@@ -108,10 +103,7 @@ export default class ExpressToolsController {
       .where('is_active', true)
       .orderBy('name')
 
-    const recentExams = await Exam.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(10)
+    const recentExams = await Exam.query().where('user_id', user.id).orderBy('created_at', 'desc')
 
     return inertia.render('dashboard/tools/soal', {
       classes: classes.map((c) => c.toJSON()),

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   BookOpen,
@@ -74,6 +74,28 @@ const SD_LEARNING_APPROACHES = [
   'Teaching at the Right Level (TaRL) + Culturally Responsive Teaching (CRT)',
 ]
 
+type PaginationItem = number | 'ellipsis'
+
+function getPaginationItems(currentPage: number, totalPages: number): PaginationItem[] {
+  const pages = Array.from(
+    new Set([1, 2, currentPage - 1, currentPage, currentPage + 1, totalPages - 1, totalPages])
+  )
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b)
+
+  return pages.reduce<PaginationItem[]>((items, page, index) => {
+    if (index > 0 && page - pages[index - 1] > 1) items.push('ellipsis')
+    items.push(page)
+    return items
+  }, [])
+}
+
+function formatCreatedAt(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
 export default function ModulAjarExpress({
   isTk,
   classes = [],
@@ -100,7 +122,7 @@ export default function ModulAjarExpress({
   const [sortField, setSortField] = useState<'title' | 'subject' | 'createdAt'>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 8
+  const [pageSize, setPageSize] = useState(8)
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -171,6 +193,14 @@ export default function ModulAjarExpress({
     const start = (currentPage - 1) * pageSize
     return filteredList.slice(start, start + pageSize)
   }, [filteredList, currentPage, pageSize])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, pageSize, sortField, sortOrder])
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages))
+  }, [totalPages])
 
   const toggleSort = (field: 'title' | 'subject' | 'createdAt') => {
     if (sortField === field) {
@@ -470,6 +500,7 @@ export default function ModulAjarExpress({
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 uppercase font-bold">
+                      <th className="w-12 pb-3">No.</th>
                       <th className="pb-3 cursor-pointer" onClick={() => toggleSort('title')}>
                         <div className="flex items-center gap-1">
                           Judul & Topik
@@ -499,88 +530,166 @@ export default function ModulAjarExpress({
                         </div>
                       </th>
                       <th className="pb-3">Kelas / Fase</th>
+                      <th className="pb-3 cursor-pointer" onClick={() => toggleSort('createdAt')}>
+                        <div className="flex items-center gap-1">
+                          Dibuat
+                          {sortField === 'createdAt' ? (
+                            sortOrder === 'asc' ? (
+                              <ArrowUp className="w-3 h-3" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-neutral-300" />
+                          )}
+                        </div>
+                      </th>
                       <th className="pb-3">Status</th>
                       <th className="pb-3 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                    {paginatedList.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
-                      >
-                        <td className="py-3 font-semibold text-neutral-900 dark:text-white">
-                          <Link
-                            href={isTk ? `/rppm/${item.id}` : `/teaching-modules/${item.id}`}
-                            className="hover:text-emerald-600 dark:hover:text-emerald-400"
-                          >
-                            {item.title}
-                          </Link>
-                        </td>
-                        <td className="py-3 text-neutral-700 dark:text-neutral-300">
-                          {item.subject || '-'}
-                        </td>
-                        <td className="py-3 text-neutral-600 dark:text-neutral-400">
-                          {item.schoolClass?.name || `Fase ${item.phase}`}
-                        </td>
-                        <td className="py-3">
-                          <span
-                            className={cn(
-                              'px-2 py-0.5 rounded-full text-[10px] font-bold',
-                              item.status === 'published'
-                                ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300'
-                                : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
-                            )}
-                          >
-                            {item.status === 'published' ? 'Published' : 'Draft'}
-                          </span>
-                        </td>
-                        <td className="py-3 text-right space-x-1.5 whitespace-nowrap">
-                          <Link
-                            href={isTk ? `/rppm/${item.id}` : `/teaching-modules/${item.id}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-neutral-800 dark:text-neutral-200 font-semibold"
-                          >
-                            Buka <ExternalLink className="w-3 h-3" />
-                          </Link>
-                          <a
-                            href={
-                              isTk
-                                ? `/rppm/${item.id}/export`
-                                : `/teaching-modules/${item.id}/export`
-                            }
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200"
-                            title="Download Word (.docx)"
-                          >
-                            <FileDown className="w-3 h-3" /> DOCX
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
+                    {paginatedList.map((item, index) => {
+                      const detailHref = isTk ? `/rppm/${item.id}` : `/teaching-modules/${item.id}`
+                      const docxHref = `${detailHref}/export`
+                      const pdfHref = `${detailHref}/export/pdf`
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                        >
+                          <td className="py-3 font-semibold text-neutral-600 dark:text-neutral-300">
+                            {(currentPage - 1) * pageSize + index + 1}
+                          </td>
+                          <td className="py-3 font-semibold text-neutral-900 dark:text-white">
+                            <Link
+                              href={detailHref}
+                              className="hover:text-emerald-600 dark:hover:text-emerald-400"
+                            >
+                              {item.title}
+                            </Link>
+                          </td>
+                          <td className="py-3 text-neutral-700 dark:text-neutral-300">
+                            {item.subject || '-'}
+                          </td>
+                          <td className="py-3 text-neutral-600 dark:text-neutral-400">
+                            {item.schoolClass?.name || `Fase ${item.phase}`}
+                          </td>
+                          <td className="py-3 text-neutral-600 dark:text-neutral-400">
+                            {formatCreatedAt(item.createdAt)}
+                          </td>
+                          <td className="py-3">
+                            <span
+                              className={cn(
+                                'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                                item.status === 'published'
+                                  ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                              )}
+                            >
+                              {item.status === 'published' ? 'Published' : 'Draft'}
+                            </span>
+                          </td>
+                          <td className="py-3 text-right space-x-1.5 whitespace-nowrap">
+                            <Link
+                              href={detailHref}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-neutral-800 dark:text-neutral-200 font-semibold"
+                            >
+                              Buka <ExternalLink className="w-3 h-3" />
+                            </Link>
+                            <a
+                              href={docxHref}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200"
+                              title="Download Word (.docx)"
+                            >
+                              <FileDown className="w-3 h-3" /> DOCX
+                            </a>
+                            <a
+                              href={pdfHref}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800"
+                              title="Download PDF (.pdf)"
+                            >
+                              <FileText className="w-3 h-3" /> PDF
+                            </a>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-800 text-xs">
-                <span className="text-neutral-500">
-                  Halaman {currentPage} dari {totalPages}
-                </span>
-                <div className="flex items-center gap-1">
+            {filteredList.length > 0 && (
+              <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 text-sm dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-3 text-neutral-700 dark:text-neutral-300">
+                  <span>
+                    Menampilkan {Math.min((currentPage - 1) * pageSize + 1, filteredList.length)}-
+                    {Math.min(currentPage * pageSize, filteredList.length)} dari{' '}
+                    {filteredList.length} modul
+                  </span>
+                  <label className="inline-flex items-center gap-2 font-semibold">
+                    Tampilkan
+                    <select
+                      value={pageSize}
+                      onChange={(event) => setPageSize(Number(event.target.value))}
+                      className="rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm font-semibold text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                      aria-label="Jumlah modul per halaman"
+                    >
+                      {[5, 8, 10, 20, 50].map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                    / halaman
+                  </label>
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-1">
                   <button
                     type="button"
-                    disabled={currentPage === 1}
+                    aria-label="Halaman sebelumnya"
+                    disabled={currentPage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="px-3 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 disabled:opacity-40"
+                    className="rounded-lg border border-neutral-200 px-3 py-1 text-sm font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-200 disabled:opacity-40"
                   >
                     Sebelumnya
                   </button>
+                  {getPaginationItems(currentPage, totalPages).map((page, index) =>
+                    page === 'ellipsis' ? (
+                      <span
+                        key={`ellipsis-${index}`}
+                        className="px-1.5 py-1 text-sm font-semibold text-neutral-500"
+                        aria-hidden="true"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        aria-label={`Buka halaman ${page}`}
+                        aria-current={currentPage === page ? 'page' : undefined}
+                        className={cn(
+                          'min-w-8 rounded-lg border px-2.5 py-1 text-sm font-bold transition-colors',
+                          currentPage === page
+                            ? 'border-black bg-emerald-300 text-neutral-950 shadow-[1px_1px_0px_#000000]'
+                            : 'border-neutral-200 text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800'
+                        )}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
                     type="button"
-                    disabled={currentPage === totalPages}
+                    aria-label="Halaman berikutnya"
+                    disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="px-3 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 disabled:opacity-40"
+                    className="rounded-lg border border-neutral-200 px-3 py-1 text-sm font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-200 disabled:opacity-40"
                   >
                     Selanjutnya
                   </button>
