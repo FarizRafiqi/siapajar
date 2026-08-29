@@ -265,7 +265,7 @@ export default function AiAssessmentModal({
           className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border-2 border-black bg-white shadow-[8px_8px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[8px_8px_0px_#ffffff]"
         >
           {/* Header */}
-          <div className="flex shrink-0 items-center justify-between border-b-2 border-black px-6 py-4 dark:border-white">
+          <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-emerald-200 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-emerald-900/60">
                 <Sparkles className="h-5 w-5 text-emerald-950 dark:text-emerald-200" />
@@ -834,7 +834,7 @@ export default function AiAssessmentModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between border-t-2 border-black px-6 py-4 dark:border-white">
+          <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">
             <button type="button" onClick={onClose} className="btn-kawaii-secondary">
               Tutup
             </button>

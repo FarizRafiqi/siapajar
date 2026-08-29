@@ -233,7 +233,7 @@ export default function TopupModal({
           className="relative w-full max-w-[490px] rounded-3xl border-2 border-black bg-white dark:bg-neutral-900 shadow-[8px_8px_0px_#000000] overflow-hidden z-10 text-neutral-900 dark:text-white flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[88vh]"
         >
           {/* Header */}
-          <div className="bg-[#047857] dark:bg-[#064e3b] p-4 sm:p-5 text-white flex items-center justify-between border-b-2 border-black shrink-0">
+          <div className="bg-[#047857] dark:bg-[#064e3b] p-4 sm:p-5 text-white flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-white/10 border border-white/20 text-amber-300">
                 <Coins className="w-6 h-6" />
@@ -414,7 +414,7 @@ export default function TopupModal({
           </div>
 
           {/* Sticky Modal Footer */}
-          <div className="p-4 sm:p-5 border-t-2 border-black bg-neutral-50 dark:bg-neutral-950 shrink-0 space-y-3">
+          <div className="p-4 sm:p-5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 shrink-0 space-y-3">
             <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
               <span className="text-neutral-700 dark:text-neutral-300">
                 {selectedTier.name} · {selectedTier.credits} kredit
