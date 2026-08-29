@@ -61,7 +61,7 @@ type NavigationEntry =
       items: NavigationItem[]
     }
 
-const guruSdNavigation: NavigationEntry[] = [
+const guruSdExpressNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
     name: 'Tool Instan (Express)',
@@ -87,20 +87,6 @@ const guruSdNavigation: NavigationEntry[] = [
     ],
   },
   {
-    name: 'Panel Terstruktur',
-    items: [
-      { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
-      {
-        name: 'Kelas & Siswa',
-        href: '/classes',
-        icon: Users,
-        activeHrefs: ['/panel/kelas', '/students'],
-      },
-      { name: 'Mata Pelajaran', href: '/subjects', icon: Library },
-      { name: 'Daftar Penilaian', href: '/assessments', icon: ClipboardCheck },
-    ],
-  },
-  {
     name: 'Akun',
     items: [
       {
@@ -113,7 +99,7 @@ const guruSdNavigation: NavigationEntry[] = [
   },
 ]
 
-const guruTkNavigation: NavigationEntry[] = [
+const guruTkExpressNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
     name: 'Tool Instan (Express)',
@@ -144,14 +130,6 @@ const guruTkNavigation: NavigationEntry[] = [
     ],
   },
   {
-    name: 'Panel Terstruktur',
-    items: [
-      { name: 'CP, TP & ATP', href: '/curriculum', icon: Route, activeHrefs: ['/panel/kurikulum'] },
-      { name: 'Kelompok & Siswa', href: '/classes', icon: Users, activeHrefs: ['/panel/kelas'] },
-      { name: 'Asesmen Harian PAUD', href: '/paud-assessments', icon: ClipboardList },
-    ],
-  },
-  {
     name: 'Akun',
     items: [
       {
@@ -163,6 +141,296 @@ const guruTkNavigation: NavigationEntry[] = [
     ],
   },
 ]
+
+const guruSdStructuredNavigation: NavigationEntry[] = [
+  { name: 'Dashboard', href: '/panel/dashboard', icon: LayoutDashboard },
+  {
+    name: 'Kurikulum & Data',
+    items: [
+      {
+        name: 'CP, TP & ATP',
+        href: '/panel/curriculum',
+        icon: Route,
+        activeHrefs: ['/curriculum', '/panel/kurikulum'],
+      },
+      {
+        name: 'Kelas & Siswa',
+        href: '/panel/classes',
+        icon: Users,
+        activeHrefs: ['/classes', '/panel/kelas', '/panel/siswa', '/students'],
+      },
+      {
+        name: 'Mata Pelajaran',
+        href: '/panel/subjects',
+        icon: Library,
+        activeHrefs: ['/subjects'],
+      },
+      {
+        name: 'Glosarium Kurikulum',
+        href: '/panel/glossary',
+        icon: BookOpen,
+        activeHrefs: ['/glossary'],
+      },
+    ],
+  },
+  {
+    name: 'Perencanaan',
+    items: [
+      {
+        name: 'Modul Ajar Terstruktur',
+        href: '/panel/teaching-modules',
+        icon: BookOpen,
+        activeHrefs: ['/teaching-modules'],
+      },
+      {
+        name: 'Program Tahunan',
+        href: '/panel/annual-plans',
+        icon: Calendar,
+        activeHrefs: ['/annual-plans'],
+      },
+      {
+        name: 'Program Semester',
+        href: '/panel/semester-plans',
+        icon: CalendarRange,
+        activeHrefs: ['/semester-plans'],
+      },
+    ],
+  },
+  {
+    name: 'Bahan Ajar',
+    items: [
+      { name: 'LKPD & Lembar Aktivitas', href: '/panel/lkpd', icon: FileSpreadsheet },
+      {
+        name: 'Media Ajar',
+        href: '/panel/media-modules',
+        icon: Presentation,
+        activeHrefs: ['/media-modules'],
+      },
+    ],
+  },
+  {
+    name: 'Asesmen & Laporan',
+    items: [
+      { name: 'Bank Soal', href: '/panel/exams', icon: FileQuestion, activeHrefs: ['/exams'] },
+      {
+        name: 'Penilaian',
+        href: '/panel/assessments',
+        icon: ClipboardCheck,
+        activeHrefs: ['/assessments'],
+      },
+      {
+        name: 'Rapor Perkembangan',
+        href: '/panel/report-cards',
+        icon: Award,
+        activeHrefs: ['/report-cards'],
+      },
+    ],
+  },
+  {
+    name: 'Refleksi & Projek',
+    items: [
+      { name: 'Jurnal Mengajar', href: '/panel/jurnal', icon: ClipboardList },
+      { name: 'Kokurikuler (P5)', href: '/panel/kokurikuler', icon: Presentation },
+      { name: 'Katrol Nilai Transparan', href: '/panel/katrol', icon: ClipboardCheck },
+    ],
+  },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/panel/my-package',
+        icon: Package,
+        activeHrefs: ['/my-package', '/billing', '/usage', '/subscriptions'],
+      },
+    ],
+  },
+]
+
+const guruTkStructuredNavigation: NavigationEntry[] = [
+  { name: 'Dashboard', href: '/panel/dashboard', icon: LayoutDashboard },
+  {
+    name: 'Kurikulum & Data',
+    items: [
+      {
+        name: 'CP, TP & ATP Fase Fondasi',
+        href: '/panel/curriculum',
+        icon: Route,
+        activeHrefs: ['/curriculum'],
+      },
+      {
+        name: 'Kelompok & Siswa',
+        href: '/panel/classes',
+        icon: Users,
+        activeHrefs: ['/classes', '/panel/kelas', '/panel/siswa'],
+      },
+      {
+        name: 'Glosarium Kurikulum',
+        href: '/panel/glossary',
+        icon: BookOpen,
+        activeHrefs: ['/glossary'],
+      },
+    ],
+  },
+  {
+    name: 'Perencanaan',
+    items: [
+      {
+        name: 'Modul Ajar (RPPM/RPM)',
+        href: '/panel/rppm',
+        icon: CalendarRange,
+        activeHrefs: ['/rppm', '/rpm'],
+      },
+      { name: 'RPPH', href: '/panel/rpph', icon: Calendar, activeHrefs: ['/rpph'] },
+      {
+        name: 'Program Tahunan',
+        href: '/panel/annual-plans',
+        icon: Calendar,
+        activeHrefs: ['/annual-plans'],
+      },
+      {
+        name: 'Program Semester',
+        href: '/panel/semester-plans',
+        icon: CalendarRange,
+        activeHrefs: ['/semester-plans'],
+      },
+    ],
+  },
+  {
+    name: 'Bahan Ajar',
+    items: [
+      { name: 'LKPD Anak', href: '/panel/lkpd', icon: FileSpreadsheet },
+      {
+        name: 'Media Ajar & Loose Parts',
+        href: '/panel/media-modules',
+        icon: Presentation,
+        activeHrefs: ['/media-modules'],
+      },
+    ],
+  },
+  {
+    name: 'Asesmen & Laporan',
+    items: [
+      {
+        name: 'Soal Bergambar',
+        href: '/panel/exams',
+        icon: FileQuestion,
+        activeHrefs: ['/exams'],
+      },
+      {
+        name: 'Asesmen Harian PAUD',
+        href: '/panel/paud-assessments',
+        icon: ClipboardList,
+        activeHrefs: ['/paud-assessments'],
+      },
+      {
+        name: 'Rapor Perkembangan',
+        href: '/panel/report-cards',
+        icon: Award,
+        activeHrefs: ['/report-cards'],
+      },
+    ],
+  },
+  {
+    name: 'Refleksi & Projek',
+    items: [
+      { name: 'Jurnal Harian PAUD', href: '/panel/jurnal', icon: ClipboardList },
+      { name: 'Kokurikuler / P5', href: '/panel/kokurikuler', icon: Presentation },
+      { name: 'Katrol Nilai Transparan', href: '/panel/katrol', icon: ClipboardCheck },
+    ],
+  },
+  {
+    name: 'Akun',
+    items: [
+      {
+        name: 'Paket Saya',
+        href: '/panel/my-package',
+        icon: Package,
+        activeHrefs: ['/my-package', '/billing', '/usage', '/subscriptions'],
+      },
+    ],
+  },
+]
+
+type SidebarMode = 'express' | 'structured'
+
+const SIDEBAR_MODE_STORAGE_KEY = 'siapajar:sidebar-mode'
+
+const STRUCTURED_PATH_PREFIXES = [
+  '/curriculum',
+  '/classes',
+  '/subjects',
+  '/teaching-modules',
+  '/annual-plans',
+  '/semester-plans',
+  '/rppm',
+  '/rpph',
+  '/media-modules',
+  '/exams',
+  '/assessments',
+  '/paud-assessments',
+  '/report-cards',
+  '/glossary',
+]
+
+const EXPRESS_PATH_PREFIXES = [
+  '/modul-ajar',
+  '/lkpd',
+  '/soal',
+  '/prota-promes',
+  '/rapor',
+  '/katrol',
+  '/jurnal',
+  '/kokurikuler',
+]
+
+// Detail dokumen dapat dibuka dari mode Express maupun Panel Lengkap.
+// Pertahankan mode terakhir untuk route bersama agar sidebar tidak berubah
+// hanya karena URL detail memakai route kanonis lama.
+const CONTEXTUAL_DETAIL_PATH_PREFIXES = [
+  '/teaching-modules/',
+  '/rppm/',
+  '/rpph/',
+  '/lkpd/',
+  '/exams/',
+  '/annual-plans/',
+  '/semester-plans/',
+  '/media-modules/',
+  '/paud-assessments/',
+  '/assessments/',
+  '/report-cards/',
+]
+
+function matchesPathPrefix(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`)
+}
+
+function getRouteMode(currentUrl: string): SidebarMode | null {
+  const pathname = currentUrl.split('?')[0]
+
+  if (matchesPathPrefix(pathname, '/panel')) return 'structured'
+  if (CONTEXTUAL_DETAIL_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return null
+  }
+  if (STRUCTURED_PATH_PREFIXES.some((prefix) => matchesPathPrefix(pathname, prefix))) {
+    return 'structured'
+  }
+  if (pathname === '/dashboard') return 'express'
+  if (EXPRESS_PATH_PREFIXES.some((prefix) => matchesPathPrefix(pathname, prefix))) {
+    return 'express'
+  }
+
+  return null
+}
+
+function persistSidebarMode(mode: SidebarMode) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(SIDEBAR_MODE_STORAGE_KEY, mode)
+  } catch {
+    // ignore storage failures
+  }
+}
 
 const adminNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -207,7 +475,8 @@ function renderNavigationItem(
   currentUrl: string,
   collapsed: boolean,
   onMobileClose?: () => void,
-  onTopupClick?: () => void
+  onTopupClick?: () => void,
+  onModeChange?: (href: string) => void
 ): ReactElement {
   const isActive = isNavigationItemActive(item, currentUrl)
   const isBilling = item.href === '/billing'
@@ -241,7 +510,10 @@ function renderNavigationItem(
     <Link
       key={item.name}
       href={item.href}
-      onClick={onMobileClose}
+      onClick={() => {
+        onModeChange?.(item.href)
+        onMobileClose?.()
+      }}
       className={cn(
         'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
         isActive
@@ -269,13 +541,44 @@ export default function Sidebar({
   const page = usePage()
   const currentUrl = page.url
   const isAdmin = user.role === 'admin'
-  let navigation: NavigationEntry[] = guruSdNavigation
+  const isPrincipal = user.role === 'kepala_sekolah'
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
+    const routeMode = getRouteMode(currentUrl)
+    if (routeMode) return routeMode
+
+    if (typeof window !== 'undefined') {
+      try {
+        const storedMode = window.localStorage.getItem(SIDEBAR_MODE_STORAGE_KEY)
+        if (storedMode === 'express' || storedMode === 'structured') return storedMode
+      } catch {
+        // ignore storage failures
+      }
+    }
+
+    return 'express'
+  })
+  const isStructuredMode = sidebarMode === 'structured'
+  let navigation: NavigationEntry[] = isStructuredMode
+    ? user.educationLevel === 'tk'
+      ? guruTkStructuredNavigation
+      : guruSdStructuredNavigation
+    : guruSdExpressNavigation
   if (isAdmin) {
     navigation = adminNavigation
-  } else if (user.role === 'kepala_sekolah') {
+  } else if (isPrincipal) {
     navigation = principalNavigation
-  } else if (user.educationLevel === 'tk') {
-    navigation = guruTkNavigation
+  } else if (user.educationLevel === 'tk' && !isStructuredMode) {
+    navigation = guruTkExpressNavigation
+  }
+
+  const changeSidebarMode = (mode: SidebarMode) => {
+    setSidebarMode(mode)
+    persistSidebarMode(mode)
+  }
+
+  const handleNavigationMode = (href: string) => {
+    const routeMode = getRouteMode(href)
+    if (routeMode) changeSidebarMode(routeMode)
   }
 
   const roleLabels: Record<string, string> = {
@@ -326,6 +629,17 @@ export default function Sidebar({
       return changed ? next : previous
     })
   }, [activeGroupNames])
+
+  useEffect(() => {
+    const routeMode = getRouteMode(currentUrl)
+    if (routeMode) {
+      setSidebarMode(routeMode)
+    }
+  }, [currentUrl])
+
+  useEffect(() => {
+    persistSidebarMode(sidebarMode)
+  }, [sidebarMode])
 
   useEffect(() => {
     try {
@@ -478,6 +792,38 @@ export default function Sidebar({
           className="space-y-1 overflow-y-auto px-3 py-4 custom-scrollbar"
           style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
         >
+          {!isAdmin && !isPrincipal && (
+            <Link
+              href={isStructuredMode ? '/dashboard' : '/panel/dashboard'}
+              onClick={() => {
+                changeSidebarMode(isStructuredMode ? 'express' : 'structured')
+                onMobileClose?.()
+              }}
+              className={cn(
+                'mb-3 flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-black transition-all',
+                isStructuredMode
+                  ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] hover:bg-amber-200'
+                  : 'border-emerald-300/60 bg-emerald-900/35 text-white hover:border-white hover:bg-emerald-700/70'
+              )}
+              title={
+                collapsed
+                  ? isStructuredMode
+                    ? 'Kembali ke Tool Instan'
+                    : 'Buka Panel Lengkap'
+                  : undefined
+              }
+              aria-label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+            >
+              {isStructuredMode ? (
+                <BookOpen className="h-5 w-5 flex-shrink-0 text-neutral-950" />
+              ) : (
+                <Route className="h-5 w-5 flex-shrink-0 text-amber-300" />
+              )}
+              <span className={cn(collapsed && 'md:hidden')}>
+                {isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+              </span>
+            </Link>
+          )}
           {navigation.map((entry) => {
             if ('items' in entry) {
               const groupIsActive = entry.items.some((item) =>
@@ -515,13 +861,27 @@ export default function Sidebar({
                     className={cn('space-y-1', !groupIsOpen && 'hidden')}
                   >
                     {entry.items.map((item) =>
-                      renderNavigationItem(item, currentUrl, collapsed, onMobileClose, onTopupClick)
+                      renderNavigationItem(
+                        item,
+                        currentUrl,
+                        collapsed,
+                        onMobileClose,
+                        onTopupClick,
+                        handleNavigationMode
+                      )
                     )}
                   </div>
                 </div>
               )
             }
-            return renderNavigationItem(entry, currentUrl, collapsed, onMobileClose, onTopupClick)
+            return renderNavigationItem(
+              entry,
+              currentUrl,
+              collapsed,
+              onMobileClose,
+              onTopupClick,
+              handleNavigationMode
+            )
           })}
         </nav>
 
