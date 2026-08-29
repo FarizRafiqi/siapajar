@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   FileQuestion,
-  Sparkles,
   Search,
   Plus,
   FileDown,
@@ -15,6 +14,9 @@ import {
   X,
   ListChecks,
   Check,
+  Coins,
+  Zap,
+  Lightbulb,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
@@ -161,7 +163,7 @@ export default function SoalExpress({
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
-              <Sparkles className="w-3.5 h-3.5 inline mr-1" />
+              <Plus className="w-3.5 h-3.5 inline mr-1" />
               Buat Soal (1 Kredit)
             </button>
             <button
@@ -192,7 +194,7 @@ export default function SoalExpress({
                   </p>
                 </div>
                 <span className="badge-kawaii-emerald">
-                  <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+                  <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
                 </span>
               </div>
 
@@ -389,7 +391,7 @@ export default function SoalExpress({
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4" />
+                        <Zap className="w-4 h-4" />
                         Generate Paket Soal (1 Kredit)
                       </>
                     )}
@@ -411,7 +413,7 @@ export default function SoalExpress({
                 <li>Pedoman Penskoran & Rubrik Nilai</li>
               </ul>
               <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
-                <Sparkles className="w-4 h-4 text-amber-500 inline mr-1" />{' '}
+                <Lightbulb className="w-4 h-4 text-amber-500 inline mr-1" />{' '}
                 <strong>Standar HOTS:</strong> Soal otomatis dilengkapi stimulus cerita / grafik /
                 tabel kontekstual sesuai standar Kurikulum Merdeka.
               </div>

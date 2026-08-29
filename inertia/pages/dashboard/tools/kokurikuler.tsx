@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { Compass, Sparkles, RotateCw, Copy, Check, Printer } from 'lucide-react'
+import { Compass, Coins, Zap, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
 
@@ -150,7 +150,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
             </div>
           </div>
           <span className="badge-kawaii-emerald self-start sm:self-auto">
-            <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+            <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
           </span>
         </div>
 
@@ -287,7 +287,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
                     Generate Modul Projek (1 Kredit)
                   </>
                 )}

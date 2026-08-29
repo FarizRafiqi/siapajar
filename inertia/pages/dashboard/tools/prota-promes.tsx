@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { CalendarDays, Sparkles, RotateCw, Clock, Layers, ArrowRight } from 'lucide-react'
+import { CalendarDays, Zap, Coins, RotateCw, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Subject {
@@ -89,7 +89,7 @@ export default function ProtaPromesExpress({
               </p>
             </div>
             <span className="badge-kawaii-emerald">
-              <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+              <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
             </span>
           </div>
 
@@ -111,7 +111,7 @@ export default function ProtaPromesExpress({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Semester *
                 </label>
                 <select
@@ -127,7 +127,7 @@ export default function ProtaPromesExpress({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
+                <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                   Pilih Kelas / Kelompok *
                 </label>
                 <select
@@ -146,7 +146,7 @@ export default function ProtaPromesExpress({
 
               {!isTk && (
                 <div>
-                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                     Mata Pelajaran *
                   </label>
                   <select
@@ -164,19 +164,12 @@ export default function ProtaPromesExpress({
               )}
             </div>
 
-            <div className="p-4 bg-blue-50 dark:bg-neutral-800/80 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs text-neutral-800 dark:text-neutral-200 font-medium space-y-2">
-              <p className="font-black text-neutral-950 dark:text-white flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-blue-600" />
-                Fitur Unggulan Prota & Promes AI:
-              </p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Otomatis menghitung pekan efektif dan pekan libur nasional</li>
-                <li>
-                  Distribusi Capaian Pembelajaran (CP) dan Tujuan Pembelajaran (TP) merata per
-                  minggu
-                </li>
-                <li>Jadwal asesmen sumatif & cadangan jam pelajaran</li>
-                <li>Format tabel landscape standar supervisi pengawas</li>
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 text-xs space-y-1.5 text-emerald-950 dark:text-emerald-200">
+              <p className="font-bold">Struktur Dokumen yang Disusun:</p>
+              <ul className="list-disc pl-4 space-y-0.5 text-neutral-700 dark:text-neutral-300">
+                <li>Program Tahunan (Prota) dengan pemetaan alokasi jam & minggu efektif</li>
+                <li>Program Semester (Promes) dengan matriks distribusi materi per pekan</li>
+                <li>Sinkron dengan Capaian Pembelajaran (CP) dan Tujuan Pembelajaran (TP)</li>
               </ul>
             </div>
 
@@ -199,7 +192,7 @@ export default function ProtaPromesExpress({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
                     Generate Prota & Promes (1 Kredit)
                   </>
                 )}

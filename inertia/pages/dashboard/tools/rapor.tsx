@@ -3,7 +3,8 @@ import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   FileText,
-  Sparkles,
+  Coins,
+  Zap,
   Award,
   Users,
   Layers,
@@ -84,7 +85,7 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
               </p>
             </div>
             <span className="badge-kawaii-emerald">
-              <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit / Siswa
+              <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit / Siswa
             </span>
           </div>
 
@@ -155,7 +156,7 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
                     Generate Narasi Rapor Kelas
                   </>
                 )}

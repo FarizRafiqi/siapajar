@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
-import { ClipboardList, Sparkles, RotateCw, Copy, Check, Printer } from 'lucide-react'
+import { ClipboardList, Coins, Zap, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SchoolClass {
@@ -127,7 +127,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
             </div>
           </div>
           <span className="badge-kawaii-emerald self-start sm:self-auto">
-            <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+            <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
           </span>
         </div>
 
@@ -223,7 +223,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
               </div>
             </div>
 
-            <div className="pt-3 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+            <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
               <button
                 type="submit"
                 disabled={isLoading}
@@ -236,7 +236,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
                     Generate Jurnal Mengajar (1 Kredit)
                   </>
                 )}

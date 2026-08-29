@@ -3,7 +3,6 @@ import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   TrendingUp,
-  Sparkles,
   RotateCw,
   Copy,
   Check,
@@ -11,6 +10,9 @@ import {
   HelpCircle,
   Calculator,
   ShieldCheck,
+  Coins,
+  Zap,
+  Lightbulb,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -127,7 +129,7 @@ export default function KatrolExpress() {
             </div>
           </div>
           <span className="badge-kawaii-emerald self-start sm:self-auto">
-            <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+            <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
           </span>
         </div>
 
@@ -213,7 +215,7 @@ export default function KatrolExpress() {
                   required
                 />
                 <p className="text-[11px] text-neutral-500 mt-1 font-medium">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Tips: Anda bisa
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Tips: Anda bisa
                   langsung copy-paste kolom nama dan nilai dari Microsoft Excel.
                 </p>
               </div>
@@ -231,7 +233,7 @@ export default function KatrolExpress() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <Zap className="w-4 h-4" />
                       Hitung & Generate Justifikasi (1 Kredit)
                     </>
                   )}
@@ -260,8 +262,8 @@ export default function KatrolExpress() {
                 kesukaran soal dan ketuntasan klasikal.
               </li>
             </ul>
-            <div className="p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
-              <Sparkles className="w-4 h-4 text-cyan-600 inline mr-1" />{' '}
+            <div className="p-3.5 bg-white/90 dark:bg-neutral-800/90 rounded-2xl border border-neutral-200 dark:border-neutral-700 text-xs">
+              <FileSpreadsheet className="w-4 h-4 text-cyan-600 inline mr-1" />{' '}
               <strong>Integrasi Excel:</strong> Hasil dapat disalin langsung ke Excel tanpa merusak
               format kolom.
             </div>
@@ -273,7 +275,7 @@ export default function KatrolExpress() {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 sm:p-8 space-y-6 shadow-[4px_4px_0px_#000000]">
             {/* Stat Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000]">
+              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700">
                 <span className="text-[11px] text-neutral-500 block font-medium">
                   Rata-rata Mentah
                 </span>
@@ -281,15 +283,15 @@ export default function KatrolExpress() {
                   {result.statistics.rawAverage}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 border-2 border-black shadow-[2px_2px_0px_#000000]">
-                <span className="text-[11px] text-emerald-800 dark:text-emerald-200 block font-bold">
+              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                <span className="text-[11px] text-emerald-800 dark:text-emerald-300 block font-bold">
                   Rata-rata Katrol Baru
                 </span>
                 <span className="text-xl font-black text-emerald-900 dark:text-emerald-100">
                   {result.statistics.adjustedAverage}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000]">
+              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700">
                 <span className="text-[11px] text-neutral-500 block font-medium">
                   Rentang Nilai Mentah
                 </span>
@@ -297,8 +299,8 @@ export default function KatrolExpress() {
                   {result.statistics.lowestRaw} - {result.statistics.highestRaw}
                 </span>
               </div>
-              <div className="p-4 rounded-2xl bg-cyan-100 dark:bg-cyan-950/80 border-2 border-black shadow-[2px_2px_0px_#000000]">
-                <span className="text-[11px] text-cyan-800 dark:text-cyan-200 block font-bold">
+              <div className="p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800">
+                <span className="text-[11px] text-cyan-800 dark:text-cyan-300 block font-bold">
                   Rentang Nilai Baru
                 </span>
                 <span className="text-base font-black text-cyan-900 dark:text-cyan-100">
@@ -308,7 +310,7 @@ export default function KatrolExpress() {
             </div>
 
             {/* Justification Box */}
-            <div className="p-5 rounded-2xl bg-amber-50 dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000] space-y-2">
+            <div className="p-5 rounded-2xl bg-amber-50/70 dark:bg-neutral-800/70 border border-amber-200 dark:border-amber-900/50 space-y-2">
               <h4 className="text-xs font-black text-neutral-900 dark:text-amber-300 flex items-center gap-1.5 uppercase">
                 <HelpCircle className="w-4 h-4 text-amber-600" />
                 Narasi Justifikasi Akademik (Supervisi / Rapat Pleno)

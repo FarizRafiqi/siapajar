@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   BookOpen,
-  Sparkles,
   Search,
   Plus,
   FileDown,
@@ -15,6 +14,9 @@ import {
   ArrowDown,
   X,
   FileText,
+  Coins,
+  Zap,
+  Lightbulb,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
@@ -61,6 +63,9 @@ export default function ModulAjarExpress({
   )
   const [topic, setTopic] = useState<string>('')
   const [phase, setPhase] = useState<string>(isTk ? 'Fondasi' : 'A')
+  const [duration, setDuration] = useState<string>('2 x 35 Menit (1 Pertemuan)')
+  const [learningModel, setLearningModel] = useState<string>('Problem Based Learning (PBL)')
+  const [specificObjectives, setSpecificObjectives] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Table search & sort state
@@ -185,7 +190,7 @@ export default function ModulAjarExpress({
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
-              <Sparkles className="w-3.5 h-3.5 inline mr-1" />
+              <Plus className="w-3.5 h-3.5 inline mr-1" />
               Buat Baru (1 Kredit)
             </button>
             <button
@@ -217,7 +222,7 @@ export default function ModulAjarExpress({
                   </p>
                 </div>
                 <span className="badge-kawaii-emerald">
-                  <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+                  <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
                 </span>
               </div>
 
@@ -233,80 +238,102 @@ export default function ModulAjarExpress({
                       className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       required
                     >
-                      {classes.length === 0 ? (
-                        <option value="">(Belum ada kelas - buat di panel kelas)</option>
-                      ) : (
-                        classes.map((cls) => (
-                          <option key={cls.id} value={cls.id}>
-                            {cls.name}
-                          </option>
-                        ))
-                      )}
+                      {classes.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} {c.phase ? `(${c.phase})` : ''}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
-                  {!isTk && (
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
-                        Mata Pelajaran *
-                      </label>
-                      <select
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      >
-                        {subjects.map((sub) => (
-                          <option key={sub.id} value={sub.name}>
-                            {sub.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Mata Pelajaran *
+                    </label>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="Contoh: Matematika / IPAS / PAIBP"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Topik / Materi Pokok *
+                    </label>
+                    <input
+                      type="text"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Contoh: Pecahan Senilai"
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    />
+                  </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
-                      Fase Kurikulum *
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Alokasi Waktu (JP)
                     </label>
-                    <select
-                      value={phase}
-                      onChange={(e) => setPhase(e.target.value)}
+                    <input
+                      type="text"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      placeholder="Contoh: 2 x 35 Menit (1 Pertemuan)"
                       className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    >
-                      {isTk ? (
-                        <option value="Fondasi">Fase Fondasi (TK / PAUD / RA)</option>
-                      ) : (
-                        <>
-                          <option value="A">Fase A (Kelas 1 - 2 SD)</option>
-                          <option value="B">Fase B (Kelas 3 - 4 SD)</option>
-                          <option value="C">Fase C (Kelas 5 - 6 SD)</option>
-                        </>
-                      )}
-                    </select>
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1.5">
-                    {isTk
-                      ? 'Tema / Sub-Tema Pembelajaran *'
-                      : 'Topik / Materi Utama Pembelajaran *'}
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    Model & Metode Pembelajaran
                   </label>
-                  <input
-                    type="text"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder={
-                      isTk
-                        ? 'Contoh: Aku Sayang Bumi / Tanaman Hias / Diriku dan Keluargaku'
-                        : 'Contoh: Mengenal Bilangan Cacah sampai 100 / Hak dan Kewajiban di Rumah'
-                    }
+                  <select
+                    value={learningModel}
+                    onChange={(e) => setLearningModel(e.target.value)}
                     className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    required
+                  >
+                    <option value="Problem Based Learning (PBL)">
+                      Problem Based Learning (PBL)
+                    </option>
+                    <option value="Project Based Learning (PjBL)">
+                      Project Based Learning (PjBL)
+                    </option>
+                    <option value="Discovery / Inquiry Learning">
+                      Discovery / Inquiry Learning
+                    </option>
+                    <option value="Diferensiasi Konten & Proses">
+                      Diferensiasi Konten & Proses
+                    </option>
+                    <option value="Kooperatif / Diskusi Kelompok">
+                      Kooperatif / Diskusi Kelompok
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    Tujuan Pembelajaran Khusus / Catatan Tambahan (Opsional)
+                  </label>
+                  <textarea
+                    value={specificObjectives}
+                    onChange={(e) => setSpecificObjectives(e.target.value)}
+                    rows={2}
+                    placeholder="Tuliskan jika ada instruksi khusus misal: fokus pengenalan benda konkret, integrasi lingkungan sekolah..."
+                    className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 
-                <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-end gap-3">
+                <div className="pt-4 border-t-2 border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                  <span className="text-xs text-neutral-500 font-medium">
+                    Kredit terpotong setelah dokumen sukses dibuat
+                  </span>
                   <button
                     type="submit"
                     disabled={isGenerating}
@@ -319,7 +346,7 @@ export default function ModulAjarExpress({
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4" />
+                        <Zap className="w-4 h-4" />
                         Generate Modul Ajar (1 Kredit)
                       </>
                     )}
@@ -343,7 +370,7 @@ export default function ModulAjarExpress({
                 <li>Pengayaan & Remedial Siap Cetak</li>
               </ul>
               <div className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000000] text-xs">
-                <Sparkles className="w-4 h-4 text-amber-500 inline mr-1" /> <strong>Tips:</strong>{' '}
+                <Lightbulb className="w-4 h-4 text-amber-500 inline mr-1" /> <strong>Tips:</strong>{' '}
                 Setelah digenerate, Anda dapat langsung mengedit narasi di web atau download file{' '}
                 <strong>Word (.docx)</strong> dan <strong>PDF</strong> resmi.
               </div>
@@ -362,7 +389,8 @@ export default function ModulAjarExpress({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari modul ajar, topik, atau mata pelajaran..."
-                  className="w-full rounded-2xl border-2 border-black bg-neutral-50 dark:bg-neutral-950 pl-10 pr-8 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
+                  style={{ paddingLeft: '2.6rem' }}
+                  className="w-full rounded-2xl border-2 border-black bg-neutral-50 dark:bg-neutral-950 pr-8 py-2 text-xs font-bold shadow-[2px_2px_0px_#000000]"
                 />
                 {searchQuery && (
                   <button

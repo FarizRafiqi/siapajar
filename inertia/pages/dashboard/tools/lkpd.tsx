@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import {
   FileSpreadsheet,
-  Sparkles,
   Search,
   Plus,
   FileDown,
@@ -14,6 +13,8 @@ import {
   ArrowDown,
   X,
   Palette,
+  Coins,
+  Zap,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
@@ -150,7 +151,7 @@ export default function LkpdExpress({
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               )}
             >
-              <Sparkles className="w-3.5 h-3.5 inline mr-1" />
+              <Plus className="w-3.5 h-3.5 inline mr-1" />
               Buat LKPD (1 Kredit)
             </button>
             <button
@@ -181,7 +182,7 @@ export default function LkpdExpress({
                   </p>
                 </div>
                 <span className="badge-kawaii-emerald">
-                  <Sparkles className="w-3 h-3 text-emerald-600" /> Biaya: 1 Kredit
+                  <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
                 </span>
               </div>
 
@@ -261,7 +262,7 @@ export default function LkpdExpress({
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4" />
+                        <Zap className="w-4 h-4" />
                         Generate LKPD Siap Pakai (1 Kredit)
                       </>
                     )}
