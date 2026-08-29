@@ -67,8 +67,7 @@ export class CurriculumService {
 
     if (!objective) return false
 
-    await IktpIndicator.query().where('learning_objective_id', objective.id).delete()
-    await objective.delete()
+    await this.repository.deleteObjectiveWithIndicators(objective)
     return true
   }
 

@@ -93,6 +93,11 @@ export class CurriculumRepository {
     await LearningObjective.query().where('user_id', userId).delete()
   }
 
+  async deleteObjectiveWithIndicators(objective: LearningObjective) {
+    await IktpIndicator.query().where('learning_objective_id', objective.id).delete()
+    await objective.delete()
+  }
+
   async findContextSequence(userId: number, sequenceId: number) {
     return LearningSequence.query().where('id', sequenceId).where('user_id', userId).first()
   }

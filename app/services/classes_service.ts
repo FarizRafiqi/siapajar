@@ -256,31 +256,7 @@ export class ClassesService {
     const schoolClass = await this.repository.findOwnedClass(userId, classId)
     if (!schoolClass) return null
 
-    const existingStudents = await Student.query().where('class_id', schoolClass.id)
-    const existingByNis = new Map(existingStudents.map((student) => [student.nis, student]))
-    let created = 0
-    let updated = 0
-
-    for (const row of rows) {
-      const existing = existingByNis.get(row.nis)
-      if (existing) {
-        existing.fullName = row.fullName
-        if (row.nisn) existing.nisn = row.nisn
-        await existing.save()
-        updated++
-      } else {
-        const student = await Student.create({
-          classId: schoolClass.id,
-          nis: row.nis,
-          fullName: row.fullName,
-          nisn: row.nisn,
-        })
-        existingByNis.set(row.nis, student)
-        created++
-      }
-    }
-
-    return { created, updated }
+    return this.repository.importStudents(schoolClass.id, rows)
   }
 
   async parseStudentImport(filePath: string, extname: string) {
