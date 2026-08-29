@@ -3,7 +3,7 @@ import { Head, router, useForm } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Calendar, Trash2, Eye, Sparkles } from 'lucide-react'
+import { Calendar, Trash2, Eye, Plus } from 'lucide-react'
 import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface AcademicYear {
@@ -84,11 +84,12 @@ export default function AnnualPlansIndex({
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowGenerateModal(true)}
             disabled={!canGenerate}
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Sparkles className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Generate Protah
           </button>
         </div>
@@ -108,9 +109,9 @@ export default function AnnualPlansIndex({
               {!hasSubjects && (
                 <Link
                   href="/subjects"
-                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                  className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-900 underline hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200"
                 >
-                  Tambah mata pelajaran dulu →
+                  Belum ada mata pelajaran — tambah sekarang &rarr;
                 </Link>
               )}
             </div>
@@ -119,52 +120,53 @@ export default function AnnualPlansIndex({
 
         {/* Daftar Protah */}
         {annualPlans.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-neutral-300 py-12 text-center dark:border-neutral-700">
+          <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
             <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
-              Belum ada program tahunan
+            <h3 className="mt-4 text-base font-semibold text-neutral-900 dark:text-white">
+              Belum ada Program Tahunan
             </h3>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-              Generate Protah pertama Anda dengan AI
+            <p className="mt-1 text-sm text-neutral-500">
+              {canGenerate
+                ? 'Klik tombol "Generate Protah" untuk membuat Protah otomatis dengan AI.'
+                : 'Lengkapi prasyarat di atas untuk mulai membuat Protah.'}
             </p>
-            <button
-              onClick={() => setShowGenerateModal(true)}
-              disabled={!canGenerate}
-              className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Generate Protah
-            </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {annualPlans.map((item) => (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {annualPlans.map((plan) => (
               <div
-                key={item.id}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                key={plan.id}
+                className="rounded-xl border border-neutral-200 bg-white p-5 shadow-xs transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 dark:text-white">
-                      {item.subject}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                      {plan.academicYear?.name ?? 'Tahun Ajaran'}
+                    </span>
+                    <h3 className="mt-2 font-semibold text-neutral-900 dark:text-white">
+                      {plan.subject}
                     </h3>
-                    <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      {item.academicYear.name}
-                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/annual-plans/${item.id}`}
-                      className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                    <button
-                      onClick={() => setDeletingPlan(item)}
-                      className="rounded-lg border border-neutral-200 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-700 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDeletingPlan(plan)}
+                    className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-red-600 dark:hover:bg-neutral-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
+                  <span className="text-xs text-neutral-400">
+                    {plan.createdAt ? new Date(plan.createdAt).toLocaleDateString('id-ID') : '-'}
+                  </span>
+                  <Link
+                    href={`/annual-plans/${plan.id}`}
+                    className="flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Lihat Detail
+                  </Link>
                 </div>
               </div>
             ))}
@@ -182,7 +184,7 @@ export default function AnnualPlansIndex({
           >
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Generate Protah dengan AI

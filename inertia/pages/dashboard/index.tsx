@@ -8,7 +8,6 @@ import {
   ArrowRight,
   FileSpreadsheet,
   Presentation,
-  Sparkles,
   TrendingUp,
   ClipboardList,
   Compass,
@@ -16,6 +15,9 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
+  Coins,
+  Rocket,
+  Zap,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -210,7 +212,7 @@ export default function Dashboard({
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-300 text-neutral-950 border-2 border-black text-xs font-black shadow-[2px_2px_0px_#000000]">
-                <Sparkles className="w-3.5 h-3.5" /> AI Asisten Administrasi Guru No. 1
+                <Zap className="w-3.5 h-3.5" /> Platform Administrasi Guru
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-xs">
                 {isAdmin ? 'Panel Kontrol Admin SiapAjar' : 'Mau Bikin Dokumen Apa Hari Ini?'}
@@ -226,7 +228,7 @@ export default function Dashboard({
                 href="/billing"
                 className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-[2px_2px_0px_#000000] border-2 border-black transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
-                <Sparkles className="w-4 h-4 text-emerald-600" />
+                <Coins className="w-4 h-4 text-emerald-600" />
                 Top-Up Saldo Kredit
               </Link>
             </div>
@@ -238,7 +240,7 @@ export default function Dashboard({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-black text-neutral-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-600" />
+                <Rocket className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 Launchpad Tool Kilat (1-Klik Jadi)
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">

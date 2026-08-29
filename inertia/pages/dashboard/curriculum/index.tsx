@@ -5,7 +5,6 @@ import { useState } from 'react'
 import {
   Compass,
   Route,
-  Sparkles,
   Plus,
   Download,
   BookOpen,
@@ -115,26 +114,26 @@ function ObjectiveCard({
   isSelectedInAtp,
   showInd,
   onToggleIndicators,
-  onOpenIndicatorModal,
   onAddToAtp,
+  onOpenIndicatorModal,
   onDeleteObjective,
 }: Readonly<{
   objective: Objective
   isSelectedInAtp: boolean
   showInd: boolean
   onToggleIndicators: (id: number) => void
-  onOpenIndicatorModal: (id: number) => void
   onAddToAtp: (id: number) => void
-  onDeleteObjective: (objective: Objective) => void
+  onOpenIndicatorModal: (id: number) => void
+  onDeleteObjective: (obj: Objective) => void
 }>) {
   const indicators = objective.indicators || []
 
   return (
     <div
-      className={`rounded-2xl border-2 border-black dark:border-white p-4 transition-all duration-150 ${
+      className={`rounded-2xl border transition-all duration-150 p-4 ${
         isSelectedInAtp
-          ? 'bg-emerald-50/80 dark:bg-emerald-950/40 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff]'
-          : 'bg-white dark:bg-neutral-900 shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff]'
+          ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-500/60 dark:border-emerald-600/60'
+          : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -203,11 +202,11 @@ function ObjectiveCard({
       </div>
 
       {showInd && indicators.length > 0 && (
-        <div className="mt-3 border-t-2 border-dashed border-neutral-300 pt-3 dark:border-neutral-700 space-y-2">
+        <div className="mt-3 border-t border-neutral-200 dark:border-neutral-800 pt-3 space-y-2">
           {indicators.map((ind) => (
             <div
               key={ind.id}
-              className="flex items-start justify-between gap-3 rounded-2xl border-2 border-black dark:border-white bg-[#f8be9e]/20 dark:bg-[#f8be9e]/10 p-3 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]"
+              className="flex items-start justify-between gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-800/40 p-3"
             >
               <div>
                 <p className="text-sm font-bold text-neutral-950 dark:text-neutral-100">
@@ -291,7 +290,7 @@ function SequenceCard({
         {groupedItems.map((group, gIdx) => (
           <div key={`group-${sequence.id}-${gIdx}`} className="space-y-2">
             {group.unitTopic && (
-              <div className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black dark:border-white bg-emerald-100/90 px-3.5 py-2 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] dark:bg-emerald-950/60">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <BookOpen className="h-4 w-4 text-emerald-800 dark:text-emerald-300 shrink-0" />
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-950 dark:text-emerald-100 truncate">
@@ -310,10 +309,10 @@ function SequenceCard({
                 return (
                   <div
                     key={`${sequence.id}-${item.learningObjectiveId}-${globalIdx}`}
-                    className="flex items-center justify-between gap-3 rounded-2xl border-2 border-black dark:border-white bg-white p-3.5 text-sm dark:bg-neutral-900 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] hover:-translate-y-0.5 transition-all"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white p-3 text-sm dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-850 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-black dark:border-white bg-emerald-300 text-xs font-black text-neutral-950 shadow-[1px_1px_0px_#000000]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-neutral-950 dark:bg-emerald-800 dark:text-emerald-100 text-xs font-black border border-emerald-400 dark:border-emerald-600">
                         {globalIdx + 1}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -844,7 +843,7 @@ export default function CurriculumIndex({ cps, sequences, profile }: Props) {
               disabled={loadingSeed}
               className="btn-kawaii-primary"
             >
-              <Sparkles className="h-4 w-4" />
+              <BookOpen className="h-4 w-4" />
               <span>{loadingSeed ? 'Memuat...' : 'Contoh ATP Siap Pakai'}</span>
             </button>
 
