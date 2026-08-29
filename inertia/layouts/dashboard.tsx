@@ -5,6 +5,7 @@ import { toast, Toaster } from 'sonner'
 import Sidebar from '~/components/dashboard/sidebar'
 import Header from '~/components/dashboard/header'
 import DashboardTour, { type DashboardTourName } from '~/components/dashboard/dashboard-tour'
+import TopupModal from '~/components/dashboard/topup-modal'
 import { cn } from '~/lib/utils'
 
 interface User {
@@ -34,6 +35,16 @@ export default function DashboardLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
+  const [topupOpen, setTopupOpen] = useState(false)
+
+  const openTopup = useCallback(() => setTopupOpen(true), [])
+  const closeTopup = useCallback(() => setTopupOpen(false), [])
+
+  useEffect(() => {
+    const handleOpenTopup = () => setTopupOpen(true)
+    window.addEventListener('open-topup-modal', handleOpenTopup)
+    return () => window.removeEventListener('open-topup-modal', handleOpenTopup)
+  }, [])
 
   const { flash } = usePage().props as {
     flash?: { success?: string; error?: string }
@@ -58,7 +69,7 @@ export default function DashboardLayout({
   }, [flash])
 
   return (
-    <div className="dashboard-shell min-h-screen bg-[#FAF7F2] dark:bg-[#121214] text-neutral-900 dark:text-neutral-100">
+    <div className="dashboard-shell min-h-screen bg-[#F4F4F5] dark:bg-[#121214] text-neutral-900 dark:text-neutral-100">
       {/* Sidebar */}
       <div className="print:hidden">
         <Sidebar
@@ -67,6 +78,7 @@ export default function DashboardLayout({
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
           mobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
+          onTopupClick={openTopup}
         />
       </div>
 
@@ -85,12 +97,14 @@ export default function DashboardLayout({
             showTour={isTourAvailable}
             onTourClick={startTour}
             creditsBalance={user.creditsBalance}
+            onTopupClick={openTopup}
           />
         </div>
         <main className="p-4 sm:p-6 print:p-0 print:m-0">{children}</main>
       </div>
 
       <Toaster position="top-right" closeButton />
+      <TopupModal isOpen={topupOpen} onClose={closeTopup} currentCredits={user.creditsBalance} />
       {tourName && (
         <DashboardTour
           active={tourOpen}
