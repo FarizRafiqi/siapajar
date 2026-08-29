@@ -9,6 +9,7 @@ import {
   Coins,
   ExternalLink,
   History,
+  PackageOpen,
   RotateCw,
   TrendingUp,
 } from 'lucide-react'
@@ -100,12 +101,12 @@ function HistoryPagination({
           dari <strong className="text-neutral-900 dark:text-white">{meta.total}</strong>{' '}
           {itemLabel}
         </span>
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-3">
           <span>Baris per halaman</span>
           <select
             value={meta.perPage}
             onChange={(event) => navigate(1, Number.parseInt(event.target.value, 10))}
-            className="rounded-xl border-2 border-black bg-white px-2 py-1 text-xs font-bold text-neutral-900 dark:border-white dark:bg-neutral-800 dark:text-white"
+            className="ml-2 rounded-xl border-2 border-black bg-white px-2 py-1 text-xs font-bold text-neutral-900 dark:border-white dark:bg-neutral-800 dark:text-white"
           >
             {[5, 10, 20, 50].map((size) => (
               <option key={size} value={size}>
@@ -120,7 +121,7 @@ function HistoryPagination({
           type="button"
           onClick={() => navigate(Math.max(1, meta.currentPage - 1))}
           disabled={meta.currentPage <= 1}
-          className="btn-kawaii-secondary !rounded-xl !px-2.5 !py-1.5 !text-xs disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-kawaii-secondary !rounded-xl !px-2.5 !py-1.5 !text-xs !shadow-none !transform-none !transition-none disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Sebelumnya</span>
@@ -144,7 +145,7 @@ function HistoryPagination({
           type="button"
           onClick={() => navigate(Math.min(meta.lastPage, meta.currentPage + 1))}
           disabled={meta.currentPage >= meta.lastPage}
-          className="btn-kawaii-secondary !rounded-xl !px-2.5 !py-1.5 !text-xs disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-kawaii-secondary !rounded-xl !px-2.5 !py-1.5 !text-xs !shadow-none !transform-none !transition-none disabled:cursor-not-allowed disabled:opacity-40"
         >
           <span className="hidden sm:inline">Selanjutnya</span>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -209,86 +210,88 @@ function InvoiceHistory({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b-2 border-neutral-200 text-xs font-black uppercase text-neutral-800 dark:border-neutral-800 dark:text-neutral-200">
-                <th className="px-3 pb-3">No. Invoice</th>
-                <th className="px-3 pb-3">Paket &amp; Kredit</th>
-                <th className="px-3 pb-3">Nominal</th>
-                <th className="px-3 pb-3">Status</th>
-                <th className="px-3 pb-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-neutral-100 dark:divide-neutral-800">
-              {invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                  <td className="px-3 py-3.5 font-mono text-xs font-black text-neutral-900 dark:text-white">
-                    {invoice.invoiceNo}
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <p className="font-bold text-neutral-900 dark:text-neutral-100">
-                      {invoice.packageName}
-                    </p>
-                    <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                      +{invoice.creditsAmount} Kredit
-                    </p>
-                  </td>
-                  <td className="px-3 py-3.5 font-black text-neutral-900 dark:text-white">
-                    Rp{invoice.grossAmount.toLocaleString('id-ID')}
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <span
-                      className={cn(
-                        'inline-flex shrink-0 whitespace-nowrap rounded-full border-2 border-black px-2.5 py-1 text-xs font-black dark:border-white',
-                        invoice.status === 'paid'
-                          ? 'bg-emerald-200 text-neutral-950 dark:bg-emerald-300'
-                          : invoice.status === 'pending'
-                            ? 'bg-amber-200 text-neutral-950 dark:bg-amber-300'
-                            : 'bg-rose-200 text-neutral-950 dark:bg-rose-300'
-                      )}
-                    >
-                      {invoice.status === 'paid'
-                        ? 'LUNAS'
-                        : invoice.status === 'pending'
-                          ? 'MENUNGGU'
-                          : invoice.status === 'failed'
-                            ? 'GAGAL'
-                            : 'KEDALUWARSA'}
-                    </span>
-                  </td>
-                  <td className="space-x-2 px-3 py-3.5 text-right">
-                    {invoice.status === 'pending' && invoice.mayarPaymentUrl && (
-                      <a
-                        href={invoice.mayarPaymentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-kawaii-primary !rounded-xl !px-3 !py-1.5 !text-xs"
-                      >
-                        Bayar Sekarang <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                    {invoice.status === 'pending' && (
-                      <button
-                        type="button"
-                        disabled={checkingInvoice === invoice.invoiceNo}
-                        onClick={() => handleCheckStatus(invoice.invoiceNo)}
-                        className="btn-kawaii-secondary !rounded-xl !px-3 !py-1.5 !text-xs"
-                      >
-                        <RotateCw
-                          className={cn(
-                            'h-3 w-3',
-                            checkingInvoice === invoice.invoiceNo && 'animate-spin'
-                          )}
-                        />
-                        Cek Status
-                      </button>
-                    )}
-                  </td>
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b-2 border-neutral-200 text-xs font-black uppercase text-neutral-800 dark:border-neutral-800 dark:text-neutral-200">
+                  <th className="px-3 pb-3">No. Invoice</th>
+                  <th className="px-3 pb-3">Paket &amp; Kredit</th>
+                  <th className="px-3 pb-3">Nominal</th>
+                  <th className="px-3 pb-3">Status</th>
+                  <th className="px-3 pb-3 text-right">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y-2 divide-neutral-100 dark:divide-neutral-800">
+                {invoices.map((invoice) => (
+                  <tr key={invoice.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <td className="px-3 py-3.5 font-mono text-xs font-black text-neutral-900 dark:text-white">
+                      {invoice.invoiceNo}
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <p className="font-bold text-neutral-900 dark:text-neutral-100">
+                        {invoice.packageName}
+                      </p>
+                      <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                        +{invoice.creditsAmount} Kredit
+                      </p>
+                    </td>
+                    <td className="px-3 py-3.5 font-black text-neutral-900 dark:text-white">
+                      Rp{invoice.grossAmount.toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <span
+                        className={cn(
+                          'inline-flex shrink-0 whitespace-nowrap rounded-full border-2 border-black px-2.5 py-1 text-xs font-black dark:border-white',
+                          invoice.status === 'paid'
+                            ? 'bg-emerald-200 text-neutral-950 dark:bg-emerald-300'
+                            : invoice.status === 'pending'
+                              ? 'bg-amber-200 text-neutral-950 dark:bg-amber-300'
+                              : 'bg-rose-200 text-neutral-950 dark:bg-rose-300'
+                        )}
+                      >
+                        {invoice.status === 'paid'
+                          ? 'LUNAS'
+                          : invoice.status === 'pending'
+                            ? 'MENUNGGU'
+                            : invoice.status === 'failed'
+                              ? 'GAGAL'
+                              : 'KEDALUWARSA'}
+                      </span>
+                    </td>
+                    <td className="space-x-2 px-3 py-3.5 text-right">
+                      {invoice.status === 'pending' && invoice.mayarPaymentUrl && (
+                        <a
+                          href={invoice.mayarPaymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-kawaii-primary !rounded-xl !px-3 !py-1.5 !text-xs"
+                        >
+                          Bayar Sekarang <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                      {invoice.status === 'pending' && (
+                        <button
+                          type="button"
+                          disabled={checkingInvoice === invoice.invoiceNo}
+                          onClick={() => handleCheckStatus(invoice.invoiceNo)}
+                          className="btn-kawaii-secondary !rounded-xl !px-3 !py-1.5 !text-xs"
+                        >
+                          <RotateCw
+                            className={cn(
+                              'h-3 w-3',
+                              checkingInvoice === invoice.invoiceNo && 'animate-spin'
+                            )}
+                          />
+                          Cek Status
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <HistoryPagination
             meta={meta}
             pageParam="invoicePage"
@@ -299,7 +302,7 @@ function InvoiceHistory({
             }}
             itemLabel="tagihan"
           />
-        </div>
+        </>
       )}
     </section>
   )
@@ -331,40 +334,42 @@ function SubscriptionHistory({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b-2 border-neutral-200 text-xs font-black uppercase text-neutral-800 dark:border-neutral-800 dark:text-neutral-200">
-                <th className="px-3 pb-3">Paket</th>
-                <th className="px-3 pb-3">Periode</th>
-                <th className="px-3 pb-3">Siklus</th>
-                <th className="px-3 pb-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-neutral-100 dark:divide-neutral-800">
-              {subscriptions.map((subscription) => (
-                <tr
-                  key={subscription.id}
-                  className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                >
-                  <td className="px-3 py-3.5 font-bold text-neutral-900 dark:text-white">
-                    {subscription.package?.displayName ?? 'Paket tidak tersedia'}
-                  </td>
-                  <td className="px-3 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">
-                    {formatDate(subscription.startsAt)} — {formatDate(subscription.endsAt)}
-                  </td>
-                  <td className="px-3 py-3.5 font-medium capitalize text-neutral-800 dark:text-neutral-200">
-                    {subscription.billingCycle}
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <span className="badge-kawaii-emerald">
-                      {subscription.status === 'active' ? 'Aktif' : subscription.status}
-                    </span>
-                  </td>
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b-2 border-neutral-200 text-xs font-black uppercase text-neutral-800 dark:border-neutral-800 dark:text-neutral-200">
+                  <th className="px-3 pb-3">Paket</th>
+                  <th className="px-3 pb-3">Periode</th>
+                  <th className="px-3 pb-3">Siklus</th>
+                  <th className="px-3 pb-3">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y-2 divide-neutral-100 dark:divide-neutral-800">
+                {subscriptions.map((subscription) => (
+                  <tr
+                    key={subscription.id}
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  >
+                    <td className="px-3 py-3.5 font-bold text-neutral-900 dark:text-white">
+                      {subscription.package?.displayName ?? 'Paket tidak tersedia'}
+                    </td>
+                    <td className="px-3 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">
+                      {formatDate(subscription.startsAt)} — {formatDate(subscription.endsAt)}
+                    </td>
+                    <td className="px-3 py-3.5 font-medium capitalize text-neutral-800 dark:text-neutral-200">
+                      {subscription.billingCycle}
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <span className="badge-kawaii-emerald">
+                        {subscription.status === 'active' ? 'Aktif' : subscription.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <HistoryPagination
             meta={meta}
             pageParam="subscriptionPage"
@@ -375,7 +380,7 @@ function SubscriptionHistory({
             }}
             itemLabel="langganan"
           />
-        </div>
+        </>
       )}
     </section>
   )
@@ -403,8 +408,15 @@ export default function MyPackage({
     >
       <Head title="Paket Saya — SiapAjar" />
       <div className="mx-auto max-w-6xl space-y-6 pb-8">
-        <div className="flex flex-col gap-4 rounded-3xl border-2 border-black bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-5 text-white shadow-[4px_4px_0px_#000000] sm:flex-row sm:items-center sm:justify-between sm:p-7">
-          <div>
+        <div className="relative flex flex-col gap-4 overflow-hidden rounded-3xl border-2 border-black bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-5 text-white shadow-[4px_4px_0px_#000000] sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-8 -top-10 hidden rotate-12 text-white/15 sm:block"
+          >
+            <PackageOpen className="h-56 w-56" strokeWidth={1.25} />
+          </div>
+          <div className="absolute -bottom-12 -right-12 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative z-10">
             <span className="badge-kawaii-emerald !border-black !shadow-[2px_2px_0px_#000000]">
               <Coins className="h-3.5 w-3.5" /> Akun &amp; Saldo Kredit
             </span>
@@ -413,13 +425,6 @@ export default function MyPackage({
               Lihat paket aktif, masa berlaku, dan fitur yang tersedia untuk akun Anda.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent('open-topup-modal'))}
-            className="btn-kawaii-primary shrink-0"
-          >
-            <Coins className="h-4 w-4" /> Top-Up Saldo Kredit
-          </button>
         </div>
         {!packageData ? (
           <div className="rounded-3xl border-2 border-dashed border-black bg-[#ffd670]/20 p-10 text-center dark:border-white dark:bg-amber-950/30">

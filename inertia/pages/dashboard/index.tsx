@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Coins,
   Rocket,
   Zap,
   type LucideIcon,
@@ -212,6 +211,12 @@ export default function Dashboard({
       <div className="space-y-8 max-w-7xl mx-auto">
         {/* Welcome & Launchpad Hero */}
         <div className="relative overflow-hidden rounded-3xl border-2 border-black bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-6 sm:p-10 text-white shadow-[4px_4px_0px_#000000]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-8 -top-10 hidden rotate-12 text-white/15 sm:block"
+          >
+            <Rocket className="h-56 w-56" strokeWidth={1.25} />
+          </div>
           <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
@@ -225,17 +230,6 @@ export default function Dashboard({
                 Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, bank soal, atau katrol
                 nilai hanya dalam hitungan detik.
               </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-topup-modal'))}
-                className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-[2px_2px_0px_#000000] border-2 border-black transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
-              >
-                <Coins className="w-4 h-4 text-emerald-600" />
-                Top-Up Saldo Kredit
-              </button>
             </div>
           </div>
         </div>
