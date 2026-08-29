@@ -136,7 +136,7 @@ export default function TopupModal({
             const perCredit = Math.round(pkg.priceMonthly / credits)
             const approxDocs = `≈ ${Math.round(credits / 1.5)} Modul Ajar`
 
-            let badge: string | undefined = undefined
+            let badge: string | undefined
             if (pkg.isHighlighted) badge = 'Terlaris'
             else if (credits >= 100) badge = 'Paling Hemat'
 

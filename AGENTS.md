@@ -103,3 +103,34 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
         2. **Interactive Column Sorting**: Clickable table headers for primary sortable attributes (e.g. Minggu/No, Tema, Tanggal Mulai, Status) with visual sort direction indicators (`ArrowUp`, `ArrowDown`, `ArrowUpDown`).
         3. **Pagination & Row Size Controls**: Pagination bar with total item counter, page number buttons, previous/next navigation, and customizable page size options (e.g. 5, 10, 18, 25).
         4. **Empty Search State**: Dedicated empty search message when filtered results return 0 items, with a single-click "Reset Filter" action.
+
+16. **Shadow Restraint & Hierarchy Rule (No Nested Duplicate Shadows)**:
+    - Apply tactile drop shadows (`shadow-[4px_4px_0px_#000000]`) with restraint, primarily on top-level parent cards, primary buttons, or standalone floating containers.
+    - **NEVER apply heavy drop shadows on nested list items, sub-cards, or rows inside an already shadowed container card**.
+    - Inside parent cards, format inner items cleanly using subtle clean borders (`border border-neutral-200 dark:border-neutral-800`), flat surfaces (`bg-neutral-50 dark:bg-neutral-800/40`), or crisp divide lines (`divide-y`) to maintain an elegant and uncluttered visual hierarchy.
+
+17. **OAuth Button Wording Standard**:
+    - Always use concise, clean, and standard button text for third-party OAuth providers:
+      - Use **`Masuk dengan Google`** on login screens.
+      - Use **`Daftar dengan Google`** on registration / signup screens.
+    - Avoid verbose or redundant variations (e.g. avoid *"Masuk Cepat dengan Akun Google"* or *"Daftar Cepat dengan Akun Google"*).
+
+18. **Strict Adherence & Text/Feature Preservation Standard**:
+    - **STRICTLY PROHIBITED**: Jangan menghapus, merombak, atau mengganti teks/konten/fitur apapun dan dimanapun jika tidak diminta atau diinstruksikan secara eksplisit oleh User.
+    - Agen AI diperbolehkan kreatif dalam solusi teknis/desain, namun **TIDAK BOLEH melanggar aturan yang sudah ada atau bertindak kebablasan**.
+    - **Agen AI WAJIB patuh dan disiplin penuh terhadap setiap arahan/perintah User**, mempertahankan teks dan pola yang sudah ada tanpa melakukan perubahan sepihak.
+
+19. **Checkbox & Radio Alignment & Spacing Standard**:
+    - **DILARANG membuat checkbox atau radio button yang menempel/dempet dengan label teksnya**.
+    - Selalu gunakan wrapper `inline-flex items-center gap-2.5` atau `gap-3` dengan `select-none cursor-pointer`.
+    - Checkbox input harus memiliki `shrink-0` dan sejajar sempurna secara vertikal dengan teks labelnya (`leading-none` atau `items-center`).
+
+20. **Modal Sizing & Viewport Fitting Standard (No Clipped Content)**:
+    - Modal popup tidak boleh terpotong atau keluar dari batas bawah/atas layar viewport pengguna.
+    - Selalu terapkan struktur `flex flex-col max-h-[calc(100vh-2rem)]` atau `max-h-[88vh]` pada modal window:
+      - Header & Footer harus memiliki `shrink-0` agar selalu utuh terlihat.
+      - Bagian isi/konten di tengah harus fleksibel dan dapat di-scroll (`flex-1 min-h-0 overflow-y-auto`).
+    - Berikan lebar modal yang proporsional dan lega (misal `max-w-xl` atau `max-w-2xl` untuk formulir multi-pilihan/pricing) agar teks tidak patah-patah secara sempit.
+
+
+
