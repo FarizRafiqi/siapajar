@@ -653,6 +653,7 @@ export default class WeeklyLessonPlansController {
       semester,
       weekNumber,
       presetId,
+      learningModel,
       learningSequenceId,
     } = await request.validateUsing(generateWeeklyLessonPlanValidator)
 
@@ -695,6 +696,7 @@ export default class WeeklyLessonPlansController {
         dplSuggestions: (preset?.data?.dpl as string[]) || undefined,
         kbcSuggestions: (preset?.data?.kbcValues as string[]) || undefined,
         loosePartsSuggestions: (preset?.data?.loosePartsSuggestions as string[]) || undefined,
+        learningModel,
         curriculumContext: {
           objectives: curriculum.objectives,
         },
@@ -715,6 +717,7 @@ export default class WeeklyLessonPlansController {
         preset,
         curriculum,
       })
+      content.modelPembelajaran = learningModel || 'Pembelajaran Berbasis Bermain'
     } catch (error) {
       session.flash(
         'error',

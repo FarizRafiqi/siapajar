@@ -163,9 +163,8 @@ export default class TeachingModulesController {
 
   async generate({ request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const { classId, subject, topic, phase, learningSequenceId } = await request.validateUsing(
-      generateTeachingModuleValidator
-    )
+    const { classId, subject, topic, phase, learningModel, learningApproach, learningSequenceId } =
+      await request.validateUsing(generateTeachingModuleValidator)
 
     // Pastikan kelas milik user yang login
     const schoolClass = await SchoolClass.query()
@@ -181,7 +180,13 @@ export default class TeachingModulesController {
     const curriculum = await getCurriculumContext(user.id, learningSequenceId)
     let content: Record<string, any>
     try {
-      const prompt = teachingModulePrompt({ subject, topic, phase })
+      const prompt = teachingModulePrompt({
+        subject,
+        topic,
+        phase,
+        learningModel,
+        learningApproach,
+      })
       const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
         combo: 'siapajar-docgen',
         systemPrompt: prompt.system,
@@ -195,6 +200,10 @@ export default class TeachingModulesController {
         'sumberBelajar',
       ])
       content.curriculum = curriculum
+      content.modelPembelajaran = learningModel || 'Problem Based Learning (PBL)'
+      if (learningApproach) {
+        content.pendekatanPembelajaran = learningApproach
+      }
     } catch (error) {
       session.flash(
         'error',

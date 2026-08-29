@@ -50,6 +50,30 @@ interface ModulAjarProps {
   recentModules: TeachingModuleItem[]
 }
 
+const PAUD_LEARNING_MODELS = [
+  'Pembelajaran Berbasis Bermain',
+  'Eksplorasi dan Discovery',
+  'Inkuiri Sederhana',
+  'Projek Bermain Kontekstual',
+  'Bermain Kolaboratif',
+  'STEAM berbasis Loose Parts',
+]
+
+const SD_LEARNING_MODELS = [
+  'Problem Based Learning (PBL)',
+  'Project Based Learning (PjBL)',
+  'Discovery Learning',
+  'Inquiry Learning',
+  'Cooperative Learning',
+]
+
+const SD_LEARNING_APPROACHES = [
+  'Tidak ada',
+  'Teaching at the Right Level (TaRL)',
+  'Culturally Responsive Teaching (CRT)',
+  'Teaching at the Right Level (TaRL) + Culturally Responsive Teaching (CRT)',
+]
+
 export default function ModulAjarExpress({
   isTk,
   classes = [],
@@ -64,7 +88,10 @@ export default function ModulAjarExpress({
   const [topic, setTopic] = useState<string>('')
   const [phase, setPhase] = useState<string>(isTk ? 'Fondasi' : 'A')
   const [duration, setDuration] = useState<string>('2 x 35 Menit (1 Pertemuan)')
-  const [learningModel, setLearningModel] = useState<string>('Problem Based Learning (PBL)')
+  const [learningModel, setLearningModel] = useState<string>(
+    isTk ? PAUD_LEARNING_MODELS[0] : SD_LEARNING_MODELS[0]
+  )
+  const [learningApproach, setLearningApproach] = useState<string>('Tidak ada')
   const [specificObjectives, setSpecificObjectives] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -94,7 +121,9 @@ export default function ModulAjarExpress({
           classId: Number(classId),
           theme: topic,
           subtheme: '',
+          weekStartDate: new Date().toISOString().slice(0, 10),
           phase,
+          learningModel,
         },
         {
           onFinish: () => setIsGenerating(false),
@@ -108,6 +137,8 @@ export default function ModulAjarExpress({
           subject,
           topic,
           phase,
+          learningModel,
+          learningApproach: learningApproach === 'Tidak ada' ? undefined : learningApproach,
         },
         {
           onFinish: () => setIsGenerating(false),
@@ -292,30 +323,39 @@ export default function ModulAjarExpress({
 
                 <div>
                   <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
-                    Model & Metode Pembelajaran
+                    {isTk ? 'Model Pembelajaran PAUD' : 'Model Pembelajaran SD'}
                   </label>
                   <select
                     value={learningModel}
                     onChange={(e) => setLearningModel(e.target.value)}
                     className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
-                    <option value="Problem Based Learning (PBL)">
-                      Problem Based Learning (PBL)
-                    </option>
-                    <option value="Project Based Learning (PjBL)">
-                      Project Based Learning (PjBL)
-                    </option>
-                    <option value="Discovery / Inquiry Learning">
-                      Discovery / Inquiry Learning
-                    </option>
-                    <option value="Diferensiasi Konten & Proses">
-                      Diferensiasi Konten & Proses
-                    </option>
-                    <option value="Kooperatif / Diskusi Kelompok">
-                      Kooperatif / Diskusi Kelompok
-                    </option>
+                    {(isTk ? PAUD_LEARNING_MODELS : SD_LEARNING_MODELS).map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
                   </select>
                 </div>
+
+                {!isTk && (
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Pendekatan Tambahan (Opsional)
+                    </label>
+                    <select
+                      value={learningApproach}
+                      onChange={(e) => setLearningApproach(e.target.value)}
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      {SD_LEARNING_APPROACHES.map((approach) => (
+                        <option key={approach} value={approach}>
+                          {approach}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">

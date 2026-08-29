@@ -12,14 +12,20 @@ export function teachingModulePrompt(params: {
   subject: string
   topic: string
   phase: string
+  learningModel?: string
+  learningApproach?: string
 }): AiPrompt {
   return {
     system:
       'Kamu asisten guru SD Indonesia ahli Kurikulum Merdeka. Balas HANYA JSON valid tanpa teks lain, ' +
       'dengan struktur persis: {"kompetensiDasar": string[], "tujuanPembelajaran": string[], ' +
-      '"kegiatan": string[], "penilaian": string[], "sumberBelajar": string[]}. ' +
+      '"kegiatan": string[], "penilaian": string[], "sumberBelajar": string[], ' +
+      '"modelPembelajaran": string, "pendekatanPembelajaran": string}. ' +
       'Tiap array isi butir-butir singkat siap pakai guru, bahasa Indonesia.',
-    user: `Buatkan Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${params.subject}, topik "${params.topic}", Fase ${params.phase}.`,
+    user:
+      `Buatkan Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${params.subject}, topik "${params.topic}", Fase ${params.phase}. ` +
+      `Gunakan model pembelajaran ${params.learningModel || 'Problem Based Learning (PBL)'}. ` +
+      `${params.learningApproach ? `Terapkan juga pendekatan ${params.learningApproach}.` : ''}`,
   }
 }
 
@@ -145,6 +151,7 @@ export function rpmKbcRaPrompt(params: {
   dplSuggestions?: string[]
   kbcSuggestions?: string[]
   loosePartsSuggestions?: string[]
+  learningModel?: string
   curriculumContext?: {
     cps?: Array<{ code: string; title: string; element?: string }>
     objectives?: Array<{ code: string; title: string }>
@@ -184,6 +191,7 @@ export function rpmKbcRaPrompt(params: {
       '  "weekNumber": number,\n' +
       '  "groupContext": string,\n' +
       '  "allocation": string,\n' +
+      '  "modelPembelajaran": string,\n' +
       '  "identification": {\n' +
       '    "studentCharacteristics": string,\n' +
       '    "essentialMaterial": string,\n' +
@@ -278,6 +286,7 @@ export function rpmKbcRaPrompt(params: {
       `- Kelompok: ${group}\n` +
       `- Periode: ${semesterText}, ${weekText}\n` +
       `- Tema/Topik: "${params.theme}"\n` +
+      `- Model pembelajaran: ${params.learningModel || 'Pembelajaran Berbasis Bermain'}\n` +
       `${subthemeText}${cpContextStr}${tpContextStr}${studentsText}`,
   }
 }
