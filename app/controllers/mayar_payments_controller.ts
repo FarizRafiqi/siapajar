@@ -56,7 +56,7 @@ export default class MayarPaymentsController {
       }
     }
 
-    const redirectUrl = `${request.header('origin') || 'http://localhost:3333'}/billing?status=success`
+    const redirectUrl = `${request.header('origin') || 'http://localhost:3333'}/my-package?status=success`
 
     try {
       const invoice = await mayarService.createInvoice({

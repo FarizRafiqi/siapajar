@@ -25,8 +25,29 @@ export default class AccountBillingController {
       transactions: transactions.map((trx) => trx.toJSON()),
     })
   }
-  async package({ inertia, auth }: HttpContext) {
+  async package({ inertia, auth, request }: HttpContext) {
     const user = auth.user!
+    const invoicePage = Math.max(1, Number.parseInt(request.input('invoicePage', '1'), 10) || 1)
+    const invoicePerPage = [5, 10, 20, 50].includes(
+      Number.parseInt(request.input('invoicePerPage', '10'), 10)
+    )
+      ? Number.parseInt(request.input('invoicePerPage', '10'), 10)
+      : 10
+    const subscriptionPage = Math.max(
+      1,
+      Number.parseInt(request.input('subscriptionPage', '1'), 10) || 1
+    )
+    const subscriptionPerPage = [5, 10, 20, 50].includes(
+      Number.parseInt(request.input('subscriptionPerPage', '10'), 10)
+    )
+      ? Number.parseInt(request.input('subscriptionPerPage', '10'), 10)
+      : 10
+
+    const invoices = await PaymentInvoice.query()
+      .where('user_id', user.id)
+      .orderBy('created_at', 'desc')
+      .paginate(invoicePage, invoicePerPage)
+
     await user.load('package', (query) => query.preload('entitlements'))
     const activeSubscription = await PackageSubscription.query()
       .where('user_id', user.id)
@@ -35,10 +56,19 @@ export default class AccountBillingController {
       .preload('package')
       .orderBy('starts_at', 'desc')
       .first()
+    const subscriptions = await PackageSubscription.query()
+      .where('user_id', user.id)
+      .preload('package')
+      .orderBy('starts_at', 'desc')
+      .paginate(subscriptionPage, subscriptionPerPage)
 
     return inertia.render('dashboard/billing/package', {
       package: user.package?.toJSON() ?? null,
       activeSubscription: activeSubscription?.toJSON() ?? null,
+      invoices: invoices.all().map((invoice) => invoice.toJSON()),
+      invoiceMeta: invoices.getMeta(),
+      subscriptions: subscriptions.all().map((subscription) => subscription.toJSON()),
+      subscriptionMeta: subscriptions.getMeta(),
     })
   }
 

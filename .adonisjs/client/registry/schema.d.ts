@@ -375,8 +375,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['index']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
     }
   }
   'api.mayar.checkout': {

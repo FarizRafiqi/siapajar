@@ -81,7 +81,7 @@ router
     router.get('/dashboard', [controllers.Dashboard, 'index']).as('dashboard')
 
     // Billing & Top-Up Kredit (Mayar.id)
-    router.get('/billing', [controllers.AccountBilling, 'index']).as('billing.index')
+    router.get('/billing', [controllers.AccountBilling, 'package']).as('billing.index')
     router.post('/api/topup/mayar', [MayarPaymentsController, 'checkout']).as('api.mayar.checkout')
     router
       .get('/api/topup/invoices/:invoiceNo', [MayarPaymentsController, 'checkStatus'])
