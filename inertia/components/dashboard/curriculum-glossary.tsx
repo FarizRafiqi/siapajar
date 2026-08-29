@@ -130,7 +130,8 @@ export default function CurriculumGlossary() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari istilah..."
-            className="w-full rounded-2xl border-2 border-black bg-neutral-50 py-2 pl-11 pr-3 text-sm font-semibold text-neutral-900 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:border-white dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400 dark:focus:border-emerald-400"
+            style={{ paddingLeft: '2.6rem' }}
+            className="w-full rounded-2xl border-2 border-black bg-neutral-50 py-2 pr-3 text-sm font-semibold text-neutral-900 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:border-white dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400 dark:focus:border-emerald-400"
           />
         </div>
       </div>
