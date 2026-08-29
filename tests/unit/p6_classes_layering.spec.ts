@@ -38,7 +38,9 @@ test.group('P6 classes and students layering', () => {
     assert.include(source, '#repositories/class_repository')
   })
 
-  test('allows simple class and student persistence operations in the service', async ({ assert }) => {
+  test('allows simple class and student persistence operations in the service', async ({
+    assert,
+  }) => {
     const source = await readProjectFile('app/services/classes_service.ts')
 
     assert.include(source, 'SchoolClass.find')
