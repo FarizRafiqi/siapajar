@@ -1,10 +1,13 @@
 import { Head, Link } from '@inertiajs/react'
 import { Form } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
-import { LogIn, Sparkles, Zap, ShieldCheck, ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { LogIn, Sparkles, Zap, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false)
+
   return (
     <>
       <Head title="Masuk ke Akun — SiapAjar" />
@@ -144,15 +147,33 @@ export default function Login() {
                             Password
                           </label>
                         </div>
-                        <input
-                          id="password"
-                          type="password"
-                          name="password"
-                          autoComplete="current-password"
-                          placeholder="Masukkan password"
-                          data-invalid={errors.password ? 'true' : undefined}
-                          className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
-                        />
+                        <div className="relative">
+                          <input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            autoComplete="current-password"
+                            placeholder="Masukkan password"
+                            data-invalid={errors.password ? 'true' : undefined}
+                            className="w-full rounded-2xl border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-950 dark:text-white px-4 pr-12 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-neutral-900 transition-all font-bold placeholder:text-neutral-400 shadow-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword((visible) => !visible)}
+                            aria-label={
+                              showPassword ? 'Sembunyikan password' : 'Tampilkan password'
+                            }
+                            aria-pressed={showPassword}
+                            aria-controls="password"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" aria-hidden="true" />
+                            ) : (
+                              <Eye className="h-5 w-5" aria-hidden="true" />
+                            )}
+                          </button>
+                        </div>
                         {errors.password && (
                           <p className="text-rose-500 text-xs mt-1.5 font-bold">
                             {errors.password}
