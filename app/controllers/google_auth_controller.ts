@@ -1,8 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import User from '#models/user'
-import Package from '#models/package'
-import PackageSubscription from '#models/package_subscription'
-import { randomBytes } from 'node:crypto'
+import { accountService } from '#services/account_service'
 
 function isApi(ctx: HttpContext): boolean {
   return (
@@ -71,42 +68,12 @@ export default class GoogleAuthController {
       return response.redirect().toRoute('session.create')
     }
 
-    let user = await User.findBy('google_id', googleUser.id)
-
-    user ??= await User.findBy('email', googleUser.email)
-
-    if (!user) {
-      user = await User.create({
-        fullName: googleUser.name,
-        email: googleUser.email,
-        password: randomBytes(32).toString('hex'),
-        role: 'guru',
-        googleId: googleUser.id,
-        avatarUrl: googleUser.avatarUrl,
-      })
-      const freePackage = await Package.findBy('name', 'free')
-      if (freePackage) {
-        user.packageId = freePackage.id
-        await user.save()
-        await PackageSubscription.create({
-          userId: user.id,
-          packageId: freePackage.id,
-          status: 'active',
-          billingCycle: 'manual',
-          startsAt: user.createdAt,
-          endsAt: null,
-          canceledAt: null,
-          metadata: { source: 'google_signup' },
-        })
-      }
-    } else if (!user.googleId) {
-      user.googleId = googleUser.id
-      user.avatarUrl = user.avatarUrl ?? googleUser.avatarUrl
-      await user.save()
-    }
-
-    const { creditService } = await import('#services/credit_service')
-    await creditService.grantSignupBonusIfEligible(user.id)
+    const user = await accountService.signInWithGoogle({
+      id: googleUser.id,
+      email: googleUser.email,
+      name: googleUser.name,
+      avatarUrl: googleUser.avatarUrl,
+    })
 
     await auth.use('web').login(user)
 
