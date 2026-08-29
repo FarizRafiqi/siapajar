@@ -50,6 +50,16 @@
   background: #10b981;
 }
 
+/* Keep the collapsed dashboard sidebar visually clean while preserving scroll. */
+.sidebar-navigation-collapsed {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-navigation-collapsed::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Text selection ──────────────────────────────────── */
 .dark ::selection {
   background-color: rgba(16, 185, 129, 0.3);

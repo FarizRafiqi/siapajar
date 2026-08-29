@@ -25,7 +25,8 @@ import {
   PanelLeftOpen,
   ChevronRight,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '~/lib/utils'
 
 interface User {
@@ -432,6 +433,68 @@ function persistSidebarMode(mode: SidebarMode) {
   }
 }
 
+function SidebarNavigationTooltip({
+  label,
+  collapsed,
+  children,
+}: Readonly<{
+  label: string
+  collapsed: boolean
+  children: ReactElement
+}>) {
+  const triggerRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+
+  const updatePosition = useCallback(() => {
+    if (!collapsed || !triggerRef.current) return
+
+    const rect = triggerRef.current.getBoundingClientRect()
+    setPosition({ top: rect.top + rect.height / 2, left: rect.right + 10 })
+  }, [collapsed])
+
+  useEffect(() => {
+    if (!position || !collapsed) return
+
+    const reposition = () => updatePosition()
+    window.addEventListener('resize', reposition)
+    document.addEventListener('scroll', reposition, true)
+
+    return () => {
+      window.removeEventListener('resize', reposition)
+      document.removeEventListener('scroll', reposition, true)
+    }
+  }, [collapsed, position, updatePosition])
+
+  useEffect(() => {
+    if (!collapsed) setPosition(null)
+  }, [collapsed])
+
+  return (
+    <div
+      ref={triggerRef}
+      className="relative w-full"
+      onMouseEnter={updatePosition}
+      onMouseLeave={() => setPosition(null)}
+      onFocus={updatePosition}
+      onBlur={() => setPosition(null)}
+    >
+      {children}
+      {collapsed && position && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              role="tooltip"
+              className="pointer-events-none fixed z-[100] -translate-y-1/2 whitespace-nowrap rounded-lg border border-white/20 bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white shadow-[2px_2px_0px_#000000]"
+              style={{ top: position.top, left: position.left }}
+            >
+              {label}
+            </div>,
+            document.body
+          )
+        : null}
+    </div>
+  )
+}
+
 const adminNavigation: NavigationEntry[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
@@ -483,50 +546,52 @@ function renderNavigationItem(
 
   if (isBilling) {
     return (
-      <button
-        key={item.name}
-        type="button"
-        onClick={() => {
-          onMobileClose?.()
-          if (onTopupClick) {
-            onTopupClick()
-          } else {
-            window.dispatchEvent(new CustomEvent('open-topup-modal'))
-          }
-        }}
-        className={cn(
-          'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all text-left',
-          'bg-emerald-700/50 hover:bg-emerald-600/70 text-amber-300 hover:text-amber-200 border border-emerald-500/30 shadow-xs'
-        )}
-        title={collapsed ? item.name : undefined}
-      >
-        <item.icon className="h-5 w-5 flex-shrink-0 text-amber-300" />
-        <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
-      </button>
+      <SidebarNavigationTooltip key={item.name} label={item.name} collapsed={collapsed}>
+        <button
+          type="button"
+          aria-label={collapsed ? item.name : undefined}
+          onClick={() => {
+            onMobileClose?.()
+            if (onTopupClick) {
+              onTopupClick()
+            } else {
+              window.dispatchEvent(new CustomEvent('open-topup-modal'))
+            }
+          }}
+          className={cn(
+            'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-all',
+            'border border-emerald-500/30 bg-emerald-700/50 text-amber-300 shadow-xs hover:bg-emerald-600/70 hover:text-amber-200'
+          )}
+        >
+          <item.icon className="h-5 w-5 flex-shrink-0 text-amber-300" />
+          <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
+        </button>
+      </SidebarNavigationTooltip>
     )
   }
 
   return (
-    <Link
-      key={item.name}
-      href={item.href}
-      onClick={() => {
-        onModeChange?.(item.href)
-        onMobileClose?.()
-      }}
-      className={cn(
-        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
-        isActive
-          ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
-          : 'font-medium text-white hover:bg-emerald-700/60 hover:text-white'
-      )}
-      title={collapsed ? item.name : undefined}
-    >
-      <item.icon
-        className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-neutral-950' : 'text-white')}
-      />
-      <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
-    </Link>
+    <SidebarNavigationTooltip key={item.name} label={item.name} collapsed={collapsed}>
+      <Link
+        href={item.href}
+        aria-label={collapsed ? item.name : undefined}
+        onClick={() => {
+          onModeChange?.(item.href)
+          onMobileClose?.()
+        }}
+        className={cn(
+          'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
+          isActive
+            ? 'border-2 border-black bg-amber-300 font-black text-neutral-950 shadow-[2px_2px_0px_#000000]'
+            : 'font-medium text-white hover:bg-emerald-700/60 hover:text-white'
+        )}
+      >
+        <item.icon
+          className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-neutral-950' : 'text-white')}
+        />
+        <span className={cn(collapsed && 'md:hidden')}>{item.name}</span>
+      </Link>
+    </SidebarNavigationTooltip>
   )
 }
 
@@ -789,40 +854,41 @@ export default function Sidebar({
               String(event.currentTarget.scrollTop)
             )
           }}
-          className="space-y-1 overflow-y-auto px-3 py-4 custom-scrollbar"
+          className={cn(
+            'space-y-1 overflow-x-hidden overflow-y-auto px-3 py-4 custom-scrollbar',
+            collapsed && 'sidebar-navigation-collapsed'
+          )}
           style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
         >
           {!isAdmin && !isPrincipal && (
-            <Link
-              href={isStructuredMode ? '/dashboard' : '/panel/dashboard'}
-              onClick={() => {
-                changeSidebarMode(isStructuredMode ? 'express' : 'structured')
-                onMobileClose?.()
-              }}
-              className={cn(
-                'mb-3 flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-black transition-all',
-                isStructuredMode
-                  ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] hover:bg-amber-200'
-                  : 'border-emerald-300/60 bg-emerald-900/35 text-white hover:border-white hover:bg-emerald-700/70'
-              )}
-              title={
-                collapsed
-                  ? isStructuredMode
-                    ? 'Kembali ke Tool Instan'
-                    : 'Buka Panel Lengkap'
-                  : undefined
-              }
-              aria-label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+            <SidebarNavigationTooltip
+              label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+              collapsed={collapsed}
             >
-              {isStructuredMode ? (
-                <BookOpen className="h-5 w-5 flex-shrink-0 text-neutral-950" />
-              ) : (
-                <Route className="h-5 w-5 flex-shrink-0 text-amber-300" />
-              )}
-              <span className={cn(collapsed && 'md:hidden')}>
-                {isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
-              </span>
-            </Link>
+              <Link
+                href={isStructuredMode ? '/dashboard' : '/panel/dashboard'}
+                onClick={() => {
+                  changeSidebarMode(isStructuredMode ? 'express' : 'structured')
+                  onMobileClose?.()
+                }}
+                className={cn(
+                  'mb-3 flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-black transition-all',
+                  isStructuredMode
+                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] hover:bg-amber-200'
+                    : 'border-emerald-300/60 bg-emerald-900/35 text-white hover:border-white hover:bg-emerald-700/70'
+                )}
+                aria-label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+              >
+                {isStructuredMode ? (
+                  <BookOpen className="h-5 w-5 flex-shrink-0 text-neutral-950" />
+                ) : (
+                  <Route className="h-5 w-5 flex-shrink-0 text-amber-300" />
+                )}
+                <span className={cn(collapsed && 'md:hidden')}>
+                  {isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+                </span>
+              </Link>
+            </SidebarNavigationTooltip>
           )}
           {navigation.map((entry) => {
             if ('items' in entry) {
