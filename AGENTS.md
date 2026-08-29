@@ -132,5 +132,8 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
       - Bagian isi/konten di tengah harus fleksibel dan dapat di-scroll (`flex-1 min-h-0 overflow-y-auto`).
     - Berikan lebar modal yang proporsional dan lega (misal `max-w-xl` atau `max-w-2xl` untuk formulir multi-pilihan/pricing) agar teks tidak patah-patah secara sempit.
 
-
+21. **Leading Icon Input Spacing Standard**:
+    - Every search bar or input with a leading icon MUST provide enough explicit left padding so the placeholder and input value never overlap the icon. Use `style={{ paddingLeft: '2.6rem' }}` or equivalent Tailwind padding that accounts for the icon width and gap.
+    - When an input has a clear button or action on the right, provide enough right padding (for example, `pr-8`) so text never overlaps the control.
+    - Apply this consistently to table search/filter toolbars, modals, forms, and similar inputs across all pages.
 
