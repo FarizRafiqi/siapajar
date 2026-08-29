@@ -40,6 +40,7 @@ test.group('P5 curriculum layering', () => {
       'countAccessibleObjectives',
       'listBaseCps',
       'deleteUserPresetData',
+      'deleteObjectiveWithIndicators',
       'findContextSequence',
       'listContextObjectives',
     ]) {
@@ -52,6 +53,8 @@ test.group('P5 curriculum layering', () => {
 
     assert.notInclude(service, "from '@adonisjs/lucid/services/db'")
     assert.notMatch(service, /\b(?:whereIn|whereNull|preload|groupBy|forUpdate)\s*\(/)
+    assert.notInclude(service, 'IktpIndicator.query()')
+    assert.include(service, 'this.repository.deleteObjectiveWithIndicators')
     assert.include(service, '#repositories/curriculum_repository')
   })
 

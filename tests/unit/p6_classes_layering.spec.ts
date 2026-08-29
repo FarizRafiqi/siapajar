@@ -26,6 +26,7 @@ test.group('P6 classes and students layering', () => {
       'findStudentForUser',
       'findStudentDuplicate',
       'getStudentsData',
+      'importStudents',
     ]) {
       assert.match(source, new RegExp(`(?:async )?${method}\\s*\\(`))
     }
@@ -49,5 +50,14 @@ test.group('P6 classes and students layering', () => {
     assert.include(source, 'SchoolClass.create')
     assert.include(source, 'Student.create')
     assert.include(source, '.save()')
+  })
+
+  test('keeps bulk student import persistence behind the repository', async ({ assert }) => {
+    const service = await readProjectFile('app/services/classes_service.ts')
+    const repository = await readProjectFile('app/repositories/class_repository.ts')
+
+    assert.include(service, 'this.repository.importStudents')
+    assert.notInclude(service, 'const existingStudents = await Student.query()')
+    assert.include(repository, "Student.query().where('class_id', classId)")
   })
 })
