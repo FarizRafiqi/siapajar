@@ -1,13 +1,37 @@
 import User from '#models/user'
 import Package from '#models/package'
 import CreditTransaction from '#models/credit_transaction'
-import { creditRepository } from '#repositories/credit_repository'
-import type { CreditRepository } from '#repositories/credit_repository'
+import {
+  creditRepository,
+  type CreditBalanceSyncOptions,
+  type CreditBalanceSyncResult,
+  type CreditRepository,
+} from '#repositories/credit_repository'
 
 const TESTING_PACKAGE_NAME = 'internal_testing_unlimited'
 
 export class CreditService {
   constructor(private readonly repository: CreditRepository = creditRepository) {}
+
+  /**
+   * Menyamakan cache saldo user dengan transaksi kredit terbaru dalam batch kecil.
+   * Dipakai oleh maintenance job, bukan pada setiap request web.
+   */
+  async synchronizeAllUserBalances(
+    options: CreditBalanceSyncOptions = { batchSize: 250 }
+  ): Promise<CreditBalanceSyncResult> {
+    const requestedBatchSize = Number(options.batchSize)
+    const batchSize = Number.isFinite(requestedBatchSize)
+      ? Math.min(Math.max(Math.trunc(requestedBatchSize), 50), 500)
+      : 250
+
+    return this.repository.synchronizeAllUserBalances({ batchSize })
+  }
+
+  /** Sinkronisasi satu user hanya dipakai sebagai recovery saat debit gagal. */
+  async synchronizeUserBalance(userId: number): Promise<boolean> {
+    return this.repository.synchronizeUserBalance(userId)
+  }
 
   /**
    * Mengambil saldo kredit terkini milik user
@@ -68,7 +92,14 @@ export class CreditService {
       throw new Error('Jumlah kredit yang dikurangi harus lebih dari 0')
     }
 
-    const result = await this.repository.deductCredits(userId, amount, description, metadata)
+    let result = await this.repository.deductCredits(userId, amount, description, metadata)
+
+    // Saldo cache lama mungkin tertinggal dari transaksi terakhir. Recovery ini
+    // hanya berjalan setelah debit gagal, sehingga jalur sukses tetap satu transaksi.
+    if (!result.transaction && (await this.synchronizeUserBalance(userId))) {
+      result = await this.repository.deductCredits(userId, amount, description, metadata)
+    }
+
     if (!result.transaction) {
       throw new Error(
         `Saldo kredit tidak mencukupi. Anda memiliki ${result.currentBalance} kredit, dibutuhkan ${amount} kredit.`
