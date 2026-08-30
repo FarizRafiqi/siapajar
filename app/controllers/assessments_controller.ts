@@ -1,10 +1,4 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Assessment from '#models/assessment'
-import Score from '#models/score'
-import SchoolClass from '#models/school_class'
-import Student from '#models/student'
-import Subject from '#models/subject'
-import Semester from '#models/semester'
 import { createAssessmentValidator, updateScoresValidator } from '#validators/assessment'
 import { exportAssessmentScores } from '#services/xlsx_export_service'
 import { exportAssessment as exportAssessmentDocx } from '#services/export_service'
@@ -16,22 +10,15 @@ import {
   sendExport,
   wantsInlinePreview,
 } from '#services/export_file_service'
+import { assessmentService } from '#services/assessment_service'
 
 export default class AssessmentsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
-    const assessments = await Assessment.query()
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .orderBy('date', 'desc')
-
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('education_level', user.educationLevel || 'sd')
-      .where('is_active', true)
-      .orderBy('name')
+    const { assessments, classes, subjects } = await assessmentService.getIndexData(
+      user.id,
+      user.educationLevel || 'sd'
+    )
 
     return inertia.render('dashboard/assessments/index', {
       assessments: assessments.map((a) => a.toJSON()),
@@ -44,58 +31,20 @@ export default class AssessmentsController {
     const user = auth.user!
     const data = await request.validateUsing(createAssessmentValidator)
 
-    const schoolClass = await SchoolClass.query()
-      .where('id', data.classId)
-      .where('user_id', user.id)
-      .first()
+    const result = await assessmentService.createAssessment(user.id, data)
 
-    if (!schoolClass) {
+    if (result.status === 'class_not_found') {
       session.flash('error', 'Kelas tidak ditemukan')
       return response.redirect().back()
     }
 
-    let semesterId = data.semesterId ?? null
-    if (!semesterId) {
-      const activeSemester = await Semester.query()
-        .where('academic_year_id', schoolClass.academicYearId)
-        .where('is_active', true)
-        .first()
-      semesterId = activeSemester?.id ?? null
-    }
-
-    const assessment = await Assessment.create({
-      userId: user.id,
-      classId: data.classId,
-      semesterId,
-      subject: data.subject,
-      type: data.type,
-      title: data.title,
-      learningObjective: data.learningObjective ?? null,
-      date: data.date,
-    })
-
-    const students = await Student.query().where('class_id', data.classId)
-    for (const student of students) {
-      await Score.create({
-        assessmentId: assessment.id,
-        studentId: student.id,
-        value: null,
-        note: null,
-      })
-    }
-
     session.flash('success', 'Penilaian berhasil dibuat')
-    return response.redirect().toRoute('assessments.show', { id: assessment.id })
+    return response.redirect().toRoute('assessments.show', { id: result.assessment.id })
   }
 
   async show({ params, inertia, auth, response }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const assessment = await assessmentService.findForUser(params.id, user.id, true)
 
     if (!assessment) {
       return response.redirect('/assessments')
@@ -108,12 +57,7 @@ export default class AssessmentsController {
 
   async export({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const assessment = await assessmentService.findForUser(params.id, user.id, true)
 
     if (!assessment) {
       return response.redirect('/assessments')
@@ -132,12 +76,8 @@ export default class AssessmentsController {
 
   async exportDocx({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const assessment = await assessmentService.findForUser(params.id, user.id, true)
+
     if (!assessment) return response.redirect('/assessments')
     const buffer = await exportAssessmentDocx(assessment, user)
     return sendExport(
@@ -150,12 +90,8 @@ export default class AssessmentsController {
 
   async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const assessment = await assessmentService.findForUser(params.id, user.id, true)
+
     if (!assessment) return response.redirect('/assessments')
     const buffer = await exportAssessmentPdf(assessment, user, !wantsInlinePreview(request))
     return sendExport(
@@ -169,22 +105,11 @@ export default class AssessmentsController {
 
   async updateScores({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
-
-    if (!assessment) {
-      return response.redirect('/assessments')
-    }
-
     const { scores } = await request.validateUsing(updateScoresValidator)
 
-    for (const s of scores) {
-      await Score.query()
-        .where('assessment_id', assessment.id)
-        .where('student_id', s.studentId)
-        .update({ value: s.value, note: s.note ?? null })
+    const updated = await assessmentService.updateScores(params.id, user.id, scores)
+    if (!updated) {
+      return response.redirect('/assessments')
     }
 
     session.flash('success', 'Nilai berhasil disimpan')
@@ -193,16 +118,11 @@ export default class AssessmentsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const deleted = await assessmentService.deleteAssessment(params.id, user.id)
 
-    if (!assessment) {
+    if (!deleted) {
       return response.redirect('/assessments')
     }
-
-    await assessment.delete()
 
     session.flash('success', 'Penilaian berhasil dihapus')
     return response.redirect().toRoute('assessments.index')
