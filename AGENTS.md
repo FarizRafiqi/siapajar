@@ -151,3 +151,7 @@ Controller → Service → Repository → Model/Database
     - Every search bar or input with a leading icon MUST provide enough explicit left padding so the placeholder and input value never overlap the icon. Use `style={{ paddingLeft: '2.6rem' }}` or equivalent Tailwind padding that accounts for the icon width and gap.
     - When an input has a clear button or action on the right, provide enough right padding (for example, `pr-8`) so text never overlaps the control.
     - Apply this consistently to table search/filter toolbars, modals, forms, and similar inputs across all pages.
+
+22. **Decorative Ghost Icon Spacing Standard**:
+    - Do not render a low-opacity decorative or "ghost" icon behind, on top of, or too close to meaningful content such as buttons, controls, badges, or text.
+    - Reserve clear space for decorative artwork, reposition it into an intentionally empty area, or hide it at the relevant breakpoint when content would overlap. Decorative icons must never compete with or obscure interactive UI.
