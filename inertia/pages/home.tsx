@@ -361,7 +361,7 @@ function TypewriterHeading({ text, onComplete }: TypewriterHeadingProps) {
     <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white min-h-[1.75rem] flex items-center flex-wrap">
       <span>{displayText}</span>
       {isTyping && (
-        <span className="inline-block w-2 h-4 sm:h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse rounded-xs" />
+        <span className="inline-block w-1 h-4 sm:h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse rounded-xs" />
       )}
     </h4>
   )
@@ -369,13 +369,16 @@ function TypewriterHeading({ text, onComplete }: TypewriterHeadingProps) {
 
 type PreviewPhase = 'typing' | 'loading' | 'ready'
 
+const AI_LOADING_DURATION_MS = 1800
+const AI_LOADING_DURATION_S = 1.7
+
 const previewRevealVariants = {
   hidden: {
     opacity: 0,
-    y: 12,
-    scale: 0.995,
+    y: 10,
+    scale: 0.998,
     clipPath: 'inset(0 0 100% 0 round 1rem)',
-    filter: 'blur(2px)',
+    filter: 'blur(1.5px)',
   },
   visible: {
     opacity: 1,
@@ -421,7 +424,11 @@ function AiLoadingState() {
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={reduceMotion ? { duration: 0 } : { duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : { duration: AI_LOADING_DURATION_S, ease: [0.22, 1, 0.36, 1] }
+          }
           style={{ originX: 0 }}
           className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
         />
@@ -477,7 +484,7 @@ function InteractiveWindowMockup() {
   useEffect(() => {
     if (previewPhase !== 'loading') return
 
-    const timer = window.setTimeout(() => setPreviewPhase('ready'), 1300)
+    const timer = window.setTimeout(() => setPreviewPhase('ready'), AI_LOADING_DURATION_MS)
     return () => window.clearTimeout(timer)
   }, [previewPhase])
 
@@ -623,32 +630,34 @@ function InteractiveWindowMockup() {
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
                     aria-hidden={!isPreviewReady}
-                    className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]"
+                    className="relative"
                   >
-                    <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
-                      <span>
-                        <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
-                        sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu berkreasi
-                        cap sayur.
-                      </span>
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                      <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
-                        <span className="font-black text-[10px] text-emerald-800 dark:text-emerald-300 block uppercase">
-                          Kegiatan Inti
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                        <span>
+                          <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
+                          sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu berkreasi
+                          cap sayur.
                         </span>
-                        <span className="text-[11px] font-medium">
-                          Eksplorasi Mencuci & Mengupas Wortel
-                        </span>
-                      </div>
-                      <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
-                        <span className="font-black text-[10px] text-amber-800 dark:text-amber-300 block uppercase">
-                          Asesmen Formatif
-                        </span>
-                        <span className="text-[11px] font-medium">
-                          Catatan Anekdot & Rubrik Ceklis
-                        </span>
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
+                          <span className="font-black text-[10px] text-emerald-800 dark:text-emerald-300 block uppercase">
+                            Kegiatan Inti
+                          </span>
+                          <span className="text-[11px] font-medium">
+                            Eksplorasi Mencuci & Mengupas Wortel
+                          </span>
+                        </div>
+                        <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
+                          <span className="font-black text-[10px] text-amber-800 dark:text-amber-300 block uppercase">
+                            Asesmen Formatif
+                          </span>
+                          <span className="text-[11px] font-medium">
+                            Catatan Anekdot & Rubrik Ceklis
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -689,17 +698,19 @@ function InteractiveWindowMockup() {
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
                     aria-hidden={!isPreviewReady}
-                    className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]"
+                    className="relative"
                   >
-                    <p className="font-bold text-neutral-900 dark:text-white">
-                      Instruksi Mandiri Siswa:
-                    </p>
-                    <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
-                      1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
-                    </p>
-                    <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
-                      2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
-                    </p>
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        Instruksi Mandiri Siswa:
+                      </p>
+                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                        1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
+                      </p>
+                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                        2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
+                      </p>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
@@ -738,19 +749,21 @@ function InteractiveWindowMockup() {
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
                     aria-hidden={!isPreviewReady}
-                    className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]"
+                    className="relative"
                   >
-                    <p className="font-bold text-neutral-900 dark:text-white">
-                      1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
-                      pita adalah...
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
-                        A. 325 cm
-                      </span>
-                      <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
-                        B. 425 cm (Kunci: B)
-                      </span>
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
+                        pita adalah...
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
+                          A. 325 cm
+                        </span>
+                        <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
+                          B. 425 cm (Kunci: B)
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 </motion.div>
@@ -790,11 +803,13 @@ function InteractiveWindowMockup() {
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
                     aria-hidden={!isPreviewReady}
-                    className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]"
+                    className="relative"
                   >
-                    &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
-                    sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
-                    pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                      &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
+                      sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
+                      pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
