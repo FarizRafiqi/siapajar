@@ -372,45 +372,56 @@ type PreviewPhase = 'typing' | 'loading' | 'ready'
 const previewRevealVariants = {
   hidden: {
     opacity: 0,
-    y: 18,
-    scale: 0.98,
-    clipPath: 'inset(0 0 100% 0)',
-    filter: 'blur(4px)',
+    y: 12,
+    scale: 0.995,
+    clipPath: 'inset(0 0 100% 0 round 1rem)',
+    filter: 'blur(2px)',
   },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    clipPath: 'inset(0 0 0% 0)',
+    clipPath: 'inset(0 0 0% 0 round 1rem)',
     filter: 'blur(0px)',
   },
 }
 
 function AiLoadingState() {
+  const reduceMotion = useReducedMotion()
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.2 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       className="rounded-2xl border-2 border-emerald-700/40 bg-emerald-50 p-3 dark:border-emerald-400/30 dark:bg-emerald-950/40"
       role="status"
       aria-live="polite"
     >
       <div className="flex items-center gap-2 text-xs font-black text-emerald-800 dark:text-emerald-200">
-        <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+        <LoaderCircle
+          className={`h-4 w-4 shrink-0 ${reduceMotion ? '' : 'animate-spin'}`}
+          aria-hidden="true"
+        />
         <span>AI sedang menyusun</span>
         <span className="ml-auto flex gap-0.5" aria-hidden="true">
-          <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-600 [animation-delay:0ms]" />
-          <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-600 [animation-delay:150ms]" />
-          <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-600 [animation-delay:300ms]" />
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:0ms]'}`}
+          />
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:150ms]'}`}
+          />
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:300ms]'}`}
+          />
         </span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full border border-emerald-700/30 bg-white/80 dark:border-emerald-300/30 dark:bg-emerald-950/70">
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 1.25, ease: 'easeInOut' }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
           style={{ originX: 0 }}
           className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
         />
@@ -603,9 +614,14 @@ function InteractiveWindowMockup() {
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-modul" />}
                   </AnimatePresence>
                   <motion.div
-                    initial="hidden"
+                    initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
                     aria-hidden={!isPreviewReady}
                     className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]"
                   >
@@ -664,9 +680,14 @@ function InteractiveWindowMockup() {
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-lkpd" />}
                   </AnimatePresence>
                   <motion.div
-                    initial="hidden"
+                    initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
                     aria-hidden={!isPreviewReady}
                     className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]"
                   >
@@ -708,9 +729,14 @@ function InteractiveWindowMockup() {
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-soal" />}
                   </AnimatePresence>
                   <motion.div
-                    initial="hidden"
+                    initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
                     aria-hidden={!isPreviewReady}
                     className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]"
                   >
@@ -755,9 +781,14 @@ function InteractiveWindowMockup() {
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-rapor" />}
                   </AnimatePresence>
                   <motion.div
-                    initial="hidden"
+                    initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
                     aria-hidden={!isPreviewReady}
                     className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]"
                   >
