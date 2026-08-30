@@ -1,19 +1,19 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { readFile, stat } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
-import AssessmentAttachment from '#models/assessment_attachment'
 import { exportFilename, sendExport } from '#services/export_file_service'
+import { assessmentAttachmentService } from '#services/assessment_attachment_service'
 
 const PREVIEWABLE_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
 const SAFE_MIME_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
 
 export default class AssessmentAttachmentsController {
   async show({ params, response, auth, request }: HttpContext) {
-    const attachment = await AssessmentAttachment.query()
-      .where('id', params.attachmentId)
-      .where('user_id', auth.user!.id)
-      .where('assessment_id', params.id)
-      .first()
+    const attachment = await assessmentAttachmentService.findForUser(
+      params.attachmentId,
+      auth.user!.id,
+      params.id
+    )
 
     if (!attachment) return response.notFound({ message: 'Lampiran tidak ditemukan' })
 
