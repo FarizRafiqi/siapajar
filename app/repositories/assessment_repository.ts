@@ -1,40 +1,54 @@
+import type { DateTime } from 'luxon'
 import Assessment from '#models/assessment'
+import Score from '#models/score'
 import SchoolClass from '#models/school_class'
 import Semester from '#models/semester'
 import Student from '#models/student'
-import Score from '#models/score'
 import Subject from '#models/subject'
 
+export type CreateAssessmentRepositoryData = {
+  userId: number
+  classId: number
+  semesterId: number | null
+  subject: string
+  type: 'formative' | 'summative'
+  title: string
+  learningObjective: string | null
+  date: DateTime
+}
+
+export type AssessmentScoreUpdate = {
+  studentId: number
+  value: number | null
+  note?: string | null
+}
+
 export class AssessmentRepository {
-  async getIndexData(userId: number, educationLevel: string = 'sd') {
-    const assessments = await Assessment.query()
-      .where('user_id', userId)
-      .preload('schoolClass')
-      .orderBy('date', 'desc')
-
-    const classes = await SchoolClass.query().where('user_id', userId).orderBy('name')
-
-    const subjects = await Subject.query()
-      .where('user_id', userId)
-      .where('education_level', educationLevel)
-      .where('is_active', true)
-      .orderBy('name')
+  async getIndexData(userId: number, educationLevel: string | null) {
+    const [assessments, classes, subjects] = await Promise.all([
+      Assessment.query().where('user_id', userId).preload('schoolClass').orderBy('date', 'desc'),
+      SchoolClass.query().where('user_id', userId).orderBy('name'),
+      Subject.query()
+        .where('user_id', userId)
+        .where('education_level', educationLevel || 'sd')
+        .where('is_active', true)
+        .orderBy('name'),
+    ])
 
     return { assessments, classes, subjects }
   }
 
-  async findForUser(id: string | number, userId: number, withRelations = false) {
-    const query = Assessment.query().where('id', id).where('user_id', userId)
-
-    if (withRelations) {
-      query.preload('schoolClass').preload('scores', (q) => q.preload('student'))
+  async findForUser(assessmentId: string | number, userId: number, withScores = false) {
+    const query = Assessment.query().where('id', assessmentId).where('user_id', userId)
+    if (withScores) {
+      query.preload('schoolClass').preload('scores', (scoreQuery) => scoreQuery.preload('student'))
     }
 
     return query.first()
   }
 
-  async findOwnedClass(id: string | number, userId: number) {
-    return SchoolClass.query().where('id', id).where('user_id', userId).first()
+  async findOwnedClass(classId: string | number, userId: number) {
+    return SchoolClass.query().where('id', classId).where('user_id', userId).first()
   }
 
   async findActiveSemester(academicYearId: number) {
@@ -44,28 +58,10 @@ export class AssessmentRepository {
       .first()
   }
 
-  async createWithInitialScores(payload: {
-    userId: number
-    classId: number
-    semesterId: number | null
-    subject: string
-    type: 'formative' | 'summative'
-    title: string
-    learningObjective?: string | null
-    date: any
-  }) {
-    const assessment = await Assessment.create({
-      userId: payload.userId,
-      classId: payload.classId,
-      semesterId: payload.semesterId,
-      subject: payload.subject,
-      type: payload.type,
-      title: payload.title,
-      learningObjective: payload.learningObjective ?? null,
-      date: payload.date,
-    })
+  async createWithInitialScores(data: CreateAssessmentRepositoryData, studentClassId: number) {
+    const assessment = await Assessment.create(data)
+    const students = await Student.query().where('class_id', studentClassId)
 
-    const students = await Student.query().where('class_id', payload.classId)
     for (const student of students) {
       await Score.create({
         assessmentId: assessment.id,
@@ -78,15 +74,12 @@ export class AssessmentRepository {
     return assessment
   }
 
-  async updateScores(
-    id: string | number,
-    scores: Array<{ studentId: number; value: number | null; note?: string | null }>
-  ) {
-    for (const s of scores) {
+  async updateScores(assessmentId: number, scores: AssessmentScoreUpdate[]) {
+    for (const score of scores) {
       await Score.query()
-        .where('assessment_id', id)
-        .where('student_id', s.studentId)
-        .update({ value: s.value, note: s.note ?? null })
+        .where('assessment_id', assessmentId)
+        .where('student_id', score.studentId)
+        .update({ value: score.value, note: score.note ?? null })
     }
   }
 }
