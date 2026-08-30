@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
+import { emitCreditsUpdated } from '~/lib/credits'
 import {
   TrendingUp,
   RotateCw,
@@ -83,6 +85,7 @@ export default function KatrolExpress() {
       }
 
       setResult(data)
+      emitCreditsUpdated(data.remainingCredits)
       toast.success('Nilai berhasil dikatrol secara adil!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem'
@@ -110,6 +113,17 @@ export default function KatrolExpress() {
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Katrol Nilai' }]}
     >
       <Head title="Kalkulator Katrol Nilai Siswa Adil - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isLoading}
+        title="Menganalisis Nilai Siswa"
+        steps={[
+          'Membaca dan memvalidasi data nilai siswa',
+          'Menghitung normalisasi sesuai metode yang dipilih',
+          'Menyusun status kelulusan dan rekomendasi remedial',
+          'Merapikan analisis untuk kebutuhan supervisi',
+        ]}
+      />
 
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}

@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 import {
   FileText,
   Coins,
@@ -55,6 +56,17 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Rapor Siswa' }]}
     >
       <Head title="Generator Narasi Rapor - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isGenerating}
+        title="Menyusun Narasi Rapor"
+        steps={[
+          'Memvalidasi kelas dan semester rapor',
+          'Membaca catatan perkembangan setiap siswa',
+          'Menyusun narasi capaian dan tindak lanjut',
+          'Menyiapkan draft rapor untuk ditinjau',
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}

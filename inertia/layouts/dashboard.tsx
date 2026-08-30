@@ -7,6 +7,7 @@ import Header from '~/components/dashboard/header'
 import DashboardTour, { type DashboardTourName } from '~/components/dashboard/dashboard-tour'
 import TopupModal from '~/components/dashboard/topup-modal'
 import { cn } from '~/lib/utils'
+import { CREDITS_UPDATED_EVENT } from '~/lib/credits'
 
 interface User {
   id: number
@@ -36,6 +37,7 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
   const [topupOpen, setTopupOpen] = useState(false)
+  const [displayCredits, setDisplayCredits] = useState(user.creditsBalance)
 
   const openTopup = useCallback(() => setTopupOpen(true), [])
   const closeTopup = useCallback(() => setTopupOpen(false), [])
@@ -44,6 +46,22 @@ export default function DashboardLayout({
     const handleOpenTopup = () => setTopupOpen(true)
     window.addEventListener('open-topup-modal', handleOpenTopup)
     return () => window.removeEventListener('open-topup-modal', handleOpenTopup)
+  }, [])
+
+  useEffect(() => {
+    setDisplayCredits(user.creditsBalance)
+  }, [user.creditsBalance])
+
+  useEffect(() => {
+    const handleCreditsUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ creditsBalance?: unknown }>).detail
+      if (typeof detail?.creditsBalance === 'number') {
+        setDisplayCredits(detail.creditsBalance)
+      }
+    }
+
+    window.addEventListener(CREDITS_UPDATED_EVENT, handleCreditsUpdated)
+    return () => window.removeEventListener(CREDITS_UPDATED_EVENT, handleCreditsUpdated)
   }, [])
 
   const { flash } = usePage().props as {
@@ -96,7 +114,7 @@ export default function DashboardLayout({
             onMenuClick={() => setMobileMenuOpen(true)}
             showTour={isTourAvailable}
             onTourClick={startTour}
-            creditsBalance={user.creditsBalance}
+            creditsBalance={displayCredits}
             onTopupClick={openTopup}
           />
         </div>
@@ -104,7 +122,7 @@ export default function DashboardLayout({
       </div>
 
       <Toaster position="top-right" closeButton />
-      <TopupModal isOpen={topupOpen} onClose={closeTopup} currentCredits={user.creditsBalance} />
+      <TopupModal isOpen={topupOpen} onClose={closeTopup} currentCredits={displayCredits} />
       {tourName && (
         <DashboardTour
           active={tourOpen}

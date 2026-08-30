@@ -12,11 +12,6 @@ export type ExpressGenerationResult<T> =
   | { status: 'error'; message: string }
   | { status: 'success'; data: T }
 
-type FreeExpressGenerationResult<T> = Exclude<
-  ExpressGenerationResult<T>,
-  { status: 'insufficient_credits' }
->
-
 export class ExpressToolsService {
   constructor(private readonly repository: ExpressToolsRepository = expressToolsRepository) {}
 
@@ -98,10 +93,47 @@ export class ExpressToolsService {
   async generateKatrol(
     user: User,
     input: Record<string, any>
-  ): Promise<FreeExpressGenerationResult<Record<string, any>>> {
-    const { subject, topic, kktp, scores, method } = input
-    if (!subject || !scores || !Array.isArray(scores) || scores.length === 0) {
+  ): Promise<ExpressGenerationResult<Record<string, any>>> {
+    const subject =
+      typeof input.subject === 'string' && input.subject.trim()
+        ? input.subject.trim()
+        : 'Penilaian Siswa'
+    const topic =
+      typeof input.topic === 'string' && input.topic.trim() ? input.topic.trim() : 'Ulangan Harian'
+    const kktp = input.kktp
+    const method = input.method
+    const scores = Array.isArray(input.scores)
+      ? input.scores
+      : typeof input.rawInput === 'string'
+        ? input.rawInput
+            .split(/\r?\n/)
+            .map((line: string, index: number) => {
+              const value = line.trim()
+              const match = value.match(/^(.+?)(?:\s*:\s*|\s*,\s*)(\d+(?:[.,]\d+)?)$/)
+              if (match) {
+                return {
+                  name: match[1].trim(),
+                  originalScore: Number(match[2].replace(',', '.')),
+                }
+              }
+
+              const score = Number(value.replace(',', '.'))
+              return Number.isFinite(score)
+                ? { name: `Baris ${index + 1}`, originalScore: score }
+                : null
+            })
+            .filter((score): score is { name: string; originalScore: number } => score !== null)
+        : []
+
+    if (scores.length === 0) {
       return { status: 'invalid_input', message: 'Data nilai dan mata pelajaran wajib diisi' }
+    }
+
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return {
+        status: 'insufficient_credits',
+        message: 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.',
+      }
     }
 
     try {
@@ -117,6 +149,7 @@ export class ExpressToolsService {
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
+      await creditService.chargeGeneration(user, 1, `Analisis Katrol Nilai: ${subject} - ${topic}`)
       return { status: 'success', data }
     } catch (error) {
       return {
@@ -136,7 +169,7 @@ export class ExpressToolsService {
       return { status: 'invalid_input', message: 'Mata pelajaran dan topik wajib diisi' }
     }
 
-    if (!(await creditService.hasEnoughCredits(user.id, 1))) {
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
       return {
         status: 'insufficient_credits',
         message: 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.',
@@ -156,8 +189,8 @@ export class ExpressToolsService {
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
-      await creditService.deductCredits(
-        user.id,
+      await creditService.chargeGeneration(
+        user,
         1,
         `Jurnal Mengajar & Refleksi: ${subject} - ${topic}`
       )
@@ -175,12 +208,18 @@ export class ExpressToolsService {
     user: User,
     input: Record<string, any>
   ): Promise<ExpressGenerationResult<Record<string, any>>> {
-    const { theme, topic, phase, targetLevel, dimensions } = input
+    const { theme, phase, targetLevel, dimensions } = input
+    const topic =
+      typeof input.topic === 'string' && input.topic.trim()
+        ? input.topic.trim()
+        : typeof input.projectTitle === 'string'
+          ? input.projectTitle.trim()
+          : ''
     if (!theme || !topic) {
       return { status: 'invalid_input', message: 'Tema dan topik proyek wajib diisi' }
     }
 
-    if (!(await creditService.hasEnoughCredits(user.id, 2))) {
+    if (!(await creditService.hasEnoughGenerationCredits(user, 2))) {
       return {
         status: 'insufficient_credits',
         message: 'Saldo kredit Anda tidak mencukupi (butuh 2 kredit). Silakan top-up kredit.',
@@ -201,8 +240,8 @@ export class ExpressToolsService {
         systemPrompt: prompt.system,
         userPrompt: prompt.user,
       })
-      await creditService.deductCredits(
-        user.id,
+      await creditService.chargeGeneration(
+        user,
         2,
         `Modul Projek P5 / Kokurikuler: ${theme} - ${topic}`
       )

@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { expressToolsService } from '#services/express_tools_service'
+import { creditService } from '#services/credit_service'
 
 export default class ExpressToolsController {
   /**
@@ -62,7 +63,7 @@ export default class ExpressToolsController {
   async generateKatrol({ request, response, auth }: HttpContext) {
     const result = await expressToolsService.generateKatrol(
       auth.user!,
-      request.only(['subject', 'topic', 'kktp', 'scores', 'method'])
+      request.only(['subject', 'topic', 'kktp', 'scores', 'method', 'rawInput'])
     )
 
     if (result.status === 'invalid_input') {
@@ -73,7 +74,17 @@ export default class ExpressToolsController {
       return response.badRequest({ success: false, message: result.message })
     }
 
-    return response.ok({ success: true, data: result.data })
+    if (result.status === 'insufficient_credits') {
+      return response.paymentRequired({ message: result.message })
+    }
+
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      success: true,
+      ...result.data,
+      data: result.data,
+      remainingCredits,
+    })
   }
 
   /**
@@ -105,7 +116,13 @@ export default class ExpressToolsController {
       return response.paymentRequired({ message: result.message })
     }
 
-    return response.ok({ success: true, data: result.data })
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      ...result.data,
+      success: true,
+      data: result.data,
+      remainingCredits,
+    })
   }
 
   /**
@@ -126,7 +143,15 @@ export default class ExpressToolsController {
   async generateKokurikuler({ request, response, auth }: HttpContext) {
     const result = await expressToolsService.generateKokurikuler(
       auth.user!,
-      request.only(['theme', 'topic', 'phase', 'targetLevel', 'dimensions'])
+      request.only([
+        'theme',
+        'topic',
+        'projectTitle',
+        'phase',
+        'targetLevel',
+        'targetDuration',
+        'dimensions',
+      ])
     )
 
     if (result.status === 'invalid_input' || result.status === 'error') {
@@ -140,6 +165,12 @@ export default class ExpressToolsController {
       return response.paymentRequired({ message: result.message })
     }
 
-    return response.ok({ success: true, data: result.data })
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      success: true,
+      ...result.data,
+      data: result.data,
+      remainingCredits,
+    })
   }
 }

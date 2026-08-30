@@ -1,7 +1,10 @@
 import User from '#models/user'
+import Package from '#models/package'
 import CreditTransaction from '#models/credit_transaction'
 import { creditRepository } from '#repositories/credit_repository'
 import type { CreditRepository } from '#repositories/credit_repository'
+
+const TESTING_PACKAGE_NAME = 'internal_testing_unlimited'
 
 export class CreditService {
   constructor(private readonly repository: CreditRepository = creditRepository) {}
@@ -20,6 +23,36 @@ export class CreditService {
   async hasEnoughCredits(userId: number, requiredCredits: number = 1): Promise<boolean> {
     const balance = await this.getBalance(userId)
     return balance >= requiredCredits
+  }
+
+  /**
+   * Akun admin dan paket internal testing tidak menghabiskan saldo kredit.
+   * User biasa tetap menggunakan saldo kredit yang tercatat di database.
+   */
+  async isUnlimitedUser(user: User): Promise<boolean> {
+    if (user.role === 'admin') return true
+    if (!user.packageId) return false
+
+    const packageRecord = await Package.find(user.packageId)
+    return packageRecord?.name === TESTING_PACKAGE_NAME
+  }
+
+  async hasEnoughGenerationCredits(user: User, requiredCredits: number = 1): Promise<boolean> {
+    if (await this.isUnlimitedUser(user)) return true
+    return this.hasEnoughCredits(user.id, requiredCredits)
+  }
+
+  /** Mengurangi biaya generator dan mengembalikan saldo terbaru untuk UI navbar. */
+  async chargeGeneration(
+    user: User,
+    amount: number,
+    description: string,
+    metadata?: Record<string, any>
+  ): Promise<number | null> {
+    if (await this.isUnlimitedUser(user)) return null
+
+    const transaction = await this.deductCredits(user.id, amount, description, metadata)
+    return transaction.balanceAfter
   }
 
   /**

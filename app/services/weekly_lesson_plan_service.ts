@@ -13,6 +13,7 @@ import { rpmKbcRaPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import { loadWeeklyPlanAssessments } from '#services/weekly_assessment_loader'
+import { creditService } from '#services/credit_service'
 
 export type GenerateWeeklyLessonPlanData = {
   classId: number
@@ -28,6 +29,7 @@ export type GenerateWeeklyLessonPlanData = {
 
 export type GenerateWeeklyLessonPlanResult =
   | { status: 'missing_class' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; weeklyLessonPlan: WeeklyLessonPlan }
 
@@ -118,6 +120,10 @@ export class WeeklyLessonPlanService {
     const schoolClass = await this.repository.findOwnedClassWithStudents(data.classId, user.id)
     if (!schoolClass) return { status: 'missing_class' }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
+
     let preset: CurriculumPreset | null = null
     if (data.presetId) {
       // A single-record lookup is intentionally kept in the service.
@@ -190,6 +196,7 @@ export class WeeklyLessonPlanService {
       status: 'draft',
     })
     await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: 'draft' })
+    await creditService.chargeGeneration(user, 1, `Modul Ajar RPPM: ${finalTheme}`)
 
     return { status: 'created' as const, weeklyLessonPlan }
   }

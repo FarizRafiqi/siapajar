@@ -9,6 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { semesterPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
+import { creditService } from '#services/credit_service'
 
 export type GenerateSemesterPlanData = {
   classId: number
@@ -20,6 +21,7 @@ export type GenerateSemesterPlanData = {
 export type GenerateSemesterPlanResult =
   | { status: 'missing_class' }
   | { status: 'missing_semester' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; semesterPlan: SemesterPlan }
 
@@ -86,6 +88,10 @@ export class SemesterPlanService {
     const semester = await Semester.find(data.semesterId)
     if (!semester) return { status: 'missing_semester' as const }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' as const }
+    }
+
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
     const prompt = semesterPlanPrompt({ subject: data.subject })
     let content: Record<string, any>
@@ -112,6 +118,7 @@ export class SemesterPlanService {
       subject: data.subject,
       content,
     })
+    await creditService.chargeGeneration(user, 1, `Program Semester: ${data.subject}`)
 
     return { status: 'created' as const, semesterPlan }
   }

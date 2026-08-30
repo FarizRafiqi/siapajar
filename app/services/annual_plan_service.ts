@@ -9,6 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { annualPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
+import { creditService } from '#services/credit_service'
 
 export type GenerateAnnualPlanData = {
   academicYearId: number
@@ -18,6 +19,7 @@ export type GenerateAnnualPlanData = {
 
 export type GenerateAnnualPlanResult =
   | { status: 'missing_academic_year' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; annualPlan: AnnualPlan }
 
@@ -82,6 +84,10 @@ export class AnnualPlanService {
     const academicYear = await AcademicYear.find(data.academicYearId)
     if (!academicYear) return { status: 'missing_academic_year' }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
+
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
     let content: Record<string, any>
     try {
@@ -112,6 +118,7 @@ export class AnnualPlanService {
       subject: data.subject,
       content,
     })
+    await creditService.chargeGeneration(user, 1, `Program Tahunan: ${data.subject}`)
 
     return { status: 'created', annualPlan }
   }

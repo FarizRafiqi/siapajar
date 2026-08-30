@@ -9,6 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { teachingModulePrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
+import { creditService } from '#services/credit_service'
 
 export type GenerateTeachingModuleData = {
   classId: number
@@ -22,6 +23,7 @@ export type GenerateTeachingModuleData = {
 
 export type GenerateTeachingModuleResult =
   | { status: 'missing_class' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; teachingModule: TeachingModule }
 
@@ -104,6 +106,10 @@ export class TeachingModuleService {
     const schoolClass = await this.repository.findOwnedClass(data.classId, user.id)
     if (!schoolClass) return { status: 'missing_class' }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
+
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
     let content: Record<string, any>
     try {
@@ -151,6 +157,7 @@ export class TeachingModuleService {
     await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
       status: 'draft',
     })
+    await creditService.chargeGeneration(user, 1, `Modul Ajar: ${data.subject} - ${data.topic}`)
 
     return { status: 'created', teachingModule }
   }

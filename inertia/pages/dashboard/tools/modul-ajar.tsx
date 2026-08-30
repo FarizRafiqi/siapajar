@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 
 interface SchoolClass {
   id: number
@@ -221,6 +222,26 @@ export default function ModulAjarExpress({
     >
       <Head
         title={isTk ? 'Generator Modul Ajar RPPM - SiapAjar' : 'Generator Modul Ajar - SiapAjar'}
+      />
+
+      <GenerationProgressModal
+        isOpen={isGenerating}
+        title={isTk ? 'Menyusun Modul Ajar RPPM' : 'Menyusun Modul Ajar'}
+        steps={
+          isTk
+            ? [
+                'Memvalidasi kelompok dan tema pembelajaran',
+                'Menyelaraskan tema dengan capaian pembelajaran PAUD',
+                'Menyusun alur kegiatan bermain dan asesmen',
+                'Merapikan RPPM agar siap diedit',
+              ]
+            : [
+                'Memvalidasi kelas, mata pelajaran, dan topik',
+                'Menyelaraskan topik dengan capaian pembelajaran',
+                'Menyusun tujuan, kegiatan, dan asesmen pembelajaran',
+                'Merapikan modul ajar agar siap diedit',
+              ]
+        }
       />
 
       <div className="max-w-6xl mx-auto space-y-6">

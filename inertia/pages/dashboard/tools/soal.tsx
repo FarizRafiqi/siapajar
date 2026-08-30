@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 
 interface Subject {
   id: number
@@ -165,6 +166,17 @@ export default function SoalExpress({
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Bank Soal & Asesmen' }]}
     >
       <Head title="Generator Bank Soal & Kisi-Kisi - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isGenerating}
+        title="Menyusun Bank Soal"
+        steps={[
+          'Memvalidasi materi dan komposisi soal',
+          'Menyusun kisi-kisi sesuai tingkat kelas',
+          'Mengembangkan butir soal, kunci, dan pembahasan',
+          'Merapikan paket soal agar siap digunakan',
+        ]}
+      />
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header & Tabs */}

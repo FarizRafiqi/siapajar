@@ -8,6 +8,7 @@ import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { lkpdPrompt } from '#services/ai_prompts'
+import { creditService } from '#services/credit_service'
 
 export type GenerateLkpdData = {
   classId: number
@@ -19,6 +20,7 @@ export type GenerateLkpdData = {
 
 export type GenerateLkpdResult =
   | { status: 'missing_class' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; lkpd: Lkpd }
 
@@ -61,6 +63,10 @@ export class LkpdService {
     const schoolClass = await this.repository.findOwnedClass(data.classId, user.id)
     if (!schoolClass) return { status: 'missing_class' }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
+
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
     let content: Record<string, any>
     try {
@@ -99,6 +105,7 @@ export class LkpdService {
       content,
       status: 'draft',
     })
+    await creditService.chargeGeneration(user, 1, `LKPD: ${data.theme}`)
 
     return { status: 'created', lkpd }
   }

@@ -10,6 +10,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { dailyLessonPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
+import { creditService } from '#services/credit_service'
 
 export type GenerateDailyLessonPlanData = {
   classId: number
@@ -22,6 +23,7 @@ export type GenerateDailyLessonPlanData = {
 export type GenerateDailyLessonPlanResult =
   | { status: 'missing_class' }
   | { status: 'missing_weekly_plan' }
+  | { status: 'insufficient_credits' }
   | { status: 'generation_error'; message: string }
   | { status: 'created'; dailyLessonPlan: DailyLessonPlan }
 
@@ -98,6 +100,10 @@ export class DailyLessonPlanService {
     const schoolClass = await this.repository.findOwnedClass(data.classId, user.id)
     if (!schoolClass) return { status: 'missing_class' }
 
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
+
     if (data.weeklyLessonPlanId) {
       const weeklyLessonPlan = await this.repository.findWeeklyPlanForUser(
         data.weeklyLessonPlanId,
@@ -145,6 +151,7 @@ export class DailyLessonPlanService {
       status: 'draft',
     })
     await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, { status: 'draft' })
+    await creditService.chargeGeneration(user, 1, `RPPH: ${data.theme}`)
 
     return { status: 'created' as const, dailyLessonPlan }
   }

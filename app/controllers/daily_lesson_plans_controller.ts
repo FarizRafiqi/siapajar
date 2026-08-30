@@ -100,6 +100,11 @@ export default class DailyLessonPlansController {
       return response.redirect().back()
     }
 
+    if (result.status === 'insufficient_credits') {
+      session.flash('error', 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.')
+      return response.redirect().back()
+    }
+
     if (result.status === 'generation_error') {
       session.flash('error', result.message)
       return response.redirect().back()
