@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
+import { emitCreditsUpdated } from '~/lib/credits'
 import { ClipboardList, Coins, Zap, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -81,6 +83,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
       }
 
       setResult(data)
+      emitCreditsUpdated(data.remainingCredits)
       toast.success('Jurnal harian & refleksi guru berhasil disusun!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem'
@@ -108,6 +111,17 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Jurnal Harian' }]}
     >
       <Head title="Generator Jurnal Mengajar & Refleksi Guru - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isLoading}
+        title="Menyusun Jurnal Mengajar"
+        steps={[
+          'Memvalidasi aktivitas dan catatan kelas',
+          'Menyusun rangkaian kegiatan pembelajaran',
+          'Merumuskan refleksi dan tindak lanjut guru',
+          'Merapikan jurnal agar siap disimpan atau dicetak',
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}

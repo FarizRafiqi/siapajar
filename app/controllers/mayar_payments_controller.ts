@@ -1,7 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { mayarService } from '#services/mayar_service'
-import PaymentInvoice from '#models/payment_invoice'
-import Package from '#models/package'
 
 export default class MayarPaymentsController {
   /**
@@ -14,58 +12,12 @@ export default class MayarPaymentsController {
     }
 
     const { packageName, packageId } = request.only(['packageName', 'packageId'])
-
-    // Query paket langsung dari database
-    let pkg: Package | null = null
-    if (packageId && !Number.isNaN(Number(packageId))) {
-      pkg = await Package.find(Number(packageId))
-    }
-
-    if (!pkg && (packageName || packageId)) {
-      const identifier = String(packageName || packageId).trim()
-      pkg = await Package.query()
-        .where('name', identifier)
-        .orWhere('name', identifier.toLowerCase().replace(/\s+/g, '_'))
-        .first()
-    }
-
-    // Default fallback ke paket aktif & ter-highlight bila tidak ditentukan
-    if (!pkg) {
-      pkg =
-        (await Package.query().where('is_active', true).where('is_highlighted', true).first()) ||
-        (await Package.query().where('is_active', true).first())
-    }
-
-    if (!pkg) {
-      return response.badRequest({
-        success: false,
-        message: 'Paket langganan atau top-up tidak ditemukan di database.',
-      })
-    }
-
-    // Tentukan jumlah kredit dari features atau nama paket
-    let creditsAmount = 35
-    if (pkg.name === 'guru_aktif' || pkg.name === 'topup_pemula') creditsAmount = 15
-    else if (pkg.name === 'guru_pro' || pkg.name === 'topup_sahabat') creditsAmount = 35
-    else if (pkg.name === 'paket_sekolah' || pkg.name === 'sekolah') creditsAmount = 120
-    else {
-      const creditFeature = (pkg.features || []).find((f: string) => /kredit/i.test(f))
-      if (creditFeature) {
-        const match = creditFeature.match(/(\d+)\s*kredit/i)
-        if (match) creditsAmount = Number.parseInt(match[1], 10)
-      }
-    }
-
     const redirectUrl = `${request.header('origin') || 'http://localhost:3333'}/my-package?status=success`
 
     try {
-      const invoice = await mayarService.createInvoice({
-        userId: user.id,
-        userName: user.fullName || user.email.split('@')[0],
-        userEmail: user.email,
-        packageName: pkg.displayName || pkg.name,
-        creditsAmount: creditsAmount,
-        grossAmount: pkg.priceMonthly,
+      const invoice = await mayarService.createCheckout(user, {
+        packageName,
+        packageId,
         redirectUrl,
       })
 
@@ -125,11 +77,7 @@ export default class MayarPaymentsController {
       return response.unauthorized({ message: 'Harap login' })
     }
 
-    const invoice = await PaymentInvoice.query()
-      .where('invoiceNo', params.invoiceNo)
-      .where('userId', user.id)
-      .first()
-
+    const invoice = await mayarService.findInvoiceForUser(params.invoiceNo, user.id)
     if (!invoice) {
       return response.notFound({ message: 'Tagihan tidak ditemukan' })
     }

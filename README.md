@@ -67,7 +67,17 @@ Open http://localhost:3333
 For local development without a Redis worker, set `QUEUE_DRIVER=sync`. For production or a shared environment, set `QUEUE_DRIVER=redis` and run the worker in a separate process:
 
 ```bash
-node ace queue:work
+npm run queue:work
+```
+
+The credit balance reconciliation runs once daily at 03:15 Asia/Jakarta on the
+`maintenance` queue. Run `npm run queue:work:maintenance` separately when a
+dedicated maintenance worker is preferred.
+
+To run a one-time reconciliation after a deployment or data repair, use:
+
+```bash
+node ace credits:sync-balances
 ```
 
 Exam PDF export uses Playwright Chromium so print preview, PDF, and DOCX follow the same worksheet contract. On a native Debian/Ubuntu host, install the browser once before starting the app:

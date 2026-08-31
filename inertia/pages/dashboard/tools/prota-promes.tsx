@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 import { CalendarDays, Zap, Coins, RotateCw, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -59,6 +60,17 @@ export default function ProtaPromesExpress({
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Prota & Promes' }]}
     >
       <Head title="Generator Prota & Promes Otomatis - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isGenerating}
+        title="Menyusun Prota & Promes"
+        steps={[
+          'Memvalidasi tahun ajaran, semester, dan kelas',
+          'Memetakan capaian pembelajaran dan tujuan pembelajaran',
+          'Mendistribusikan materi ke minggu efektif',
+          'Merapikan matriks Prota dan Promes agar siap diedit',
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}

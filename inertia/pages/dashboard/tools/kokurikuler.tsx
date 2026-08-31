@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react'
 import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
+import { emitCreditsUpdated } from '~/lib/credits'
 import { Compass, Coins, Zap, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
@@ -104,6 +106,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
       }
 
       setResult(data)
+      emitCreditsUpdated(data.remainingCredits)
       toast.success('Modul Kokurikuler P5 / P2RA berhasil disusun!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem'
@@ -131,6 +134,17 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Modul Kokurikuler' }]}
     >
       <Head title="Generator Modul Kokurikuler & P5 - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isLoading}
+        title="Menyusun Modul Kokurikuler"
+        steps={[
+          'Memvalidasi tema, fase, dan dimensi projek',
+          'Menyusun konteks, tujuan, dan alur projek',
+          'Mengembangkan tahapan aksi, refleksi, dan rubrik',
+          'Merapikan modul kokurikuler agar siap digunakan',
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}

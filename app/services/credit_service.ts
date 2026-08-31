@@ -1,8 +1,38 @@
-import db from '@adonisjs/lucid/services/db'
 import User from '#models/user'
+import Package from '#models/package'
 import CreditTransaction from '#models/credit_transaction'
+import {
+  creditRepository,
+  type CreditBalanceSyncOptions,
+  type CreditBalanceSyncResult,
+  type CreditRepository,
+} from '#repositories/credit_repository'
+
+const TESTING_PACKAGE_NAME = 'internal_testing_unlimited'
 
 export class CreditService {
+  constructor(private readonly repository: CreditRepository = creditRepository) {}
+
+  /**
+   * Menyamakan cache saldo user dengan transaksi kredit terbaru dalam batch kecil.
+   * Dipakai oleh maintenance job, bukan pada setiap request web.
+   */
+  async synchronizeAllUserBalances(
+    options: CreditBalanceSyncOptions = { batchSize: 250 }
+  ): Promise<CreditBalanceSyncResult> {
+    const requestedBatchSize = Number(options.batchSize)
+    const batchSize = Number.isFinite(requestedBatchSize)
+      ? Math.min(Math.max(Math.trunc(requestedBatchSize), 50), 500)
+      : 250
+
+    return this.repository.synchronizeAllUserBalances({ batchSize })
+  }
+
+  /** Sinkronisasi satu user hanya dipakai sebagai recovery saat debit gagal. */
+  async synchronizeUserBalance(userId: number): Promise<boolean> {
+    return this.repository.synchronizeUserBalance(userId)
+  }
+
   /**
    * Mengambil saldo kredit terkini milik user
    */
@@ -20,6 +50,36 @@ export class CreditService {
   }
 
   /**
+   * Akun admin dan paket internal testing tidak menghabiskan saldo kredit.
+   * User biasa tetap menggunakan saldo kredit yang tercatat di database.
+   */
+  async isUnlimitedUser(user: User): Promise<boolean> {
+    if (user.role === 'admin') return true
+    if (!user.packageId) return false
+
+    const packageRecord = await Package.find(user.packageId)
+    return packageRecord?.name === TESTING_PACKAGE_NAME
+  }
+
+  async hasEnoughGenerationCredits(user: User, requiredCredits: number = 1): Promise<boolean> {
+    if (await this.isUnlimitedUser(user)) return true
+    return this.hasEnoughCredits(user.id, requiredCredits)
+  }
+
+  /** Mengurangi biaya generator dan mengembalikan saldo terbaru untuk UI navbar. */
+  async chargeGeneration(
+    user: User,
+    amount: number,
+    description: string,
+    metadata?: Record<string, any>
+  ): Promise<number | null> {
+    if (await this.isUnlimitedUser(user)) return null
+
+    const transaction = await this.deductCredits(user.id, amount, description, metadata)
+    return transaction.balanceAfter
+  }
+
+  /**
    * Mengurangi kredit untuk eksekusi generator AI atau download dokumen
    */
   async deductCredits(
@@ -32,35 +92,21 @@ export class CreditService {
       throw new Error('Jumlah kredit yang dikurangi harus lebih dari 0')
     }
 
-    return await db.transaction(async (trx) => {
-      const user = await User.query({ client: trx }).where('id', userId).forUpdate().firstOrFail()
+    let result = await this.repository.deductCredits(userId, amount, description, metadata)
 
-      const currentBalance = user.creditsBalance ?? 0
-      if (currentBalance < amount) {
-        throw new Error(
-          `Saldo kredit tidak mencukupi. Anda memiliki ${currentBalance} kredit, dibutuhkan ${amount} kredit.`
-        )
-      }
+    // Saldo cache lama mungkin tertinggal dari transaksi terakhir. Recovery ini
+    // hanya berjalan setelah debit gagal, sehingga jalur sukses tetap satu transaksi.
+    if (!result.transaction && (await this.synchronizeUserBalance(userId))) {
+      result = await this.repository.deductCredits(userId, amount, description, metadata)
+    }
 
-      const newBalance = currentBalance - amount
-      user.creditsBalance = newBalance
-      user.useTransaction(trx)
-      await user.save()
+    if (!result.transaction) {
+      throw new Error(
+        `Saldo kredit tidak mencukupi. Anda memiliki ${result.currentBalance} kredit, dibutuhkan ${amount} kredit.`
+      )
+    }
 
-      const transaction = new CreditTransaction()
-      transaction.useTransaction(trx)
-      transaction.fill({
-        userId: user.id,
-        amount: -amount,
-        balanceAfter: newBalance,
-        type: 'usage',
-        description,
-        metadata: metadata ?? null,
-      })
-      await transaction.save()
-
-      return transaction
-    })
+    return result.transaction
   }
 
   /**
@@ -77,30 +123,7 @@ export class CreditService {
       throw new Error('Jumlah kredit yang ditambahkan harus lebih dari 0')
     }
 
-    return await db.transaction(async (trx) => {
-      const user = await User.query({ client: trx }).where('id', userId).forUpdate().firstOrFail()
-
-      const currentBalance = user.creditsBalance ?? 0
-      const newBalance = currentBalance + amount
-
-      user.creditsBalance = newBalance
-      user.useTransaction(trx)
-      await user.save()
-
-      const transaction = new CreditTransaction()
-      transaction.useTransaction(trx)
-      transaction.fill({
-        userId: user.id,
-        amount,
-        balanceAfter: newBalance,
-        type,
-        description,
-        metadata: metadata ?? null,
-      })
-      await transaction.save()
-
-      return transaction
-    })
+    return this.repository.addCredits(userId, amount, type, description, metadata)
   }
 
   /**

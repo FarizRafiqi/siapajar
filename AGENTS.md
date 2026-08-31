@@ -43,7 +43,22 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
 
 ---
 
-## 3. UI & Design Aesthetics Guidelines
+## 3. Backend Layering: Controller, Service, Repository
+
+Follow this dependency flow for backend application code:
+
+```text
+Controller → Service → Repository → Model/Database
+```
+
+- **Controllers must stay lean.** They handle HTTP concerns only: request input, validation invocation, authentication/context extraction, calling one application service, and returning the response or redirect. Controllers must not contain business rules, persistence queries, query-builder chains, transactions, or loops that implement domain behavior.
+- **Services own business logic and orchestration.** They coordinate domain rules, authorization decisions, calculations, external integrations, file/AI workflows, and calls to repositories. A service may contain query sederhana yang pendek for one model when it is genuinely local to that use case and does not include preload, aggregate, pagination, raw SQL, transaction, or repeated query composition.
+- **Repositories own complex persistence.** Move query kompleks or panjang, repeated query composition, multi-relation/preload queries, ownership-scoped listing, pagination/filter/sort builders, aggregates/counts, raw SQL, row locks, and transaction-bound persistence into a domain-specific repository under `app/repositories/`. Keep all query-builder construction and database-specific details there.
+- **Services call named custom repository methods** for repository-owned queries. Do not leak query builders, models, or database implementation details into a service merely to assemble a complex query. Repository methods should express an intent (for example, `findForDashboard` or `listOwnedByTeacher`), not be generic pass-through wrappers.
+- **Background jobs follow the same boundary.** Jobs may delegate to services; genuinely simple one-model operations (`find`, `findBy`, `findOrFail`, `create`, `save`, `authenticate`) may remain directly in a service or job. Complex reads/writes still belong in repositories. Do not create generic pass-through repository methods for those simple operations. Pure prompt construction, parsing, rendering, export formatting, and other non-persistence code do not need a repository.
+- **Preserve behavior and API contracts.** Refactors must not change route behavior, response shapes, validation semantics, authorization scope, ordering, pagination, transaction boundaries, or user-facing text unless explicitly requested.
+
+## 4. UI & Design Aesthetics Guidelines
 
 1. **Action Buttons Consolidation (Dropdown Rule)**:
    - Always group secondary or multiple header action buttons (> 2 buttons) into a single clean `Aksi & Opsi ▾` dropdown popover menu instead of cluttering top toolbars with many horizontal buttons.
@@ -113,7 +128,7 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
     - Always use concise, clean, and standard button text for third-party OAuth providers:
       - Use **`Masuk dengan Google`** on login screens.
       - Use **`Daftar dengan Google`** on registration / signup screens.
-    - Avoid verbose or redundant variations (e.g. avoid *"Masuk Cepat dengan Akun Google"* or *"Daftar Cepat dengan Akun Google"*).
+    - Avoid verbose or redundant variations (e.g. avoid _"Masuk Cepat dengan Akun Google"_ or _"Daftar Cepat dengan Akun Google"_).
 
 18. **Strict Adherence & Text/Feature Preservation Standard**:
     - **STRICTLY PROHIBITED**: Jangan menghapus, merombak, atau mengganti teks/konten/fitur apapun dan dimanapun jika tidak diminta atau diinstruksikan secara eksplisit oleh User.
@@ -137,3 +152,6 @@ Chain: `curriculum_cps` → `learning_objectives` (TP) → `learning_sequences` 
     - When an input has a clear button or action on the right, provide enough right padding (for example, `pr-8`) so text never overlaps the control.
     - Apply this consistently to table search/filter toolbars, modals, forms, and similar inputs across all pages.
 
+22. **Decorative Ghost Icon Spacing Standard**:
+    - Do not render a low-opacity decorative or "ghost" icon behind, on top of, or too close to meaningful content such as buttons, controls, badges, or text.
+    - Reserve clear space for decorative artwork, reposition it into an intentionally empty area, or hide it at the relevant breakpoint when content would overlap. Decorative icons must never compete with or obscure interactive UI.

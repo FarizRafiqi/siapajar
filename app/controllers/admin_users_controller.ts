@@ -1,69 +1,20 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import User from '#models/user'
-import Package from '#models/package'
-import School from '#models/school'
 import { updateUserRoleValidator } from '#validators/admin'
-import PackageSubscription from '#models/package_subscription'
-import { DateTime } from 'luxon'
+import { adminCatalogService } from '#services/admin_catalog_service'
 
 export default class AdminUsersController {
   async index({ inertia }: HttpContext) {
-    const users = await User.query()
-      .preload('package')
-      .preload('school')
-      .orderBy('created_at', 'desc')
-    const packages = await Package.query().orderBy('sort_order', 'asc')
-    const schools = await School.query().orderBy('name')
-
-    return inertia.render('dashboard/admin/users/index', {
-      users: users.map((u) => u.toJSON()),
-      packages: packages.map((p) => p.toJSON()),
-      schools: schools.map((s) => s.toJSON()),
-    })
+    return inertia.render('dashboard/admin/users/index', await adminCatalogService.listUsers())
   }
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const currentUser = auth.user!
-    const user = await User.find(params.id)
-
-    if (!user) {
-      return response.redirect('/admin/users')
-    }
-
-    if (user.id === currentUser.id) {
+    const data = await request.validateUsing(updateUserRoleValidator)
+    const result = await adminCatalogService.updateUser(params.id, currentUser.id, data)
+    if (result === 'not_found') return response.redirect('/admin/users')
+    if (result === 'self') {
       session.flash('error', 'Tidak bisa mengubah role akun sendiri')
       return response.redirect().back()
-    }
-
-    const data = await request.validateUsing(updateUserRoleValidator)
-    const previousPackageId = user.packageId
-    user.merge(data)
-
-    if (data.schoolId !== undefined) {
-      const school = data.schoolId ? await School.find(data.schoolId) : null
-      user.schoolName = school?.name ?? null
-    }
-
-    await user.save()
-
-    if (data.packageId !== undefined && data.packageId !== previousPackageId) {
-      await PackageSubscription.query().where('user_id', user.id).where('status', 'active').update({
-        status: 'canceled',
-        canceled_at: DateTime.now().toSQL(),
-        updated_at: DateTime.now().toSQL(),
-      })
-      if (data.packageId) {
-        await PackageSubscription.create({
-          userId: user.id,
-          packageId: data.packageId,
-          status: 'active',
-          billingCycle: 'manual',
-          startsAt: DateTime.now(),
-          endsAt: null,
-          canceledAt: null,
-          metadata: { source: 'admin_assignment' },
-        })
-      }
     }
 
     session.flash('success', 'User berhasil diupdate')
@@ -72,18 +23,12 @@ export default class AdminUsersController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const currentUser = auth.user!
-    const user = await User.find(params.id)
-
-    if (!user) {
-      return response.redirect('/admin/users')
-    }
-
-    if (user.id === currentUser.id) {
+    const result = await adminCatalogService.deleteUser(params.id, currentUser.id)
+    if (result === 'not_found') return response.redirect('/admin/users')
+    if (result === 'self') {
       session.flash('error', 'Tidak bisa menghapus akun sendiri')
       return response.redirect().back()
     }
-
-    await user.delete()
 
     session.flash('success', 'User berhasil dihapus')
     return response.redirect().toRoute('admin.users.index')

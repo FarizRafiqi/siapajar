@@ -1,10 +1,10 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import { DateTime } from 'luxon'
 import AiJob from '#models/ai_job'
 import User from '#models/user'
 import { callAiJson } from '#services/ai_service'
 import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
+import { aiJobRepository } from '#repositories/ai_job_repository'
 
 export interface GenerateAiJsonPayload {
   jobKey: string
@@ -30,10 +30,7 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
     if (job.status === 'completed') return
     const owner = await User.find(payload.userId)
     if (!owner) throw new Error('AI job owner not found')
-    job.status = 'processing'
-    job.attempts += 1
-    job.startedAt = DateTime.now()
-    await job.save()
+    await aiJobRepository.markProcessing(job)
     try {
       const result = await callAiJson({
         combo: payload.combo,
@@ -41,16 +38,13 @@ export default class GenerateAiJson extends Job<GenerateAiJsonPayload> {
         userPrompt: payload.userPrompt,
         timeoutMs: payload.timeoutMs,
       })
-      job.status = 'completed'
-      job.result = result
-      job.finishedAt = DateTime.now()
-      await job.save()
+      await aiJobRepository.markCompleted(job, result)
       await commitUsageReservation(payload.jobKey)
     } catch (error) {
-      job.status = 'failed'
-      job.error = error instanceof Error ? error.message : 'AI job failed'
-      job.finishedAt = DateTime.now()
-      await job.save()
+      await aiJobRepository.markFailed(
+        job,
+        error instanceof Error ? error.message : 'AI job failed'
+      )
       await releaseUsageReservation(payload.jobKey)
       throw error
     }

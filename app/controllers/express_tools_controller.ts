@@ -1,299 +1,139 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import SchoolClass from '#models/school_class'
-import Subject from '#models/subject'
-import TeachingModule from '#models/teaching_module'
-import WeeklyLessonPlan from '#models/weekly_lesson_plan'
-import Exam from '#models/exam'
-import Lkpd from '#models/lkpd'
-import AnnualPlan from '#models/annual_plan'
-import SemesterPlan from '#models/semester_plan'
-import ReportNarrative from '#models/report_narrative'
-import { callAiJsonForUser } from '#services/user_ai_service'
-import { katrolPrompt, jurnalPrompt, kokurikulerPrompt } from '#services/ai_prompts'
+import { expressToolsService } from '#services/express_tools_service'
 import { creditService } from '#services/credit_service'
-import { AiServiceError } from '#services/ai_service'
 
 export default class ExpressToolsController {
   /**
    * Modul Ajar / RPPM Express View
    */
   async modulAjar({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const isTk = user.educationLevel === 'tk'
+    const data = await expressToolsService.getModulAjarData(auth.user!)
 
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('is_active', true)
-      .orderBy('name')
-
-    let recentModules: Array<{
-      id: number
-      title: string
-      subject: string
-      phase: string
-      status: string
-      createdAt: string
-      schoolClass?: any
-    }> = []
-
-    if (isTk) {
-      const plans = await WeeklyLessonPlan.query()
-        .where('user_id', user.id)
-        .preload('schoolClass')
-        .orderBy('created_at', 'desc')
-
-      recentModules = plans.map((p) => ({
-        id: p.id,
-        title: p.theme || 'Modul Ajar RPPM',
-        subject: (p.content as any)?.subject || 'Tematik PAUD KBC',
-        phase: 'Fondasi',
-        status: p.status || 'published',
-        createdAt: p.createdAt ? p.createdAt.toISO() || '' : '',
-        schoolClass: p.schoolClass ? p.schoolClass.toJSON() : undefined,
-      }))
-    } else {
-      const modules = await TeachingModule.query()
-        .where('user_id', user.id)
-        .preload('schoolClass')
-        .orderBy('created_at', 'desc')
-
-      recentModules = modules.map((m) => ({
-        id: m.id,
-        title: m.title || 'Modul Ajar',
-        subject: m.subject || '',
-        phase: m.phase || '',
-        status: m.status || 'published',
-        createdAt: m.createdAt ? m.createdAt.toISO() || '' : '',
-        schoolClass: m.schoolClass ? m.schoolClass.toJSON() : undefined,
-      }))
-    }
-
-    return inertia.render('dashboard/tools/modul-ajar', {
-      isTk,
-      classes: classes.map((c) => c.toJSON()),
-      subjects: subjects.map((s) => s.toJSON()),
-      recentModules,
-    })
+    return inertia.render('dashboard/tools/modul-ajar', data)
   }
 
   /**
    * LKPD Express View
    */
   async lkpd({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const recentLkpds = await Lkpd.query().where('user_id', user.id).orderBy('created_at', 'desc')
+    const data = await expressToolsService.getLkpdData(auth.user!)
 
-    return inertia.render('dashboard/tools/lkpd', {
-      classes: classes.map((c) => c.toJSON()),
-      recentLkpds: recentLkpds.map((l) => l.toJSON()),
-      institutionType: user.institutionType || 'tk',
-    })
+    return inertia.render('dashboard/tools/lkpd', data)
   }
 
   /**
    * Bank Soal AI Express View
    */
   async soal({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('is_active', true)
-      .orderBy('name')
+    const data = await expressToolsService.getSoalData(auth.user!)
 
-    const recentExams = await Exam.query().where('user_id', user.id).orderBy('created_at', 'desc')
-
-    return inertia.render('dashboard/tools/soal', {
-      classes: classes.map((c) => c.toJSON()),
-      subjects: subjects.map((s) => s.toJSON()),
-      recentExams: recentExams.map((e) => e.toJSON()),
-      isTk: user.educationLevel === 'tk',
-    })
+    return inertia.render('dashboard/tools/soal', data)
   }
 
   /**
    * Prota & Promes Unified Express View
    */
   async protaPromes({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('is_active', true)
-      .orderBy('name')
+    const data = await expressToolsService.getProtaPromesData(auth.user!)
 
-    const annualPlans = await AnnualPlan.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(10)
-
-    const semesterPlans = await SemesterPlan.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(10)
-
-    return inertia.render('dashboard/tools/prota-promes', {
-      classes: classes.map((c) => c.toJSON()),
-      subjects: subjects.map((s) => s.toJSON()),
-      annualPlans: annualPlans.map((p) => p.toJSON()),
-      semesterPlans: semesterPlans.map((p) => p.toJSON()),
-    })
+    return inertia.render('dashboard/tools/prota-promes', data)
   }
 
   /**
    * Rapor Narasi Deskripsi Kurikulum Merdeka Express View
    */
   async rapor({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    const recentNarratives = await ReportNarrative.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
-      .limit(10)
+    const data = await expressToolsService.getRaporData(auth.user!)
 
-    return inertia.render('dashboard/tools/rapor', {
-      classes: classes.map((c) => c.toJSON()),
-      recentNarratives: recentNarratives.map((n) => n.toJSON()),
-      isTk: user.educationLevel === 'tk',
-    })
+    return inertia.render('dashboard/tools/rapor', data)
   }
 
   /**
    * Katrol Nilai & Remedial View
    */
   async katrol({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    return inertia.render('dashboard/tools/katrol', {
-      classes: classes.map((c) => c.toJSON()),
-    })
+    const data = await expressToolsService.getClassesData(auth.user!)
+
+    return inertia.render('dashboard/tools/katrol', data)
   }
 
   /**
    * Generate Katrol Nilai AI / Formula
    */
   async generateKatrol({ request, response, auth }: HttpContext) {
-    const user = auth.user!
-    const { subject, topic, kktp, scores, method } = request.only([
-      'subject',
-      'topic',
-      'kktp',
-      'scores',
-      'method',
-    ])
+    const result = await expressToolsService.generateKatrol(
+      auth.user!,
+      request.only(['subject', 'topic', 'kktp', 'scores', 'method', 'rawInput'])
+    )
 
-    if (!subject || !scores || !Array.isArray(scores) || scores.length === 0) {
-      return response.badRequest({ message: 'Data nilai dan mata pelajaran wajib diisi' })
+    if (result.status === 'invalid_input') {
+      return response.badRequest({ message: result.message })
     }
 
-    // Katrol is a free utility tool (0 credits)
-    try {
-      const prompt = katrolPrompt({
-        subject,
-        topic: topic || 'Ulangan Harian',
-        kktp: Number(kktp) || 75,
-        scores,
-        method: method || 'linear',
-      })
-
-      const raw = await callAiJsonForUser<Record<string, any>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-
-      return response.ok({
-        success: true,
-        data: raw,
-      })
-    } catch (error: any) {
-      return response.badRequest({
-        success: false,
-        message:
-          error instanceof AiServiceError ? error.message : 'Gagal memproses analisis katrol nilai',
-      })
+    if (result.status === 'error') {
+      return response.badRequest({ success: false, message: result.message })
     }
+
+    if (result.status === 'insufficient_credits') {
+      return response.paymentRequired({ message: result.message })
+    }
+
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      success: true,
+      ...result.data,
+      data: result.data,
+      remainingCredits,
+    })
   }
 
   /**
    * Jurnal Mengajar & Refleksi Guru View
    */
   async jurnal({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-    return inertia.render('dashboard/tools/jurnal', {
-      classes: classes.map((c) => c.toJSON()),
-    })
+    const data = await expressToolsService.getClassesData(auth.user!)
+
+    return inertia.render('dashboard/tools/jurnal', data)
   }
 
   /**
    * Generate Jurnal Mengajar AI
    */
   async generateJurnal({ request, response, auth }: HttpContext) {
-    const user = auth.user!
-    const { subject, topic, date, grade, lessonNotes } = request.only([
-      'subject',
-      'topic',
-      'date',
-      'grade',
-      'lessonNotes',
-    ])
+    const result = await expressToolsService.generateJurnal(
+      auth.user!,
+      request.only(['subject', 'topic', 'date', 'grade', 'lessonNotes'])
+    )
 
-    if (!subject || !topic) {
-      return response.badRequest({ message: 'Mata pelajaran dan topik wajib diisi' })
-    }
-
-    if (!(await creditService.hasEnoughCredits(user.id, 1))) {
-      return response.paymentRequired({
-        message: 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.',
-      })
-    }
-
-    try {
-      const prompt = jurnalPrompt({
-        subject,
-        topic,
-        date: date || new Date().toISOString().split('T')[0],
-        grade: grade || 'Kelas 1',
-        lessonNotes,
-      })
-
-      const raw = await callAiJsonForUser<Record<string, any>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-
-      await creditService.deductCredits(
-        user.id,
-        1,
-        `Jurnal Mengajar & Refleksi: ${subject} - ${topic}`
-      )
-
-      return response.ok({
-        success: true,
-        data: raw,
-      })
-    } catch (error: any) {
+    if (result.status === 'invalid_input' || result.status === 'error') {
       return response.badRequest({
-        success: false,
-        message:
-          error instanceof AiServiceError ? error.message : 'Gagal membuat jurnal mengajar harian',
+        ...(result.status === 'error' ? { success: false } : {}),
+        message: result.message,
       })
     }
+
+    if (result.status === 'insufficient_credits') {
+      return response.paymentRequired({ message: result.message })
+    }
+
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      ...result.data,
+      success: true,
+      data: result.data,
+      remainingCredits,
+    })
   }
 
   /**
    * Kokurikuler / Modul P5 View
    */
   async kokurikuler({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
+    const data = await expressToolsService.getClassesData(auth.user!)
+
     return inertia.render('dashboard/tools/kokurikuler', {
-      classes: classes.map((c) => c.toJSON()),
-      isTk: user.educationLevel === 'tk',
+      ...data,
+      isTk: auth.user!.educationLevel === 'tk',
     })
   }
 
@@ -301,57 +141,36 @@ export default class ExpressToolsController {
    * Generate Modul Kokurikuler / P5 AI (2 Kredit)
    */
   async generateKokurikuler({ request, response, auth }: HttpContext) {
-    const user = auth.user!
-    const { theme, topic, phase, targetLevel, dimensions } = request.only([
-      'theme',
-      'topic',
-      'phase',
-      'targetLevel',
-      'dimensions',
-    ])
+    const result = await expressToolsService.generateKokurikuler(
+      auth.user!,
+      request.only([
+        'theme',
+        'topic',
+        'projectTitle',
+        'phase',
+        'targetLevel',
+        'targetDuration',
+        'dimensions',
+      ])
+    )
 
-    if (!theme || !topic) {
-      return response.badRequest({ message: 'Tema dan topik proyek wajib diisi' })
-    }
-
-    if (!(await creditService.hasEnoughCredits(user.id, 2))) {
-      return response.paymentRequired({
-        message: 'Saldo kredit Anda tidak mencukupi (butuh 2 kredit). Silakan top-up kredit.',
-      })
-    }
-
-    try {
-      const prompt = kokurikulerPrompt({
-        theme,
-        topic,
-        phase: phase || (user.educationLevel === 'tk' ? 'Fondasi' : 'A'),
-        targetLevel:
-          targetLevel || (user.educationLevel === 'tk' ? 'TK B (5-6 Tahun)' : 'SD Kelas 1'),
-        dimensions: Array.isArray(dimensions) ? dimensions : undefined,
-      })
-
-      const raw = await callAiJsonForUser<Record<string, any>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-
-      await creditService.deductCredits(
-        user.id,
-        2,
-        `Modul Projek P5 / Kokurikuler: ${theme} - ${topic}`
-      )
-
-      return response.ok({
-        success: true,
-        data: raw,
-      })
-    } catch (error: any) {
+    if (result.status === 'invalid_input' || result.status === 'error') {
       return response.badRequest({
-        success: false,
-        message:
-          error instanceof AiServiceError ? error.message : 'Gagal membuat modul kokurikuler P5',
+        ...(result.status === 'error' ? { success: false } : {}),
+        message: result.message,
       })
     }
+
+    if (result.status === 'insufficient_credits') {
+      return response.paymentRequired({ message: result.message })
+    }
+
+    const remainingCredits = await creditService.getBalance(auth.user!.id)
+    return response.ok({
+      success: true,
+      ...result.data,
+      data: result.data,
+      remainingCredits,
+    })
   }
 }

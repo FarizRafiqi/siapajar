@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
+import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 
 interface SchoolClass {
   id: number
@@ -153,6 +154,17 @@ export default function LkpdExpress({
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'LKPD Siswa' }]}
     >
       <Head title="Generator LKPD Siswa - SiapAjar" />
+
+      <GenerationProgressModal
+        isOpen={isGenerating}
+        title="Menyusun LKPD"
+        steps={[
+          'Memvalidasi tema, kelompok, dan usia anak',
+          'Merancang aktivitas yang sesuai tahap perkembangan',
+          'Menyusun instruksi, bahan, dan asesmen sederhana',
+          'Merapikan LKPD agar siap dicetak dan diedit',
+        ]}
+      />
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header & Tabs */}
