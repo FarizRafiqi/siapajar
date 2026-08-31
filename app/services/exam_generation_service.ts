@@ -1,5 +1,4 @@
-import Exam from '#models/exam'
-import User from '#models/user'
+import type Exam from '#models/exam'
 import type { CurriculumContext } from '#services/curriculum_context_service'
 import { examPrompt } from '#services/ai_prompts'
 import { aiQueueService } from '#services/ai_queue_service'
@@ -7,6 +6,7 @@ import { AiServiceError } from '#services/ai_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { EntitlementError } from '#services/entitlement_service'
 import { fitPaudQuestionSet } from '#services/exam_worksheet_layout_service'
+import { examRepository } from '#repositories/exam_repository'
 
 export type ExamGenerationStage =
   'queued' | 'researching' | 'generating_questions' | 'generating_images' | 'completed' | 'failed'
@@ -398,8 +398,8 @@ function collectVisualRequests(questions: Record<string, any>[], isRa: boolean):
 }
 
 export async function generateExam(options: ExamGenerationOptions) {
-  const exam = await Exam.query().where('id', options.examId).firstOrFail()
-  const user = await User.query().where('id', options.userId).firstOrFail()
+  const exam = await examRepository.findForGeneration(options.examId)
+  const user = await examRepository.findUserForGeneration(options.userId)
   try {
     await saveProgress(exam, 'researching', {
       current: 0,

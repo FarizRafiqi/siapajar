@@ -26,6 +26,25 @@ export interface ApiDefinition {
     students: {
       timeline: typeof routes['api.students.timeline']
     }
+    mayar: {
+      webhook: typeof routes['api.mayar.webhook']
+      checkout: typeof routes['api.mayar.checkout']
+      status: typeof routes['api.mayar.status']
+    }
+    packages: {
+      index: typeof routes['api.packages.index']
+    }
+    express: {
+      katrol: {
+        generate: typeof routes['api.express.katrol.generate']
+      }
+      jurnal: {
+        generate: typeof routes['api.express.jurnal.generate']
+      }
+      kokurikuler: {
+        generate: typeof routes['api.express.kokurikuler.generate']
+      }
+    }
   }
   home: typeof routes['home']
   health: typeof routes['health']
@@ -56,10 +75,101 @@ export interface ApiDefinition {
     store: typeof routes['onboarding.store']
   }
   dashboard: typeof routes['dashboard']
+  panel: {
+    index: typeof routes['panel.index']
+    dashboard: typeof routes['panel.dashboard']
+    curriculum: {
+      index: typeof routes['panel.curriculum.index']
+    }
+    classes: {
+      index: typeof routes['panel.classes.index']
+    }
+    subjects: {
+      index: typeof routes['panel.subjects.index']
+    }
+    glossary: {
+      index: typeof routes['panel.glossary.index']
+    }
+    teachingModules: {
+      index: typeof routes['panel.teaching-modules.index']
+    }
+    annualPlans: {
+      index: typeof routes['panel.annual-plans.index']
+    }
+    semesterPlans: {
+      index: typeof routes['panel.semester-plans.index']
+    }
+    rppm: {
+      index: typeof routes['panel.rppm.index']
+    }
+    rpph: {
+      index: typeof routes['panel.rpph.index']
+    }
+    lkpd: {
+      index: typeof routes['panel.lkpd.index']
+    }
+    mediaModules: {
+      index: typeof routes['panel.media-modules.index']
+    }
+    exams: {
+      index: typeof routes['panel.exams.index']
+    }
+    assessments: {
+      index: typeof routes['panel.assessments.index']
+    }
+    paudAssessments: {
+      index: typeof routes['panel.paud-assessments.index']
+    }
+    reportCards: {
+      index: typeof routes['panel.report-cards.index']
+    }
+    jurnal: {
+      index: typeof routes['panel.jurnal.index']
+    }
+    kokurikuler: {
+      index: typeof routes['panel.kokurikuler.index']
+    }
+    katrol: {
+      index: typeof routes['panel.katrol.index']
+    }
+    account: {
+      package: typeof routes['panel.account.package']
+    }
+    settings: {
+      index: typeof routes['panel.settings.index']
+    }
+    legacy: {
+      kurikulum: typeof routes['panel.legacy.kurikulum']
+      kelas: typeof routes['panel.legacy.kelas']
+      siswa: typeof routes['panel.legacy.siswa']
+      asesmenPaud: typeof routes['panel.legacy.asesmen-paud']
+      rapor: typeof routes['panel.legacy.rapor']
+    }
+  }
+  billing: {
+    index: typeof routes['billing.index']
+  }
   account: {
     package: typeof routes['account.package']
     usage: typeof routes['account.usage']
     subscriptions: typeof routes['account.subscriptions']
+  }
+  express: {
+    modulAjar: typeof routes['express.modulAjar']
+    soal: typeof routes['express.soal']
+    protaPromes: typeof routes['express.protaPromes']
+    rapor: typeof routes['express.rapor']
+    katrol: typeof routes['express.katrol']
+    jurnal: typeof routes['express.jurnal']
+    kokurikuler: typeof routes['express.kokurikuler']
+  }
+  lkpd: {
+    index: typeof routes['lkpd.index']
+    show: typeof routes['lkpd.show']
+    export: typeof routes['lkpd.export']
+    exportPdf: typeof routes['lkpd.exportPdf']
+    destroy: typeof routes['lkpd.destroy']
+    generate: typeof routes['lkpd.generate']
   }
   glossary: {
     index: typeof routes['glossary.index']
@@ -162,14 +272,6 @@ export interface ApiDefinition {
     update: typeof routes['rpph.update']
     destroy: typeof routes['rpph.destroy']
     generate: typeof routes['rpph.generate']
-  }
-  lkpd: {
-    index: typeof routes['lkpd.index']
-    show: typeof routes['lkpd.show']
-    export: typeof routes['lkpd.export']
-    exportPdf: typeof routes['lkpd.exportPdf']
-    destroy: typeof routes['lkpd.destroy']
-    generate: typeof routes['lkpd.generate']
   }
   mediaModules: {
     index: typeof routes['media-modules.index']

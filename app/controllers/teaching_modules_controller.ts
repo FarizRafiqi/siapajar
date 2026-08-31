@@ -1,19 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import TeachingModule from '#models/teaching_module'
-import SchoolClass from '#models/school_class'
-import Subject from '#models/subject'
 import {
   createTeachingModuleValidator,
   updateTeachingModuleValidator,
 } from '#validators/teaching_module'
 import { generateTeachingModuleValidator } from '#validators/generate'
-import { exportTeachingModule } from '#services/export_service'
-import { exportTeachingModulePdf } from '#services/pdf_export_service'
-import { normalizeStringArraySections, AiServiceError } from '#services/ai_service'
-import { teachingModulePrompt } from '#services/ai_prompts'
-import { getCurriculumContext } from '#services/curriculum_context_service'
-import { callAiJsonForUser } from '#services/user_ai_service'
-import { ensureDocumentWorkflow, saveDocumentWorkflow } from '#services/document_workflow_service'
+import { teachingModuleService } from '#services/teaching_module_service'
 import {
   EXPORT_CONTENT_TYPES,
   exportFilename,
@@ -23,102 +14,59 @@ import {
 
 export default class TeachingModulesController {
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const teachingModules = await TeachingModule.query()
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .orderBy('created_at', 'desc')
+    const data = await teachingModuleService.getIndexData(auth.user!)
 
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('education_level', user.educationLevel || 'sd')
-      .where('is_active', true)
-      .orderBy('name')
-    const sequences = await import('#models/learning_sequence').then(({ default: Model }) =>
-      Model.query().where('user_id', user.id).orderBy('title')
-    )
-
-    return inertia.render('dashboard/teaching-modules/index', {
-      teachingModules: teachingModules.map((m) => m.toJSON()),
-      classes: classes.map((c) => c.toJSON()),
-      subjects: subjects.map((s) => s.toJSON()),
-      sequences: sequences.map((sequence) => sequence.toJSON()),
-    })
+    return inertia.render('dashboard/teaching-modules/index', data)
   }
 
   async show({ params, inertia, auth, response }: HttpContext) {
-    const user = auth.user!
-    const teachingModule = await TeachingModule.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .first()
+    const data = await teachingModuleService.getShowData(auth.user!.id, params.id)
 
-    if (!teachingModule) {
+    if (!data) {
       return response.redirect('/teaching-modules')
     }
 
-    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
-      status: teachingModule.status,
-    })
-    return inertia.render('dashboard/teaching-modules/show', {
-      teachingModule: teachingModule.toJSON(),
-      workflow: workflow.toJSON(),
-    })
+    return inertia.render('dashboard/teaching-modules/show', data)
   }
 
   async export({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const teachingModule = await TeachingModule.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const data = await teachingModuleService.getExportData(user, params.id, 'docx')
 
-    if (!teachingModule) {
+    if (!data) {
       return response.redirect('/teaching-modules')
     }
 
-    const buffer = await exportTeachingModule(teachingModule, user)
     return sendExport(
       response,
-      buffer,
+      data.buffer,
       EXPORT_CONTENT_TYPES.docx,
-      exportFilename(['Modul Ajar', teachingModule.title], 'docx')
+      exportFilename(['Modul Ajar', data.teachingModule.title], 'docx')
     )
   }
 
   async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
-    const teachingModule = await TeachingModule.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const inline = wantsInlinePreview(request)
+    const data = await teachingModuleService.getExportData(user, params.id, 'pdf', !inline)
 
-    if (!teachingModule) {
+    if (!data) {
       return response.redirect('/teaching-modules')
     }
 
-    const buffer = await exportTeachingModulePdf(teachingModule, user, !wantsInlinePreview(request))
     return sendExport(
       response,
-      buffer,
+      data.buffer,
       EXPORT_CONTENT_TYPES.pdf,
-      exportFilename(['Modul Ajar', teachingModule.title], 'pdf'),
-      { inline: wantsInlinePreview(request) }
+      exportFilename(['Modul Ajar', data.teachingModule.title], 'pdf'),
+      { inline }
     )
   }
 
   async store({ request, response, session, auth }: HttpContext) {
-    const user = auth.user!
     const data = await request.validateUsing(createTeachingModuleValidator)
 
-    await TeachingModule.create({
-      ...data,
-      userId: user.id,
-      status: 'draft',
-    })
+    await teachingModuleService.create(auth.user!, data)
 
     session.flash('success', 'Modul Ajar berhasil dibuat')
     return response.redirect().toRoute('teaching-modules.index')
@@ -126,95 +74,52 @@ export default class TeachingModulesController {
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const teachingModule = await TeachingModule.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exists = await teachingModuleService.exists(user.id, params.id)
 
-    if (!teachingModule) {
+    if (!exists) {
       return response.redirect('/teaching-modules')
     }
 
     const data = await request.validateUsing(updateTeachingModuleValidator)
-    await teachingModule.merge(data).save()
-    const workflow = await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id)
-    await saveDocumentWorkflow(workflow, data.status as 'draft' | 'published' | undefined)
+    await teachingModuleService.update(user.id, params.id, data)
 
     session.flash('success', 'Modul Ajar berhasil diupdate')
     return response.redirect().back()
   }
 
   async destroy({ params, response, session, auth }: HttpContext) {
-    const user = auth.user!
-    const teachingModule = await TeachingModule.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const deleted = await teachingModuleService.destroy(auth.user!.id, params.id)
 
-    if (!teachingModule) {
+    if (!deleted) {
       return response.redirect('/teaching-modules')
     }
-
-    await teachingModule.delete()
 
     session.flash('success', 'Modul Ajar berhasil dihapus')
     return response.redirect().toRoute('teaching-modules.index')
   }
 
   async generate({ request, response, session, auth }: HttpContext) {
-    const user = auth.user!
-    const { classId, subject, topic, phase, learningSequenceId } = await request.validateUsing(
-      generateTeachingModuleValidator
-    )
+    const data = await request.validateUsing(generateTeachingModuleValidator)
+    const result = await teachingModuleService.generate(auth.user!, data)
 
-    // Pastikan kelas milik user yang login
-    const schoolClass = await SchoolClass.query()
-      .where('id', classId)
-      .where('user_id', user.id)
-      .first()
-
-    if (!schoolClass) {
+    if (result.status === 'missing_class') {
       session.flash('error', 'Kelas tidak ditemukan')
       return response.redirect().back()
     }
 
-    const curriculum = await getCurriculumContext(user.id, learningSequenceId)
-    let content: Record<string, any>
-    try {
-      const prompt = teachingModulePrompt({ subject, topic, phase })
-      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      content = normalizeStringArraySections(raw, [
-        'kompetensiDasar',
-        'tujuanPembelajaran',
-        'kegiatan',
-        'penilaian',
-        'sumberBelajar',
-      ])
-      content.curriculum = curriculum
-    } catch (error) {
-      session.flash(
-        'error',
-        error instanceof AiServiceError ? error.message : 'Gagal generate modul ajar. Coba lagi.'
-      )
+    if (result.status === 'insufficient_credits') {
+      session.flash('error', 'Saldo kredit Anda habis. Silakan top-up kredit untuk melanjutkan.')
       return response.redirect().back()
     }
 
-    const teachingModule = await TeachingModule.create({
-      userId: user.id,
-      classId,
-      title: `${subject} - ${topic}`,
-      subject,
-      phase,
-      content,
-      status: 'draft',
-    })
-    await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, { status: 'draft' })
+    if (result.status === 'generation_error') {
+      session.flash('error', result.message)
+      return response.redirect().back()
+    }
 
     session.flash('success', 'Modul Ajar berhasil digenerate')
-    return response.redirect().toRoute('teaching-modules.show', { id: teachingModule.id })
+    return response.redirect().toRoute('teaching-modules.show', {
+      id: result.teachingModule.id,
+    })
   }
 }

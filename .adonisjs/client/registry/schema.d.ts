@@ -187,6 +187,30 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'api.mayar.webhook': {
+    methods: ["POST"]
+    pattern: '/api/webhooks/mayar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
+    }
+  }
+  'api.packages.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/packages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['packages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['packages']>>>
+    }
+  }
   'mcp.wellknown': {
     methods: ["GET","HEAD"]
     pattern: '/.well-known/mcp'
@@ -343,6 +367,306 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
     }
   }
+  'panel.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'panel.dashboard': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['panel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['panel']>>>
+    }
+  }
+  'panel.curriculum.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/curriculum'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
+    }
+  }
+  'panel.classes.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/classes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+    }
+  }
+  'panel.subjects.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/subjects_controller').default['index']>>>
+    }
+  }
+  'panel.glossary.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/glossary'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'panel.teaching-modules.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/teaching-modules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teaching_modules_controller').default['index']>>>
+    }
+  }
+  'panel.annual-plans.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/annual-plans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/annual_plans_controller').default['index']>>>
+    }
+  }
+  'panel.semester-plans.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/semester-plans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/semester_plans_controller').default['index']>>>
+    }
+  }
+  'panel.rppm.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/rppm'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weekly_lesson_plans_controller').default['index']>>>
+    }
+  }
+  'panel.rpph.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/rpph'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['index']>>>
+    }
+  }
+  'panel.lkpd.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/lkpd'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
+    }
+  }
+  'panel.media-modules.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/media-modules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/media_modules_controller').default['index']>>>
+    }
+  }
+  'panel.exams.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/exams'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/exams_controller').default['index']>>>
+    }
+  }
+  'panel.assessments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/assessments_controller').default['index']>>>
+    }
+  }
+  'panel.paud-assessments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/paud-assessments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+    }
+  }
+  'panel.report-cards.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/report-cards'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
+    }
+  }
+  'panel.jurnal.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/jurnal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+    }
+  }
+  'panel.kokurikuler.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/kokurikuler'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+    }
+  }
+  'panel.katrol.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/katrol'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+    }
+  }
+  'panel.account.package': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/my-package'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+    }
+  }
+  'panel.settings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['index']>>>
+    }
+  }
+  'billing.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/billing'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['package']>>>
+    }
+  }
+  'api.mayar.checkout': {
+    methods: ["POST"]
+    pattern: '/api/topup/mayar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkout']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkout']>>>
+    }
+  }
+  'api.mayar.status': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/topup/invoices/:invoiceNo'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { invoiceNo: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkStatus']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['checkStatus']>>>
+    }
+  }
   'account.package': {
     methods: ["GET","HEAD"]
     pattern: '/my-package'
@@ -377,6 +701,198 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_billing_controller').default['subscriptions']>>>
+    }
+  }
+  'express.modulAjar': {
+    methods: ["GET","HEAD"]
+    pattern: '/modul-ajar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['modulAjar']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['modulAjar']>>>
+    }
+  }
+  'lkpd.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/lkpd'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['lkpd']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['lkpd']>>>
+    }
+  }
+  'express.soal': {
+    methods: ["GET","HEAD"]
+    pattern: '/soal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['soal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['soal']>>>
+    }
+  }
+  'express.protaPromes': {
+    methods: ["GET","HEAD"]
+    pattern: '/prota-promes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['protaPromes']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['protaPromes']>>>
+    }
+  }
+  'express.rapor': {
+    methods: ["GET","HEAD"]
+    pattern: '/rapor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
+    }
+  }
+  'express.katrol': {
+    methods: ["GET","HEAD"]
+    pattern: '/katrol'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['katrol']>>>
+    }
+  }
+  'api.express.katrol.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/katrol/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKatrol']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKatrol']>>>
+    }
+  }
+  'express.jurnal': {
+    methods: ["GET","HEAD"]
+    pattern: '/jurnal'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['jurnal']>>>
+    }
+  }
+  'api.express.jurnal.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/jurnal/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateJurnal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateJurnal']>>>
+    }
+  }
+  'express.kokurikuler': {
+    methods: ["GET","HEAD"]
+    pattern: '/kokurikuler'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['kokurikuler']>>>
+    }
+  }
+  'api.express.kokurikuler.generate': {
+    methods: ["POST"]
+    pattern: '/api/express/kokurikuler/generate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKokurikuler']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateKokurikuler']>>>
+    }
+  }
+  'panel.legacy.kurikulum': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/kurikulum'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/curriculum_controller').default['index']>>>
+    }
+  }
+  'panel.legacy.kelas': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/kelas'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+    }
+  }
+  'panel.legacy.siswa': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/siswa'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/classes_controller').default['index']>>>
+    }
+  }
+  'panel.legacy.asesmen-paud': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/asesmen-paud'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paud_assessments_controller').default['index']>>>
+    }
+  }
+  'panel.legacy.rapor': {
+    methods: ["GET","HEAD"]
+    pattern: '/panel/rapor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/report_cards_controller').default['index']>>>
     }
   }
   'glossary.index': {
@@ -1265,18 +1781,6 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateDailyLessonPlanValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_lesson_plans_controller').default['generate']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'lkpd.index': {
-    methods: ["GET","HEAD"]
-    pattern: '/lkpd'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lkpds_controller').default['index']>>>
     }
   }
   'lkpd.show': {

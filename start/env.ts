@@ -54,8 +54,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   CODEX_CLI_PATH: Env.schema.string.optional(),
   PDF_BROWSER_EXECUTABLE_PATH: Env.schema.string.optional(),
 
-  // Payment (Xendit)
+  // Payment (Xendit & Mayar)
   XENDIT_KEY: Env.schema.string.optional(),
+  MAYAR_API_KEY: Env.schema.string.optional(),
+  MAYAR_WEBHOOK_TOKEN: Env.schema.string.optional(),
+  MAYAR_BASE_URL: Env.schema.string.optional(),
+  MAYAR_ENVIRONMENT: Env.schema.enum.optional(['sandbox', 'production'] as const),
 
   // WhatsApp
   WA_SESSION_DIR: Env.schema.string.optional(),

@@ -8,6 +8,8 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Package from '#models/package'
 import School from '#models/school'
 import PackageSubscription from '#models/package_subscription'
+import CreditTransaction from '#models/credit_transaction'
+import PaymentInvoice from '#models/payment_invoice'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -74,6 +76,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
     phone?: string
   }
 
+  @column({ columnName: 'credits_balance' })
+  declare creditsBalance: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -88,6 +93,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasMany(() => PackageSubscription, { foreignKey: 'userId' })
   declare subscriptions: HasMany<typeof PackageSubscription>
+
+  @hasMany(() => CreditTransaction, { foreignKey: 'userId' })
+  declare creditTransactions: HasMany<typeof CreditTransaction>
+
+  @hasMany(() => PaymentInvoice, { foreignKey: 'userId' })
+  declare paymentInvoices: HasMany<typeof PaymentInvoice>
 
   get initials() {
     const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@')

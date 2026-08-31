@@ -11,8 +11,8 @@ import Semester from '#models/semester'
 import User from '#models/user'
 import Package from '#models/package'
 import PackageEntitlement from '#models/package_entitlement'
-import AiSetting from '#models/ai_setting'
 import { test9routerConnection, listModels } from '#services/ai_service'
+import { aiSettingsService } from '#services/ai_settings_service'
 import env from '#start/env'
 
 export function registerAdminTools(server: McpServer) {
@@ -1018,7 +1018,7 @@ export function registerAdminTools(server: McpServer) {
       if (!auth.ok) return authError(auth.error)
 
       try {
-        const setting = await AiSetting.current()
+        const setting = await aiSettingsService.getCurrent()
         return okResult(setting.toJSON())
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err))
@@ -1042,7 +1042,7 @@ export function registerAdminTools(server: McpServer) {
       if (!auth.ok) return authError(auth.error)
 
       try {
-        const setting = await AiSetting.current()
+        const setting = await aiSettingsService.getCurrent()
         const apiKey = setting.apiKey || env.get('ROUTER_API_KEY') || ''
         const model = setting.model || 'gpt-4o-mini'
 
