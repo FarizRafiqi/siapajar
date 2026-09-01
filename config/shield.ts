@@ -39,7 +39,7 @@ const shieldConfig = defineConfig({
      */
     exceptRoutes: (ctx: HttpContext) => {
       const url = ctx.request.url()
-      return url.startsWith('/api/') || url === '/mcp' || url === '/.well-known/mcp'
+      return url.startsWith('/api/webhooks/mayar/') || url === '/mcp' || url === '/.well-known/mcp'
     },
 
     /**

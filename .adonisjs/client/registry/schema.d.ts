@@ -189,11 +189,11 @@ export interface Registry {
   }
   'api.mayar.webhook': {
     methods: ["POST"]
-    pattern: '/api/webhooks/mayar'
+    pattern: '/api/webhooks/mayar/:secret'
     types: {
       body: {}
-      paramsTuple: []
-      params: {}
+      paramsTuple: [ParamValue]
+      params: { secret: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/mayar_payments_controller').default['webhook']>>>
@@ -317,6 +317,78 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/google_auth_controller').default['callback']>>>
+    }
+  }
+  'email_verification.pending': {
+    methods: ["GET","HEAD"]
+    pattern: '/verify-email/pending'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['pending']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['pending']>>>
+    }
+  }
+  'email_verification.resend': {
+    methods: ["POST"]
+    pattern: '/verify-email/resend'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['resend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['resend']>>>
+    }
+  }
+  'account.email_change': {
+    methods: ["POST"]
+    pattern: '/account/email-change'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['requestEmailChange']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['requestEmailChange']>>>
+    }
+  }
+  'free_benefit.claim.page': {
+    methods: ["GET","HEAD"]
+    pattern: '/claim-free-benefit'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['claimPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['claimPage']>>>
+    }
+  }
+  'free_benefit.claim': {
+    methods: ["POST"]
+    pattern: '/claim-free-benefit'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['claim']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['claim']>>>
+    }
+  }
+  'email_verification.verify': {
+    methods: ["GET","HEAD"]
+    pattern: '/verify-email/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['verify']>>>
     }
   }
   'session.destroy': {
@@ -2357,6 +2429,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_users_controller').default['destroy']>>>
+    }
+  }
+  'admin.fraud.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/fraud-cases'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_fraud_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_fraud_controller').default['index']>>>
+    }
+  }
+  'admin.fraud.review': {
+    methods: ["PUT"]
+    pattern: '/admin/fraud-cases/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_fraud_controller').default['review']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_fraud_controller').default['review']>>>
     }
   }
   'admin.packages.index': {

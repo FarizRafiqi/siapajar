@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
+import { DateTime } from 'luxon'
 import User from '#models/user'
 import Package from '#models/package'
 import PackageSubscription from '#models/package_subscription'
-import { creditService } from '#services/credit_service'
 
 export type SignupAccountData = {
   fullName: string | null
@@ -18,8 +18,6 @@ export type GoogleAccountProfile = {
 }
 
 export class AccountService {
-  constructor(private readonly credits = creditService) {}
-
   async authenticate(email: string, password: string) {
     return User.verifyCredentials(email, password)
   }
@@ -29,6 +27,8 @@ export class AccountService {
     const user = await User.create({
       ...data,
       packageId: freePackage?.id ?? null,
+      creditsBalance: 0,
+      freeBenefitStatus: 'pending',
     })
 
     if (freePackage) {
@@ -37,14 +37,12 @@ export class AccountService {
         packageId: freePackage.id,
         status: 'active',
         billingCycle: 'manual',
-        startsAt: user.createdAt,
+        startsAt: DateTime.now(),
         endsAt: null,
         canceledAt: null,
-        metadata: { source: 'signup' },
+        metadata: { source: 'pending_signup' },
       })
     }
-
-    await this.credits.grantSignupBonusIfEligible(user.id)
 
     return user
   }
@@ -63,6 +61,9 @@ export class AccountService {
         avatarUrl: profile.avatarUrl ?? null,
       })
 
+      user.emailVerifiedAt = user.createdAt
+      user.freeBenefitStatus = 'pending'
+      user.creditsBalance = 0
       const freePackage = await Package.findBy('name', 'free')
       if (freePackage) {
         user.packageId = freePackage.id
@@ -75,16 +76,15 @@ export class AccountService {
           startsAt: user.createdAt,
           endsAt: null,
           canceledAt: null,
-          metadata: { source: 'google_signup' },
+          metadata: { source: 'pending_google_signup' },
         })
       }
+      await user.save()
     } else if (!user.googleId) {
       user.googleId = profile.id
       user.avatarUrl = user.avatarUrl ?? profile.avatarUrl ?? null
       await user.save()
     }
-
-    await this.credits.grantSignupBonusIfEligible(user.id)
 
     return user
   }

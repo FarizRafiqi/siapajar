@@ -19,7 +19,7 @@ export type ScannedRoutes = {
     'health': { paramsTuple?: []; params?: {} }
     'privacy': { paramsTuple?: []; params?: {} }
     'terms': { paramsTuple?: []; params?: {} }
-    'api.mayar.webhook': { paramsTuple?: []; params?: {} }
+    'api.mayar.webhook': { paramsTuple: [ParamValue]; params: {'secret': ParamValue} }
     'api.packages.index': { paramsTuple?: []; params?: {} }
     'mcp.wellknown': { paramsTuple?: []; params?: {} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
@@ -30,6 +30,12 @@ export type ScannedRoutes = {
     'session.store': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
+    'email_verification.pending': { paramsTuple?: []; params?: {} }
+    'email_verification.resend': { paramsTuple?: []; params?: {} }
+    'account.email_change': { paramsTuple?: []; params?: {} }
+    'free_benefit.claim.page': { paramsTuple?: []; params?: {} }
+    'free_benefit.claim': { paramsTuple?: []; params?: {} }
+    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
@@ -200,6 +206,8 @@ export type ScannedRoutes = {
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.fraud.index': { paramsTuple?: []; params?: {} }
+    'admin.fraud.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.packages.store': { paramsTuple?: []; params?: {} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -232,10 +240,13 @@ export type ScannedRoutes = {
     'api.auth.logout': { paramsTuple?: []; params?: {} }
     'api.attendances.quickSubmit': { paramsTuple?: []; params?: {} }
     'api.assessments.quickCapture': { paramsTuple?: []; params?: {} }
-    'api.mayar.webhook': { paramsTuple?: []; params?: {} }
+    'api.mayar.webhook': { paramsTuple: [ParamValue]; params: {'secret': ParamValue} }
     'mcp.handle': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
+    'email_verification.resend': { paramsTuple?: []; params?: {} }
+    'account.email_change': { paramsTuple?: []; params?: {} }
+    'free_benefit.claim': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'api.mayar.checkout': { paramsTuple?: []; params?: {} }
@@ -302,6 +313,9 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
+    'email_verification.pending': { paramsTuple?: []; params?: {} }
+    'free_benefit.claim.page': { paramsTuple?: []; params?: {} }
+    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'panel.index': { paramsTuple?: []; params?: {} }
@@ -404,6 +418,7 @@ export type ScannedRoutes = {
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
+    'admin.fraud.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
@@ -434,6 +449,9 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'auth.google.redirect': { paramsTuple?: []; params?: {} }
     'auth.google.callback': { paramsTuple?: []; params?: {} }
+    'email_verification.pending': { paramsTuple?: []; params?: {} }
+    'free_benefit.claim.page': { paramsTuple?: []; params?: {} }
+    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'onboarding.index': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'panel.index': { paramsTuple?: []; params?: {} }
@@ -536,6 +554,7 @@ export type ScannedRoutes = {
     'subjects.index': { paramsTuple?: []; params?: {} }
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
+    'admin.fraud.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
@@ -565,6 +584,7 @@ export type ScannedRoutes = {
     'subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.update': { paramsTuple?: []; params?: {} }
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.fraud.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.entitlements.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.academic-years.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

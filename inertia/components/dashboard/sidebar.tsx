@@ -14,6 +14,7 @@ import {
   Settings,
   Library,
   Shield,
+  ShieldAlert,
   Package,
   Coins,
   School,
@@ -564,6 +565,10 @@ const adminNavigation: NavigationEntry[] = [
       { name: 'Pengguna', href: '/admin/users', icon: Shield },
       { name: 'Sekolah', href: '/admin/schools', icon: School },
     ],
+  },
+  {
+    name: 'Keamanan & Risiko',
+    items: [{ name: 'Review Anti-Fraud', href: '/admin/fraud-cases', icon: ShieldAlert }],
   },
   {
     name: 'Langganan & Akses',
