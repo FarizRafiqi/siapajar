@@ -43,19 +43,26 @@ export class FreeBenefitRepository {
 
       if (freePackage) {
         user.packageId = freePackage.id
-        const subscription = new PackageSubscription()
-        subscription.useTransaction(trx)
-        subscription.fill({
-          userId,
-          packageId: freePackage.id,
-          status: 'active',
-          billingCycle: 'manual',
-          startsAt: DateTime.now(),
-          endsAt: null,
-          canceledAt: null,
-          metadata: { source: 'verified_free_benefit' },
-        })
-        await subscription.save()
+        const existingSubscription = await PackageSubscription.query({ client: trx })
+          .where('userId', userId)
+          .where('packageId', freePackage.id)
+          .where('status', 'active')
+          .first()
+        if (!existingSubscription) {
+          const subscription = new PackageSubscription()
+          subscription.useTransaction(trx)
+          subscription.fill({
+            userId,
+            packageId: freePackage.id,
+            status: 'active',
+            billingCycle: 'manual',
+            startsAt: DateTime.now(),
+            endsAt: null,
+            canceledAt: null,
+            metadata: { source: 'verified_free_benefit' },
+          })
+          await subscription.save()
+        }
       }
 
       user.freeBenefitStatus = 'eligible'

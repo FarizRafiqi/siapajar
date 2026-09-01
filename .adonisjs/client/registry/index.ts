@@ -98,8 +98,8 @@ const routes = {
   },
   'api.mayar.webhook': {
     methods: ["POST"],
-    pattern: '/api/webhooks/mayar',
-    tokens: [{"old":"/api/webhooks/mayar","type":0,"val":"api","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"webhooks","end":""},{"old":"/api/webhooks/mayar","type":0,"val":"mayar","end":""}],
+    pattern: '/api/webhooks/mayar/:secret',
+    tokens: [{"old":"/api/webhooks/mayar/:secret","type":0,"val":"api","end":""},{"old":"/api/webhooks/mayar/:secret","type":0,"val":"webhooks","end":""},{"old":"/api/webhooks/mayar/:secret","type":0,"val":"mayar","end":""},{"old":"/api/webhooks/mayar/:secret","type":1,"val":"secret","end":""}],
     types: placeholder as Registry['api.mayar.webhook']['types'],
   },
   'api.packages.index': {
@@ -161,6 +161,42 @@ const routes = {
     pattern: '/auth/google/callback',
     tokens: [{"old":"/auth/google/callback","type":0,"val":"auth","end":""},{"old":"/auth/google/callback","type":0,"val":"google","end":""},{"old":"/auth/google/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['auth.google.callback']['types'],
+  },
+  'email_verification.pending': {
+    methods: ["GET","HEAD"],
+    pattern: '/verify-email/pending',
+    tokens: [{"old":"/verify-email/pending","type":0,"val":"verify-email","end":""},{"old":"/verify-email/pending","type":0,"val":"pending","end":""}],
+    types: placeholder as Registry['email_verification.pending']['types'],
+  },
+  'email_verification.resend': {
+    methods: ["POST"],
+    pattern: '/verify-email/resend',
+    tokens: [{"old":"/verify-email/resend","type":0,"val":"verify-email","end":""},{"old":"/verify-email/resend","type":0,"val":"resend","end":""}],
+    types: placeholder as Registry['email_verification.resend']['types'],
+  },
+  'account.email_change': {
+    methods: ["POST"],
+    pattern: '/account/email-change',
+    tokens: [{"old":"/account/email-change","type":0,"val":"account","end":""},{"old":"/account/email-change","type":0,"val":"email-change","end":""}],
+    types: placeholder as Registry['account.email_change']['types'],
+  },
+  'free_benefit.claim.page': {
+    methods: ["GET","HEAD"],
+    pattern: '/claim-free-benefit',
+    tokens: [{"old":"/claim-free-benefit","type":0,"val":"claim-free-benefit","end":""}],
+    types: placeholder as Registry['free_benefit.claim.page']['types'],
+  },
+  'free_benefit.claim': {
+    methods: ["POST"],
+    pattern: '/claim-free-benefit',
+    tokens: [{"old":"/claim-free-benefit","type":0,"val":"claim-free-benefit","end":""}],
+    types: placeholder as Registry['free_benefit.claim']['types'],
+  },
+  'email_verification.verify': {
+    methods: ["GET","HEAD"],
+    pattern: '/verify-email/:token',
+    tokens: [{"old":"/verify-email/:token","type":0,"val":"verify-email","end":""},{"old":"/verify-email/:token","type":1,"val":"token","end":""}],
+    types: placeholder as Registry['email_verification.verify']['types'],
   },
   'session.destroy': {
     methods: ["POST"],
@@ -1181,6 +1217,18 @@ const routes = {
     pattern: '/admin/users/:id',
     tokens: [{"old":"/admin/users/:id","type":0,"val":"admin","end":""},{"old":"/admin/users/:id","type":0,"val":"users","end":""},{"old":"/admin/users/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['admin.users.destroy']['types'],
+  },
+  'admin.fraud.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/fraud-cases',
+    tokens: [{"old":"/admin/fraud-cases","type":0,"val":"admin","end":""},{"old":"/admin/fraud-cases","type":0,"val":"fraud-cases","end":""}],
+    types: placeholder as Registry['admin.fraud.index']['types'],
+  },
+  'admin.fraud.review': {
+    methods: ["PUT"],
+    pattern: '/admin/fraud-cases/:id',
+    tokens: [{"old":"/admin/fraud-cases/:id","type":0,"val":"admin","end":""},{"old":"/admin/fraud-cases/:id","type":0,"val":"fraud-cases","end":""},{"old":"/admin/fraud-cases/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.fraud.review']['types'],
   },
   'admin.packages.index': {
     methods: ["GET","HEAD"],

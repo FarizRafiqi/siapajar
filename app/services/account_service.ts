@@ -1,5 +1,8 @@
 import { randomBytes } from 'node:crypto'
+import { DateTime } from 'luxon'
 import User from '#models/user'
+import Package from '#models/package'
+import PackageSubscription from '#models/package_subscription'
 
 export type SignupAccountData = {
   fullName: string | null
@@ -20,12 +23,28 @@ export class AccountService {
   }
 
   async register(data: SignupAccountData) {
-    return User.create({
+    const freePackage = await Package.findBy('name', 'free')
+    const user = await User.create({
       ...data,
-      packageId: null,
+      packageId: freePackage?.id ?? null,
       creditsBalance: 0,
       freeBenefitStatus: 'pending',
     })
+
+    if (freePackage) {
+      await PackageSubscription.create({
+        userId: user.id,
+        packageId: freePackage.id,
+        status: 'active',
+        billingCycle: 'manual',
+        startsAt: DateTime.now(),
+        endsAt: null,
+        canceledAt: null,
+        metadata: { source: 'pending_signup' },
+      })
+    }
+
+    return user
   }
 
   async signInWithGoogle(profile: GoogleAccountProfile) {
@@ -45,6 +64,21 @@ export class AccountService {
       user.emailVerifiedAt = user.createdAt
       user.freeBenefitStatus = 'pending'
       user.creditsBalance = 0
+      const freePackage = await Package.findBy('name', 'free')
+      if (freePackage) {
+        user.packageId = freePackage.id
+        await user.save()
+        await PackageSubscription.create({
+          userId: user.id,
+          packageId: freePackage.id,
+          status: 'active',
+          billingCycle: 'manual',
+          startsAt: user.createdAt,
+          endsAt: null,
+          canceledAt: null,
+          metadata: { source: 'pending_google_signup' },
+        })
+      }
       await user.save()
     } else if (!user.googleId) {
       user.googleId = profile.id
