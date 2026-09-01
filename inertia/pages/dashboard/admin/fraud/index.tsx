@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react'
 import { ShieldAlert } from 'lucide-react'
+import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 
 type FraudCase = {
   id: number
@@ -15,9 +16,12 @@ export default function AdminFraudIndex({ cases, filters }: Props) {
   const review = (id: number, status: 'approved' | 'rejected') =>
     router.put(`/admin/fraud-cases/${id}`, { status })
   return (
-    <>
+    <DashboardWrapper
+      title="Review Anti-Fraud"
+      breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Review Anti-Fraud' }]}
+    >
       <Head title="Review Anti-Fraud — SiapAjar" />
-      <main className="space-y-6 p-4 sm:p-6">
+      <div className="space-y-6">
         <header className="flex items-center gap-3">
           <ShieldAlert className="h-7 w-7 text-rose-700" />
           <div>
@@ -92,7 +96,7 @@ export default function AdminFraudIndex({ cases, filters }: Props) {
           {cases.meta.total} kasus{' '}
           {filters.status !== 'all' ? `dengan status ${filters.status}` : ''}
         </p>
-      </main>
-    </>
+      </div>
+    </DashboardWrapper>
   )
 }
