@@ -35,4 +35,5 @@ export const middleware = router.named({
   onboarding: () => import('#middleware/onboarding_middleware'),
   role: () => import('#middleware/role_middleware'),
   mcpRateLimit: () => import('#middleware/mcp_rate_limit_middleware'),
+  antiFraudRateLimit: () => import('#middleware/anti_fraud_rate_limit_middleware'),
 })

@@ -79,6 +79,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'credits_balance' })
   declare creditsBalance: number
 
+  @column.dateTime({ columnName: 'email_verified_at' })
+  declare emailVerifiedAt: DateTime | null
+
+  @column({ columnName: 'free_benefit_status' })
+  declare freeBenefitStatus: 'pending' | 'eligible' | 'restricted' | 'legacy'
+
+  @column.dateTime({ columnName: 'email_change_requested_at' })
+  declare emailChangeRequestedAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
