@@ -4,6 +4,14 @@ import { Coins, Check, X, ExternalLink, ShieldCheck, Clock, Zap, Ticket } from '
 import { toast } from 'sonner'
 import { cn } from '~/lib/utils'
 
+function csrfHeaders() {
+  const token = document.cookie
+    .split('; ')
+    .find((item) => item.startsWith('XSRF-TOKEN='))
+    ?.split('=')[1]
+  return token ? { 'X-XSRF-TOKEN': decodeURIComponent(token) } : {}
+}
+
 interface TopupTier {
   id: string | number
   name: string
@@ -100,6 +108,7 @@ export default function TopupModal({
   const [isProcessing, setIsProcessing] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [showPromoInput, setShowPromoInput] = useState(false)
+  const [mobile, setMobile] = useState('')
 
   // Fetch live packages from Database
   useEffect(() => {
@@ -171,6 +180,13 @@ export default function TopupModal({
   const selectedTier = availableTiers.find((t) => t.id === selectedTierId) || availableTiers[0]
 
   const handleCheckout = async () => {
+    if (
+      !/^\+?62\d{8,13}$/.test(mobile.replace(/[^0-9+]/g, '')) &&
+      !/^0\d{8,13}$/.test(mobile.replace(/[^0-9+]/g, ''))
+    ) {
+      toast.error('Masukkan nomor WhatsApp yang valid untuk pembayaran.')
+      return
+    }
     setIsProcessing(true)
     const toastId = toast.loading('Menyiapkan pembayaran Mayar.id...')
 
@@ -180,11 +196,13 @@ export default function TopupModal({
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          ...csrfHeaders(),
         },
         body: JSON.stringify({
           packageName: selectedTier.id,
           packageId: selectedTier.id,
           promoCode: promoCode.trim() || undefined,
+          mobile,
         }),
       })
 
@@ -351,6 +369,25 @@ export default function TopupModal({
                   </div>
                 )
               })}
+            </div>
+
+            {/* Promo Code Box */}
+            <div>
+              <label
+                htmlFor="topup-mobile"
+                className="mb-1.5 block text-xs font-semibold text-neutral-900 dark:text-white"
+              >
+                Nomor WhatsApp untuk pembayaran
+              </label>
+              <input
+                id="topup-mobile"
+                type="tel"
+                inputMode="tel"
+                value={mobile}
+                onChange={(event) => setMobile(event.target.value)}
+                placeholder="contoh: 081234567890"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:border-emerald-600 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              />
             </div>
 
             {/* Promo Code Box */}

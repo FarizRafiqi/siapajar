@@ -155,3 +155,7 @@ Controller → Service → Repository → Model/Database
 22. **Decorative Ghost Icon Spacing Standard**:
     - Do not render a low-opacity decorative or "ghost" icon behind, on top of, or too close to meaningful content such as buttons, controls, badges, or text.
     - Reserve clear space for decorative artwork, reposition it into an intentionally empty area, or hide it at the relevant breakpoint when content would overlap. Decorative icons must never compete with or obscure interactive UI.
+
+23. **Dashboard Shell Consistency Standard**:
+    - Every authenticated dashboard, panel, and admin page MUST render through the shared `DashboardWrapper` (or the shared dashboard layout) so the sidebar, navbar, responsive behavior, top-up modal, flash notifications, and persisted navigation state remain available.
+    - Never create a standalone page for a dashboard/admin route that omits the shared shell. Verify the page visually and through its route before considering the feature complete.

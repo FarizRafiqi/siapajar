@@ -70,6 +70,22 @@ export interface ApiDefinition {
       callback: typeof routes['auth.google.callback']
     }
   }
+  emailVerification: {
+    pending: typeof routes['email_verification.pending']
+    resend: typeof routes['email_verification.resend']
+    verify: typeof routes['email_verification.verify']
+  }
+  account: {
+    emailChange: typeof routes['account.email_change']
+    package: typeof routes['account.package']
+    usage: typeof routes['account.usage']
+    subscriptions: typeof routes['account.subscriptions']
+  }
+  freeBenefit: {
+    claim: typeof routes['free_benefit.claim'] & {
+      page: typeof routes['free_benefit.claim.page']
+    }
+  }
   onboarding: {
     index: typeof routes['onboarding.index']
     store: typeof routes['onboarding.store']
@@ -148,11 +164,6 @@ export interface ApiDefinition {
   }
   billing: {
     index: typeof routes['billing.index']
-  }
-  account: {
-    package: typeof routes['account.package']
-    usage: typeof routes['account.usage']
-    subscriptions: typeof routes['account.subscriptions']
   }
   express: {
     modulAjar: typeof routes['express.modulAjar']
@@ -338,6 +349,10 @@ export interface ApiDefinition {
       index: typeof routes['admin.users.index']
       update: typeof routes['admin.users.update']
       destroy: typeof routes['admin.users.destroy']
+    }
+    fraud: {
+      index: typeof routes['admin.fraud.index']
+      review: typeof routes['admin.fraud.review']
     }
     packages: {
       index: typeof routes['admin.packages.index']

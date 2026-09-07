@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { mayarService } from '#services/mayar_service'
+import env from '#start/env'
 
 export default class MayarPaymentsController {
   /**
@@ -11,14 +12,22 @@ export default class MayarPaymentsController {
       return response.unauthorized({ message: 'Harap login terlebih dahulu' })
     }
 
-    const { packageName, packageId } = request.only(['packageName', 'packageId'])
-    const redirectUrl = `${request.header('origin') || 'http://localhost:3333'}/my-package?status=success`
+    const { packageName, packageId, mobile } = request.only(['packageName', 'packageId', 'mobile'])
+    const normalizedMobile = String(mobile || '').replace(/[^0-9+]/g, '')
+    if (!/^\+?62\d{8,13}$/.test(normalizedMobile) && !/^0\d{8,13}$/.test(normalizedMobile)) {
+      return response.unprocessableEntity({
+        success: false,
+        message: 'Masukkan nomor WhatsApp yang valid untuk pembayaran.',
+      })
+    }
+    const redirectUrl = `${env.get('APP_URL', 'http://localhost:3333')}/my-package?status=success`
 
     try {
       const invoice = await mayarService.createCheckout(user, {
         packageName,
         packageId,
         redirectUrl,
+        mobile: normalizedMobile,
       })
 
       return response.ok({
@@ -39,12 +48,8 @@ export default class MayarPaymentsController {
   /**
    * Webhook handler untuk notifikasi pembayaran dari Mayar
    */
-  async webhook({ request, response }: HttpContext) {
-    const tokenHeader = (request.header('x-mayar-token') ||
-      request.header('x-mayar-signature') ||
-      request.header('authorization')?.replace('Bearer ', '')) as string | undefined
-
-    if (!mayarService.verifyWebhook(tokenHeader)) {
+  async webhook({ request, response, params }: HttpContext) {
+    if (!mayarService.verifyWebhookPath(params.secret)) {
       return response.unauthorized({ message: 'Invalid webhook token' })
     }
 
@@ -63,7 +68,7 @@ export default class MayarPaymentsController {
     } catch (error: any) {
       return response.internalServerError({
         status: 'error',
-        message: error.message,
+        message: 'Pembayaran belum dapat diproses.',
       })
     }
   }

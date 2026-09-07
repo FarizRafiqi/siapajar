@@ -96,6 +96,9 @@ export default class GoogleAuthController {
       })
     }
 
+    if (user.freeBenefitStatus === 'pending') {
+      return response.redirect('/claim-free-benefit')
+    }
     return response.redirect().toRoute('dashboard')
   }
 }
