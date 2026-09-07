@@ -3,7 +3,7 @@ import { Head, router, useForm } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { FileSpreadsheet, Trash2, Eye, Sparkles } from 'lucide-react'
+import { FileSpreadsheet, Trash2, Eye, Plus } from 'lucide-react'
 import CurriculumSequenceSelect from '~/components/dashboard/curriculum_sequence_select'
 
 interface SchoolClass {
@@ -77,11 +77,12 @@ export default function LkpdIndex({ lkpds, classes, sequences }: LkpdIndexProps)
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowGenerateModal(true)}
             disabled={!hasClasses}
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Sparkles className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Generate LKPD AI
           </button>
         </div>
@@ -173,7 +174,7 @@ export default function LkpdIndex({ lkpds, classes, sequences }: LkpdIndexProps)
           >
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <FileSpreadsheet className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Generate LKPD / Lembar Aktivitas AI

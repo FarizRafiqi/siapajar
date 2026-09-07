@@ -1,15 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Assessment from '#models/assessment'
-import Score from '#models/score'
-import SchoolClass from '#models/school_class'
-import Student from '#models/student'
-import Subject from '#models/subject'
-import Semester from '#models/semester'
 import { createAssessmentValidator, updateScoresValidator } from '#validators/assessment'
-import { exportAssessmentScores } from '#services/xlsx_export_service'
-import { exportAssessment as exportAssessmentDocx } from '#services/export_service'
-import { exportAssessmentPdf } from '#services/pdf_export_service'
-import { assertEntitled, recordUsage } from '#services/entitlement_service'
+import { assessmentService } from '#services/assessment_service'
 import {
   EXPORT_CONTENT_TYPES,
   exportFilename,
@@ -19,69 +10,18 @@ import {
 
 export default class AssessmentsController {
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
-    const assessments = await Assessment.query()
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .orderBy('date', 'desc')
+    const data = await assessmentService.getIndexData(auth.user!)
 
-    const classes = await SchoolClass.query().where('user_id', user.id).orderBy('name')
-
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('education_level', user.educationLevel || 'sd')
-      .where('is_active', true)
-      .orderBy('name')
-
-    return inertia.render('dashboard/assessments/index', {
-      assessments: assessments.map((a) => a.toJSON()),
-      classes: classes.map((c) => c.toJSON()),
-      subjects: subjects.map((s) => s.toJSON()),
-    })
+    return inertia.render('dashboard/assessments/index', data)
   }
 
   async store({ request, response, session, auth }: HttpContext) {
-    const user = auth.user!
     const data = await request.validateUsing(createAssessmentValidator)
+    const assessment = await assessmentService.create(auth.user!, data)
 
-    const schoolClass = await SchoolClass.query()
-      .where('id', data.classId)
-      .where('user_id', user.id)
-      .first()
-
-    if (!schoolClass) {
+    if (!assessment) {
       session.flash('error', 'Kelas tidak ditemukan')
       return response.redirect().back()
-    }
-
-    let semesterId = data.semesterId ?? null
-    if (!semesterId) {
-      const activeSemester = await Semester.query()
-        .where('academic_year_id', schoolClass.academicYearId)
-        .where('is_active', true)
-        .first()
-      semesterId = activeSemester?.id ?? null
-    }
-
-    const assessment = await Assessment.create({
-      userId: user.id,
-      classId: data.classId,
-      semesterId,
-      subject: data.subject,
-      type: data.type,
-      title: data.title,
-      learningObjective: data.learningObjective ?? null,
-      date: data.date,
-    })
-
-    const students = await Student.query().where('class_id', data.classId)
-    for (const student of students) {
-      await Score.create({
-        assessmentId: assessment.id,
-        studentId: student.id,
-        value: null,
-        note: null,
-      })
     }
 
     session.flash('success', 'Penilaian berhasil dibuat')
@@ -89,120 +29,86 @@ export default class AssessmentsController {
   }
 
   async show({ params, inertia, auth, response }: HttpContext) {
-    const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const data = await assessmentService.getShowData(auth.user!.id, params.id)
 
-    if (!assessment) {
+    if (!data) {
       return response.redirect('/assessments')
     }
 
-    return inertia.render('dashboard/assessments/show', {
-      assessment: assessment.toJSON(),
-    })
+    return inertia.render('dashboard/assessments/show', data)
   }
 
   async export({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
+    const data = await assessmentService.getExportData(user, params.id, 'xlsx')
 
-    if (!assessment) {
+    if (!data) {
       return response.redirect('/assessments')
     }
 
-    await assertEntitled(user, 'export_xlsx')
-    await recordUsage(user.id, 'export_xlsx')
-    const buffer = exportAssessmentScores(assessment, user)
     return sendExport(
       response,
-      buffer,
+      data.buffer,
       EXPORT_CONTENT_TYPES.xlsx,
-      exportFilename(['Penilaian', assessment.title], 'xlsx')
+      exportFilename(['Penilaian', data.assessment.title], 'xlsx')
     )
   }
 
   async exportDocx({ params, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
-    if (!assessment) return response.redirect('/assessments')
-    const buffer = await exportAssessmentDocx(assessment, user)
+    const data = await assessmentService.getExportData(user, params.id, 'docx')
+
+    if (!data) {
+      return response.redirect('/assessments')
+    }
+
     return sendExport(
       response,
-      buffer,
+      data.buffer,
       EXPORT_CONTENT_TYPES.docx,
-      exportFilename(['Penilaian', assessment.title], 'docx')
+      exportFilename(['Penilaian', data.assessment.title], 'docx')
     )
   }
 
   async exportPdf({ params, request, response, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .preload('schoolClass')
-      .preload('scores', (q) => q.preload('student'))
-      .first()
-    if (!assessment) return response.redirect('/assessments')
-    const buffer = await exportAssessmentPdf(assessment, user, !wantsInlinePreview(request))
+    const inline = wantsInlinePreview(request)
+    const data = await assessmentService.getExportData(user, params.id, 'pdf', !inline)
+
+    if (!data) {
+      return response.redirect('/assessments')
+    }
+
     return sendExport(
       response,
-      buffer,
+      data.buffer,
       EXPORT_CONTENT_TYPES.pdf,
-      exportFilename(['Penilaian', assessment.title], 'pdf'),
-      { inline: wantsInlinePreview(request) }
+      exportFilename(['Penilaian', data.assessment.title], 'pdf'),
+      { inline }
     )
   }
 
   async updateScores({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const exists = await assessmentService.exists(user.id, params.id)
 
-    if (!assessment) {
+    if (!exists) {
       return response.redirect('/assessments')
     }
 
     const { scores } = await request.validateUsing(updateScoresValidator)
-
-    for (const s of scores) {
-      await Score.query()
-        .where('assessment_id', assessment.id)
-        .where('student_id', s.studentId)
-        .update({ value: s.value, note: s.note ?? null })
-    }
+    await assessmentService.updateScores(user.id, params.id, scores)
 
     session.flash('success', 'Nilai berhasil disimpan')
     return response.redirect().back()
   }
 
   async destroy({ params, response, session, auth }: HttpContext) {
-    const user = auth.user!
-    const assessment = await Assessment.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const deleted = await assessmentService.destroy(auth.user!.id, params.id)
 
-    if (!assessment) {
+    if (!deleted) {
       return response.redirect('/assessments')
     }
-
-    await assessment.delete()
 
     session.flash('success', 'Penilaian berhasil dihapus')
     return response.redirect().toRoute('assessments.index')

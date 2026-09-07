@@ -9,15 +9,18 @@
 
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
+import { healthService } from '#services/health_service'
 import router from '@adonisjs/core/services/router'
-import db from '@adonisjs/lucid/services/db'
+
+const ExpressToolsController = () => import('#controllers/express_tools_controller')
+const MayarPaymentsController = () => import('#controllers/mayar_payments_controller')
 
 router.get('/', [controllers.Home, 'index']).as('home')
 router
   .get('/health', async ({ response }) => {
     try {
       const { default: redis } = await import('@adonisjs/redis/services/main')
-      await db.rawQuery('select 1')
+      await healthService.checkDatabase()
       await redis.ping()
       return response.ok({ status: 'ok', database: 'ok', redis: 'ok' })
     } catch {
@@ -27,6 +30,12 @@ router
   .as('health')
 router.get('/privacy', ({ inertia }) => inertia.render('legal/privacy', {})).as('privacy')
 router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('terms')
+
+// Mayar Webhook (Public Endpoint)
+router.post('/api/webhooks/mayar', [MayarPaymentsController, 'webhook']).as('api.mayar.webhook')
+
+// Public Packages Endpoint
+router.get('/api/packages', [controllers.Home, 'packages']).as('api.packages.index')
 
 // MCP Discovery & HTTP Transport Routes
 router.get('/.well-known/mcp', [controllers.Mcp, 'wellKnown']).as('mcp.wellknown')
@@ -70,12 +79,99 @@ router
 
     // Dashboard
     router.get('/dashboard', [controllers.Dashboard, 'index']).as('dashboard')
+    router
+      .get('/panel', ({ response }) => response.redirect().toRoute('panel.dashboard'))
+      .as('panel.index')
+    router.get('/panel/dashboard', [controllers.Dashboard, 'panel']).as('panel.dashboard')
+
+    // Panel Lengkap — halaman terstruktur tetap berada di bawah /panel/*.
+    // Route kanonis tanpa prefiks tetap dipertahankan untuk tautan lama dan redirect internal.
+    router
+      .group(() => {
+        router.get('/curriculum', [controllers.Curriculum, 'index']).as('panel.curriculum.index')
+        router.get('/classes', [controllers.Classes, 'index']).as('panel.classes.index')
+        router.get('/subjects', [controllers.Subjects, 'index']).as('panel.subjects.index')
+        router
+          .get('/glossary', ({ inertia }) => inertia.render('dashboard/glossary/index', {}))
+          .as('panel.glossary.index')
+        router
+          .get('/teaching-modules', [controllers.TeachingModules, 'index'])
+          .as('panel.teaching-modules.index')
+        router
+          .get('/annual-plans', [controllers.AnnualPlans, 'index'])
+          .as('panel.annual-plans.index')
+        router
+          .get('/semester-plans', [controllers.SemesterPlans, 'index'])
+          .as('panel.semester-plans.index')
+        router.get('/rppm', [controllers.WeeklyLessonPlans, 'index']).as('panel.rppm.index')
+        router.get('/rpph', [controllers.DailyLessonPlans, 'index']).as('panel.rpph.index')
+        router.get('/lkpd', [controllers.Lkpds, 'index']).as('panel.lkpd.index')
+        router
+          .get('/media-modules', [controllers.MediaModules, 'index'])
+          .as('panel.media-modules.index')
+        router.get('/exams', [controllers.Exams, 'index']).as('panel.exams.index')
+        router.get('/assessments', [controllers.Assessments, 'index']).as('panel.assessments.index')
+        router
+          .get('/paud-assessments', [controllers.PaudAssessments, 'index'])
+          .as('panel.paud-assessments.index')
+        router
+          .get('/report-cards', [controllers.ReportCards, 'index'])
+          .as('panel.report-cards.index')
+        router.get('/jurnal', [ExpressToolsController, 'jurnal']).as('panel.jurnal.index')
+        router
+          .get('/kokurikuler', [ExpressToolsController, 'kokurikuler'])
+          .as('panel.kokurikuler.index')
+        router.get('/katrol', [ExpressToolsController, 'katrol']).as('panel.katrol.index')
+        router
+          .get('/my-package', [controllers.AccountBilling, 'package'])
+          .as('panel.account.package')
+        router.get('/settings', [controllers.Settings, 'index']).as('panel.settings.index')
+      })
+      .prefix('/panel')
+
+    // Billing & Top-Up Kredit (Mayar.id)
+    router.get('/billing', [controllers.AccountBilling, 'package']).as('billing.index')
+    router.post('/api/topup/mayar', [MayarPaymentsController, 'checkout']).as('api.mayar.checkout')
+    router
+      .get('/api/topup/invoices/:invoiceNo', [MayarPaymentsController, 'checkStatus'])
+      .as('api.mayar.status')
 
     router.get('/my-package', [controllers.AccountBilling, 'package']).as('account.package')
     router.get('/usage', [controllers.AccountBilling, 'usage']).as('account.usage')
     router
       .get('/subscriptions', [controllers.AccountBilling, 'subscriptions'])
       .as('account.subscriptions')
+
+    // Tool-First Plain Express Routes
+    router.get('/modul-ajar', [ExpressToolsController, 'modulAjar']).as('express.modulAjar')
+    router.get('/lkpd', [ExpressToolsController, 'lkpd']).as('lkpd.index')
+    router.get('/soal', [ExpressToolsController, 'soal']).as('express.soal')
+    router.get('/prota-promes', [ExpressToolsController, 'protaPromes']).as('express.protaPromes')
+    router.get('/rapor', [ExpressToolsController, 'rapor']).as('express.rapor')
+
+    router.get('/katrol', [ExpressToolsController, 'katrol']).as('express.katrol')
+    router
+      .post('/api/express/katrol/generate', [ExpressToolsController, 'generateKatrol'])
+      .as('api.express.katrol.generate')
+
+    router.get('/jurnal', [ExpressToolsController, 'jurnal']).as('express.jurnal')
+    router
+      .post('/api/express/jurnal/generate', [ExpressToolsController, 'generateJurnal'])
+      .as('api.express.jurnal.generate')
+
+    router.get('/kokurikuler', [ExpressToolsController, 'kokurikuler']).as('express.kokurikuler')
+    router
+      .post('/api/express/kokurikuler/generate', [ExpressToolsController, 'generateKokurikuler'])
+      .as('api.express.kokurikuler.generate')
+
+    // Panel Terstruktur Aliases lama — tetap render halaman, bukan melempar user ke route lain.
+    router.get('/panel/kurikulum', [controllers.Curriculum, 'index']).as('panel.legacy.kurikulum')
+    router.get('/panel/kelas', [controllers.Classes, 'index']).as('panel.legacy.kelas')
+    router.get('/panel/siswa', [controllers.Classes, 'index']).as('panel.legacy.siswa')
+    router
+      .get('/panel/asesmen-paud', [controllers.PaudAssessments, 'index'])
+      .as('panel.legacy.asesmen-paud')
+    router.get('/panel/rapor', [controllers.ReportCards, 'index']).as('panel.legacy.rapor')
 
     // Panduan istilah kurikulum
     router
@@ -260,7 +356,6 @@ router
     router.post('/rpph/generate', [controllers.DailyLessonPlans, 'generate']).as('rpph.generate')
 
     // LKPD (Lembar Kerja Peserta Didik / Lembar Aktivitas Anak)
-    router.get('/lkpd', [controllers.Lkpds, 'index']).as('lkpd.index')
     router.get('/lkpd/:id', [controllers.Lkpds, 'show']).as('lkpd.show')
     router.get('/lkpd/:id/export', [controllers.Lkpds, 'export']).as('lkpd.export')
     router.get('/lkpd/:id/export/pdf', [controllers.Lkpds, 'exportPdf']).as('lkpd.exportPdf')

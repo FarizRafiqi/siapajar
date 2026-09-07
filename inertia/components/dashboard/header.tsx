@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { CircleHelp, Menu, Moon, Sun } from 'lucide-react'
+import { CircleHelp, Menu, Moon, Sun, Coins, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 interface HeaderProps {
@@ -8,6 +8,8 @@ interface HeaderProps {
   onMenuClick?: () => void
   showTour?: boolean
   onTourClick?: () => void
+  creditsBalance?: number
+  onTopupClick?: () => void
 }
 
 export default function Header({
@@ -16,6 +18,8 @@ export default function Header({
   onMenuClick,
   showTour,
   onTourClick,
+  creditsBalance,
+  onTopupClick,
 }: Readonly<HeaderProps>) {
   const [darkMode, setDarkMode] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
@@ -44,11 +48,13 @@ export default function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white/80 px-4 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/80 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white/90 px-4 backdrop-blur-md dark:border-neutral-800 dark:bg-[#121214]/90 sm:px-6">
       {/* Left: Menu button (mobile) + Breadcrumbs + Title */}
       <div className="flex min-w-0 items-center gap-3">
         <button
+          type="button"
           onClick={onMenuClick}
+          aria-label="Buka menu navigasi"
           className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 md:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -57,7 +63,10 @@ export default function Header({
           {breadcrumbs && breadcrumbs.length > 0 && (
             <nav className="mb-1 flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
               {breadcrumbs.map((crumb, index) => (
-                <span key={index} className="flex items-center gap-1">
+                <span
+                  key={`crumb-${crumb.label}-${crumb.href || index}`}
+                  className="flex items-center gap-1"
+                >
                   {index > 0 && <span>/</span>}
                   {crumb.href ? (
                     <a
@@ -83,6 +92,29 @@ export default function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* Saldo Kredit Kawaii Badge */}
+        {creditsBalance !== undefined && (
+          <button
+            type="button"
+            onClick={() =>
+              onTopupClick
+                ? onTopupClick()
+                : window.dispatchEvent(new CustomEvent('open-topup-modal'))
+            }
+            className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 border-2 border-emerald-500/30 text-emerald-900 dark:text-emerald-200 transition-all text-xs font-bold shrink-0 shadow-xs active:translate-y-0.5 cursor-pointer"
+            title="Klik untuk top-up saldo kredit"
+          >
+            <Coins className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-extrabold">{creditsBalance}</span>
+            <span className="hidden xs:inline text-neutral-600 dark:text-neutral-300 font-medium">
+              Kredit
+            </span>
+            <span className="ml-0.5 flex items-center justify-center h-4 w-4 rounded-full bg-emerald-600 text-white dark:bg-emerald-500">
+              <Plus className="h-3 w-3" />
+            </span>
+          </button>
+        )}
+
         <div ref={helpRef} className="relative">
           <button
             type="button"
@@ -119,7 +151,9 @@ export default function Header({
           )}
         </div>
         <button
+          type="button"
           onClick={toggleDarkMode}
+          aria-label="Ubah tema gelap atau terang"
           className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
           {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

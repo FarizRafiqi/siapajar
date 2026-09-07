@@ -292,6 +292,39 @@ export class ClassSchema extends BaseModel {
   declare userId: number
 }
 
+export class CreditTransactionSchema extends BaseModel {
+  static $columns = [
+    'amount',
+    'balanceAfter',
+    'createdAt',
+    'description',
+    'id',
+    'metadata',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = CreditTransactionSchema.$columns
+  @column()
+  declare amount: number
+  @column()
+  declare balanceAfter: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: any | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
 export class CurriculumCpSchema extends BaseModel {
   static $columns = [
     'code',
@@ -880,6 +913,57 @@ export class PaudAssessmentSchema extends BaseModel {
   declare userId: number
 }
 
+export class PaymentInvoiceSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'creditsAmount',
+    'gatewayTransactionId',
+    'grossAmount',
+    'id',
+    'invoiceNo',
+    'metadata',
+    'packageName',
+    'paidAt',
+    'paymentGateway',
+    'paymentMethod',
+    'paymentUrl',
+    'status',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = PaymentInvoiceSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creditsAmount: number
+  @column()
+  declare gatewayTransactionId: string | null
+  @column()
+  declare grossAmount: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare invoiceNo: string
+  @column()
+  declare metadata: any | null
+  @column()
+  declare packageName: string
+  @column.dateTime()
+  declare paidAt: DateTime | null
+  @column()
+  declare paymentGateway: string
+  @column()
+  declare paymentMethod: string | null
+  @column()
+  declare paymentUrl: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
 export class RememberMeTokenSchema extends BaseModel {
   static $columns = ['createdAt', 'expiresAt', 'hash', 'id', 'tokenableId', 'updatedAt'] as const
   $columns = RememberMeTokenSchema.$columns
@@ -1147,6 +1231,7 @@ export class UserSchema extends BaseModel {
   static $columns = [
     'avatarUrl',
     'createdAt',
+    'creditsBalance',
     'curriculumVersion',
     'defaultGroupContext',
     'educationLevel',
@@ -1168,6 +1253,8 @@ export class UserSchema extends BaseModel {
   declare avatarUrl: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare creditsBalance: number
   @column()
   declare curriculumVersion: string | null
   @column()

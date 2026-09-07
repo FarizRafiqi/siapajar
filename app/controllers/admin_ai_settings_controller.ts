@@ -1,7 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { randomBytes } from 'node:crypto'
-import { DateTime } from 'luxon'
-import AiSetting from '#models/ai_setting'
 import {
   updateAiSettingValidator,
   listModelsValidator,
@@ -17,10 +15,11 @@ import {
 } from '#services/ai_service'
 import env from '#start/env'
 import { getCodexAccount, listCodexModels, startCodexChatGptLogin } from '#services/codex_service'
+import { aiSettingsService } from '#services/ai_settings_service'
 
 export default class AdminAiSettingsController {
   async index({ inertia }: HttpContext) {
-    const setting = await AiSetting.current()
+    const setting = await aiSettingsService.getCurrent()
     let codexAccount = null
     if (setting.provider === 'openai' && setting.authMode === 'oauth') {
       codexAccount = await getCodexAccount().catch(() => null)
@@ -47,24 +46,7 @@ export default class AdminAiSettingsController {
 
   async update({ request, response, session }: HttpContext) {
     const data = await request.validateUsing(updateAiSettingValidator)
-    const setting = await AiSetting.current()
-
-    const isAggregator = data.provider === 'aggregator'
-    if (isAggregator) setting.provider = '9router'
-    else setting.provider = data.provider as '9router' | 'anthropic' | 'openai' | 'gemini'
-    setting.gateway = isAggregator ? (data.gateway ?? null) : null
-    setting.reasoningEffort =
-      isAggregator || data.provider === 'openai' ? (data.reasoningEffort ?? 'medium') : null
-    setting.authMode = isAggregator ? 'api_key' : (data.authMode ?? 'api_key')
-    if (!['openai', 'gemini'].includes(setting.provider)) {
-      setting.authMode = 'api_key'
-    }
-    setting.baseUrl = isAggregator || data.provider === '9router' ? (data.baseUrl ?? null) : null
-    setting.model = data.model ?? null
-    if (data.apiKey) {
-      setting.apiKey = data.apiKey
-    }
-    await setting.save()
+    await aiSettingsService.update(data)
 
     session.flash('success', 'Konfigurasi AI berhasil disimpan')
     return response.redirect().back()
@@ -72,10 +54,7 @@ export default class AdminAiSettingsController {
 
   async oauthStart({ response, session }: HttpContext) {
     try {
-      const setting = await AiSetting.current()
-      setting.provider = 'openai'
-      setting.authMode = 'oauth'
-      await setting.save()
+      await aiSettingsService.enableOpenAiOAuth()
       return response.redirect(await startCodexChatGptLogin())
     } catch (error) {
       session.flash(
@@ -160,14 +139,12 @@ export default class AdminAiSettingsController {
         throw new AiServiceError('Google tidak mengembalikan token OAuth Gemini yang lengkap.')
       }
 
-      const setting = await AiSetting.current()
-      setting.provider = 'gemini'
-      setting.authMode = 'oauth'
-      setting.oauthAccessToken = payload.access_token
-      setting.oauthRefreshToken = payload.refresh_token
-      setting.oauthExpiresAt = DateTime.now().plus({ seconds: payload.expires_in || 3600 })
-      setting.oauthProjectId = env.get('GEMINI_OAUTH_PROJECT_ID') || null
-      await setting.save()
+      await aiSettingsService.completeGeminiOAuth({
+        accessToken: payload.access_token,
+        refreshToken: payload.refresh_token,
+        expiresIn: payload.expires_in,
+        projectId: env.get('GEMINI_OAUTH_PROJECT_ID') || null,
+      })
       session.flash('success', 'Akun Google berhasil terhubung ke Gemini OAuth.')
     } catch (oauthError) {
       session.flash(
@@ -184,7 +161,7 @@ export default class AdminAiSettingsController {
 
   async models({ request, response }: HttpContext) {
     const data = await request.validateUsing(listModelsValidator)
-    const currentSetting = await AiSetting.current()
+    const currentSetting = await aiSettingsService.getCurrent()
     let apiKey = data.apiKey
     if (data.provider === 'openai' && data.authMode === 'oauth') {
       try {
@@ -232,7 +209,7 @@ export default class AdminAiSettingsController {
   async test({ request, response, session }: HttpContext) {
     try {
       const body = await request.validateUsing(testConnectionValidator)
-      const setting = await AiSetting.current()
+      const setting = await aiSettingsService.getCurrent()
 
       const apiKey: string | null | undefined =
         body.apiKey ||

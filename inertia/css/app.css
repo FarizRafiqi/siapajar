@@ -8,7 +8,7 @@
   max-width: min(22rem, calc(100vw - 2rem));
 }
 .driver-popover-title {
-  color: #064e3b;
+  color: #047857;
   font-size: 1rem;
 }
 .driver-popover-description {
@@ -50,6 +50,16 @@
   background: #10b981;
 }
 
+/* Keep the collapsed dashboard sidebar visually clean while preserving scroll. */
+.sidebar-navigation-collapsed {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-navigation-collapsed::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Text selection ──────────────────────────────────── */
 .dark ::selection {
   background-color: rgba(16, 185, 129, 0.3);
@@ -57,7 +67,7 @@
 }
 ::selection {
   background-color: rgba(16, 185, 129, 0.2);
-  color: #064e3b;
+  color: #047857;
 }
 
 /* Keep interactive affordances consistent across the dashboard. */
@@ -258,4 +268,135 @@ textarea[data-invalid='true'] + div {
 .dark .dashboard-data-table th,
 .dark .dashboard-data-table td {
   border-color: rgb(64 64 64);
+}
+
+/* ─── SiapAjar × NeedMCP Kawaii Pop Theme Utilities ────────────────── */
+:root {
+  /* SiapAjar Signature Primary & Secondary */
+  --color-siapajar-emerald: #059669;
+  --color-siapajar-emerald-dark: #047857;
+  --color-siapajar-amber: #f59e0b;
+
+  /* Kawaii Pop Playful Accents */
+  --color-kawaii-coral: #f8be9e;
+  --color-kawaii-sky: #70d6ff;
+  --color-kawaii-yellow: #ffd670;
+  --color-kawaii-mint: #bcffbe;
+  --color-kawaii-pink: #ff7096;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family:
+    'Nunito',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+body {
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.shadow-kawaii-sticker {
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.dark .shadow-kawaii-sticker {
+  box-shadow: 3px 3px 0px #ffffff;
+}
+
+.shadow-kawaii-card {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.dark .shadow-kawaii-card {
+  box-shadow: 4px 4px 0px #ffffff;
+}
+
+/* ─── Kawaii Pop Dark Mode Solid White Shadows & Borders ─────────────────── */
+.dark .border-black {
+  border-color: #ffffff;
+}
+
+.dark [class*='shadow-[4px_4px_0px_#000000]'] {
+  box-shadow: 4px 4px 0px #ffffff !important;
+}
+
+.dark [class*='shadow-[6px_6px_0px_#000000]'] {
+  box-shadow: 6px 6px 0px #ffffff !important;
+}
+
+.dark [class*='shadow-[3px_3px_0px_#000000]'] {
+  box-shadow: 3px 3px 0px #ffffff !important;
+}
+
+.dark [class*='shadow-[2px_2px_0px_#000000]'] {
+  box-shadow: 2px 2px 0px #ffffff !important;
+}
+
+.dark [class*='shadow-[1px_1px_0px_#000000]'] {
+  box-shadow: 1px 1px 0px #ffffff !important;
+}
+
+.dark [class*='hover:shadow-[6px_6px_0px_#000000]']:hover {
+  box-shadow: 6px 6px 0px #ffffff !important;
+}
+
+.dark [class*='hover:shadow-[4px_4px_0px_#000000]']:hover {
+  box-shadow: 4px 4px 0px #ffffff !important;
+}
+
+.dark [class*='active:shadow-[1px_1px_0px_#000000]']:active {
+  box-shadow: 1px 1px 0px #ffffff !important;
+}
+
+/* SiapAjar Signature Primary Button (Emerald Pop with Sticker Shadow) */
+.btn-kawaii-primary {
+  @apply inline-flex items-center justify-center gap-2 font-extrabold px-4 py-2.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-neutral-950 dark:text-neutral-950 border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000000] dark:active:shadow-[1px_1px_0px_#ffffff] transition-all duration-150 text-sm cursor-pointer;
+}
+
+/* SiapAjar Signature Amber Button (Golden Pop with Sticker Shadow) */
+.btn-kawaii-amber {
+  @apply inline-flex items-center justify-center gap-2 font-extrabold px-4 py-2.5 rounded-2xl bg-amber-300 hover:bg-amber-200 dark:bg-amber-400 dark:hover:bg-amber-300 text-neutral-950 dark:text-neutral-950 border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000000] dark:active:shadow-[1px_1px_0px_#ffffff] transition-all duration-150 text-sm cursor-pointer;
+}
+
+/* Kawaii Playful Coral & Sky Accent Buttons */
+.btn-kawaii-coral {
+  @apply inline-flex items-center justify-center gap-2 font-extrabold px-4 py-2.5 rounded-2xl bg-[#f8be9e] hover:bg-[#f6ab85] text-neutral-950 dark:text-neutral-950 border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000000] dark:active:shadow-[1px_1px_0px_#ffffff] transition-all duration-150 text-sm cursor-pointer;
+}
+
+.btn-kawaii-sky {
+  @apply inline-flex items-center justify-center gap-2 font-extrabold px-4 py-2.5 rounded-2xl bg-[#70d6ff] hover:bg-[#52caff] text-neutral-950 dark:text-neutral-950 border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000000] dark:active:shadow-[1px_1px_0px_#ffffff] transition-all duration-150 text-sm cursor-pointer;
+}
+
+.btn-kawaii-secondary {
+  @apply inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000000] dark:hover:shadow-[4px_4px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000000] dark:active:shadow-[1px_1px_0px_#ffffff] transition-all duration-150 text-sm cursor-pointer;
+}
+
+.card-kawaii {
+  @apply bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black dark:border-white shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] transition-all duration-200;
+}
+
+.badge-kawaii-emerald {
+  @apply inline-flex items-center justify-center text-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-200 dark:bg-emerald-300 text-neutral-950 border-2 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-amber {
+  @apply inline-flex items-center justify-center text-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-200 dark:bg-amber-300 text-neutral-950 border-2 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-coral {
+  @apply inline-flex items-center justify-center text-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#f8be9e] dark:bg-[#f8be9e] text-neutral-950 border-2 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] shrink-0 whitespace-nowrap;
+}
+
+.badge-kawaii-sky {
+  @apply inline-flex items-center justify-center text-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#70d6ff] dark:bg-[#70d6ff] text-neutral-950 border-2 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] shrink-0 whitespace-nowrap;
 }

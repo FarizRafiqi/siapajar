@@ -1,5 +1,5 @@
-import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
+import { accountService } from '#services/account_service'
 
 function isApiRequest(ctx: HttpContext): boolean {
   return (
@@ -18,9 +18,9 @@ export default class SessionController {
     const { email, password, remember } = request.all()
     const isApi = isApiRequest(ctx)
 
-    let user: User
+    let user
     try {
-      user = await User.verifyCredentials(email, password)
+      user = await accountService.authenticate(email, password)
     } catch {
       if (isApi) {
         return response.unauthorized({

@@ -1,0 +1,93 @@
+import { randomBytes } from 'node:crypto'
+import User from '#models/user'
+import Package from '#models/package'
+import PackageSubscription from '#models/package_subscription'
+import { creditService } from '#services/credit_service'
+
+export type SignupAccountData = {
+  fullName: string | null
+  email: string
+  password: string
+}
+
+export type GoogleAccountProfile = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+}
+
+export class AccountService {
+  constructor(private readonly credits = creditService) {}
+
+  async authenticate(email: string, password: string) {
+    return User.verifyCredentials(email, password)
+  }
+
+  async register(data: SignupAccountData) {
+    const freePackage = await Package.findBy('name', 'free')
+    const user = await User.create({
+      ...data,
+      packageId: freePackage?.id ?? null,
+    })
+
+    if (freePackage) {
+      await PackageSubscription.create({
+        userId: user.id,
+        packageId: freePackage.id,
+        status: 'active',
+        billingCycle: 'manual',
+        startsAt: user.createdAt,
+        endsAt: null,
+        canceledAt: null,
+        metadata: { source: 'signup' },
+      })
+    }
+
+    await this.credits.grantSignupBonusIfEligible(user.id)
+
+    return user
+  }
+
+  async signInWithGoogle(profile: GoogleAccountProfile) {
+    let user = await User.findBy('google_id', profile.id)
+    user ??= await User.findBy('email', profile.email)
+
+    if (!user) {
+      user = await User.create({
+        fullName: profile.name ?? null,
+        email: profile.email,
+        password: randomBytes(32).toString('hex'),
+        role: 'guru',
+        googleId: profile.id,
+        avatarUrl: profile.avatarUrl ?? null,
+      })
+
+      const freePackage = await Package.findBy('name', 'free')
+      if (freePackage) {
+        user.packageId = freePackage.id
+        await user.save()
+        await PackageSubscription.create({
+          userId: user.id,
+          packageId: freePackage.id,
+          status: 'active',
+          billingCycle: 'manual',
+          startsAt: user.createdAt,
+          endsAt: null,
+          canceledAt: null,
+          metadata: { source: 'google_signup' },
+        })
+      }
+    } else if (!user.googleId) {
+      user.googleId = profile.id
+      user.avatarUrl = user.avatarUrl ?? profile.avatarUrl ?? null
+      await user.save()
+    }
+
+    await this.credits.grantSignupBonusIfEligible(user.id)
+
+    return user
+  }
+}
+
+export const accountService = new AccountService()

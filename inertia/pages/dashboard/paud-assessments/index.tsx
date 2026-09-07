@@ -1,6 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import {
   ClipboardList,
@@ -12,14 +12,11 @@ import {
   Camera,
   File,
   FileImage,
-  ExternalLink,
   X,
   Sparkles,
   Download,
-  MoreVertical,
   ChevronDown,
   Layers,
-  CheckCircle2,
   AlertCircle,
   HelpCircle,
   UploadCloud,
@@ -278,13 +275,13 @@ export default function PaudAssessmentsIndex({
           </div>
 
           {/* Action Buttons with consolidated dropdown */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               data-tour="assessment-ai"
               type="button"
               onClick={() => setShowAiModal(true)}
               disabled={!hasClasses || !hasStudents}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-kawaii-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Sparkles className="h-4 w-4" />
               Buat dengan AI
@@ -295,9 +292,9 @@ export default function PaudAssessmentsIndex({
               type="button"
               onClick={() => setShowAddModal(true)}
               disabled={!hasClasses || !hasStudents}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-neutral-800 shadow-xs hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-kawaii-secondary disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Plus className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+              <Plus className="h-4 w-4" />
               Catat Manual
             </button>
 
@@ -306,15 +303,15 @@ export default function PaudAssessmentsIndex({
               <button
                 type="button"
                 onClick={() => setShowActionsDropdown(!showActionsDropdown)}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-neutral-800 shadow-xs hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                className="btn-kawaii-secondary"
               >
                 <span>Aksi & Opsi</span>
-                <ChevronDown className="h-4 w-4 text-neutral-500" />
+                <ChevronDown className="h-4 w-4" />
               </button>
 
               {showActionsDropdown && (
                 <div
-                  className="absolute right-0 z-30 mt-2 w-60 rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+                  className="absolute right-0 z-30 mt-2 w-64 rounded-2xl border-2 border-black bg-white p-2.5 shadow-[6px_6px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[6px_6px_0px_#ffffff]"
                   onMouseLeave={() => setShowActionsDropdown(false)}
                 >
                   <button
@@ -324,9 +321,9 @@ export default function PaudAssessmentsIndex({
                       setShowActionsDropdown(false)
                       setShowBundleModal(true)
                     }}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-neutral-800 hover:bg-emerald-50 hover:text-emerald-700 dark:text-neutral-200 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent p-2.5 text-left text-xs font-bold text-neutral-800 transition-all hover:border-black hover:bg-emerald-100 dark:text-neutral-200 dark:hover:border-white dark:hover:bg-emerald-950/60 dark:hover:text-emerald-300"
                   >
-                    <Layers className="h-4 w-4 text-emerald-600" />
+                    <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     Ekspor Bundel Dokumen (PPM KBC)
                   </button>
                   <button
@@ -335,7 +332,7 @@ export default function PaudAssessmentsIndex({
                       setShowActionsDropdown(false)
                       window.dispatchEvent(new CustomEvent('start-paud-tour'))
                     }}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    className="mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent p-2.5 text-left text-xs font-bold text-neutral-800 transition-all hover:border-black hover:bg-neutral-100 dark:text-neutral-200 dark:hover:border-white dark:hover:bg-neutral-800"
                   >
                     <HelpCircle className="h-4 w-4 text-neutral-500" />
                     Panduan Penggunaan
@@ -348,27 +345,24 @@ export default function PaudAssessmentsIndex({
 
         {/* Warning if no classes or students */}
         {!hasClasses && (
-          <div className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-            <AlertCircle className="h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" />
-            <div className="flex-1 text-sm text-amber-900 dark:text-amber-200">
-              <span className="font-semibold">Kelompok Belajar Belum Ada:</span> Silakan tambahkan
-              kelompok (kelas) terlebih dahulu sebelum membuat asesmen.
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-black bg-amber-100 p-4 shadow-[4px_4px_0px_#000000] dark:border-white dark:bg-amber-950/40 dark:shadow-[4px_4px_0px_#ffffff]">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-950 dark:text-amber-300" />
+            <div className="flex-1 text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200">
+              <span>Kelompok Belajar Belum Ada:</span> Silakan tambahkan kelompok (kelas) terlebih
+              dahulu sebelum membuat asesmen.
             </div>
-            <Link
-              href="/classes"
-              className="rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-700"
-            >
+            <Link href="/classes" className="btn-kawaii-amber !py-1.5 !px-3 !text-xs font-bold">
               Buat Kelompok →
             </Link>
           </div>
         )}
 
         {hasClasses && !hasStudents && (
-          <div className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-            <AlertCircle className="h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" />
-            <div className="flex-1 text-sm text-amber-900 dark:text-amber-200">
-              <span className="font-semibold">Daftar Siswa Belum Ada:</span> Tambahkan data anak
-              didik ke dalam kelompok agar asesmen dapat dicatat per anak.
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-black bg-amber-100 p-4 shadow-[4px_4px_0px_#000000] dark:border-white dark:bg-amber-950/40 dark:shadow-[4px_4px_0px_#ffffff]">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-950 dark:text-amber-300" />
+            <div className="flex-1 text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200">
+              <span>Daftar Siswa Belum Ada:</span> Tambahkan data anak didik ke dalam kelompok agar
+              asesmen dapat dicatat per anak.
             </div>
           </div>
         )}
@@ -379,10 +373,9 @@ export default function PaudAssessmentsIndex({
             type="button"
             onClick={() => setFilterType('all')}
             className={cn(
-              'cursor-pointer rounded-full px-4 py-1.5 text-xs font-bold transition-all',
               filterType === 'all'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                ? 'btn-kawaii-primary !py-1.5 !px-3.5 !text-xs'
+                : 'btn-kawaii-secondary !py-1.5 !px-3.5 !text-xs'
             )}
           >
             Semua ({assessments.length})
@@ -396,15 +389,15 @@ export default function PaudAssessmentsIndex({
                 type="button"
                 onClick={() => setFilterType(t)}
                 className={cn(
-                  'inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all',
+                  'inline-flex items-center gap-1.5',
                   filterType === t
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                    ? 'btn-kawaii-primary !py-1.5 !px-3.5 !text-xs'
+                    : 'btn-kawaii-secondary !py-1.5 !px-3.5 !text-xs'
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
                 <span>{typeLabels[t]}</span>
-                <span className="ml-0.5 rounded-full bg-black/10 px-1.5 py-0.2 text-[10px] dark:bg-white/20">
+                <span className="ml-0.5 rounded-full border border-black/20 bg-black/10 px-1.5 py-0.2 text-[10px] font-black dark:border-white/20 dark:bg-white/20">
                   {count}
                 </span>
               </button>
@@ -414,12 +407,14 @@ export default function PaudAssessmentsIndex({
 
         {/* Assessment Items Grid / Cards */}
         {filteredAssessments.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50/50 py-16 text-center dark:border-neutral-700 dark:bg-neutral-800/20">
-            <ClipboardList className="mx-auto h-12 w-12 text-neutral-400" />
-            <h3 className="mt-3 text-base font-bold text-neutral-900 dark:text-white">
+          <div className="card-kawaii py-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-black bg-neutral-100 shadow-[3px_3px_0px_#000000] dark:border-white dark:bg-neutral-800 dark:shadow-[3px_3px_0px_#ffffff]">
+              <ClipboardList className="h-8 w-8 text-neutral-700 dark:text-neutral-300" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-white">
               Belum Ada Asesmen
             </h3>
-            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1 text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Gunakan tombol &quot;Buat dengan AI&quot; atau &quot;Catat Manual&quot; untuk
               mendokumentasikan asesmen.
             </p>
@@ -434,48 +429,52 @@ export default function PaudAssessmentsIndex({
               return (
                 <div
                   key={item.id}
-                  className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-700"
+                  className="card-kawaii flex flex-col justify-between p-5 transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#000000]"
                 >
                   <div>
                     {/* Card Header */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="rounded-xl bg-emerald-50 p-2 dark:bg-emerald-950/40">
-                          <ItemIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-emerald-200 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-emerald-900/60">
+                          <ItemIcon className="h-5 w-5 text-emerald-950 dark:text-emerald-200" />
                         </div>
                         <div>
-                          <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+                          <h4 className="text-base font-black text-neutral-900 dark:text-white">
                             {item.student.fullName}
                           </h4>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
                             Kelompok {item.schoolClass.name} •{' '}
                             {new Date(item.date).toLocaleDateString('id-ID')}
                           </p>
                         </div>
                       </div>
 
-                      <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      <span className="badge-kawaii-emerald shrink-0 whitespace-nowrap text-xs">
                         {typeLabels[item.type]}
                       </span>
                     </div>
 
                     {/* Theme Badge */}
                     <div className="mt-3 flex items-center gap-2">
-                      <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                      <span className="rounded-lg border-2 border-black/20 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-bold text-neutral-800 dark:border-white/20 dark:bg-neutral-800 dark:text-neutral-200">
                         Tema: {themeName}
                       </span>
                     </div>
 
                     {/* Content Snippet */}
-                    <div className="mt-3 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-800 dark:bg-neutral-800/50 dark:text-neutral-200">
+                    <div className="mt-3 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-xs text-neutral-800 dark:border-white/20 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {item.type === 'anecdotal_note' && (
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           <p>
-                            <strong className="text-neutral-900 dark:text-white">Kejadian: </strong>
+                            <strong className="font-black text-neutral-900 dark:text-white">
+                              Kejadian:{' '}
+                            </strong>
                             {rawContent.observedEvent || rawContent.behavior || '-'}
                           </p>
-                          <p className="text-neutral-600 dark:text-neutral-300">
-                            <strong className="text-neutral-900 dark:text-white">Analisis: </strong>
+                          <p className="text-neutral-700 dark:text-neutral-300">
+                            <strong className="font-black text-neutral-900 dark:text-white">
+                              Analisis:{' '}
+                            </strong>
                             {rawContent.achievementAnalysis || rawContent.analysis || '-'}
                           </p>
                         </div>
@@ -483,10 +482,10 @@ export default function PaudAssessmentsIndex({
 
                       {item.type === 'checklist' && (
                         <div>
-                          <p className="font-semibold text-neutral-900 dark:text-white">
+                          <p className="font-black text-neutral-900 dark:text-white">
                             Indikator Teramati:
                           </p>
-                          <ul className="mt-1 list-inside list-disc space-y-0.5 text-neutral-700 dark:text-neutral-300">
+                          <ul className="mt-1 list-inside list-disc space-y-0.5 font-medium text-neutral-700 dark:text-neutral-300">
                             {(rawContent.items || rawContent.indicators || [])
                               .slice(0, 3)
                               .map((ind: any, i: number) => {
@@ -502,22 +501,22 @@ export default function PaudAssessmentsIndex({
                       )}
 
                       {item.type === 'work_sample' && (
-                        <div className="space-y-1">
-                          <p className="font-bold text-neutral-900 dark:text-white">
+                        <div className="space-y-1.5">
+                          <p className="font-black text-neutral-900 dark:text-white">
                             {rawContent.workTitle || rawContent.photoDescription || 'Hasil Karya'}
                           </p>
-                          <p className="text-neutral-600 dark:text-neutral-300">
+                          <p className="text-neutral-700 dark:text-neutral-300">
                             {rawContent.workDescription || rawContent.description || '-'}
                           </p>
                         </div>
                       )}
 
                       {item.type === 'photo_series' && (
-                        <div className="space-y-1">
-                          <p className="font-bold text-neutral-900 dark:text-white">
+                        <div className="space-y-1.5">
+                          <p className="font-black text-neutral-900 dark:text-white">
                             {rawContent.activityTitle || rawContent.activity || 'Foto Berseri'}
                           </p>
-                          <p className="text-neutral-600 dark:text-neutral-300">
+                          <p className="text-neutral-700 dark:text-neutral-300">
                             {(rawContent.stepDescriptions || []).join(' → ') ||
                               rawContent.narrative ||
                               '-'}
@@ -535,7 +534,7 @@ export default function PaudAssessmentsIndex({
                             href={`${att.url}?disposition=inline`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-medium text-neutral-700 hover:border-emerald-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black/30 bg-white px-2.5 py-1 text-[11px] font-bold text-neutral-800 shadow-[2px_2px_0px_#000000] hover:translate-y-[-1px] dark:border-white/30 dark:bg-neutral-800 dark:text-neutral-200 dark:shadow-[2px_2px_0px_#ffffff]"
                           >
                             <AttachmentIcon mimeType={att.mimeType} />
                             <span className="max-w-[120px] truncate">{att.originalName}</span>
@@ -546,11 +545,11 @@ export default function PaudAssessmentsIndex({
                   </div>
 
                   {/* Card Actions Footer */}
-                  <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
+                  <div className="mt-4 flex items-center justify-between border-t-2 border-black/10 pt-3 dark:border-white/10">
                     <button
                       type="button"
                       onClick={() => setSelectedAssessment(item)}
-                      className="cursor-pointer text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
+                      className="btn-kawaii-secondary !py-1.5 !px-3 !text-xs font-bold"
                     >
                       Lihat Rinci
                     </button>
@@ -558,7 +557,7 @@ export default function PaudAssessmentsIndex({
                     <div className="flex items-center gap-2">
                       <a
                         href={`/paud-assessments/${item.id}/export/pdf`}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300"
+                        className="btn-kawaii-secondary !py-1.5 !px-2.5 !text-xs !bg-rose-100 hover:!bg-rose-200 !text-rose-950 font-bold"
                         title="Unduh format PDF PPM KBC"
                         target="_blank"
                         rel="noreferrer"
@@ -568,7 +567,7 @@ export default function PaudAssessmentsIndex({
 
                       <a
                         href={`/paud-assessments/${item.id}/export`}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
+                        className="btn-kawaii-secondary !py-1.5 !px-2.5 !text-xs !bg-emerald-100 hover:!bg-emerald-200 !text-emerald-950 font-bold"
                         title="Unduh format Word DOCX PPM KBC"
                       >
                         <Download className="h-3.5 w-3.5" /> DOCX
@@ -577,7 +576,7 @@ export default function PaudAssessmentsIndex({
                       <button
                         type="button"
                         onClick={() => setDeletingAssessment(item)}
-                        className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+                        className="btn-kawaii-secondary !p-1.5 !text-red-600 hover:!text-red-700 hover:!bg-red-50"
                         title="Hapus asesmen"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -597,19 +596,19 @@ export default function PaudAssessmentsIndex({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border-2 border-black bg-white shadow-[8px_8px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[8px_8px_0px_#ffffff]"
           >
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-400">
-                  <ClipboardList className="h-5 w-5" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-emerald-200 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-emerald-900/60">
+                  <ClipboardList className="h-5 w-5 text-emerald-950 dark:text-emerald-200" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  <h3 className="text-base font-black text-neutral-900 dark:text-white">
                     Catat Asesmen Manual
                   </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                     Formulir pencatatan langsung instrumen asesmen pembelajaran PPM KBC
                   </p>
                 </div>
@@ -617,26 +616,26 @@ export default function PaudAssessmentsIndex({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="cursor-pointer rounded-xl p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                className="btn-kawaii-secondary !p-2 !rounded-xl"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Form Fields */}
-            <div className="flex-1 space-y-3.5 overflow-x-hidden overflow-y-auto p-5 text-sm">
+            <div className="flex-1 space-y-4 overflow-x-hidden overflow-y-auto p-6 text-sm">
               {/* Instrument Selection */}
               <div>
                 <span
                   id="manual-instrument-label"
-                  className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                  className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                 >
                   Pilih Instrumen Asesmen
                 </span>
                 <div
                   role="radiogroup"
                   aria-labelledby="manual-instrument-label"
-                  className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4"
+                  className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4"
                 >
                   {[
                     { id: 'anecdotal_note', label: 'Catatan Anekdot' },
@@ -651,11 +650,11 @@ export default function PaudAssessmentsIndex({
                         setData('type', t.id as AssessmentType)
                         setSelectedFiles([])
                       }}
-                      className={`cursor-pointer rounded-xl border p-2 text-center text-xs font-semibold transition-all ${
+                      className={cn(
                         data.type === t.id
-                          ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-xs dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-300'
-                          : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
-                      }`}
+                          ? 'btn-kawaii-primary !py-2 !px-2.5 !text-xs'
+                          : 'btn-kawaii-secondary !py-2 !px-2.5 !text-xs'
+                      )}
                     >
                       {t.label}
                     </button>
@@ -664,11 +663,11 @@ export default function PaudAssessmentsIndex({
               </div>
 
               {/* Target Student, Class & Date */}
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label
                     htmlFor="manual-class-select"
-                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                    className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                   >
                     Kelompok / Kelas
                   </label>
@@ -681,7 +680,7 @@ export default function PaudAssessmentsIndex({
                       const cls = classes.find((c) => c.id === cid)
                       if (cls?.students[0]) setData('studentId', cls.students[0].id)
                     }}
-                    className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                    className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                   >
                     {classes.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -694,7 +693,7 @@ export default function PaudAssessmentsIndex({
                 <div>
                   <label
                     htmlFor="manual-student-select"
-                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                    className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                   >
                     Nama Siswa
                   </label>
@@ -702,7 +701,7 @@ export default function PaudAssessmentsIndex({
                     id="manual-student-select"
                     value={data.studentId}
                     onChange={(e) => setData('studentId', Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                    className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                   >
                     {(selectedClass?.students || []).map((s) => (
                       <option key={s.id} value={s.id}>
@@ -715,7 +714,7 @@ export default function PaudAssessmentsIndex({
                 <div>
                   <label
                     htmlFor="manual-date-input"
-                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                    className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                   >
                     Tanggal
                   </label>
@@ -724,7 +723,7 @@ export default function PaudAssessmentsIndex({
                     type="date"
                     value={data.date}
                     onChange={(e) => setData('date', e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                    className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                   />
                 </div>
               </div>
@@ -733,7 +732,7 @@ export default function PaudAssessmentsIndex({
               <div>
                 <label
                   htmlFor="manual-theme-input"
-                  className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                  className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                 >
                   Tema / Topik Pembelajaran
                 </label>
@@ -743,49 +742,49 @@ export default function PaudAssessmentsIndex({
                   value={data.theme}
                   onChange={(e) => setData('theme', e.target.value)}
                   placeholder="Contoh: Kenalkan, Diriku, Indonesiaku"
-                  className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                  className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                 />
               </div>
 
               {/* Type specific fields in Card */}
               {data.type === 'anecdotal_note' && (
-                <div className="space-y-2.5 rounded-2xl border border-neutral-200/70 bg-neutral-50/50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/30">
+                <div className="space-y-3 rounded-2xl border-2 border-black/20 bg-neutral-50 p-4 dark:border-white/20 dark:bg-neutral-800/40">
                   <div>
                     <label
                       htmlFor="manual-context-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
-                      Latar / Tempat / Konteks Kejadian
+                      Latar Kejadian / Waktu
                     </label>
                     <input
                       id="manual-context-input"
                       type="text"
                       value={data.context}
                       onChange={(e) => setData('context', e.target.value)}
-                      placeholder="Contoh: Saat bermain peran di sudut balok"
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder="Contoh: Saat bermain balok di sudut konstruksi..."
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label
-                      htmlFor="manual-observed-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      htmlFor="manual-observedevent-input"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
-                      Keterangan / Kejadian Teramati
+                      Peristiwa / Perilaku Teramati
                     </label>
                     <textarea
-                      id="manual-observed-input"
+                      id="manual-observedevent-input"
                       value={data.observedEvent}
                       onChange={(e) => setData('observedEvent', e.target.value)}
                       rows={3}
-                      placeholder="Uraikan apa yang dilakukan atau diucapkan anak secara faktual..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder="Deskripsikan fakta obyektif kejadian yang teramati..."
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="manual-analysis-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Analisis Capaian Perkembangan
                     </label>
@@ -793,37 +792,36 @@ export default function PaudAssessmentsIndex({
                       id="manual-analysis-input"
                       value={data.achievementAnalysis}
                       onChange={(e) => setData('achievementAnalysis', e.target.value)}
-                      rows={3}
-                      placeholder="Uraikan capaian CP yang terindikasi dari peristiwa..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      rows={2}
+                      placeholder="Analisis kemandirian, empati, atau regulasi diri anak..."
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                 </div>
               )}
 
               {data.type === 'checklist' && (
-                <div className="space-y-2.5 rounded-2xl border border-neutral-200/70 bg-neutral-50/50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/30">
+                <div className="space-y-3 rounded-2xl border-2 border-black/20 bg-neutral-50 p-4 dark:border-white/20 dark:bg-neutral-800/40">
                   <div>
                     <label
-                      htmlFor="manual-indicators-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      htmlFor="manual-indicatorstext-input"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
-                      Daftar Indikator IKTP (1 per baris, akhiri [V] untuk Muncul atau [X] untuk
-                      Belum)
+                      Daftar Indikator IKTP (Satu baris per indikator)
                     </label>
                     <textarea
-                      id="manual-indicators-input"
+                      id="manual-indicatorstext-input"
                       value={data.indicatorsText}
                       onChange={(e) => setData('indicatorsText', e.target.value)}
                       rows={4}
-                      placeholder="Anak mampu menyapa guru dengan ramah [V]&#10;Anak mampu merapikan alat main sendiri [V]&#10;Anak mampu memakai sepatu mandiri [X]"
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs font-mono text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder={`Contoh:\n- Menyebutkan nama teman dengan ramah (Sudah)\n- Mengembalikan mainan ke tempatnya (Belum)`}
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="manual-note-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Catatan Tambahan Guru
                     </label>
@@ -832,35 +830,35 @@ export default function PaudAssessmentsIndex({
                       type="text"
                       value={data.note}
                       onChange={(e) => setData('note', e.target.value)}
-                      placeholder="Catatan perkembangan khusus jika ada..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder="Contoh: Perlu stimulasi konsistensi saat beres-beres mainan"
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                 </div>
               )}
 
               {data.type === 'work_sample' && (
-                <div className="space-y-2.5 rounded-2xl border border-neutral-200/70 bg-neutral-50/50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/30">
+                <div className="space-y-3 rounded-2xl border-2 border-black/20 bg-neutral-50 p-4 dark:border-white/20 dark:bg-neutral-800/40">
                   <div>
                     <label
                       htmlFor="manual-worktitle-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
-                      Judul Karya
+                      Nama / Judul Hasil Karya
                     </label>
                     <input
                       id="manual-worktitle-input"
                       type="text"
                       value={data.workTitle}
                       onChange={(e) => setData('workTitle', e.target.value)}
-                      placeholder="Contoh: Kolase Burung Hantu, Lukisan Jari"
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder="Contoh: Lukisan Jari 'Kebunku Indah'"
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="manual-workdesc-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Deskripsi Foto / Celoteh Anak
                     </label>
@@ -868,15 +866,15 @@ export default function PaudAssessmentsIndex({
                       id="manual-workdesc-input"
                       value={data.workDescription}
                       onChange={(e) => setData('workDescription', e.target.value)}
-                      rows={2}
-                      placeholder="Celoteh anak mengenai karya yang dibuatnya..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      rows={3}
+                      placeholder="Contoh: 'Ini gambar pohon apel merah yang besar di rumah nenek...'"
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="manual-workanalysis-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Analisis Capaian Perkembangan
                     </label>
@@ -885,33 +883,33 @@ export default function PaudAssessmentsIndex({
                       value={data.achievementAnalysis}
                       onChange={(e) => setData('achievementAnalysis', e.target.value)}
                       rows={2}
-                      placeholder="Analisis perkembangan motorik halus, seni, dan bahasa..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      placeholder="Analisis motorik halus, koordinasi mata-tangan, kreativitas..."
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
 
-                  {/* Centered Image Upload Dropzone */}
+                  {/* Centered Single Image Upload Dropzone */}
                   <div>
                     <label
                       htmlFor="manual-upload-worksample"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
-                      Upload Foto Karya Anak (1 Foto)
+                      Upload Foto Hasil Karya
                     </label>
-                    <div className="mt-1 space-y-2">
+                    <div className="mt-1.5 space-y-2">
                       <label
                         htmlFor="manual-upload-worksample"
-                        className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-white p-5 text-center transition-all hover:border-emerald-500 hover:bg-emerald-50/20 dark:border-neutral-700 dark:bg-neutral-800/40 dark:hover:border-emerald-500/50 dark:hover:bg-neutral-800"
+                        className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black bg-white p-5 text-center transition-all hover:bg-emerald-50 dark:border-white dark:bg-neutral-800/40 dark:hover:bg-neutral-800"
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <UploadCloud className="mb-2 h-8 w-8 text-neutral-400 dark:text-neutral-500" />
-                          <p className="mb-1 text-xs text-neutral-700 dark:text-neutral-300">
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          <UploadCloud className="mb-2 h-8 w-8 text-neutral-700 dark:text-neutral-300" />
+                          <p className="mb-1 text-xs font-bold text-neutral-900 dark:text-white">
+                            <span className="text-emerald-600 dark:text-emerald-400 underline">
                               Klik untuk unggah
                             </span>{' '}
                             atau seret foto ke sini
                           </p>
-                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                          <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                             PNG, JPG, atau WEBP (Maksimal 1 foto, maks 5MB)
                           </p>
                         </div>
@@ -932,19 +930,19 @@ export default function PaudAssessmentsIndex({
                       </label>
 
                       {selectedFiles.length > 0 && (
-                        <div className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-2 shadow-xs dark:border-neutral-700 dark:bg-neutral-800">
+                        <div className="flex items-center justify-between rounded-xl border-2 border-black bg-white p-2 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-neutral-800 dark:shadow-[2px_2px_0px_#ffffff]">
                           <div className="flex items-center gap-2.5 truncate">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-black bg-emerald-200 text-xs font-bold text-emerald-950 dark:border-white dark:bg-emerald-900 dark:text-emerald-200">
                               1
                             </span>
-                            <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">
+                            <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                               {selectedFiles[0]?.name}
                             </span>
                           </div>
                           <button
                             type="button"
                             onClick={() => setSelectedFiles([])}
-                            className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                            className="btn-kawaii-secondary !p-1.5 !text-red-600 hover:!text-red-700"
                             title="Hapus foto"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -957,11 +955,11 @@ export default function PaudAssessmentsIndex({
               )}
 
               {data.type === 'photo_series' && (
-                <div className="space-y-2.5 rounded-2xl border border-neutral-200/70 bg-neutral-50/50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/30">
+                <div className="space-y-3 rounded-2xl border-2 border-black/20 bg-neutral-50 p-4 dark:border-white/20 dark:bg-neutral-800/40">
                   <div>
                     <label
                       htmlFor="manual-activitytitle-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Judul Kegiatan / Proyek
                     </label>
@@ -971,14 +969,14 @@ export default function PaudAssessmentsIndex({
                       value={data.activityTitle}
                       onChange={(e) => setData('activityTitle', e.target.value)}
                       placeholder="Contoh: Membuat Kolase Daun Kering"
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                     <div>
                       <label
                         htmlFor="manual-stage1-input"
-                        className="block text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                        className="block text-xs font-bold text-neutral-700 dark:text-neutral-300"
                       >
                         Deskripsi Tahap 1 (Awal)
                       </label>
@@ -988,13 +986,13 @@ export default function PaudAssessmentsIndex({
                         onChange={(e) => setData('stage1', e.target.value)}
                         rows={2}
                         placeholder="Tahap persiapan..."
-                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        className="mt-1 w-full rounded-xl border-2 border-black bg-white p-2.5 text-xs font-bold text-neutral-900 focus:shadow-[2px_2px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="manual-stage2-input"
-                        className="block text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                        className="block text-xs font-bold text-neutral-700 dark:text-neutral-300"
                       >
                         Deskripsi Tahap 2 (Proses)
                       </label>
@@ -1004,13 +1002,13 @@ export default function PaudAssessmentsIndex({
                         onChange={(e) => setData('stage2', e.target.value)}
                         rows={2}
                         placeholder="Tahap pengerjaan..."
-                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        className="mt-1 w-full rounded-xl border-2 border-black bg-white p-2.5 text-xs font-bold text-neutral-900 focus:shadow-[2px_2px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="manual-stage3-input"
-                        className="block text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                        className="block text-xs font-bold text-neutral-700 dark:text-neutral-300"
                       >
                         Deskripsi Tahap 3 (Hasil)
                       </label>
@@ -1020,14 +1018,14 @@ export default function PaudAssessmentsIndex({
                         onChange={(e) => setData('stage3', e.target.value)}
                         rows={2}
                         placeholder="Tahap penyelesaian..."
-                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        className="mt-1 w-full rounded-xl border-2 border-black bg-white p-2.5 text-xs font-bold text-neutral-900 focus:shadow-[2px_2px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                       />
                     </div>
                   </div>
                   <div>
                     <label
                       htmlFor="manual-stageanalysis-input"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Analisis Capaian Perkembangan
                     </label>
@@ -1037,7 +1035,7 @@ export default function PaudAssessmentsIndex({
                       onChange={(e) => setData('achievementAnalysis', e.target.value)}
                       rows={2}
                       placeholder="Analisis konsistensi dan kemandirian anak sepanjang kegiatan..."
-                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-800 focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                      className="mt-1.5 w-full rounded-2xl border-2 border-black bg-white p-3 text-xs sm:text-sm font-bold text-neutral-900 focus:shadow-[3px_3px_0px_#000000] focus:outline-none dark:border-white dark:bg-neutral-800 dark:text-white"
                     />
                   </div>
 
@@ -1045,24 +1043,24 @@ export default function PaudAssessmentsIndex({
                   <div>
                     <label
                       htmlFor="manual-upload-photoseries"
-                      className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
                     >
                       Upload Foto Berseri (Maksimal 3 Foto)
                     </label>
-                    <div className="mt-1 space-y-2">
+                    <div className="mt-1.5 space-y-2">
                       <label
                         htmlFor="manual-upload-photoseries"
-                        className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-white p-5 text-center transition-all hover:border-emerald-500 hover:bg-emerald-50/20 dark:border-neutral-700 dark:bg-neutral-800/40 dark:hover:border-emerald-500/50 dark:hover:bg-neutral-800"
+                        className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black bg-white p-5 text-center transition-all hover:bg-emerald-50 dark:border-white dark:bg-neutral-800/40 dark:hover:bg-neutral-800"
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <UploadCloud className="mb-2 h-8 w-8 text-neutral-400 dark:text-neutral-500" />
-                          <p className="mb-1 text-xs text-neutral-700 dark:text-neutral-300">
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          <UploadCloud className="mb-2 h-8 w-8 text-neutral-700 dark:text-neutral-300" />
+                          <p className="mb-1 text-xs font-bold text-neutral-900 dark:text-white">
+                            <span className="text-emerald-600 dark:text-emerald-400 underline">
                               Klik untuk unggah
                             </span>{' '}
                             atau seret foto ke sini
                           </p>
-                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                          <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                             PNG, JPG, atau WEBP (Hingga 3 foto tahapan, maks 5MB per foto)
                           </p>
                         </div>
@@ -1088,13 +1086,13 @@ export default function PaudAssessmentsIndex({
                           {selectedFiles.map((file, fIdx) => (
                             <div
                               key={file.name + fIdx}
-                              className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-2 shadow-xs dark:border-neutral-700 dark:bg-neutral-800"
+                              className="flex items-center justify-between rounded-xl border-2 border-black bg-white p-2 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-neutral-800 dark:shadow-[2px_2px_0px_#ffffff]"
                             >
                               <div className="flex items-center gap-2 truncate">
-                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-black bg-emerald-200 text-[11px] font-bold text-emerald-950 dark:border-white dark:bg-emerald-900 dark:text-emerald-200">
                                   T{fIdx + 1}
                                 </span>
-                                <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                                   {file.name}
                                 </span>
                               </div>
@@ -1103,7 +1101,7 @@ export default function PaudAssessmentsIndex({
                                 onClick={() =>
                                   setSelectedFiles((prev) => prev.filter((_, i) => i !== fIdx))
                                 }
-                                className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                className="btn-kawaii-secondary !p-1.5 !text-red-600 hover:!text-red-700"
                                 title="Hapus foto"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -1123,7 +1121,7 @@ export default function PaudAssessmentsIndex({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="cursor-pointer rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                className="btn-kawaii-secondary"
               >
                 Batal
               </button>
@@ -1131,7 +1129,7 @@ export default function PaudAssessmentsIndex({
                 type="button"
                 onClick={handleSaveAssessment}
                 disabled={processing}
-                className="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-xs font-semibold text-white shadow-xs hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+                className="btn-kawaii-primary disabled:opacity-50"
               >
                 {processing ? 'Menyimpan...' : 'Simpan Asesmen'}
               </button>
@@ -1146,17 +1144,17 @@ export default function PaudAssessmentsIndex({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex max-h-[92vh] w-full max-w-2xl flex-col rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+            className="flex max-h-[92vh] w-full max-w-2xl flex-col rounded-3xl border-2 border-black bg-white p-6 shadow-[8px_8px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[8px_8px_0px_#ffffff]"
           >
             <div className="flex items-start justify-between">
               <div>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <span className="badge-kawaii-emerald text-xs">
                   {typeLabels[selectedAssessment.type]}
                 </span>
-                <h3 className="mt-2 text-xl font-bold text-neutral-900 dark:text-white">
+                <h3 className="mt-2 text-xl font-black text-neutral-900 dark:text-white">
                   {selectedAssessment.student.fullName}
                 </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
                   Kelompok {selectedAssessment.schoolClass.name} •{' '}
                   {new Date(selectedAssessment.date).toLocaleDateString('id-ID')}
                 </p>
@@ -1164,36 +1162,36 @@ export default function PaudAssessmentsIndex({
               <button
                 type="button"
                 onClick={() => setSelectedAssessment(null)}
-                className="cursor-pointer rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="btn-kawaii-secondary !p-2 !rounded-xl"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-4 flex-1 space-y-4 overflow-y-auto text-sm text-neutral-800 dark:text-neutral-200">
+            <div className="mt-4 flex-1 space-y-4 overflow-y-auto text-sm text-neutral-800 dark:text-neutral-200 pr-1">
               {selectedAssessment.type === 'anecdotal_note' && (
                 <div className="space-y-3">
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">Latar Kejadian:</h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <h5 className="font-black text-neutral-900 dark:text-white">Latar Kejadian:</h5>
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.context || '-'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
                       Kejadian Teramati:
                     </h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.observedEvent ||
                         selectedAssessment.content.behavior ||
                         '-'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
                       Analisis Capaian Perkembangan:
                     </h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.achievementAnalysis ||
                         selectedAssessment.content.analysis ||
                         '-'}
@@ -1204,8 +1202,8 @@ export default function PaudAssessmentsIndex({
 
               {selectedAssessment.type === 'checklist' && (
                 <div className="space-y-3">
-                  <h5 className="font-bold text-neutral-900 dark:text-white">Indikator IKTP:</h5>
-                  <div className="space-y-1.5">
+                  <h5 className="font-black text-neutral-900 dark:text-white">Indikator IKTP:</h5>
+                  <div className="space-y-2">
                     {(
                       selectedAssessment.content.items ||
                       selectedAssessment.content.indicators ||
@@ -1217,17 +1215,16 @@ export default function PaudAssessmentsIndex({
                       return (
                         <div
                           key={idx}
-                          className="flex items-center justify-between rounded-xl bg-neutral-50 p-2.5 dark:bg-neutral-800/50"
+                          className="flex items-center justify-between rounded-2xl border-2 border-black/15 bg-neutral-50 p-3 dark:border-white/15 dark:bg-neutral-800/50"
                         >
-                          <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                          <span className="font-bold text-neutral-900 dark:text-neutral-100">
                             {name}
                           </span>
                           <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              isAppeared
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
-                                : 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200'
-                            }`}
+                            className={cn(
+                              'shrink-0',
+                              isAppeared ? 'badge-kawaii-emerald' : 'badge-kawaii-coral'
+                            )}
                           >
                             {isAppeared ? 'Sudah Muncul' : 'Belum Muncul'}
                           </span>
@@ -1237,8 +1234,8 @@ export default function PaudAssessmentsIndex({
                   </div>
                   {selectedAssessment.content.note && (
                     <div>
-                      <h5 className="font-bold text-neutral-900 dark:text-white">Catatan Guru:</h5>
-                      <p className="mt-1 rounded-xl bg-neutral-50 p-3 italic text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                      <h5 className="font-black text-neutral-900 dark:text-white">Catatan Guru:</h5>
+                      <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 italic text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                         {selectedAssessment.content.note}
                       </p>
                     </div>
@@ -1249,28 +1246,28 @@ export default function PaudAssessmentsIndex({
               {selectedAssessment.type === 'work_sample' && (
                 <div className="space-y-3">
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">Judul Karya:</h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 font-semibold text-neutral-800 dark:bg-neutral-800/50 dark:text-neutral-200">
+                    <h5 className="font-black text-neutral-900 dark:text-white">Judul Karya:</h5>
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 font-bold text-neutral-900 dark:border-white/15 dark:bg-neutral-800/50 dark:text-white">
                       {selectedAssessment.content.workTitle ||
                         selectedAssessment.content.photoDescription ||
                         '-'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
                       Deskripsi Foto / Celoteh Anak:
                     </h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.workDescription ||
                         selectedAssessment.content.description ||
                         '-'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
                       Analisis Capaian Perkembangan:
                     </h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.achievementAnalysis ||
                         selectedAssessment.content.analysis ||
                         '-'}
@@ -1282,16 +1279,18 @@ export default function PaudAssessmentsIndex({
               {selectedAssessment.type === 'photo_series' && (
                 <div className="space-y-3">
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">Kegiatan Proyek:</h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 font-semibold text-neutral-800 dark:bg-neutral-800/50 dark:text-neutral-200">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
+                      Kegiatan Proyek:
+                    </h5>
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 font-bold text-neutral-900 dark:border-white/15 dark:bg-neutral-800/50 dark:text-white">
                       {selectedAssessment.content.activityTitle ||
                         selectedAssessment.content.activity ||
                         '-'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">Tahapan:</h5>
-                    <div className="mt-1 space-y-1.5">
+                    <h5 className="font-black text-neutral-900 dark:text-white">Tahapan:</h5>
+                    <div className="mt-1 space-y-2">
                       {(
                         selectedAssessment.content.stepDescriptions ||
                         (selectedAssessment.content.narrative
@@ -1300,18 +1299,21 @@ export default function PaudAssessmentsIndex({
                       ).map((step: string, sIdx: number) => (
                         <div
                           key={sIdx}
-                          className="rounded-xl bg-neutral-50 p-2.5 text-xs text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300"
+                          className="rounded-2xl border-2 border-black/15 bg-neutral-50 p-3 text-xs text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200"
                         >
-                          <strong>Tahap {sIdx + 1}:</strong> {step}
+                          <strong className="text-neutral-900 dark:text-white">
+                            Tahap {sIdx + 1}:
+                          </strong>{' '}
+                          {step}
                         </div>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <h5 className="font-bold text-neutral-900 dark:text-white">
+                    <h5 className="font-black text-neutral-900 dark:text-white">
                       Analisis Capaian Perkembangan:
                     </h5>
-                    <p className="mt-1 rounded-xl bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300">
+                    <p className="mt-1 rounded-2xl border-2 border-black/15 bg-neutral-50 p-3.5 text-neutral-800 dark:border-white/15 dark:bg-neutral-800/50 dark:text-neutral-200">
                       {selectedAssessment.content.achievementAnalysis ||
                         selectedAssessment.content.analysis ||
                         '-'}
@@ -1322,31 +1324,31 @@ export default function PaudAssessmentsIndex({
 
               {/* Attachments in Detail */}
               {selectedAssessment.attachments && selectedAssessment.attachments.length > 0 && (
-                <div className="border-t border-neutral-200 pt-3 dark:border-neutral-800">
-                  <h5 className="mb-2 font-bold text-neutral-900 dark:text-white">
+                <div className="border-t-2 border-black/15 pt-3 dark:border-white/15">
+                  <h5 className="mb-2 font-black text-neutral-900 dark:text-white">
                     Lampiran Foto ({selectedAssessment.attachments.length}):
                   </h5>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                     {selectedAssessment.attachments.map((att) => (
                       <a
                         key={att.id}
                         href={`${att.url}?disposition=inline`}
                         target="_blank"
                         rel="noreferrer"
-                        className="group flex flex-col items-center rounded-xl border border-neutral-200 bg-neutral-50 p-2 hover:border-emerald-400 dark:border-neutral-700 dark:bg-neutral-800/60"
+                        className="group flex flex-col items-center rounded-2xl border-2 border-black bg-neutral-50 p-2 shadow-[2px_2px_0px_#000000] hover:translate-y-[-1px] dark:border-white dark:bg-neutral-800/60 dark:shadow-[2px_2px_0px_#ffffff]"
                       >
                         {att.mimeType.startsWith('image/') ? (
                           <img
                             src={att.url}
                             alt={att.originalName}
-                            className="h-24 w-full rounded-lg object-cover"
+                            className="h-24 w-full rounded-xl object-cover"
                           />
                         ) : (
-                          <div className="flex h-24 w-full items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
+                          <div className="flex h-24 w-full items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
                             <AttachmentIcon mimeType={att.mimeType} />
                           </div>
                         )}
-                        <span className="mt-1.5 max-w-full truncate text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
+                        <span className="mt-1.5 max-w-full truncate text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
                           {att.originalName}
                         </span>
                       </a>
@@ -1357,14 +1359,14 @@ export default function PaudAssessmentsIndex({
             </div>
 
             {/* Modal Actions */}
-            <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-800">
+            <div className="mt-4 flex items-center justify-between border-t-2 border-black/15 pt-4 dark:border-white/15">
               <button
                 type="button"
                 onClick={() => {
                   setDeletingAssessment(selectedAssessment)
                   setSelectedAssessment(null)
                 }}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300"
+                className="btn-kawaii-secondary !text-red-600 hover:!text-red-700 hover:!bg-red-50 !py-2 !px-3.5 !text-xs font-bold"
               >
                 <Trash2 className="h-4 w-4" /> Hapus Asesmen
               </button>
@@ -1372,7 +1374,7 @@ export default function PaudAssessmentsIndex({
               <div className="flex items-center gap-2">
                 <a
                   href={`/paud-assessments/${selectedAssessment.id}/export/pdf`}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"
+                  className="btn-kawaii-secondary !py-2 !px-3.5 !text-xs !bg-rose-100 hover:!bg-rose-200 !text-rose-950 font-bold"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -1380,7 +1382,7 @@ export default function PaudAssessmentsIndex({
                 </a>
                 <a
                   href={`/paud-assessments/${selectedAssessment.id}/export`}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
+                  className="btn-kawaii-primary !py-2 !px-3.5 !text-xs font-bold"
                 >
                   <Download className="h-4 w-4" /> Unduh DOCX
                 </a>
@@ -1396,28 +1398,31 @@ export default function PaudAssessmentsIndex({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+            className="w-full max-w-md rounded-3xl border-2 border-black bg-white p-6 shadow-[8px_8px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[8px_8px_0px_#ffffff]"
           >
-            <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+            <h4 className="text-xl font-black text-neutral-900 dark:text-white">
               Hapus Asesmen Ini?
             </h4>
-            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-              Asesmen milik <strong>{deletingAssessment.student.fullName}</strong> (
-              {typeLabels[deletingAssessment.type]}) beserta seluruh foto lampiran akan dihapus
+            <p className="mt-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              Asesmen milik{' '}
+              <strong className="text-neutral-900 dark:text-white">
+                {deletingAssessment.student.fullName}
+              </strong>{' '}
+              ({typeLabels[deletingAssessment.type]}) beserta seluruh foto lampiran akan dihapus
               permanen.
             </p>
-            <div className="mt-5 flex justify-end gap-2.5">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingAssessment(null)}
-                className="cursor-pointer rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                className="btn-kawaii-secondary flex-1"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="cursor-pointer rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700"
+                className="btn-kawaii-primary !bg-red-500 hover:!bg-red-400 !text-white flex-1"
               >
                 Ya, Hapus
               </button>

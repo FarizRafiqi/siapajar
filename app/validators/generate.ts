@@ -11,6 +11,22 @@ export const generateTeachingModuleValidator = vine.create(
     subject: vine.string().trim().minLength(1).maxLength(100),
     topic: vine.string().trim().minLength(1).maxLength(200),
     phase: vine.enum(['A', 'B', 'C', 'D', 'E', 'F']),
+    learningModel: vine
+      .enum([
+        'Problem Based Learning (PBL)',
+        'Project Based Learning (PjBL)',
+        'Discovery Learning',
+        'Inquiry Learning',
+        'Cooperative Learning',
+      ])
+      .optional(),
+    learningApproach: vine
+      .enum([
+        'Teaching at the Right Level (TaRL)',
+        'Culturally Responsive Teaching (CRT)',
+        'Teaching at the Right Level (TaRL) + Culturally Responsive Teaching (CRT)',
+      ])
+      .optional(),
     learningSequenceId: vine.number().positive().optional(),
   })
 )
@@ -55,6 +71,16 @@ export const generateWeeklyLessonPlanValidator = vine.create(
     semester: vine.number().min(1).max(2).optional(),
     weekNumber: vine.number().min(1).max(25).optional(),
     presetId: vine.number().positive().optional(),
+    learningModel: vine
+      .enum([
+        'Pembelajaran Berbasis Bermain',
+        'Eksplorasi dan Discovery',
+        'Inkuiri Sederhana',
+        'Projek Bermain Kontekstual',
+        'Bermain Kolaboratif',
+        'STEAM berbasis Loose Parts',
+      ])
+      .optional(),
     learningSequenceId: vine.number().positive().optional(),
   })
 )

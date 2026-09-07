@@ -1,43 +1,16 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Subject from '#models/subject'
 import { createSubjectValidator, updateSubjectValidator } from '#validators/subject'
+import { subjectService } from '#services/subject_service'
 
-/**
- * Mata pelajaran default per jenjang.
- *
- * TK memakai 3 elemen Capaian Pembelajaran Fase Fondasi Kurikulum Merdeka —
- * bukan aspek perkembangan K-13 lama (motorik/kognitif/bahasa).
- */
-export const DEFAULT_SUBJECTS: Record<'tk' | 'sd', string[]> = {
-  tk: [
-    'Bahasa',
-    'Bahasa Inggris',
-    'Moral Agama / P.A.I',
-    'Bahasa Arab',
-    'Kognitif',
-    'Sains',
-    'Mewarnai / Seni',
-  ],
-  sd: [
-    'Bahasa Indonesia',
-    'Matematika',
-    'IPAS',
-    'PPKn',
-    'Bahasa Inggris',
-    'Seni Budaya',
-    'PJOK',
-    'Muatan Lokal',
-  ],
-}
+export { DEFAULT_SUBJECTS } from '#services/subject_service'
 
 export default class SubjectsController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.user!
-    const subjects = await Subject.query()
-      .where('user_id', user.id)
-      .where('education_level', user.educationLevel || 'sd')
-      .orderBy('grade_level', 'asc')
-      .orderBy('name', 'asc')
+    const subjects = await subjectService.listForUser(
+      user.id,
+      (user.educationLevel || 'sd') as 'tk' | 'sd'
+    )
 
     return inertia.render('dashboard/subjects/index', {
       subjects: subjects.map((s) => s.toJSON()),
@@ -49,21 +22,11 @@ export default class SubjectsController {
     const user = auth.user!
     const data = await request.validateUsing(createSubjectValidator)
 
-    const duplicate = await Subject.query()
-      .where('user_id', user.id)
-      .where('name', data.name)
-      .where('education_level', data.educationLevel)
-      .first()
-
-    if (duplicate) {
+    const created = await subjectService.create(user.id, data)
+    if (!created) {
       session.flash('error', `Mata pelajaran "${data.name}" sudah ada`)
       return response.redirect().back()
     }
-
-    await Subject.create({
-      ...data,
-      userId: user.id,
-    })
 
     session.flash('success', 'Mata pelajaran berhasil ditambahkan')
     return response.redirect().back()
@@ -76,37 +39,19 @@ export default class SubjectsController {
   async storeDefaults({ response, session, auth }: HttpContext) {
     const user = auth.user!
     const educationLevel = (user.educationLevel || 'sd') as 'tk' | 'sd'
-    const defaults = DEFAULT_SUBJECTS[educationLevel]
+    const defaults = await subjectService.storeDefaults(user.id, educationLevel)
 
-    if (educationLevel === 'tk') {
-      await Subject.query()
-        .where('userId', user.id)
-        .where('educationLevel', 'tk')
-        .whereNotIn('name', defaults)
-        .delete()
-    }
-
-    for (const name of defaults) {
-      await Subject.updateOrCreate(
-        { userId: user.id, name, educationLevel },
-        { userId: user.id, name, educationLevel, gradeLevel: null, isActive: true }
-      )
-    }
-
-    session.flash('success', `${defaults.length} mata pelajaran default berhasil ditambahkan`)
+    session.flash('success', `${defaults} mata pelajaran default berhasil ditambahkan`)
     return response.redirect().back()
   }
 
   async update({ params, request, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const subject = await Subject.query().where('id', params.id).where('user_id', user.id).first()
-
-    if (!subject) {
+    const data = await request.validateUsing(updateSubjectValidator)
+    const updated = await subjectService.update(user.id, params.id, data)
+    if (!updated) {
       return response.redirect('/subjects')
     }
-
-    const data = await request.validateUsing(updateSubjectValidator)
-    await subject.merge(data).save()
 
     session.flash('success', 'Mata pelajaran berhasil diupdate')
     return response.redirect().back()
@@ -114,13 +59,10 @@ export default class SubjectsController {
 
   async destroy({ params, response, session, auth }: HttpContext) {
     const user = auth.user!
-    const subject = await Subject.query().where('id', params.id).where('user_id', user.id).first()
-
-    if (!subject) {
+    const deleted = await subjectService.delete(user.id, params.id)
+    if (!deleted) {
       return response.redirect('/subjects')
     }
-
-    await subject.delete()
 
     session.flash('success', 'Mata pelajaran berhasil dihapus')
     return response.redirect().back()

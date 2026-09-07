@@ -101,11 +101,11 @@ export default function Onboarding({ role }: OnboardingProps) {
           {/* Form / Wizard Container */}
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-800/80 p-8 md:p-10 relative overflow-hidden"
+            className="card-kawaii bg-white dark:bg-neutral-900 p-8 md:p-10 relative overflow-hidden"
           >
             {/* Glow Decorative Effect */}
             <div className="absolute -right-20 -top-20 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <AnimatePresence mode="wait">
               {!isKepalaSekolah && step === 1 && (
@@ -118,12 +118,12 @@ export default function Onboarding({ role }: OnboardingProps) {
                   className="space-y-6"
                 >
                   <div className="text-center md:text-left">
-                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                    <h2 className="text-2xl font-black text-neutral-900 dark:text-white">
                       Pilih Jenjang Instansi Anda
                     </h2>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
-                      Kami akan menyesuaikan format modul ajar, rencana tahunan (protah/promes), dan
-                      penilaian sesuai kurikulum educationLevel Anda.
+                    <p className="text-neutral-600 dark:text-neutral-300 mt-2 text-xs leading-relaxed font-medium">
+                      Kami akan menyesuaikan format modul ajar, rencana tahunan (prota/promes), dan
+                      penilaian sesuai kurikulum jenjang Anda.
                     </p>
                   </div>
 
@@ -133,32 +133,32 @@ export default function Onboarding({ role }: OnboardingProps) {
                       type="button"
                       onClick={() => setData('educationLevel', 'tk')}
                       className={cn(
-                        'group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300',
+                        'group relative flex flex-col items-center sm:items-start p-6 rounded-3xl border-2 text-center sm:text-left transition-all duration-300 active:scale-[0.98]',
                         data.educationLevel === 'tk'
-                          ? 'border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20'
+                          ? 'border-emerald-500 bg-emerald-50/50 dark:border-emerald-400 dark:bg-emerald-950/30 shadow-kawaii-sticker ring-2 ring-emerald-500/20'
                           : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
                       )}
                     >
                       <div
                         className={cn(
-                          'rounded-lg p-3 mb-4 transition-colors',
+                          'rounded-2xl p-3.5 mb-4 transition-all duration-200 group-hover:scale-110',
                           data.educationLevel === 'tk'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
+                            ? 'bg-emerald-500 text-white shadow-xs'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
                         )}
                       >
                         <Compass className="h-6 w-6" />
                       </div>
-                      <h3 className="font-semibold text-neutral-950 dark:text-white text-base">
+                      <h3 className="font-extrabold text-neutral-950 dark:text-white text-base">
                         TK / PAUD
                       </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-                        Modul ajar RPPH bermain, pencapaian aspek perkembangan, dan rapor predikat
-                        narasi.
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed font-medium">
+                        Modul ajar RPPH/RPPM bermain, pencapaian aspek perkembangan, dan rapor
+                        predikat narasi.
                       </p>
                       {data.educationLevel === 'tk' && (
-                        <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
-                          <Check className="h-3.5 w-3.5" />
+                        <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-1 shadow-xs">
+                          <Check className="h-3.5 w-3.5 stroke-[3]" />
                         </div>
                       )}
                     </button>
@@ -168,45 +168,45 @@ export default function Onboarding({ role }: OnboardingProps) {
                       type="button"
                       onClick={() => setData('educationLevel', 'sd')}
                       className={cn(
-                        'group relative flex flex-col items-center sm:items-start p-6 rounded-xl border text-center sm:text-left transition-all duration-300',
+                        'group relative flex flex-col items-center sm:items-start p-6 rounded-3xl border-2 text-center sm:text-left transition-all duration-300 active:scale-[0.98]',
                         data.educationLevel === 'sd'
-                          ? 'border-emerald-600 bg-emerald-50/30 dark:border-emerald-500 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20'
+                          ? 'border-emerald-500 bg-emerald-50/50 dark:border-emerald-400 dark:bg-emerald-950/30 shadow-kawaii-sticker ring-2 ring-emerald-500/20'
                           : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-transparent'
                       )}
                     >
                       <div
                         className={cn(
-                          'rounded-lg p-3 mb-4 transition-colors',
+                          'rounded-2xl p-3.5 mb-4 transition-all duration-200 group-hover:scale-110',
                           data.educationLevel === 'sd'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
+                            ? 'bg-emerald-500 text-white shadow-xs'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
                         )}
                       >
                         <GraduationCap className="h-6 w-6" />
                       </div>
-                      <h3 className="font-semibold text-neutral-950 dark:text-white text-base">
+                      <h3 className="font-extrabold text-neutral-950 dark:text-white text-base">
                         Sekolah Dasar (SD)
                       </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed font-medium">
                         Mata pelajaran Kurikulum Merdeka terstruktur, bank soal/kuis, dan rapor
                         penilaian akademik.
                       </p>
                       {data.educationLevel === 'sd' && (
-                        <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-0.5">
-                          <Check className="h-3.5 w-3.5" />
+                        <div className="absolute top-4 right-4 rounded-full bg-emerald-600 text-white p-1 shadow-xs">
+                          <Check className="h-3.5 w-3.5 stroke-[3]" />
                         </div>
                       )}
                     </button>
                   </div>
 
                   {data.educationLevel === 'tk' && (
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 pt-2">
                       <div>
                         <label
                           htmlFor="institutionType"
-                          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                          className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1"
                         >
-                          Profil lembaga
+                          Profil Lembaga
                         </label>
                         <select
                           id="institutionType"
@@ -214,18 +214,18 @@ export default function Onboarding({ role }: OnboardingProps) {
                           onChange={(e) =>
                             setData('institutionType', e.target.value as 'tk' | 'ra')
                           }
-                          className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                          className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-emerald-500"
                         >
-                          <option value="tk">TK</option>
-                          <option value="ra">RA</option>
+                          <option value="tk">TK (Taman Kanak-Kanak)</option>
+                          <option value="ra">RA (Raudhatul Athfal - Kemenag)</option>
                         </select>
                       </div>
                       <div>
                         <label
                           htmlFor="defaultGroupContext"
-                          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                          className="block text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1"
                         >
-                          Kelompok awal
+                          Kelompok Awal
                         </label>
                         <select
                           id="defaultGroupContext"
@@ -233,10 +233,10 @@ export default function Onboarding({ role }: OnboardingProps) {
                           onChange={(e) =>
                             setData('defaultGroupContext', e.target.value as 'a' | 'b')
                           }
-                          className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                          className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-emerald-500"
                         >
-                          <option value="a">Kelompok A</option>
-                          <option value="b">Kelompok B</option>
+                          <option value="a">Kelompok A (Usia 4-5 Tahun)</option>
+                          <option value="b">Kelompok B (Usia 5-6 Tahun)</option>
                         </select>
                       </div>
                     </div>
@@ -247,9 +247,9 @@ export default function Onboarding({ role }: OnboardingProps) {
                       type="button"
                       onClick={handleNext}
                       disabled={!data.educationLevel}
-                      className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="btn-kawaii-primary px-6 py-3 text-xs flex items-center gap-2 disabled:opacity-50"
                     >
-                      Lanjut
+                      Lanjut ke Langkah Berikutnya
                       <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
@@ -266,10 +266,10 @@ export default function Onboarding({ role }: OnboardingProps) {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                    <h2 className="text-2xl font-black text-neutral-900 dark:text-white">
                       Nama Instansi / Sekolah Anda
                     </h2>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
+                    <p className="text-neutral-600 dark:text-neutral-300 mt-2 text-xs leading-relaxed font-medium">
                       Tuliskan nama instansi tempat Anda {isKepalaSekolah ? 'bertugas' : 'mengajar'}
                       . Jika nama sekolah sudah pernah didaftarkan guru lain, akun Anda akan
                       otomatis terhubung ke sekolah yang sama.
@@ -279,12 +279,12 @@ export default function Onboarding({ role }: OnboardingProps) {
                   <div className="space-y-2">
                     <label
                       htmlFor="schoolName"
-                      className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                      className="block text-xs font-bold text-neutral-800 dark:text-neutral-200"
                     >
-                      Nama Sekolah
+                      Nama Sekolah / Satuan PAUD
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
                         <School className="h-5 w-5" />
                       </div>
                       <input
@@ -293,12 +293,12 @@ export default function Onboarding({ role }: OnboardingProps) {
                         value={data.schoolName}
                         onChange={(e) => setData('schoolName', e.target.value)}
                         placeholder="contoh: TK Pertiwi Indah / SD Negeri 1 Jakarta"
-                        className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white !pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                        className="w-full rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white !pl-11 pr-4 py-3 text-xs font-bold focus:outline-none focus:border-emerald-500 transition-colors"
                         autoFocus
                       />
                     </div>
                     {errors.schoolName && (
-                      <p className="text-red-500 text-sm mt-1">{errors.schoolName}</p>
+                      <p className="text-rose-500 text-xs mt-1 font-bold">{errors.schoolName}</p>
                     )}
                   </div>
 
@@ -312,7 +312,7 @@ export default function Onboarding({ role }: OnboardingProps) {
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="flex items-center gap-2 rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                        className="flex items-center gap-2 rounded-2xl border-2 border-neutral-200 px-5 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Kembali
@@ -322,7 +322,7 @@ export default function Onboarding({ role }: OnboardingProps) {
                       type="button"
                       onClick={handleNext}
                       disabled={data.schoolName.trim().length < 2}
-                      className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="btn-kawaii-primary px-6 py-3 text-xs flex items-center gap-2 disabled:opacity-50"
                     >
                       Lanjut
                       <ArrowRight className="h-4 w-4" />
@@ -340,27 +340,34 @@ export default function Onboarding({ role }: OnboardingProps) {
                   transition={{ duration: 0.3 }}
                   className="space-y-6 text-center"
                 >
-                  <div className="mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-4 w-16 h-16 flex items-center justify-center">
-                    <Sparkles className="h-8 w-8 animate-pulse" />
+                  <div className="mx-auto rounded-3xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 p-5 w-20 h-20 flex items-center justify-center shadow-kawaii-sticker">
+                    <Sparkles className="h-9 w-9 animate-pulse" />
                   </div>
 
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                    <h2 className="text-2xl font-black text-neutral-900 dark:text-white">
                       Semua Sudah Siap!
                     </h2>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm max-w-sm mx-auto">
+                    <p className="text-neutral-600 dark:text-neutral-300 mt-2 text-xs max-w-sm mx-auto leading-relaxed font-medium">
                       {isKepalaSekolah ? (
                         <>
                           Akun Anda telah terhubung sebagai Kepala Sekolah di{' '}
-                          <strong>{data.schoolName}</strong>.
+                          <strong className="text-neutral-900 dark:text-white font-extrabold">
+                            {data.schoolName}
+                          </strong>
+                          .
                         </>
                       ) : (
                         <>
                           Akun Anda telah dikonfigurasi untuk level{' '}
-                          <strong className="text-emerald-600 dark:text-emerald-400">
+                          <strong className="text-emerald-600 dark:text-emerald-400 font-extrabold">
                             {data.educationLevel === 'tk' ? 'TK / PAUD' : 'Sekolah Dasar (SD)'}
                           </strong>{' '}
-                          di <strong>{data.schoolName}</strong>.
+                          di{' '}
+                          <strong className="text-neutral-900 dark:text-white font-extrabold">
+                            {data.schoolName}
+                          </strong>
+                          .
                         </>
                       )}
                     </p>
@@ -370,7 +377,7 @@ export default function Onboarding({ role }: OnboardingProps) {
                     <button
                       type="button"
                       onClick={handleBack}
-                      className="flex items-center gap-2 rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                      className="flex items-center gap-2 rounded-2xl border-2 border-neutral-200 px-5 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Kembali
@@ -378,9 +385,9 @@ export default function Onboarding({ role }: OnboardingProps) {
                     <button
                       type="submit"
                       disabled={processing}
-                      className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="btn-kawaii-primary flex-1 py-3 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {processing ? 'Menyimpan...' : 'Mulai Sekarang'}
+                      {processing ? 'Menyimpan Konfigurasi...' : 'Mulai Masuk ke Dashboard'}
                       <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>

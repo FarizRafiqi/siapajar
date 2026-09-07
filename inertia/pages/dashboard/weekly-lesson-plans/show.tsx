@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Camera,
   CheckSquare,
+  ChevronDown,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import DocumentWorkflowMeta from '~/components/dashboard/document-workflow-meta'
@@ -292,7 +293,7 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
     <div className="space-y-6">
       {/* Kegiatan Pembuka & Penutup */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card-kawaii p-5">
           <h3 className="flex items-center gap-2 text-sm font-bold text-neutral-900 dark:text-white">
             <Sparkles className="h-4 w-4 text-amber-500" />
             C.1. Kegiatan Pembuka (Awal / Mindful)
@@ -347,7 +348,7 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
           )}
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card-kawaii p-5">
           <h3 className="flex items-center gap-2 text-sm font-bold text-neutral-900 dark:text-white">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             C.3. Kegiatan Penutup (Refleksi & Berdoa)
@@ -396,13 +397,10 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
         <div className="grid grid-cols-1 gap-4">
           {dailyActivities.length > 0 ? (
             dailyActivities.map((dayPlan, idx) => (
-              <div
-                key={`day-${dayPlan.day}-${idx}`}
-                className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
-              >
+              <div key={`day-${dayPlan.day}-${idx}`} className="card-kawaii p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
                   <div className="flex items-center gap-2.5">
-                    <span className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-bold text-white">
+                    <span className="shrink-0 whitespace-nowrap rounded-xl border-2 border-black bg-emerald-200 px-3 py-1 text-xs font-black text-emerald-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-emerald-300 dark:text-emerald-950 dark:shadow-[2px_2px_0px_#ffffff]">
                       {dayPlan.day}
                     </span>
                     {dayPlan.stage && (
@@ -557,7 +555,7 @@ function TabExperienceSection({ editing, currentContent, data, setData }: TabExp
               </div>
             ))
           ) : (
-            <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+            <div className="rounded-2xl border-2 border-dashed border-black bg-amber-50 p-8 text-center text-sm font-medium text-neutral-700 dark:border-white dark:bg-amber-950/30 dark:text-neutral-200">
               Belum ada rincian kegiatan harian 5 hari.
             </div>
           )}
@@ -578,7 +576,7 @@ function TabIdentificationSection({ editing, currentContent, data, setData }: Ta
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
       {/* Informasi Umum & Topik Modul */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:col-span-2">
+      <div className="card-kawaii p-5 md:col-span-2">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
           <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           A.0. Informasi Umum & Tema Pembelajaran
@@ -622,7 +620,7 @@ function TabIdentificationSection({ editing, currentContent, data, setData }: Ta
       </div>
 
       {/* Karakteristik Peserta Didik */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="card-kawaii p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
           <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           Karakteristik Peserta Didik
@@ -654,7 +652,7 @@ function TabIdentificationSection({ editing, currentContent, data, setData }: Ta
       </div>
 
       {/* Panca Cinta & Nilai KBC */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="card-kawaii p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
           <Heart className="h-4 w-4 text-rose-600 dark:text-rose-400" />
           Panca Cinta & Nilai KBC RA
@@ -709,7 +707,7 @@ function TabIdentificationSection({ editing, currentContent, data, setData }: Ta
       </div>
 
       {/* 3 Jenis Materi Pembelajaran */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:col-span-2 space-y-4">
+      <div className="card-kawaii space-y-4 p-5 md:col-span-2">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           Materi Pembelajaran Mendalam
@@ -800,7 +798,7 @@ function TabIdentificationSection({ editing, currentContent, data, setData }: Ta
 
       {/* Dimensi Profil Lulusan (DPL) */}
       {currentContent.identification?.dpl && currentContent.identification.dpl.length > 0 && (
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:col-span-2">
+        <div className="card-kawaii p-5 md:col-span-2">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
             <Compass className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             Dimensi Profil Lulusan (DPL 1 s.d 8) yang Dikembangkan
@@ -825,7 +823,7 @@ function TabDesignSection({ editing, currentContent, data, setData }: TabExperie
   return (
     <div className="space-y-5">
       {/* Capaian Pembelajaran & Tujuan */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+      <div className="card-kawaii space-y-4 p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           Capaian & Tujuan Pembelajaran (TP) Terpilih
@@ -861,7 +859,7 @@ function TabDesignSection({ editing, currentContent, data, setData }: TabExperie
       </div>
 
       {/* Praktik Pedagogis Deep Learning (Mindful, Meaningful, Joyful) */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+      <div className="card-kawaii space-y-4 p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           Praktik Pedagogis Pembelajaran Mendalam (Deep Learning)
@@ -961,7 +959,7 @@ function TabDesignSection({ editing, currentContent, data, setData }: TabExperie
 
       {/* Kemitraan & Lingkungan */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card-kawaii p-5">
           <h4 className="text-xs font-bold text-neutral-900 dark:text-white mb-2">
             Kemitraan Pembelajaran (Orang Tua / Masyarakat)
           </h4>
@@ -988,7 +986,7 @@ function TabDesignSection({ editing, currentContent, data, setData }: TabExperie
           )}
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card-kawaii p-5">
           <h4 className="text-xs font-bold text-neutral-900 dark:text-white mb-2">
             Pemanfaatan Lingkungan & Digital
           </h4>
@@ -1033,7 +1031,7 @@ function AssessmentTriadOverview({
   readonly finalActs: string[]
 }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+    <div className="card-kawaii space-y-4 p-5">
       <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
         <ClipboardCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         D. Asesmen Pembelajaran (Awal, Proses & Akhir)
@@ -1504,7 +1502,7 @@ function TabAssessmentSection({
       />
 
       {/* Indikator Ketercapaian Tujuan Pembelajaran (IKTP) */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+      <div className="card-kawaii space-y-4 p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <ListChecks className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           Indikator Ketercapaian Tujuan Pembelajaran (IKTP)
@@ -1533,7 +1531,7 @@ function TabAssessmentSection({
       </div>
 
       {/* Integrasi Asesmen Otentik (Lampiran 1 - 4) */}
-      <div className="rounded-2xl border border-purple-200/80 bg-white p-5 shadow-sm dark:border-purple-900/60 dark:bg-neutral-900 space-y-5">
+      <div className="card-kawaii space-y-5 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 pb-4 dark:border-neutral-800">
           <div>
             <div className="flex items-center gap-2">
@@ -1746,7 +1744,7 @@ function TabSummarySection({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-3">
+      <div className="card-kawaii space-y-3 p-5">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           E. Refleksi Guru & Umpan Balik
         </h3>
@@ -1787,6 +1785,165 @@ interface RpmHeaderProps {
   readonly onSubmit: (e: React.SyntheticEvent) => void
 }
 
+type RpmActionMenuProps = Pick<
+  RpmHeaderProps,
+  | 'weeklyLessonPlan'
+  | 'isPublished'
+  | 'editing'
+  | 'processing'
+  | 'workflow'
+  | 'onTogglePublish'
+  | 'onEdit'
+  | 'onCancel'
+  | 'onSubmit'
+>
+
+function RpmActionMenu({
+  weeklyLessonPlan,
+  isPublished,
+  editing,
+  processing,
+  workflow,
+  onTogglePublish,
+  onEdit,
+  onCancel,
+  onSubmit,
+}: RpmActionMenuProps) {
+  const [open, setOpen] = useState(false)
+  const closeMenu = () => setOpen(false)
+  const menuItemClass =
+    'flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold text-neutral-800 transition-colors hover:bg-emerald-50 hover:text-emerald-800 dark:text-neutral-100 dark:hover:bg-emerald-950/40'
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="btn-kawaii-amber"
+      >
+        <Sparkles className="h-4 w-4" />
+        <span>Aksi &amp; Opsi</span>
+        <ChevronDown className="h-4 w-4" />
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Tutup menu Aksi & Opsi"
+            className="fixed inset-0 z-10 cursor-default border-0 bg-transparent p-0"
+            onClick={closeMenu}
+          />
+          <div
+            role="menu"
+            className="absolute right-0 z-20 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border-2 border-black bg-white p-2 shadow-[6px_6px_0px_#000000] dark:border-white dark:bg-neutral-900 dark:shadow-[6px_6px_0px_#ffffff]"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                closeMenu()
+                onTogglePublish()
+              }}
+              className={menuItemClass}
+            >
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              {isPublished ? 'Jadikan Draf' : 'Terbitkan'}
+            </button>
+
+            <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
+
+            <DocumentWorkflowActions
+              type="rppm"
+              id={weeklyLessonPlan.id}
+              status={workflow?.status ?? weeklyLessonPlan.status}
+              templateKey={workflow?.templateKey}
+              onSaved={closeMenu}
+              menu
+            />
+
+            <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
+
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    closeMenu()
+                    onCancel()
+                  }}
+                  className={menuItemClass}
+                >
+                  <X className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={(event) => {
+                    closeMenu()
+                    onSubmit(event)
+                  }}
+                  disabled={processing}
+                  className={cn(
+                    menuItemClass,
+                    'text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 dark:text-emerald-300 dark:hover:bg-emerald-950/60 dark:hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50'
+                  )}
+                >
+                  <Save className="h-4 w-4" />
+                  {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    closeMenu()
+                    onEdit()
+                  }}
+                  className={menuItemClass}
+                >
+                  <Pencil className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                  Edit RPM
+                </button>
+                <a
+                  href={`/rppm/${weeklyLessonPlan.id}/export/pdf?disposition=inline`}
+                  target="_blank"
+                  rel="noreferrer"
+                  role="menuitem"
+                  onClick={closeMenu}
+                  className={menuItemClass}
+                >
+                  <Download className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                  PDF
+                </a>
+                <a
+                  href={`/rppm/${weeklyLessonPlan.id}/export`}
+                  role="menuitem"
+                  onClick={closeMenu}
+                  className={cn(
+                    menuItemClass,
+                    'text-purple-700 hover:bg-purple-50 hover:text-purple-900 dark:text-purple-300 dark:hover:bg-purple-950/50 dark:hover:text-purple-200'
+                  )}
+                >
+                  <Download className="h-4 w-4" />
+                  DOCX
+                </a>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function RpmHeaderToolbar({
   weeklyLessonPlan,
   theme,
@@ -1801,47 +1958,49 @@ function RpmHeaderToolbar({
   onSubmit,
 }: RpmHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-3">
+    <div className="relative flex flex-col gap-4 overflow-visible rounded-3xl border-2 border-black bg-emerald-600 p-4 shadow-[4px_4px_0px_#000000] dark:border-white dark:bg-emerald-800 dark:shadow-[4px_4px_0px_#ffffff] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+      <div className="relative flex min-w-0 items-center gap-3">
         <Link
           href="/rppm"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="btn-kawaii-secondary !h-11 !w-11 !shrink-0 !p-2.5"
+          aria-label="Kembali ke daftar RPM"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
+
+        <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-amber-400 dark:shadow-[2px_2px_0px_#ffffff] sm:flex">
+          <Calendar className="h-5 w-5" />
+        </div>
+
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+            <span className="shrink-0 whitespace-nowrap rounded-full border-2 border-black bg-purple-200 px-2.5 py-1 text-xs font-black text-purple-950 dark:border-white dark:bg-purple-300 dark:text-purple-950">
               RPM KBC RA (Deep Learning)
             </span>
-            <span className="text-xs text-neutral-600 dark:text-neutral-300 font-medium">
+            <span className="text-sm font-medium text-emerald-50">
               {weeklyLessonPlan.schoolClass?.name || 'Kelompok B'}
             </span>
             {weeklyLessonPlan.content?.weekNumber && (
-              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950/60 dark:text-emerald-300">
+              <span className="shrink-0 whitespace-nowrap rounded-full border border-black bg-emerald-200 px-2.5 py-1 text-xs font-bold text-emerald-950 dark:border-white dark:bg-emerald-300 dark:text-emerald-950">
                 Minggu {weeklyLessonPlan.content.weekNumber}
               </span>
             )}
-            <button
-              type="button"
-              onClick={onTogglePublish}
+            <span
               className={cn(
-                'rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors',
+                'shrink-0 whitespace-nowrap rounded-full border border-black px-2.5 py-1 text-xs font-bold dark:border-white',
                 isPublished
-                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300'
+                  ? 'bg-emerald-100 text-emerald-950 dark:bg-emerald-200 dark:text-emerald-950'
+                  : 'bg-white text-neutral-950 dark:bg-neutral-100 dark:text-neutral-950'
               )}
             >
               {isPublished ? 'Terbit' : 'Draf'}
-            </button>
+            </span>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">{theme}</h1>
+            <h1 className="truncate text-xl font-black text-white sm:text-2xl">{theme}</h1>
             {subtheme ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-200/60 dark:border-purple-800/40">
-                <span className="font-semibold text-neutral-500 dark:text-neutral-400">
-                  Subtema:
-                </span>
+              <span className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-white/95 px-2.5 py-1 text-xs font-bold text-purple-950 dark:border-white dark:bg-neutral-100 dark:text-purple-950">
+                <span className="font-semibold text-neutral-600">Subtema:</span>
                 <span>{subtheme}</span>
               </span>
             ) : null}
@@ -1849,63 +2008,18 @@ function RpmHeaderToolbar({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-wrap items-center gap-2">
-        <DocumentWorkflowActions
-          type="rppm"
-          id={weeklyLessonPlan.id}
-          status={workflow?.status ?? weeklyLessonPlan.status}
-          templateKey={workflow?.templateKey}
+      <div className="relative flex justify-end sm:ml-4">
+        <RpmActionMenu
+          weeklyLessonPlan={weeklyLessonPlan}
+          isPublished={isPublished}
+          editing={editing}
+          processing={processing}
+          workflow={workflow}
+          onTogglePublish={onTogglePublish}
+          onEdit={onEdit}
+          onCancel={onCancel}
+          onSubmit={onSubmit}
         />
-
-        {editing ? (
-          <>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-            >
-              <X className="h-3.5 w-3.5" />
-              Batal
-            </button>
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={processing}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:opacity-50 dark:bg-purple-700 dark:hover:bg-purple-600"
-            >
-              <Save className="h-3.5 w-3.5" />
-              {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={onEdit}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              Edit RPM
-            </button>
-            <a
-              href={`/rppm/${weeklyLessonPlan.id}/export/pdf?disposition=inline`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-            >
-              <Download className="h-3.5 w-3.5 text-rose-500" />
-              PDF
-            </a>
-            <a
-              href={`/rppm/${weeklyLessonPlan.id}/export`}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600"
-            >
-              <Download className="h-3.5 w-3.5" />
-              DOCX
-            </a>
-          </>
-        )}
       </div>
     </div>
   )
@@ -2007,20 +2121,21 @@ export default function WeeklyLessonPlanShow({
           lastSavedAt={workflow?.lastSavedAt}
           version={workflow?.version}
           templateKey={workflow?.templateKey}
+          variant="kawaii"
         />
 
         {/* 4 Tabs Navigation RPM */}
         {isRpmKbc && (
-          <div className="border-b border-neutral-200 dark:border-neutral-800">
-            <nav className="-mb-px flex space-x-1 overflow-x-auto pb-1" aria-label="Tabs RPM">
+          <div className="card-kawaii p-2">
+            <nav className="flex gap-1 overflow-x-auto" aria-label="Tabs RPM">
               <button
                 type="button"
                 onClick={() => setActiveTab('experience')}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
+                  'flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
                   activeTab === 'experience'
-                    ? 'border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400'
-                    : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-amber-400 dark:text-neutral-950 dark:shadow-[2px_2px_0px_#ffffff]'
+                    : 'border-transparent text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white'
                 )}
               >
                 <Sparkles className="h-4 w-4" />
@@ -2031,10 +2146,10 @@ export default function WeeklyLessonPlanShow({
                 type="button"
                 onClick={() => setActiveTab('identification')}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
+                  'flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
                   activeTab === 'identification'
-                    ? 'border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400'
-                    : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-amber-400 dark:text-neutral-950 dark:shadow-[2px_2px_0px_#ffffff]'
+                    : 'border-transparent text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white'
                 )}
               >
                 <BookOpen className="h-4 w-4" />
@@ -2045,10 +2160,10 @@ export default function WeeklyLessonPlanShow({
                 type="button"
                 onClick={() => setActiveTab('design')}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
+                  'flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
                   activeTab === 'design'
-                    ? 'border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400'
-                    : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-amber-400 dark:text-neutral-950 dark:shadow-[2px_2px_0px_#ffffff]'
+                    : 'border-transparent text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white'
                 )}
               >
                 <Layers className="h-4 w-4" />
@@ -2059,10 +2174,10 @@ export default function WeeklyLessonPlanShow({
                 type="button"
                 onClick={() => setActiveTab('assessment')}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
+                  'flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
                   activeTab === 'assessment'
-                    ? 'border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400'
-                    : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-amber-400 dark:text-neutral-950 dark:shadow-[2px_2px_0px_#ffffff]'
+                    : 'border-transparent text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white'
                 )}
               >
                 <ClipboardCheck className="h-4 w-4" />
@@ -2073,10 +2188,10 @@ export default function WeeklyLessonPlanShow({
                 type="button"
                 onClick={() => setActiveTab('summary')}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
+                  'flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-xs font-bold transition whitespace-nowrap',
                   activeTab === 'summary'
-                    ? 'border-emerald-600 text-emerald-600 dark:border-emerald-400 dark:text-emerald-400'
-                    : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    ? 'border-black bg-emerald-300 text-neutral-950 shadow-[2px_2px_0px_#000000] dark:border-white dark:bg-emerald-400 dark:text-neutral-950 dark:shadow-[2px_2px_0px_#ffffff]'
+                    : 'border-transparent text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white'
                 )}
               >
                 <FileText className="h-4 w-4" />3 Elemen CP Ringkas

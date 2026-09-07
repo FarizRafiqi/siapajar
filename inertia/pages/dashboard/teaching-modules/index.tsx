@@ -2,7 +2,7 @@ import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm, Link } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { BookOpen, Trash2, Eye, Sparkles } from 'lucide-react'
+import { BookOpen, Trash2, Eye, Plus } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 interface SchoolClass {
@@ -94,11 +94,12 @@ export default function TeachingModulesIndex({
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowGenerateModal(true)}
             disabled={!canGenerate}
             className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Sparkles className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Generate Modul Ajar
           </button>
         </div>
@@ -221,7 +222,7 @@ export default function TeachingModulesIndex({
           >
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <BookOpen className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Generate Modul Ajar dengan AI

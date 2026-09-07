@@ -69,10 +69,4 @@ export default class AiSetting extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
-
-  static async current() {
-    let setting = await AiSetting.query().orderBy('id', 'asc').first()
-    setting ??= await AiSetting.create({ provider: '9router', authMode: 'api_key' })
-    return setting
-  }
 }

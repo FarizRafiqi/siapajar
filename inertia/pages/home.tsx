@@ -1,111 +1,37 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Button } from '@heroui/react/button'
-import { Chip } from '@heroui/react/chip'
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import {
-  ClipboardList,
-  Target,
-  FileText,
-  BarChart3,
-  Trophy,
-  Link2,
-  Shuffle,
+  motion,
+  useScroll,
+  useMotionValueEvent,
+  AnimatePresence,
+  useReducedMotion,
+} from 'framer-motion'
+import {
   BookOpen,
-  Settings,
-  Quote,
+  FileSpreadsheet,
+  Layers,
+  FileText,
+  CheckCircle2,
+  ArrowRight,
+  Calculator,
+  ClipboardList,
+  Compass,
+  Zap,
+  Check,
   Menu,
   X,
+  ChevronDown,
+  Printer,
+  FileCode,
+  LoaderCircle,
+  Heart,
+  Camera,
+  MessageCircle,
+  Music2,
 } from 'lucide-react'
-import { useState } from 'react'
-import { TextGenerateEffect } from '~/components/ui/text-generate-effect'
-import { SpotlightCard } from '~/components/ui/spotlight-card'
-import { InfiniteMovingCards } from '~/components/ui/infinite-moving-cards'
-import { AnimatedNumber } from '~/components/ui/animated-number'
-import { Accordion } from '~/components/ui/accordion'
-import { AuroraBackground } from '~/components/ui/aurora-background'
-import { MagicButton } from '~/components/ui/magic-button'
-import { TracingBeam } from '~/components/ui/tracing-beam'
+import { type ReactNode, useState, useEffect, useRef } from 'react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
-import { sanitizeRichText } from '~/lib/rich-text'
-
-const features = [
-  {
-    icon: ClipboardList,
-    title: 'Perencanaan',
-    description:
-      'Protah, Promes, ATP otomatis sesuai Kurikulum Merdeka. Semua saling sinkron dari satu data kelas.',
-    gradient: 'from-emerald-500 to-teal-500',
-    lightBg: 'from-emerald-50 to-teal-50',
-    darkBg: 'from-emerald-900/30 to-teal-900/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-  },
-  {
-    icon: Target,
-    title: 'Modul Ajar',
-    description: 'Generate RPP/Modul Ajar sesuai Kurikulum Merdeka dengan AI hanya dalam 2 menit.',
-    gradient: 'from-blue-500 to-indigo-500',
-    lightBg: 'from-blue-50 to-indigo-50',
-    darkBg: 'from-blue-900/30 to-indigo-900/30',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    icon: FileText,
-    title: 'Soal & Penilaian',
-    description:
-      'Buat soal PTS/PAS/PAT lengkap dengan kunci jawaban dan rubrik penilaian otomatis.',
-    gradient: 'from-purple-500 to-violet-500',
-    lightBg: 'from-purple-50 to-violet-50',
-    darkBg: 'from-purple-900/30 to-violet-900/30',
-    iconColor: 'text-purple-600 dark:text-purple-400',
-  },
-  {
-    icon: BarChart3,
-    title: 'Rapor Narasi',
-    description: 'Narasi rapor personal per siswa — AI tulis deskripsi unik untuk setiap anak.',
-    gradient: 'from-amber-500 to-orange-500',
-    lightBg: 'from-amber-50 to-orange-50',
-    darkBg: 'from-amber-900/30 to-orange-900/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-  },
-  {
-    icon: Trophy,
-    title: 'Peringkat & Sertifikat',
-    description:
-      'Ranking siswa otomatis + generate sertifikat prestasi siap cetak dalam satu klik.',
-    gradient: 'from-rose-500 to-pink-500',
-    lightBg: 'from-rose-50 to-pink-50',
-    darkBg: 'from-rose-900/30 to-pink-900/30',
-    iconColor: 'text-rose-600 dark:text-rose-400',
-  },
-  {
-    icon: Link2,
-    title: 'Import Data Sekolah',
-    description:
-      'Import siswa dari CSV/XLSX dan kelola data kelas dalam satu tempat. Integrasi API pemerintah akan hadir kemudian.',
-    gradient: 'from-cyan-500 to-sky-500',
-    lightBg: 'from-cyan-50 to-sky-50',
-    darkBg: 'from-cyan-900/30 to-sky-900/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-  },
-]
-
-const steps = [
-  {
-    step: '1',
-    title: 'Daftar & Isi Data Kelas',
-    description: 'Buat akun gratis, masukkan data kelas dan mata pelajaran Anda',
-  },
-  {
-    step: '2',
-    title: 'Pilih Dokumen → Generate dengan AI',
-    description: 'Pilih dokumen yang dibutuhkan, biarkan AI membuatkan untuk Anda',
-  },
-  {
-    step: '3',
-    title: 'Edit, Export, Kirim — selesai!',
-    description: 'Sunting jika perlu, export ke PDF/DOCX, kirim ke orang tua via WhatsApp',
-  },
-]
+import { cn } from '~/lib/utils'
 
 interface PricingPackage {
   id: number
@@ -123,372 +49,812 @@ function formatPackagePrice(pkg: PricingPackage) {
   if (pkg.priceMonthly === 0) {
     return { price: 'Gratis', period: '' }
   }
-  return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '/bulan' }
+  return { price: `Rp${pkg.priceMonthly.toLocaleString('id-ID')}`, period: '' }
 }
 
-const testimonials: Array<{
-  name: string
-  role: string
-  quote: string
-  avatarGradient: string
-  rating: number
-}> = [
+const expressTools = [
   {
-    name: 'Bu Rina',
-    role: 'Guru TK B',
-    quote: 'Rapor narasi yang dulu makan waktu 2 minggu, sekarang selesai dalam 2 jam!',
-    avatarGradient: 'from-emerald-400 to-teal-500',
-    rating: 5,
+    title: 'Modul Ajar & RPP',
+    desc: 'Susun modul ajar lengkap Kurikulum Merdeka dengan TP, ATP, asesmen & refleksi dalam 2 menit.',
+    icon: BookOpen,
+    color: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400',
+    tag: 'Paling Populer',
+    tagColor: 'bg-amber-300 text-neutral-950',
+    href: '/modul-ajar',
   },
   {
-    name: 'Pak Budi',
-    role: 'Wali Kelas 3 SD',
-    quote: 'Semua dokumen admin dari Protah sampai rapor ada di satu tempat. Sangat membantu!',
-    avatarGradient: 'from-blue-400 to-indigo-500',
-    rating: 5,
+    title: 'Soal & Evaluasi',
+    desc: 'Generate bank soal PG, isian, dan uraian HOTS lengkap dengan kunci jawaban & kisi-kisi.',
+    icon: FileCode,
+    color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400',
+    tag: 'Bank Soal',
+    tagColor: 'bg-blue-200 text-neutral-950',
+    href: '/soal',
   },
   {
-    name: 'Pak Hendra',
-    role: 'Kepala Sekolah SD',
-    quote: 'Bisa pantau kelengkapan administrasi semua guru dari dashboard. Luar biasa!',
-    avatarGradient: 'from-amber-400 to-orange-500',
-    rating: 5,
+    title: 'LKPD Interaktif',
+    desc: 'Lembar Kerja Peserta Didik tematik dengan aktivitas berjenjang siap cetak dalam hitungan detik.',
+    icon: Layers,
+    color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400',
+    tag: 'Siap Cetak',
+    tagColor: 'bg-purple-200 text-neutral-950',
+    href: '/lkpd',
   },
   {
-    name: 'Bu Dewi',
-    role: 'Guru Kelas 5 SD',
-    quote: 'Soal PTS dengan kunci jawaban selesai dalam 15 menit. Dulu butuh 2 hari!',
-    avatarGradient: 'from-rose-400 to-pink-500',
-    rating: 5,
+    title: 'Katrol Nilai Smart',
+    desc: 'Normalisasi dan katrol nilai ulangan/ujian secara matematis proporsional dengan narasi justifikasi.',
+    icon: Calculator,
+    color: 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400',
+    tag: 'Formula Akurat',
+    tagColor: 'bg-cyan-200 text-neutral-950',
+    href: '/katrol',
   },
   {
-    name: 'Pak Andi',
-    role: 'Guru SMP Negeri',
-    quote: 'Integrasi ke RPT Digital langsung, tidak perlu input ulang. Luar biasa efisien!',
-    avatarGradient: 'from-purple-400 to-violet-500',
-    rating: 5,
+    title: 'Prota & Promes',
+    desc: 'Matriks Program Tahunan & Semester otomatis menghitung pekan efektif dan alur distribusi CP.',
+    icon: FileSpreadsheet,
+    color: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400',
+    tag: 'Format Resmi',
+    tagColor: 'bg-emerald-200 text-neutral-950',
+    href: '/prota-promes',
+  },
+  {
+    title: 'Narasi Rapor AI',
+    desc: 'Tulis deskripsi rapor autentik otomatis untuk seluruh siswa berdasarkan capaian tertinggi & terendah.',
+    icon: FileText,
+    color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400',
+    tag: 'Otomatis Kelas',
+    tagColor: 'bg-rose-200 text-neutral-950',
+    href: '/rapor',
+  },
+  {
+    title: 'Jurnal Harian Guru',
+    desc: 'Catatan mengajar dan refleksi harian kelas sesuai jadwal untuk kelengkapan administrasi supervisi.',
+    icon: ClipboardList,
+    color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400',
+    tag: 'Refleksi Harian',
+    tagColor: 'bg-amber-200 text-neutral-950',
+    href: '/jurnal',
+  },
+  {
+    title: 'Modul Projek P5',
+    desc: 'Modul projek kokurikuler dengan 6 dimensi Profil Pelajar Pancasila dan alur tahapan aksi.',
+    icon: Compass,
+    color: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400',
+    tag: 'Kurikulum Merdeka',
+    tagColor: 'bg-lime-200 text-neutral-950',
+    href: '/kokurikuler',
   },
 ]
 
 const faqs = [
   {
-    question: 'Apakah SiapAjar sesuai dengan Kurikulum Merdeka?',
-    answer:
-      'Ya, SiapAjar dirancang untuk alur CP, TP, ATP, IKTP/evidence, dan dokumen pembelajaran sesuai profil RA/TK atau SD.',
+    q: 'Apakah dokumen yang dihasilkan sesuai dengan Kurikulum Merdeka?',
+    a: 'Ya! Seluruh generator di SiapAjar dirancang mengikuti panduan pembelajaran dan asesmen terbaru dari Kemendikbudristek & BSKAP (CP, TP, ATP, IKTP, hingga Asesmen Diagnostik/Formatif/Sumatif).',
   },
   {
-    question: 'Bagaimana cara kerja AI di SiapAjar?',
-    answer:
-      'AI kami dilatih khusus untuk dokumen administrasi guru. Cukup input data kelas dan mapel, AI akan generate dokumen sesuai format Kurikulum Merdeka.',
+    q: 'Apakah guru baru mendapatkan kredit gratis?',
+    a: 'Tentu saja. Setiap pengguna yang baru mendaftar langsung mendapatkan bonus kredit gratis untuk mencoba seluruh generator tanpa syarat kartu kredit.',
   },
   {
-    question: 'Apakah data saya aman?',
-    answer:
-      'Ya, kami menggunakan enkripsi SSL dan tidak membagikan data Anda ke pihak ketiga. Data tersimpan di server Indonesia.',
+    q: 'Bagaimana cara menggunakan dokumen yang sudah digenerate?',
+    a: 'Setiap hasil dokumen dilengkapi tombol Salin Teks Format Rapi untuk ditempel ke Microsoft Word / Google Docs, serta tombol Cetak Langsung / Simpan PDF.',
   },
   {
-    question: 'Bisa export ke format apa saja?',
-    answer:
-      'PDF dan DOCX (Microsoft Word). Anda bisa langsung mencetak atau mengirim ke WhatsApp orang tua.',
+    q: 'Bisa digunakan untuk semua jenjang sekolah?',
+    a: 'Bisa. SiapAjar mendukung jenjang PAUD/TK/RA, SD/MI (Fase A, B, C), SMP/MTs (Fase D), hingga SMA/SMK/MA.',
   },
   {
-    question: 'Apakah ada versi trial?',
-    answer:
-      'Ya, akun gratis tersedia dengan 1 kelas dan 5 dokumen/bulan. Upgrade kapan saja tanpa kartu kredit.',
+    q: 'Apakah data sekolah dan siswa saya aman?',
+    a: 'Sangat aman. Kami menggunakan enkripsi standar industri dan server berlokasi di Indonesia. Data sekolah Anda tidak akan pernah dibagikan ke pihak manapun.',
   },
 ]
 
-// Decorative Ornaments
-interface FloatingOrnamentProps {
-  readonly children: React.ReactNode
-  readonly className?: string
-  readonly delay?: number
-  readonly duration?: number
-  readonly yRange?: number[]
-  readonly xRange?: number[]
+function Navbar() {
+  const { scrollY } = useScroll()
+  const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const { user } = usePage().props as any
+
+  useMotionValueEvent(scrollY, 'change', (latest) => {
+    setScrolled(latest > 30)
+  })
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b-2 border-black shadow-[0_4px_0px_#000000]'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <img
+              src="/images/logo.png"
+              alt="SiapAjar Logo"
+              className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+            />
+            <div>
+              <span className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight">
+                SiapAjar
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-6">
+            <a
+              href="#tools"
+              className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors"
+            >
+              Generator AI
+            </a>
+            <a
+              href="#cara-kerja"
+              className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors"
+            >
+              Cara Kerja
+            </a>
+            <a
+              href="#pricing"
+              className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors"
+            >
+              Harga
+            </a>
+            <a
+              href="#faq"
+              className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors"
+            >
+              FAQ
+            </a>
+            <ThemeToggle />
+
+            {user ? (
+              <Link href="/dashboard" className="btn-kawaii-primary text-xs font-black py-2.5 px-5">
+                Buka Dashboard &rarr;
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-xs font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600 transition-colors"
+                >
+                  Masuk
+                </Link>
+                <Link href="/signup" className="btn-kawaii-primary text-xs font-black py-2.5 px-5">
+                  Daftar Gratis
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2.5 bg-white dark:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000] rounded-xl text-neutral-900 dark:text-white"
+              aria-label="Toggle Menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Dropdown */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden bg-white dark:bg-neutral-900 border-b-2 border-black shadow-[0_4px_0px_#000000] px-4 py-6 space-y-3"
+          >
+            <a
+              href="#tools"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+            >
+              Generator AI
+            </a>
+            <a
+              href="#cara-kerja"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+            >
+              Cara Kerja
+            </a>
+            <a
+              href="#pricing"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+            >
+              Harga & Top Up
+            </a>
+            <a
+              href="#faq"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+            >
+              FAQ
+            </a>
+            <div className="pt-3 border-t-2 border-neutral-100 dark:border-neutral-800 flex flex-col gap-2">
+              {user ? (
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="btn-kawaii-primary text-center text-xs py-3"
+                >
+                  Buka Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="btn-kawaii-secondary text-center text-xs py-2.5"
+                  >
+                    Masuk ke Akun
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="btn-kawaii-primary text-center text-xs py-3"
+                  >
+                    Daftar Gratis (3 Kredit)
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  )
 }
 
-function FloatingOrnament({
-  children,
-  className = '',
-  delay = 0,
-  duration = 6,
-  yRange = [0, -15, 0],
-  xRange = [0, 10, 0],
-}: FloatingOrnamentProps) {
+interface TypewriterHeadingProps {
+  readonly text: string
+  readonly onComplete?: () => void
+}
+
+function TypewriterHeading({ text, onComplete }: TypewriterHeadingProps) {
+  const [displayText, setDisplayText] = useState('')
+  const [isTyping, setIsTyping] = useState(true)
+  const reduceMotion = useReducedMotion()
+  const onCompleteRef = useRef(onComplete)
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
+
+  useEffect(() => {
+    setDisplayText('')
+    setIsTyping(!reduceMotion)
+
+    if (reduceMotion) {
+      setDisplayText(text)
+      return
+    }
+
+    let index = 0
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        setDisplayText(text.slice(0, index + 1))
+        index++
+      } else {
+        setIsTyping(false)
+        clearInterval(interval)
+        onCompleteRef.current?.()
+      }
+    }, 32)
+
+    return () => clearInterval(interval)
+  }, [text, reduceMotion])
+
+  return (
+    <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white min-h-[1.75rem] flex items-center flex-wrap">
+      <span>{displayText}</span>
+      {isTyping && (
+        <span className="inline-block w-1 h-4 sm:h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse rounded-xs" />
+      )}
+    </h4>
+  )
+}
+
+type PreviewPhase = 'typing' | 'loading' | 'ready'
+
+const AI_LOADING_DURATION_MS = 1800
+const AI_LOADING_DURATION_S = 1.7
+
+const previewRevealVariants = {
+  hidden: {
+    opacity: 0,
+    y: 10,
+    scale: 0.998,
+    clipPath: 'inset(0 0 100% 0 round 1rem)',
+    filter: 'blur(1.5px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    clipPath: 'inset(0 0 0% 0 round 1rem)',
+    filter: 'blur(0px)',
+  },
+}
+
+function AiLoadingState() {
+  const reduceMotion = useReducedMotion()
+
   return (
     <motion.div
-      animate={{
-        y: yRange,
-        x: xRange,
-      }}
-      transition={{
-        duration: duration,
-        repeat: Infinity,
-        repeatType: 'reverse',
-        ease: 'easeInOut',
-        delay: delay,
-      }}
-      className={`absolute pointer-events-none opacity-20 dark:opacity-10 z-0 ${className}`}
-      style={{ willChange: 'transform' }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border-2 border-emerald-700/40 bg-emerald-50 p-3 dark:border-emerald-400/30 dark:bg-emerald-950/40"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-center gap-2 text-xs font-black text-emerald-800 dark:text-emerald-200">
+        <LoaderCircle
+          className={`h-4 w-4 shrink-0 ${reduceMotion ? '' : 'animate-spin'}`}
+          aria-hidden="true"
+        />
+        <span>AI sedang menyusun</span>
+        <span className="ml-auto flex gap-0.5" aria-hidden="true">
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:0ms]'}`}
+          />
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:150ms]'}`}
+          />
+          <span
+            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:300ms]'}`}
+          />
+        </span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full border border-emerald-700/30 bg-white/80 dark:border-emerald-300/30 dark:bg-emerald-950/70">
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : { duration: AI_LOADING_DURATION_S, ease: [0.22, 1, 0.36, 1] }
+          }
+          style={{ originX: 0 }}
+          className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
+        />
+      </div>
+    </motion.div>
+  )
+}
+
+interface ScrollRevealProps {
+  readonly children: ReactNode
+  readonly className?: string
+  readonly delay?: number
+}
+
+function ScrollReveal({ children, className, delay = 0 }: ScrollRevealProps) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.16, margin: '0px 0px -40px' }}
+      transition={
+        reduceMotion ? { duration: 0 } : { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }
+      }
+      className={className}
     >
       {children}
     </motion.div>
   )
 }
 
-const BookOrnament = () => (
-  <svg
-    className="w-8 h-8 text-emerald-500"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-  </svg>
-)
+const MOCKUP_TOOLS = [
+  { key: 'modul', name: 'Modul Ajar RPPM', icon: BookOpen, tag: 'PAUD / TK B' },
+  { key: 'lkpd', name: 'LKPD Siswa', icon: Layers, tag: 'Tematik' },
+  { key: 'soal', name: 'Bank Soal HOTS', icon: FileCode, tag: 'Otomatis' },
+  { key: 'rapor', name: 'Narasi Rapor AI', icon: FileText, tag: 'Autentik' },
+]
 
-const PencilOrnament = () => (
-  <svg
-    className="w-8 h-8 text-blue-500"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-  </svg>
-)
+function InteractiveWindowMockup() {
+  const [activeTool, setActiveTool] = useState<'modul' | 'lkpd' | 'soal' | 'rapor'>('modul')
+  const [previewPhase, setPreviewPhase] = useState<PreviewPhase>('typing')
+  const [previewForTool, setPreviewForTool] = useState(activeTool)
+  const reduceMotion = useReducedMotion()
 
-const LightbulbOrnament = () => (
-  <svg
-    className="w-8 h-8 text-yellow-500"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .4 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-    <line x1="9" y1="18" x2="15" y2="18" />
-    <line x1="10" y1="22" x2="14" y2="22" />
-  </svg>
-)
+  const tools = MOCKUP_TOOLS
 
-const SparkleOrnament = () => (
-  <svg
-    className="w-6 h-6 text-purple-500"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243l-2.121 2.121m0-10.607l2.121 2.121m6.364 6.364l2.121 2.121" />
-  </svg>
-)
+  useEffect(() => {
+    setPreviewForTool(activeTool)
+    setPreviewPhase(reduceMotion ? 'ready' : 'typing')
+  }, [activeTool, reduceMotion])
 
-const CapOrnament = () => (
-  <svg
-    className="w-10 h-10 text-indigo-500"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
-  </svg>
-)
+  useEffect(() => {
+    if (previewPhase !== 'loading') return
 
-// Floating Navbar
-function FloatingNav() {
-  const { scrollY } = useScroll()
-  const [visible, setVisible] = useState(true)
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const { user } = usePage().props as any
+    const timer = window.setTimeout(() => setPreviewPhase('ready'), AI_LOADING_DURATION_MS)
+    return () => window.clearTimeout(timer)
+  }, [previewPhase])
 
-  useMotionValueEvent(scrollY, 'change', (current) => {
-    const diff = current - (scrollY.getPrevious() ?? 0)
-    setScrolled(current > 50)
-    if (current < 50) {
-      setVisible(true)
-      return
-    }
-    setVisible(diff < 0)
-  })
+  const handleTypingComplete = () => {
+    if (!reduceMotion) setPreviewPhase('loading')
+  }
+  const isPreviewReady = previewForTool === activeTool && previewPhase === 'ready'
 
-  const navLinks = [
-    { href: '#features', label: 'Fitur' },
-    { href: '#pricing', label: 'Harga' },
-    { href: '#faq', label: 'FAQ' },
-  ]
+  // Auto-loop typewriter preview every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTool((prev) => {
+        const nextIndex = (MOCKUP_TOOLS.findIndex((t) => t.key === prev) + 1) % MOCKUP_TOOLS.length
+        return MOCKUP_TOOLS[nextIndex].key as 'modul' | 'lkpd' | 'soal' | 'rapor'
+      })
+    }, 7000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const toolPathMap: Record<string, string> = {
+    modul: 'modul-ajar',
+    lkpd: 'lkpd',
+    soal: 'soal',
+    rapor: 'rapor',
+  }
+  const activeToolPath = toolPathMap[activeTool] ?? 'modul-ajar'
 
   return (
-    <motion.nav
-      animate={{ y: visible ? 0 : -100 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
-        scrolled
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-sm border-b border-gray-100 dark:border-gray-800'
-          : 'bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2.5"
-          >
-            <img
-              src="/images/logo.png"
-              alt="SiapAjar Logo"
-              className="w-9 h-9 object-contain drop-shadow-sm"
-            />
-            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent tracking-tight">
-              SiapAjar
-            </span>
-          </motion.div>
+    <div className="relative mx-auto w-full max-w-3xl">
+      {/* Decorative floating badges */}
+      <motion.div
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+      >
+        <Zap className="w-4 h-4 text-amber-700" /> Selesai dalam 45 Detik!
+      </motion.div>
 
-          {/* Desktop Nav */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="hidden md:flex items-center gap-6"
-          >
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium"
-              >
-                {link.label}
-              </a>
-            ))}
-            <ThemeToggle />
-            {user ? (
-              <Link href="/dashboard">
-                <Button
-                  variant="primary"
-                  className="bg-emerald-600 text-white hover:bg-emerald-700"
+      <motion.div
+        animate={{ y: [0, 6, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+      >
+        <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Standar BSKAP & Kemenag
+      </motion.div>
+
+      {/* Main Window Frame */}
+      <div className="rounded-3xl border-2 border-black bg-white dark:bg-neutral-900 shadow-[8px_8px_0px_#000000] overflow-hidden">
+        {/* Window Titlebar */}
+        <div className="bg-[#047857] dark:bg-[#064e3b] border-b-2 border-black px-4 py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 rounded-full bg-rose-400 border border-black inline-block" />
+            <span className="w-3.5 h-3.5 rounded-full bg-amber-400 border border-black inline-block" />
+            <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 border border-black inline-block" />
+          </div>
+
+          <div className="flex-1 max-w-xs bg-emerald-950/60 border border-emerald-700/60 rounded-xl px-3 py-1 text-[11px] font-mono text-emerald-200 truncate text-center">
+            {`app.siapajar.id/${activeToolPath}`}
+          </div>
+
+          <div className="text-[10px] font-black text-neutral-950 px-2 py-0.5 bg-amber-300 rounded border border-black">
+            DASHBOARD GURU
+          </div>
+        </div>
+
+        {/* Dashboard Grid Layout (Left Mini Sidebar + Main Content) */}
+        <div className="grid grid-cols-12 min-h-[360px]">
+          {/* Mini Sidebar on Left */}
+          <div className="col-span-4 sm:col-span-3 border-r-2 border-black bg-[#047857] dark:bg-[#064e3b] p-2.5 sm:p-3 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200/90 px-2 py-1">
+                Alat Cepat
+              </p>
+              {tools.map((t) => {
+                const Icon = t.icon
+                const isSelected = activeTool === t.key
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setActiveTool(t.key as any)}
+                    className={cn(
+                      'w-full text-left p-2 rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer',
+                      isSelected
+                        ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
+                        : 'font-semibold text-emerald-100/90 hover:bg-emerald-600 hover:text-white'
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        'w-4 h-4 shrink-0',
+                        isSelected ? 'text-neutral-950' : 'text-emerald-300'
+                      )}
+                    />
+                    <span className="truncate hidden sm:inline">{t.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Bottom Credits in Sidebar */}
+            <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center">
+              <span className="text-[10px] font-black text-amber-300 block">3 Kredit Aktif</span>
+              <span className="text-[9px] text-emerald-200 font-medium">Siap Digunakan</span>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="col-span-8 sm:col-span-9 p-4 sm:p-6 bg-[#FAF7F2] dark:bg-neutral-900 text-left flex flex-col justify-between overflow-hidden">
+            <AnimatePresence mode="wait">
+              {activeTool === 'modul' && (
+                <motion.div
+                  key="modul"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
                 >
-                  Dashboard
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost">Login</Button>
-                </Link>
-                <Link href="/signup">
-                  <Button
-                    variant="primary"
-                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-emerald text-[11px] font-black">
+                      Fase Fondasi • TK B (5-6 Tahun) • 1 Pekan
+                    </span>
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      ✓ Selesai Terarsip
+                    </span>
+                  </div>
+                  <TypewriterHeading
+                    text="MODUL AJAR: Tanaman Sayur Ciptaan Allah"
+                    onComplete={handleTypingComplete}
+                  />
+                  <AnimatePresence mode="wait" initial={false}>
+                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-modul" />}
+                  </AnimatePresence>
+                  <motion.div
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate={isPreviewReady ? 'visible' : 'hidden'}
+                    variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
+                    aria-hidden={!isPreviewReady}
+                    className="relative"
                   >
-                    Mulai Gratis
-                  </Button>
-                </Link>
-              </>
-            )}
-          </motion.div>
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                        <span>
+                          <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
+                          sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu berkreasi
+                          cap sayur.
+                        </span>
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
+                          <span className="font-black text-[10px] text-emerald-800 dark:text-emerald-300 block uppercase">
+                            Kegiatan Inti
+                          </span>
+                          <span className="text-[11px] font-medium">
+                            Eksplorasi Mencuci & Mengupas Wortel
+                          </span>
+                        </div>
+                        <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
+                          <span className="font-black text-[10px] text-amber-800 dark:text-amber-300 block uppercase">
+                            Asesmen Formatif
+                          </span>
+                          <span className="text-[11px] font-medium">
+                            Catatan Anekdot & Rubrik Ceklis
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
 
-          {/* Mobile: Theme + Hamburger */}
-          <div className="md:hidden flex items-center gap-2">
-            <ThemeToggle />
-            <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Toggle menu"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {mobileOpen ? (
-                  <motion.span
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+              {activeTool === 'lkpd' && (
+                <motion.div
+                  key="lkpd"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-purple text-[11px] font-black">
+                      LKPD Tematik • Mode Siap Cetak
+                    </span>
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      Format Standar A4
+                    </span>
+                  </div>
+                  <TypewriterHeading
+                    text="LKPD: Menghitung & Mengelompokkan Buah"
+                    onComplete={handleTypingComplete}
+                  />
+                  <AnimatePresence mode="wait" initial={false}>
+                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-lkpd" />}
+                  </AnimatePresence>
+                  <motion.div
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate={isPreviewReady ? 'visible' : 'hidden'}
+                    variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
+                    aria-hidden={!isPreviewReady}
+                    className="relative"
                   >
-                    <X className="w-6 h-6" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="open"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        Instruksi Mandiri Siswa:
+                      </p>
+                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                        1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
+                      </p>
+                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                        2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
+                      </p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {activeTool === 'soal' && (
+                <motion.div
+                  key="soal"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-blue text-[11px] font-black">
+                      Sumatif Tengah Semester • 10 Butir HOTS
+                    </span>
+                    <span className="badge-kawaii-emerald text-[10px] font-black">
+                      Kunci & Rubrik Siap
+                    </span>
+                  </div>
+                  <TypewriterHeading
+                    text="EVALUASI: Matematika & Pengukuran"
+                    onComplete={handleTypingComplete}
+                  />
+                  <AnimatePresence mode="wait" initial={false}>
+                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-soal" />}
+                  </AnimatePresence>
+                  <motion.div
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate={isPreviewReady ? 'visible' : 'hidden'}
+                    variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
+                    aria-hidden={!isPreviewReady}
+                    className="relative"
                   >
-                    <Menu className="w-6 h-6" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
+                        pita adalah...
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
+                          A. 325 cm
+                        </span>
+                        <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
+                          B. 425 cm (Kunci: B)
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {activeTool === 'rapor' && (
+                <motion.div
+                  key="rapor"
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="badge-kawaii-rose text-[11px] font-black">
+                      Narasi Rapor Otomatis • Semester 1
+                    </span>
+                    <span className="badge-kawaii-amber text-[10px] font-black">
+                      Bahasa Positif
+                    </span>
+                  </div>
+                  <TypewriterHeading
+                    text="RAPOR: Deskripsi Capaian Pembelajaran Siswa"
+                    onComplete={handleTypingComplete}
+                  />
+                  <AnimatePresence mode="wait" initial={false}>
+                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-rapor" />}
+                  </AnimatePresence>
+                  <motion.div
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate={isPreviewReady ? 'visible' : 'hidden'}
+                    variants={previewRevealVariants}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }
+                    aria-hidden={!isPreviewReady}
+                    className="relative"
+                  >
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                      &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
+                      sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
+                      pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Bottom Action Row inside Mockup */}
+            <div className="pt-2 mt-4 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 text-[11px]">
+              <span className="text-neutral-500 font-bold">✓ Siap salin & cetak Word/PDF</span>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-xl bg-emerald-300 text-neutral-950 border-2 border-black font-black text-[11px] flex items-center gap-1 shadow-[1px_1px_0px_#000000]">
+                  <Printer className="w-3.5 h-3.5" /> Download .DOCX
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* Mobile Menu Dropdown */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-100 dark:border-gray-800"
-          >
-            <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
-              {navLinks.map((link, idx) => (
-                <motion.a
-                  key={link.href}
-                  href={link.href}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors"
-                >
-                  {link.label}
-                </motion.a>
-              ))}
-              <div className="border-t border-gray-100 dark:border-gray-800 mt-2 pt-3 flex flex-col gap-2">
-                {user ? (
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
-                    <Button
-                      variant="primary"
-                      className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
-                    >
-                      Dashboard
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/login" onClick={() => setMobileOpen(false)}>
-                      <Button variant="ghost" className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                      <Button
-                        variant="primary"
-                        className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
-                      >
-                        Mulai Gratis
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000000] overflow-hidden transition-all">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full p-5 text-left font-black text-sm sm:text-base text-neutral-900 dark:text-white flex items-center justify-between gap-4"
+      >
+        <span>{q}</span>
+        <div
+          className={`p-1.5 rounded-lg border-2 border-black bg-emerald-200 text-neutral-950 transition-transform ${
+            open ? 'rotate-180 bg-amber-300' : ''
+          }`}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </div>
+      </button>
+      {open && (
+        <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium border-t-2 border-neutral-100 dark:border-neutral-800 leading-relaxed">
+          {a}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -498,756 +864,575 @@ interface HomeProps {
 
 export default function Home({ packages }: HomeProps) {
   return (
-    <>
-      <Head title="SiapAjar — Siap Mengajar, Siap Administrasi">
+    <div className="min-h-screen bg-[#fafaf9] dark:bg-neutral-950 text-neutral-900 dark:text-white antialiased font-sans selection:bg-emerald-300 selection:text-neutral-950">
+      <Head title="SiapAjar — Generator Modul Ajar & Administrasi Guru AI Terlengkap">
         <meta
           name="description"
-          content="Platform all-in-one administrasi guru Kurikulum Merdeka. Buat Protah, Modul Ajar, Soal, Rapor — semua otomatis dari satu tempat."
+          content="Generator Modul Ajar, Soal Evaluasi, LKPD, Prota-Promes, Jurnal Mengajar, dan Narasi Rapor Kurikulum Merdeka otomatis dalam 3 menit. Coba gratis sekarang!"
         />
       </Head>
 
-      <FloatingNav />
+      <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-28 pb-20 px-4 bg-gradient-to-br from-emerald-50 via-white to-slate-50 dark:from-slate-950 dark:via-gray-950 dark:to-gray-900 bg-dot-grid-lg relative overflow-hidden">
-        {/* Background glowing blobs */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-400/20 dark:bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-72 h-72 bg-blue-400/10 dark:bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-teal-400/10 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Decorative Ornaments */}
-        <FloatingOrnament className="top-12 left-10" delay={0}>
-          <BookOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament
-          className="bottom-16 left-1/4"
-          delay={1.5}
-          duration={5}
-          yRange={[0, 12, 0]}
-        >
-          <PencilOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament className="top-24 right-1/3" delay={0.8} duration={7}>
-          <LightbulbOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament className="bottom-24 right-10" delay={2} duration={5.5}>
-          <CapOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament className="top-1/2 left-[5%]" delay={2.5} duration={4}>
-          <SparkleOrnament />
-        </FloatingOrnament>
-
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
-          <div className="md:col-span-7 text-left">
+      <section className="min-h-screen flex items-center pt-24 pb-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center relative z-10">
+          {/* Left Column: Headline, Subtitle, CTAs & Badges */}
+          <div className="lg:col-span-6 xl:col-span-6 text-center lg:text-left space-y-6">
+            {/* Top Announcement Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
             >
-              <Chip color="accent" variant="soft" className="mb-4">
-                Administrasi pembelajaran RA/TK dan SD
-              </Chip>
+              <Zap className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
             </motion.div>
 
-            <TextGenerateEffect
-              words="Satu Platform, Semua Administrasi"
-              className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
-            />
+            {/* Main Hero Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-3xl sm:text-4xl md:text-5xl xl:text-5.5xl font-black tracking-tight text-neutral-950 dark:text-white leading-[1.15]"
+            >
+              Modul Ajar & Administrasi Guru Lengkap dalam 3 Menit!
+            </motion.h1>
 
+            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 0.5 }}
-              className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl"
+              transition={{ delay: 0.2 }}
+              className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
-              Susun CP, TP, ATP, dokumen pembelajaran, asesmen, dan rapor dari satu tempat. AI
-              membantu menyiapkan draft, guru tetap memegang kendali.
+              Susun Modul Ajar, Soal Evaluasi HOTS, LKPD, Jurnal Harian, Prota-Promes, dan Narasi
+              Rapor Kurikulum Merdeka secara otomatis. Tanpa ribet, siap print & supervisi.
             </motion.p>
 
+            {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5, duration: 0.5 }}
-              className="flex flex-col sm:flex-row gap-4 justify-start"
+              transition={{ delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2"
             >
-              <Link href="/signup">
-                <MagicButton>Mulai Gratis &rarr;</MagicButton>
+              <Link
+                href="/signup"
+                className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-7 flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <span>Mulai Buat Gratis Sekarang</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
-              <a href="#features">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-lg px-8 min-h-12 bg-white/80 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-200 backdrop-blur-sm"
-                >
-                  Lihat Demo
-                </Button>
+              <a
+                href="#tools"
+                className="btn-kawaii-secondary text-sm sm:text-base py-3.5 px-6 flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Eksplorasi Fitur</span>
               </a>
             </motion.div>
 
-            <motion.p
+            {/* Trust Value Badges */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 0.5 }}
-              className="text-sm text-gray-500 dark:text-gray-400 mt-4 flex items-center gap-4 flex-wrap"
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 text-xs font-bold text-neutral-600 dark:text-neutral-400 pt-2"
             >
-              <span className="flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Gratis untuk 1 kelas
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Gratis 3 Kredit
+                untuk Guru Baru
               </span>
-              <span className="flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Tanpa kartu kredit
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Sesuai Standar
+                BSKAP
               </span>
-              <span className="flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Setup 2 menit
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Export Word & PDF
               </span>
-            </motion.p>
-          </div>
-
-          <div className="md:col-span-5 flex justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8, type: 'spring' }}
-              className="relative w-full max-w-md"
-            >
-              {/* Backglow panel */}
-              <div className="absolute -inset-1 bg-gradient-to-tr from-emerald-500 to-emerald-400 rounded-3xl blur-2xl opacity-30 dark:opacity-20 animate-pulse" />
-
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                  ease: 'easeInOut',
-                }}
-                className="relative bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-3xl p-4 shadow-2xl"
-              >
-                <img
-                  src="/images/hero_illustration.png"
-                  alt="SiapAjar AI Teacher Assistant"
-                  className="w-full h-auto rounded-2xl object-cover"
-                />
-              </motion.div>
             </motion.div>
           </div>
+
+          {/* Right Column: Interactive Kawaii Window Mockup */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="lg:col-span-6 xl:col-span-6 flex justify-center"
+          >
+            <InteractiveWindowMockup />
+          </motion.div>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid relative overflow-hidden">
-        {/* Decorative Ornaments */}
-        <FloatingOrnament className="top-16 left-[8%]" delay={0.5} duration={6.5}>
-          <SparkleOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament className="bottom-12 right-[12%]" delay={1.2} duration={5.8}>
-          <BookOrnament />
-        </FloatingOrnament>
-        <FloatingOrnament className="top-1/3 right-[5%]" delay={2} duration={7.2}>
-          <PencilOrnament />
-        </FloatingOrnament>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <Chip color="danger" variant="soft" className="mb-4">
-              Masalah Nyata
-            </Chip>
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Guru Menghabiskan <AnimatedNumber value={40} suffix="–" className="text-red-500" />
-              <AnimatedNumber value={60} suffix="% " className="text-red-500" />
-              Waktu untuk Administrasi
+      {/* Feature Highlights Grid */}
+      <section
+        id="tools"
+        className="py-20 px-4 sm:px-6 lg:px-8 border-t-2 border-black bg-white dark:bg-neutral-900"
+      >
+        <div className="max-w-6xl mx-auto space-y-12">
+          <ScrollReveal className="text-center space-y-3">
+            <span className="badge-kawaii-emerald text-xs font-black">ALAT PRAKTIS</span>
+            <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+              Semua Kebutuhan Guru Dalam Satu Tempat
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-              Bukan fokus mengajar atau berinovasi. Tetapi terjebak menulis dokumen yang sama
-              berulang-ulang secara manual setiap semester.
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+              Hemat waktu berharga Anda hingga 90% dan fokuskan energi pada interaksi mendalam
+              bersama peserta didik.
             </p>
-          </motion.div>
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-12 gap-12 items-center">
-            {/* Left: Stressed teacher illustration */}
-            <div className="md:col-span-5 flex justify-center order-2 md:order-1">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="relative w-full max-w-sm"
-              >
-                <div className="absolute -inset-1 bg-red-500/10 rounded-3xl blur-2xl pointer-events-none" />
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-4 shadow-xl">
-                  <img
-                    src="/images/problem_illustration.png"
-                    alt="Guru stress karena administrasi manual"
-                    className="w-full h-auto rounded-2xl object-cover"
-                  />
-                  <p className="text-xs text-center text-gray-400 dark:text-gray-500 mt-3 italic">
-                    Administrasi konvensional yang menyita waktu & tenaga
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right: Explanatory problem cards */}
-            <div className="md:col-span-7 space-y-6 order-1 md:order-2">
-              <div className="grid sm:grid-cols-1 gap-6">
-                {[
-                  {
-                    icon: Shuffle,
-                    title: 'Fragmentasi Tools',
-                    desc: 'Modul ajar di platform A, soal di platform B, rapor di aplikasi desktop C. Tidak saling terintegrasi.',
-                  },
-                  {
-                    icon: BookOpen,
-                    title: 'Kurva Belajar KM yang Tinggi',
-                    desc: 'Istilah CP, ATP, TP, KKTP masih baru dan membingungkan bagi banyak guru.',
-                  },
-                  {
-                    icon: Settings,
-                    title: 'Tidak Ada Otomatisasi',
-                    desc: 'Protah, Promes, ATP disusun manual dari nol dengan copy-paste berulang kali setiap tahun.',
-                  },
-                ].map((problem, idx) => (
-                  <motion.div
-                    key={problem.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.15, duration: 0.5 }}
-                  >
-                    <SpotlightCard className="h-full">
-                      <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-950/50 rounded-xl flex items-center justify-center">
-                          <problem.icon className="w-6 h-6 text-red-500" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            {problem.title}
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                            {problem.desc}
-                          </p>
-                        </div>
-                      </div>
-                    </SpotlightCard>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-            className="text-center mt-12"
-          >
-            <Chip
-              color="accent"
-              variant="primary"
-              size="lg"
-              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
-            >
-              SiapAjar selesaikan semua kerumitan ini dalam satu platform
-            </Chip>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Feature Showcase */}
-      <section id="features" className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <Chip color="success" variant="soft" className="mb-4">
-              Fitur Utama
-            </Chip>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Semua yang Anda Butuhkan
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Dari perencanaan hingga rapor, semua tersedia dalam satu platform
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, idx) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-              >
-                <SpotlightCard className="h-full">
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${feature.lightBg} dark:${feature.darkBg} flex items-center justify-center shadow-sm`}
-                    >
-                      <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                        {feature.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </SpotlightCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <Chip color="warning" variant="soft" className="mb-4">
-              Cara Kerja
-            </Chip>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              3 Langkah Sederhana
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Mulai dari nol hingga dokumen jadi dalam hitungan menit
-            </p>
-          </motion.div>
-
-          <TracingBeam>
-            <div className="space-y-12">
-              {steps.map((step, idx) => (
-                <motion.div
-                  key={step.step}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2, duration: 0.5 }}
-                >
-                  <SpotlightCard>
-                    <div className="flex items-center gap-6">
-                      <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-full flex items-center justify-center text-xl font-bold">
-                        {step.step}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                          {step.title}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400">{step.description}</p>
-                      </div>
-                    </div>
-                  </SpotlightCard>
-                </motion.div>
-              ))}
-            </div>
-          </TracingBeam>
-        </div>
-      </section>
-
-      {/* Testimonials are intentionally hidden until there are verified user testimonials. */}
-      {testimonials.length > 0 && (
-        <section className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-12"
-            >
-              <Chip color="default" variant="soft" className="mb-4">
-                Testimoni
-              </Chip>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Apa Kata Guru?
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Dipercaya oleh ribuan guru di seluruh Indonesia
-              </p>
-            </motion.div>
-
-            <InfiniteMovingCards
-              items={testimonials.map((t) => ({
-                content: (
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-3">
-                      <Quote className="w-8 h-8 text-emerald-200 dark:text-emerald-800" />
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: t.rating }).map((_, i) => (
-                          <span key={`star-${String(i)}`} className="text-amber-400 text-sm">
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 italic mb-5 flex-1 leading-relaxed">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 bg-gradient-to-br ${t.avatarGradient} text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm`}
-                      >
-                        {t.name[0]}
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white text-sm">{t.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              }))}
-              speed="slow"
-              className="py-4"
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Pricing */}
-      <section id="pricing" className="py-16 px-4 bg-gray-50 dark:bg-slate-950 bg-dot-grid">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <Chip color="success" variant="soft" className="mb-4">
-              Harga
-            </Chip>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Pilih Paket yang Tepat
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">Mulai gratis, upgrade kapan saja</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {packages.map((plan, idx) => {
-              const { price, period } = formatPackagePrice(plan)
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {expressTools.map((tool, index) => {
+              const Icon = tool.icon
               return (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1, duration: 0.5 }}
-                  whileHover={{ y: -8 }}
-                >
-                  <div
-                    className={`relative rounded-2xl overflow-hidden h-full flex flex-col ${
-                      plan.isHighlighted
-                        ? 'bg-gradient-to-br from-emerald-600 to-teal-700 shadow-2xl shadow-emerald-500/25 ring-2 ring-emerald-400/50'
-                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md'
-                    }`}
-                  >
-                    {plan.isHighlighted && (
-                      <div className="flex items-center justify-center gap-1.5 py-2.5 text-emerald-100 text-sm font-semibold bg-emerald-700/50">
-                        <span>🔥</span>
-                        <span>Terpopuler</span>
-                      </div>
-                    )}
-                    <div className="p-6 text-center flex flex-col flex-1">
-                      <h3
-                        className={`text-xl font-bold mb-2 ${
-                          plan.isHighlighted ? 'text-white' : 'text-gray-900 dark:text-white'
-                        }`}
-                      >
-                        {plan.displayName}
-                      </h3>
-                      <div className="mb-5">
-                        <span
-                          className={`text-4xl font-black ${
-                            plan.isHighlighted
-                              ? 'text-white'
-                              : 'text-emerald-600 dark:text-emerald-400'
-                          }`}
+                <ScrollReveal key={tool.title} delay={index * 0.06} className="h-full">
+                  <div className="h-full bg-[#FAF7F2] dark:bg-neutral-950 rounded-3xl border-2 border-black p-6 flex flex-col justify-between shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-1 transition-all relative">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={cn(
+                            'w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000000]',
+                            tool.color
+                          )}
                         >
-                          {price}
-                        </span>
-                        {period && (
+                          <Icon className="w-6 h-6 shrink-0" />
+                        </div>
+                        {tool.tag && (
                           <span
-                            className={
-                              plan.isHighlighted
-                                ? 'text-emerald-200'
-                                : 'text-gray-500 dark:text-gray-400'
-                            }
+                            className={cn(
+                              'px-2.5 py-0.5 rounded-full border-2 border-black text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000]',
+                              tool.tagColor
+                            )}
                           >
-                            {period}
+                            {tool.tag}
                           </span>
                         )}
                       </div>
-                      <div className="mb-6 flex-1 text-left">
-                        {plan.features.length === 1 && /<\/?[a-z][^>]*>/i.test(plan.features[0]) ? (
-                          <div
-                            className={`rich-text-content prose prose-sm max-w-none ${plan.isHighlighted ? 'prose-invert' : 'dark:prose-invert'}`}
-                            dangerouslySetInnerHTML={{ __html: sanitizeRichText(plan.features[0]) }}
-                          />
-                        ) : (
-                          <ul className="space-y-2.5">
-                            {plan.features.map((feature) => (
-                              <li
-                                key={feature}
-                                className={`flex items-center gap-2 text-sm ${
-                                  plan.isHighlighted
-                                    ? 'text-emerald-100'
-                                    : 'text-gray-600 dark:text-gray-400'
-                                }`}
-                              >
-                                <span
-                                  className={`font-bold text-base flex-shrink-0 ${
-                                    plan.isHighlighted ? 'text-emerald-300' : 'text-emerald-500'
-                                  }`}
-                                >
-                                  ✓
-                                </span>
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                      <div className="space-y-1.5">
+                        <h3 className="font-black text-lg text-neutral-950 dark:text-white">
+                          {tool.title}
+                        </h3>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium">
+                          {tool.desc}
+                        </p>
                       </div>
-                      <Link href="/signup">
-                        <Button
-                          variant={plan.isHighlighted ? 'primary' : 'outline'}
-                          className={`w-full font-bold ${
-                            plan.isHighlighted
-                              ? 'bg-white text-emerald-700 hover:bg-emerald-50 border-0'
-                              : ''
-                          }`}
-                        >
-                          {plan.ctaLabel || `Pilih ${plan.displayName}`}
-                        </Button>
+                    </div>
+
+                    <div className="pt-6">
+                      <Link
+                        href={tool.href}
+                        className="text-xs font-black text-neutral-950 dark:text-white inline-flex items-center gap-1.5 hover:gap-2.5 transition-all group hover:text-emerald-600 dark:hover:text-emerald-400"
+                      >
+                        <span>Coba Generator</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </div>
                   </div>
-                </motion.div>
+                </ScrollReveal>
               )
             })}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="py-16 px-4 bg-white dark:bg-gray-950 bg-dot-grid">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <Chip color="default" variant="secondary" className="mb-4">
-              FAQ
-            </Chip>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Pertanyaan Umum
+      {/* Pricing Section */}
+      <section
+        id="pricing"
+        className="py-20 px-4 sm:px-6 lg:px-8 border-t-2 border-black bg-[#FAF7F2] dark:bg-neutral-950"
+      >
+        <div className="max-w-6xl mx-auto space-y-12">
+          <ScrollReveal className="text-center space-y-3">
+            <span className="badge-kawaii-amber text-xs font-black">HARGA TERJANGKAU</span>
+            <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+              Pilihan Paket Tanpa Komitmen Ribet
             </h2>
-          </motion.div>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+              Pilih paket sesuai kebutuhan mengajar Anda. Mulai dari gratis hingga akses lengkap
+              sekolah.
+            </p>
+          </ScrollReveal>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <Accordion items={faqs} />
-          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {packages && packages.length > 0
+              ? packages.map((pkg, index) => {
+                  const { price, period } = formatPackagePrice(pkg)
+                  const isPopular = pkg.isHighlighted
+                  return (
+                    <ScrollReveal key={pkg.id} delay={index * 0.08} className="h-full">
+                      <div
+                        className={cn(
+                          'h-full rounded-3xl border-2 border-black p-6 sm:p-7 flex flex-col justify-between relative transition-all',
+                          isPopular
+                            ? 'bg-[#047857] text-white shadow-[6px_6px_0px_#000000]'
+                            : 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-[4px_4px_0px_#000000]'
+                        )}
+                      >
+                        {isPopular && (
+                          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
+                            Paling Populer
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          <div>
+                            <h3
+                              className={cn(
+                                'font-black text-xl',
+                                isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                              )}
+                            >
+                              {pkg.displayName}
+                            </h3>
+                            {pkg.description && (
+                              <p
+                                className={cn(
+                                  'text-xs mt-1 font-medium',
+                                  isPopular
+                                    ? 'text-emerald-200/90'
+                                    : 'text-neutral-500 dark:text-neutral-400'
+                                )}
+                              >
+                                {pkg.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="py-2">
+                            <span
+                              className={cn(
+                                'text-3.5xl font-black',
+                                isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                              )}
+                            >
+                              {price}
+                            </span>
+                            {period && (
+                              <span
+                                className={cn(
+                                  'text-xs font-bold ml-1',
+                                  isPopular ? 'text-emerald-200' : 'text-neutral-500'
+                                )}
+                              >
+                                {period}
+                              </span>
+                            )}
+                          </div>
+
+                          <div
+                            className={cn(
+                              'space-y-2.5 pt-3 border-t-2 text-xs font-medium',
+                              isPopular
+                                ? 'border-emerald-700/60 text-emerald-100'
+                                : 'border-neutral-100 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
+                            )}
+                          >
+                            {pkg.features.map((feat) => (
+                              <div key={feat} className="flex items-center gap-2">
+                                <CheckCircle2
+                                  className={cn(
+                                    'w-4 h-4 shrink-0',
+                                    isPopular ? 'text-amber-300' : 'text-emerald-600'
+                                  )}
+                                />
+                                <span>{feat}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-6">
+                          <Link
+                            href="/signup"
+                            className={cn(
+                              'w-full text-center text-xs font-black py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
+                              isPopular
+                                ? 'bg-amber-300 hover:bg-amber-400 text-neutral-950'
+                                : 'bg-white hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white'
+                            )}
+                          >
+                            Pilih Paket Ini
+                          </Link>
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  )
+                })
+              : // Default Pricing Cards Fallback
+                [
+                  {
+                    title: 'Starter Gratis',
+                    price: 'Rp0',
+                    desc: 'Untuk mencoba seluruh generator',
+                    credits: '3 Kredit Gratis',
+                    features: ['Akses 8 Generator AI', 'Export Teks & Print', 'Tanpa Kartu Kredit'],
+                    highlight: false,
+                  },
+                  {
+                    title: 'Paket Hemat Guru',
+                    price: 'Rp19.000',
+                    desc: 'Untuk kebutuhan 1-2 minggu mengajar',
+                    credits: '10 Kredit AI',
+                    features: [
+                      'Akses Semua Fitur',
+                      'Modul Ajar & Soal HOTS',
+                      'Export Word & PDF',
+                      'Masa Aktif Selamanya',
+                    ],
+                    highlight: false,
+                  },
+                  {
+                    title: 'Paket Semesteran',
+                    price: 'Rp49.000',
+                    desc: 'Pilihan favorit guru se-Indonesia',
+                    credits: '30 Kredit AI',
+                    features: [
+                      'Akses Semua Fitur',
+                      'Generator Narasi Rapor',
+                      'Katrol Nilai Smart',
+                      'Prioritas Dukungan WA',
+                    ],
+                    highlight: true,
+                  },
+                  {
+                    title: 'Paket Sekolah',
+                    price: 'Rp99.000',
+                    desc: 'Untuk guru aktif & administrasi penuh',
+                    credits: '75 Kredit AI',
+                    features: [
+                      'Akses Semua Fitur',
+                      'Kredit Bisa Dibagi',
+                      'Bebas Generate Kapan Saja',
+                      'Prioritas Kecepatan Server',
+                    ],
+                    highlight: false,
+                  },
+                ].map((tier, index) => (
+                  <ScrollReveal key={tier.title} delay={index * 0.08} className="h-full">
+                    <div
+                      className={`h-full bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 flex flex-col justify-between relative transition-all ${
+                        tier.highlight
+                          ? 'shadow-[6px_6px_0px_#000000] ring-4 ring-emerald-300 dark:ring-emerald-500'
+                          : 'shadow-[4px_4px_0px_#000000]'
+                      }`}
+                    >
+                      {tier.highlight && (
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
+                          Paling Populer
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-black text-lg text-neutral-950 dark:text-white">
+                            {tier.title}
+                          </h3>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-medium">
+                            {tier.desc}
+                          </p>
+                        </div>
+
+                        <div className="py-2">
+                          <span className="text-3xl font-black text-neutral-950 dark:text-white">
+                            {tier.price}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t-2 border-neutral-100 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                          <div className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5" /> {tier.credits}
+                          </div>
+                          {tier.features.map((feat) => (
+                            <div key={feat} className="flex items-center gap-2">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <span>{feat}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-6">
+                        <Link
+                          href="/signup"
+                          className={`w-full text-center text-xs py-3 block ${
+                            tier.highlight ? 'btn-kawaii-primary' : 'btn-kawaii-secondary'
+                          }`}
+                        >
+                          Pilih Paket Ini
+                        </Link>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+          </div>
         </div>
       </section>
 
-      {/* CTA Final with Aurora Background */}
-      <AuroraBackground className="py-20 px-4 bg-emerald-600 dark:bg-emerald-800">
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-4"
-          >
-            Mulai Gratis Sekarang
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-emerald-100 mb-8 text-lg"
-          >
-            Tidak perlu kartu kredit. Mulai buat dokumen admin dalam 2 menit.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <Link href="/signup">
-              <Button
-                variant="primary"
-                size="lg"
-                className="text-lg px-10 font-bold bg-white text-emerald-700 hover:bg-emerald-50"
-              >
-                Mulai Gratis &rarr;
-              </Button>
-            </Link>
-          </motion.div>
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto space-y-10">
+          <ScrollReveal className="text-center space-y-3">
+            <span className="badge-kawaii-blue text-xs font-black">TANYA JAWAB</span>
+            <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+              Pertanyaan yang Sering Diajukan
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium">
+              Semua informasi yang perlu Anda ketahui sebelum menggunakan SiapAjar.
+            </p>
+          </ScrollReveal>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <ScrollReveal key={faq.q} delay={index * 0.06}>
+                <FaqItem q={faq.q} a={faq.a} />
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
-      </AuroraBackground>
+      </section>
+
+      {/* Final CTA Banner */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-amber-300 dark:bg-emerald-950 border-t-2 border-black">
+        <ScrollReveal>
+          <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black shadow-[6px_6px_0px_#000000] p-8 sm:p-12 text-center space-y-6">
+            <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white max-w-xl mx-auto leading-tight">
+              Siap Menghemat Waktu Administrasi Anda Hari Ini?
+            </h2>
+
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 max-w-lg mx-auto font-medium">
+              Bergabunglah dengan ribuan guru di seluruh Indonesia yang telah menyelesaikan dokumen
+              modul ajar dan evaluasi lebih cepat dan mudah.
+            </p>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/signup"
+                className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-8 flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <span>Daftar Sekarang (Gratis 3 Kredit)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
 
       {/* Footer */}
-      <footer className="py-14 px-4 bg-gray-900 dark:bg-gray-950 text-gray-400">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-12 gap-10 mb-10">
-            {/* Brand Column */}
-            <div className="md:col-span-4">
-              <div className="flex items-center gap-2.5 mb-4">
-                <img
-                  src="/images/logo.png"
-                  alt="SiapAjar Logo"
-                  className="w-9 h-9 object-contain drop-shadow-sm"
-                />
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
-                  SiapAjar
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed mb-4">
-                Platform all-in-one administrasi guru Kurikulum Merdeka. Satu data, semua dokumen
-                sinkron otomatis.
-              </p>
-              <p className="text-xs text-gray-500">Made with ❤️ for Guru Indonesia</p>
+      <footer className="bg-neutral-900 text-white py-12 px-4 sm:px-6 lg:px-8 border-t-2 border-black">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="space-y-3 md:col-span-2">
+            <div className="flex items-center gap-2.5">
+              <img src="/images/logo.png" alt="SiapAjar Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-black tracking-tight text-white">SiapAjar</span>
             </div>
-
-            {/* Links Columns */}
-            <div className="md:col-span-2">
-              <h4 className="font-bold text-white mb-4">Produk</h4>
-              <ul className="space-y-2.5 text-sm">
-                <li>
-                  <a href="#features" className="hover:text-emerald-400 transition-colors">
-                    Fitur
-                  </a>
-                </li>
-                <li>
-                  <a href="#pricing" className="hover:text-emerald-400 transition-colors">
-                    Harga
-                  </a>
-                </li>
-                <li>
-                  <a href="#faq" className="hover:text-emerald-400 transition-colors">
-                    FAQ
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div className="md:col-span-2">
-              <h4 className="font-bold text-white mb-4">Perusahaan</h4>
-              <ul className="space-y-2.5 text-sm">
-                <li>
-                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
-                    Tentang Kami
-                  </a>
-                </li>
-                <li>
-                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="/coming-soon" className="hover:text-emerald-400 transition-colors">
-                    Karir
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div className="md:col-span-2">
-              <h4 className="font-bold text-white mb-4">Legal</h4>
-              <ul className="space-y-2.5 text-sm">
-                <li>
-                  <Link href="/privacy" className="hover:text-emerald-400 transition-colors">
-                    Kebijakan Privasi
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-emerald-400 transition-colors">
-                    Syarat &amp; Ketentuan
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div className="md:col-span-2">
-              <h4 className="font-bold text-white mb-4">Ikuti Kami</h4>
-              <div className="flex flex-col gap-3">
-                {/* Instagram */}
-                <a
-                  href="/coming-soon"
-                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
-                >
-                  <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                    </svg>
-                  </span>
-                  <span>Instagram</span>
-                </a>
-                {/* WhatsApp */}
-                <a
-                  href="/coming-soon"
-                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
-                >
-                  <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                    </svg>
-                  </span>
-                  <span>WhatsApp</span>
-                </a>
-                {/* TikTok */}
-                <a
-                  href="/coming-soon"
-                  className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors group"
-                >
-                  <span className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-                    </svg>
-                  </span>
-                  <span>TikTok</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
-            <p className="text-xs text-gray-500">© 2026 SiapAjar. All rights reserved.</p>
-            <p className="text-xs text-gray-600">
-              Administrasi pembelajaran yang lebih siap untuk guru Indonesia 🇮🇩
+            <p className="text-xs text-neutral-400 font-medium max-w-sm leading-relaxed">
+              Platform generator dokumen pembelajaran dan administrasi guru otomatis berbasis
+              Kurikulum Merdeka. Dibuat dengan dedikasi untuk memajukan pendidikan Indonesia.
+            </p>
+            <p className="flex items-center gap-1.5 text-xs text-neutral-500 font-medium">
+              <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-400" aria-hidden="true" />
+              <span>Made with love for Guru Indonesia</span>
             </p>
           </div>
+
+          <div className="space-y-3">
+            <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">
+              Generator AI
+            </h4>
+            <ul className="space-y-2 text-xs text-neutral-400 font-medium">
+              <li>
+                <Link href="/modul-ajar" className="hover:text-white transition-colors">
+                  Modul Ajar & RPP
+                </Link>
+              </li>
+              <li>
+                <Link href="/soal" className="hover:text-white transition-colors">
+                  Soal & Evaluasi HOTS
+                </Link>
+              </li>
+              <li>
+                <Link href="/lkpd" className="hover:text-white transition-colors">
+                  Lembar LKPD Tematik
+                </Link>
+              </li>
+              <li>
+                <Link href="/katrol" className="hover:text-white transition-colors">
+                  Katrol Nilai Smart
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">
+              Navigasi
+            </h4>
+            <ul className="space-y-2 text-xs text-neutral-400 font-medium">
+              <li>
+                <Link href="/login" className="hover:text-white transition-colors">
+                  Masuk ke Akun
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="hover:text-white transition-colors">
+                  Daftar Akun Baru
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-white transition-colors">
+                  Kebijakan Privasi
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-white transition-colors">
+                  Syarat & Ketentuan
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">
+              Ikuti Kami
+            </h4>
+            <div className="flex flex-col gap-3 text-xs text-neutral-400 font-medium">
+              <a
+                href="/coming-soon"
+                className="flex items-center gap-2 hover:text-emerald-400 transition-colors group"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-800 transition-colors group-hover:bg-emerald-900/40">
+                  <Camera className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span>Instagram</span>
+              </a>
+              <a
+                href="/coming-soon"
+                className="flex items-center gap-2 hover:text-emerald-400 transition-colors group"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-800 transition-colors group-hover:bg-emerald-900/40">
+                  <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href="/coming-soon"
+                className="flex items-center gap-2 hover:text-emerald-400 transition-colors group"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-800 transition-colors group-hover:bg-emerald-900/40">
+                  <Music2 className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span>TikTok</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500 font-medium">
+          <p>© {new Date().getFullYear()} SiapAjar. Hak Cipta Dilindungi.</p>
+          <p>Membantu guru Indonesia lebih siap mengajar dan siap administrasi 🇮🇩</p>
         </div>
       </footer>
-    </>
+    </div>
   )
 }
