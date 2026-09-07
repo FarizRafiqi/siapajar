@@ -481,6 +481,39 @@ export class DocumentWorkflowSchema extends BaseModel {
   declare version: number
 }
 
+export class EmailVerificationTokenSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'expiresAt',
+    'id',
+    'purpose',
+    'targetEmail',
+    'tokenHash',
+    'updatedAt',
+    'usedAt',
+    'userId',
+  ] as const
+  $columns = EmailVerificationTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare purpose: string
+  @column()
+  declare targetEmail: string | null
+  @column()
+  declare tokenHash: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column.dateTime()
+  declare usedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class ExamSchema extends BaseModel {
   static $columns = [
     'classId',
@@ -519,6 +552,72 @@ export class ExamSchema extends BaseModel {
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class FraudCaseSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'evidence',
+    'id',
+    'reviewedAt',
+    'reviewedByUserId',
+    'status',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = FraudCaseSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare evidence: any
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare reviewedAt: DateTime | null
+  @column()
+  declare reviewedByUserId: number | null
+  @column()
+  declare status: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number | null
+}
+
+export class FreeBenefitClaimSchema extends BaseModel {
+  static $columns = [
+    'claimedAt',
+    'createdAt',
+    'deviceHash',
+    'emailHash',
+    'id',
+    'ipHash',
+    'source',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = FreeBenefitClaimSchema.$columns
+  @column.dateTime()
+  declare claimedAt: DateTime
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare deviceHash: string
+  @column()
+  declare emailHash: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare ipHash: string
+  @column()
+  declare source: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
   @column()
   declare userId: number
 }
@@ -917,6 +1016,8 @@ export class PaymentInvoiceSchema extends BaseModel {
   static $columns = [
     'createdAt',
     'creditsAmount',
+    'expiresAt',
+    'gatewayInvoiceId',
     'gatewayTransactionId',
     'grossAmount',
     'id',
@@ -936,6 +1037,10 @@ export class PaymentInvoiceSchema extends BaseModel {
   declare createdAt: DateTime
   @column()
   declare creditsAmount: number
+  @column.dateTime()
+  declare expiresAt: DateTime | null
+  @column()
+  declare gatewayInvoiceId: string | null
   @column()
   declare gatewayTransactionId: string | null
   @column()
@@ -1236,6 +1341,9 @@ export class UserSchema extends BaseModel {
     'defaultGroupContext',
     'educationLevel',
     'email',
+    'emailChangeRequestedAt',
+    'emailVerifiedAt',
+    'freeBenefitStatus',
     'fullName',
     'googleId',
     'id',
@@ -1263,6 +1371,12 @@ export class UserSchema extends BaseModel {
   declare educationLevel: string | null
   @column()
   declare email: string
+  @column.dateTime()
+  declare emailChangeRequestedAt: DateTime | null
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
+  @column()
+  declare freeBenefitStatus: string
   @column()
   declare fullName: string | null
   @column()

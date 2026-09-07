@@ -33,6 +33,9 @@ export default class PaymentInvoice extends BaseModel {
   @column({ columnName: 'gateway_transaction_id' })
   declare gatewayTransactionId: string | null
 
+  @column({ columnName: 'gateway_invoice_id' })
+  declare gatewayInvoiceId: string | null
+
   @column({ columnName: 'payment_url' })
   declare paymentUrl: string | null
 
@@ -41,6 +44,9 @@ export default class PaymentInvoice extends BaseModel {
 
   @column.dateTime({ columnName: 'paid_at' })
   declare paidAt: DateTime | null
+
+  @column.dateTime({ columnName: 'expires_at' })
+  declare expiresAt: DateTime | null
 
   @column({
     prepare: (value: Record<string, any> | null) => (value ? JSON.stringify(value) : null),

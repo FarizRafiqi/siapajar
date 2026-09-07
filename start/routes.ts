@@ -14,6 +14,8 @@ import router from '@adonisjs/core/services/router'
 
 const ExpressToolsController = () => import('#controllers/express_tools_controller')
 const MayarPaymentsController = () => import('#controllers/mayar_payments_controller')
+const AccountSecurityController = () => import('#controllers/account_security_controller')
+const AdminFraudController = () => import('#controllers/admin_fraud_controller')
 
 router.get('/', [controllers.Home, 'index']).as('home')
 router
@@ -32,7 +34,9 @@ router.get('/privacy', ({ inertia }) => inertia.render('legal/privacy', {})).as(
 router.get('/terms', ({ inertia }) => inertia.render('legal/terms', {})).as('terms')
 
 // Mayar Webhook (Public Endpoint)
-router.post('/api/webhooks/mayar', [MayarPaymentsController, 'webhook']).as('api.mayar.webhook')
+router
+  .post('/api/webhooks/mayar/:secret', [MayarPaymentsController, 'webhook'])
+  .as('api.mayar.webhook')
 
 // Public Packages Endpoint
 router.get('/api/packages', [controllers.Home, 'packages']).as('api.packages.index')
@@ -63,6 +67,28 @@ router
       .as('auth.google.callback')
   })
   .use(middleware.guest())
+
+router
+  .group(() => {
+    router
+      .get('verify-email/pending', [AccountSecurityController, 'pending'])
+      .as('email_verification.pending')
+    router
+      .post('verify-email/resend', [AccountSecurityController, 'resend'])
+      .as('email_verification.resend')
+    router
+      .post('account/email-change', [AccountSecurityController, 'requestEmailChange'])
+      .as('account.email_change')
+    router
+      .get('claim-free-benefit', [AccountSecurityController, 'claimPage'])
+      .as('free_benefit.claim.page')
+    router.post('claim-free-benefit', [AccountSecurityController, 'claim']).as('free_benefit.claim')
+  })
+  .use([middleware.auth(), middleware.antiFraudRateLimit()])
+
+router
+  .get('verify-email/:token', [AccountSecurityController, 'verify'])
+  .as('email_verification.verify')
 
 router
   .group(() => {
@@ -131,7 +157,10 @@ router
 
     // Billing & Top-Up Kredit (Mayar.id)
     router.get('/billing', [controllers.AccountBilling, 'package']).as('billing.index')
-    router.post('/api/topup/mayar', [MayarPaymentsController, 'checkout']).as('api.mayar.checkout')
+    router
+      .post('/api/topup/mayar', [MayarPaymentsController, 'checkout'])
+      .use(middleware.antiFraudRateLimit())
+      .as('api.mayar.checkout')
     router
       .get('/api/topup/invoices/:invoiceNo', [MayarPaymentsController, 'checkStatus'])
       .as('api.mayar.status')
@@ -501,6 +530,15 @@ router
     router
       .delete('/admin/users/:id', [controllers.AdminUsers, 'destroy'])
       .as('admin.users.destroy')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    router
+      .get('/admin/fraud-cases', [AdminFraudController, 'index'])
+      .as('admin.fraud.index')
+      .use(middleware.role({ roles: ['admin'] }))
+    router
+      .put('/admin/fraud-cases/:id', [AdminFraudController, 'review'])
+      .as('admin.fraud.review')
       .use(middleware.role({ roles: ['admin'] }))
 
     // Admin — Manage Packages

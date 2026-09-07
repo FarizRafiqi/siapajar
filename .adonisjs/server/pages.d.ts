@@ -12,13 +12,17 @@ type ExtractProps<T> =
 
 declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
+    'auth/claim-free-benefit': ExtractProps<(typeof import('../../inertia/pages/auth/claim-free-benefit.tsx'))['default']>
+    'auth/free-benefit-restricted': ExtractProps<(typeof import('../../inertia/pages/auth/free-benefit-restricted.tsx'))['default']>
     'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
     'auth/signup': ExtractProps<(typeof import('../../inertia/pages/auth/signup.tsx'))['default']>
+    'auth/verify-email': ExtractProps<(typeof import('../../inertia/pages/auth/verify-email.tsx'))['default']>
     'coming-soon': ExtractProps<(typeof import('../../inertia/pages/coming-soon.tsx'))['default']>
     'dashboard/admin/academic-years/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/academic-years/index.tsx'))['default']>
     'dashboard/admin/ai-settings/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/ai-settings/index.tsx'))['default']>
     'dashboard/admin/curriculum-presets/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/curriculum-presets/index.tsx'))['default']>
     'dashboard/admin/entitlements/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/entitlements/index.tsx'))['default']>
+    'dashboard/admin/fraud/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/fraud/index.tsx'))['default']>
     'dashboard/admin/packages/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/packages/index.tsx'))['default']>
     'dashboard/admin/schools/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/schools/index.tsx'))['default']>
     'dashboard/admin/users/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/index.tsx'))['default']>

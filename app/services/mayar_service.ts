@@ -2,12 +2,12 @@ import { DateTime } from 'luxon'
 import crypto from 'node:crypto'
 import env from '#start/env'
 import PaymentInvoice from '#models/payment_invoice'
-import { creditService } from '#services/credit_service'
 import type User from '#models/user'
 import { packageRepository } from '#repositories/package_repository'
 import type { PackageRepository } from '#repositories/package_repository'
 import { paymentInvoiceRepository } from '#repositories/payment_invoice_repository'
 import type { PaymentInvoiceRepository } from '#repositories/payment_invoice_repository'
+import type { PaymentGateway } from '#services/payment_gateway'
 
 export interface CreateInvoiceParams {
   userId: number
@@ -20,7 +20,8 @@ export interface CreateInvoiceParams {
   redirectUrl: string
 }
 
-export class MayarService {
+export class MayarService implements PaymentGateway {
+  readonly name = 'mayar'
   constructor(
     private readonly packages: PackageRepository = packageRepository,
     private readonly invoices: PaymentInvoiceRepository = paymentInvoiceRepository
@@ -31,16 +32,15 @@ export class MayarService {
   }
 
   private get baseUrl(): string {
-    return env.get('MAYAR_BASE_URL') || 'https://api.mayar.club/hl/v1'
-  }
-
-  private get webhookToken(): string {
-    return env.get('MAYAR_WEBHOOK_TOKEN') || ''
+    if (env.get('MAYAR_BASE_URL')) return env.get('MAYAR_BASE_URL')!
+    return env.get('MAYAR_ENVIRONMENT') === 'production'
+      ? 'https://api.mayar.id/hl/v1'
+      : 'https://api.mayar.io/hl/v1'
   }
 
   async createCheckout(
     user: User,
-    input: { packageName?: unknown; packageId?: unknown; redirectUrl: string }
+    input: { packageName?: unknown; packageId?: unknown; redirectUrl: string; mobile: string }
   ) {
     const packageId =
       typeof input.packageId === 'string' || typeof input.packageId === 'number'
@@ -58,6 +58,7 @@ export class MayarService {
       userId: user.id,
       userName: user.fullName || user.email.split('@')[0],
       userEmail: user.email,
+      userMobile: input.mobile,
       packageName: pkg.displayName || pkg.name,
       creditsAmount,
       grossAmount: pkg.priceMonthly,
@@ -85,19 +86,22 @@ export class MayarService {
     })
     await invoice.save()
 
-    if (!this.apiKey) {
+    if (!this.apiKey && env.get('NODE_ENV') !== 'production') {
       // Jika API Key belum diset (misalnya mode demo lokal), generate mock link
       invoice.paymentUrl = `${params.redirectUrl}?mock_invoice=${invoice.invoiceNo}`
       invoice.gatewayTransactionId = `mock_trx_${invoiceNo}`
+      invoice.gatewayInvoiceId = `mock_invoice_${invoiceNo}`
       await invoice.save()
       return invoice
     }
+    if (!this.apiKey) throw new Error('PAYMENT_PROVIDER_NOT_CONFIGURED')
 
     try {
       const payload = {
         name: params.userName || 'Guru SiapAjar',
         email: params.userEmail,
         mobile: params.userMobile || '081234567890',
+        expiredAt: DateTime.now().plus({ hours: 24 }).toISO(),
         redirectUrl: params.redirectUrl,
         description: `Top-up ${params.creditsAmount} Kredit SiapAjar - ${params.packageName}`,
         items: [
@@ -126,8 +130,10 @@ export class MayarService {
       const json = (await response.json()) as { statusCode?: number; data?: any; message?: string }
       if (response.ok && json.data) {
         invoice.paymentUrl = json.data.link || json.data.paymentUrl || json.data.url
-        invoice.gatewayTransactionId = json.data.id || json.data.transactionId
+        invoice.gatewayInvoiceId = json.data.id || json.data.invoiceId || null
+        invoice.gatewayTransactionId = json.data.transactionId || null
         invoice.metadata = json.data
+        invoice.expiresAt = DateTime.now().plus({ hours: 24 })
         await invoice.save()
       } else {
         invoice.status = 'failed'
@@ -149,12 +155,15 @@ export class MayarService {
     return this.invoices.findOwnedByInvoiceNo(invoiceNo, userId)
   }
 
-  /**
-   * Memvalidasi Webhook Secret / Token dari Mayar
-   */
-  verifyWebhook(tokenFromRequest: string | undefined): boolean {
-    if (!this.webhookToken) return true
-    return tokenFromRequest === this.webhookToken
+  verifyWebhookPath(secret: string | undefined): boolean {
+    const expected = env.get('MAYAR_WEBHOOK_PATH_SECRET') || env.get('MAYAR_WEBHOOK_TOKEN')
+    if (!expected) return env.get('NODE_ENV') !== 'production'
+    if (!secret) return false
+    const provided = Buffer.from(secret)
+    const expectedBuffer = Buffer.from(expected)
+    return (
+      provided.length === expectedBuffer.length && crypto.timingSafeEqual(provided, expectedBuffer)
+    )
   }
 
   /**
@@ -174,30 +183,47 @@ export class MayarService {
       return null
     }
 
-    // Jika sudah pernah diproses, kembalikan invoice yang ada (idempotent)
+    // Webhook hanya pemicu. Status, jumlah, dan ID invoice selalu diverifikasi ke Mayar.
     if (invoice.status === 'paid') {
       return invoice
     }
+    const verified = await this.verifyRemoteInvoice(invoice)
+    if (!verified) throw new Error('MAYAR_INVOICE_NOT_PAID')
+    return this.invoices.settleVerifiedInvoice({
+      invoiceId: invoice.id,
+      gatewayTransactionId: gatewayTrxId || invoice.gatewayTransactionId,
+      paymentMethod: transactionData.paymentMethod || null,
+      verifiedPayload: {
+        webhookReceivedAt: DateTime.now().toISO(),
+        gatewayStatus: verified.status,
+        gatewayId: verified.id,
+      },
+    })
+  }
 
-    invoice.status = 'paid'
-    invoice.paidAt = DateTime.now()
-    if (transactionData.paymentMethod) {
-      invoice.paymentMethod = transactionData.paymentMethod
+  private async verifyRemoteInvoice(invoice: PaymentInvoice) {
+    if (!this.apiKey) {
+      return env.get('NODE_ENV') !== 'production' && invoice.gatewayInvoiceId?.startsWith('mock_')
+        ? { status: 'paid', id: invoice.gatewayInvoiceId }
+        : false
     }
-    const currentMeta = invoice.metadata ?? {}
-    invoice.metadata = { ...currentMeta, webhookReceived: payload }
-    await invoice.save()
-
-    // Tambahkan kredit ke saldo user
-    await creditService.addCredits(
-      invoice.userId,
-      invoice.creditsAmount,
-      'topup',
-      `Top-up ${invoice.packageName} (${invoice.creditsAmount} Kredit) - ${invoice.invoiceNo}`,
-      { invoiceNo: invoice.invoiceNo, gatewayTransactionId: gatewayTrxId, gateway: 'mayar' }
+    if (!invoice.gatewayInvoiceId) return false
+    const response = await fetch(
+      `${this.baseUrl}/invoice/${encodeURIComponent(invoice.gatewayInvoiceId)}`,
+      {
+        headers: { Authorization: `Bearer ${this.apiKey}`, Accept: 'application/json' },
+      }
     )
+    const json = (await response.json()) as { data?: Record<string, any> }
+    const data = json.data
+    if (!response.ok || !data) return false
+    const amount = Number(data.amount ?? data.total ?? data.grossAmount)
+    const isPaid = String(data.status || '').toLowerCase() === 'paid'
+    return isPaid && Number.isFinite(amount) && amount === invoice.grossAmount ? data : false
+  }
 
-    return invoice
+  async verifyPayment(invoice: PaymentInvoice): Promise<Record<string, unknown> | false> {
+    return await this.verifyRemoteInvoice(invoice)
   }
 
   private getCreditsAmount(packageName: string, features: string[]) {

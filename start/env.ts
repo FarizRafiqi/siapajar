@@ -61,6 +61,17 @@ export default await Env.create(new URL('../', import.meta.url), {
   MAYAR_BASE_URL: Env.schema.string.optional(),
   MAYAR_ENVIRONMENT: Env.schema.enum.optional(['sandbox', 'production'] as const),
 
+  // Account verification and anti-abuse. Secret keys must never reach the browser.
+  RESEND_API_KEY: Env.schema.secret.optional(),
+  RESEND_FROM_EMAIL: Env.schema.string.optional(),
+  TURNSTILE_SITE_KEY: Env.schema.string.optional(),
+  TURNSTILE_SECRET_KEY: Env.schema.secret.optional(),
+  FINGERPRINT_PUBLIC_API_KEY: Env.schema.string.optional(),
+  FINGERPRINT_SERVER_API_KEY: Env.schema.secret.optional(),
+  FINGERPRINT_REGION: Env.schema.enum.optional(['us', 'eu', 'ap'] as const),
+  FRAUD_IDENTITY_HMAC_SECRET: Env.schema.secret.optional(),
+  MAYAR_WEBHOOK_PATH_SECRET: Env.schema.secret.optional(),
+
   // WhatsApp
   WA_SESSION_DIR: Env.schema.string.optional(),
 

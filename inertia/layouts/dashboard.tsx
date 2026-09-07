@@ -69,6 +69,7 @@ export default function DashboardLayout({
   }
   const page = usePage()
   const isGuru = user.role === 'guru'
+  const isAdmin = user.role === 'admin'
   const tourName: DashboardTourName | null =
     isGuru && page.url === '/dashboard'
       ? 'dashboard'
@@ -114,8 +115,10 @@ export default function DashboardLayout({
             onMenuClick={() => setMobileMenuOpen(true)}
             showTour={isTourAvailable}
             onTourClick={startTour}
-            creditsBalance={displayCredits}
+            creditsBalance={isAdmin ? undefined : displayCredits}
             onTopupClick={openTopup}
+            showTopup={!isAdmin}
+            showHelp={!isAdmin}
           />
         </div>
         <main className="p-4 sm:p-6 print:p-0 print:m-0">{children}</main>
