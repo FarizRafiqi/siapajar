@@ -71,8 +71,11 @@ export type ScannedRoutes = {
     'express.modulAjar': { paramsTuple?: []; params?: {} }
     'lkpd.index': { paramsTuple?: []; params?: {} }
     'express.soal': { paramsTuple?: []; params?: {} }
+    'express.soal.generate': { paramsTuple?: []; params?: {} }
     'express.protaPromes': { paramsTuple?: []; params?: {} }
+    'express.protaPromes.generate': { paramsTuple?: []; params?: {} }
     'express.rapor': { paramsTuple?: []; params?: {} }
+    'express.rapor.generate': { paramsTuple?: []; params?: {} }
     'express.katrol': { paramsTuple?: []; params?: {} }
     'api.express.katrol.generate': { paramsTuple?: []; params?: {} }
     'express.jurnal': { paramsTuple?: []; params?: {} }
@@ -250,6 +253,9 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'onboarding.store': { paramsTuple?: []; params?: {} }
     'api.mayar.checkout': { paramsTuple?: []; params?: {} }
+    'express.soal.generate': { paramsTuple?: []; params?: {} }
+    'express.protaPromes.generate': { paramsTuple?: []; params?: {} }
+    'express.rapor.generate': { paramsTuple?: []; params?: {} }
     'api.express.katrol.generate': { paramsTuple?: []; params?: {} }
     'api.express.jurnal.generate': { paramsTuple?: []; params?: {} }
     'api.express.kokurikuler.generate': { paramsTuple?: []; params?: {} }

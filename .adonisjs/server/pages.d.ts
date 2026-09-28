@@ -23,6 +23,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/curriculum-presets/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/curriculum-presets/index.tsx'))['default']>
     'dashboard/admin/entitlements/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/entitlements/index.tsx'))['default']>
     'dashboard/admin/fraud/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/fraud/index.tsx'))['default']>
+    'dashboard/admin/operations/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/operations/index.tsx'))['default']>
     'dashboard/admin/packages/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/packages/index.tsx'))['default']>
     'dashboard/admin/schools/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/schools/index.tsx'))['default']>
     'dashboard/admin/users/index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/index.tsx'))['default']>

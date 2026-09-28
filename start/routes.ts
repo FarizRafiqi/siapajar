@@ -16,6 +16,7 @@ const ExpressToolsController = () => import('#controllers/express_tools_controll
 const MayarPaymentsController = () => import('#controllers/mayar_payments_controller')
 const AccountSecurityController = () => import('#controllers/account_security_controller')
 const AdminFraudController = () => import('#controllers/admin_fraud_controller')
+const AdminOperationsController = () => import('#controllers/admin_operations_controller')
 
 router.get('/', [controllers.Home, 'index']).as('home')
 router
@@ -163,6 +164,7 @@ router
       .as('api.mayar.checkout')
     router
       .get('/api/topup/invoices/:invoiceNo', [MayarPaymentsController, 'checkStatus'])
+      .use(middleware.antiFraudRateLimit())
       .as('api.mayar.status')
 
     router.get('/my-package', [controllers.AccountBilling, 'package']).as('account.package')
@@ -175,8 +177,17 @@ router
     router.get('/modul-ajar', [ExpressToolsController, 'modulAjar']).as('express.modulAjar')
     router.get('/lkpd', [ExpressToolsController, 'lkpd']).as('lkpd.index')
     router.get('/soal', [ExpressToolsController, 'soal']).as('express.soal')
+    router
+      .post('/soal/generate', [ExpressToolsController, 'generateSoal'])
+      .as('express.soal.generate')
     router.get('/prota-promes', [ExpressToolsController, 'protaPromes']).as('express.protaPromes')
+    router
+      .post('/prota-promes/generate', [ExpressToolsController, 'generateProtaPromes'])
+      .as('express.protaPromes.generate')
     router.get('/rapor', [ExpressToolsController, 'rapor']).as('express.rapor')
+    router
+      .post('/rapor/generate', [ExpressToolsController, 'generateRapor'])
+      .as('express.rapor.generate')
 
     router.get('/katrol', [ExpressToolsController, 'katrol']).as('express.katrol')
     router
@@ -535,6 +546,11 @@ router
     router
       .get('/admin/fraud-cases', [AdminFraudController, 'index'])
       .as('admin.fraud.index')
+      .use(middleware.role({ roles: ['admin'] }))
+
+    router
+      .get('/admin/operations', [AdminOperationsController, 'index'])
+      .as('admin.operations.index')
       .use(middleware.role({ roles: ['admin'] }))
     router
       .put('/admin/fraud-cases/:id', [AdminFraudController, 'review'])

@@ -811,6 +811,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['soal']>>>
     }
   }
+  'express.soal.generate': {
+    methods: ["POST"]
+    pattern: '/soal/generate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateExamValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateExamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateSoal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateSoal']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'express.protaPromes': {
     methods: ["GET","HEAD"]
     pattern: '/prota-promes'
@@ -823,6 +835,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['protaPromes']>>>
     }
   }
+  'express.protaPromes.generate': {
+    methods: ["POST"]
+    pattern: '/prota-promes/generate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateProtaPromesValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateProtaPromesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateProtaPromes']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateProtaPromes']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'express.rapor': {
     methods: ["GET","HEAD"]
     pattern: '/rapor'
@@ -833,6 +857,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['rapor']>>>
+    }
+  }
+  'express.rapor.generate': {
+    methods: ["POST"]
+    pattern: '/rapor/generate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/generate').generateReportNarrativesValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/generate').generateReportNarrativesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateRapor']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/express_tools_controller').default['generateRapor']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'express.katrol': {

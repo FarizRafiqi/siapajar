@@ -16,7 +16,7 @@ import {
   Shield,
   ShieldAlert,
   Package,
-  Coins,
+  BrainCircuit,
   School,
   X,
   FileSpreadsheet,
@@ -25,10 +25,12 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronRight,
+  Activity,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '~/lib/utils'
+import { isPaudProfile } from '~/lib/education'
 
 interface User {
   id: number
@@ -36,7 +38,8 @@ interface User {
   email: string
   initials: string
   role: string
-  educationLevel: 'tk' | 'sd' | null
+  educationLevel: string | null
+  institutionType?: string | null
   avatarUrl: string | null
 }
 
@@ -126,7 +129,12 @@ const guruTkExpressNavigation: NavigationEntry[] = [
         icon: Award,
         activeHrefs: ['/report-cards', '/paud/reports'],
       },
-      { name: 'Katrol Nilai Transparan', href: '/katrol', icon: ClipboardCheck },
+      {
+        name: 'Asesmen Perkembangan PAUD',
+        href: '/paud-assessments',
+        icon: ClipboardCheck,
+        activeHrefs: ['/paud-assessments'],
+      },
       { name: 'Jurnal Harian PAUD', href: '/jurnal', icon: ClipboardList },
       { name: 'Kokurikuler / P5', href: '/kokurikuler', icon: Presentation },
     ],
@@ -338,7 +346,6 @@ const guruTkStructuredNavigation: NavigationEntry[] = [
     items: [
       { name: 'Jurnal Harian PAUD', href: '/panel/jurnal', icon: ClipboardList },
       { name: 'Kokurikuler / P5', href: '/panel/kokurikuler', icon: Presentation },
-      { name: 'Katrol Nilai Transparan', href: '/panel/katrol', icon: ClipboardCheck },
     ],
   },
   {
@@ -580,9 +587,10 @@ const adminNavigation: NavigationEntry[] = [
   {
     name: 'Konfigurasi Sistem',
     items: [
+      { name: 'Operasional', href: '/admin/operations', icon: Activity },
       { name: 'Tahun Ajaran', href: '/admin/academic-years', icon: Calendar },
       { name: 'Preset Kurikulum', href: '/admin/curriculum-presets', icon: Library },
-      { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: Coins },
+      { name: 'Konfigurasi AI', href: '/admin/ai-settings', icon: BrainCircuit },
     ],
   },
 ]
@@ -673,6 +681,7 @@ export default function Sidebar({
   const currentUrl = page.url
   const isAdmin = user.role === 'admin'
   const isPrincipal = user.role === 'kepala_sekolah'
+  const isPaud = isPaudProfile(user.educationLevel, user.institutionType)
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
     const routeMode = getRouteMode(currentUrl)
     if (routeMode) return routeMode
@@ -690,7 +699,7 @@ export default function Sidebar({
   })
   const isStructuredMode = sidebarMode === 'structured'
   let navigation: NavigationEntry[] = isStructuredMode
-    ? user.educationLevel === 'tk'
+    ? isPaud
       ? guruTkStructuredNavigation
       : guruSdStructuredNavigation
     : guruSdExpressNavigation
@@ -698,7 +707,7 @@ export default function Sidebar({
     navigation = adminNavigation
   } else if (isPrincipal) {
     navigation = principalNavigation
-  } else if (user.educationLevel === 'tk' && !isStructuredMode) {
+  } else if (isPaud && !isStructuredMode) {
     navigation = guruTkExpressNavigation
   }
 

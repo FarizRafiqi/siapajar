@@ -11,6 +11,7 @@ export const controllers = {
   AdminCurriculumPresets: () => import('#controllers/admin_curriculum_presets_controller'),
   AdminEntitlements: () => import('#controllers/admin_entitlements_controller'),
   AdminFraud: () => import('#controllers/admin_fraud_controller'),
+  AdminOperations: () => import('#controllers/admin_operations_controller'),
   AdminPackages: () => import('#controllers/admin_packages_controller'),
   AdminSchools: () => import('#controllers/admin_schools_controller'),
   AdminUsers: () => import('#controllers/admin_users_controller'),

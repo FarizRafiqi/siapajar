@@ -167,9 +167,15 @@ export interface ApiDefinition {
   }
   express: {
     modulAjar: typeof routes['express.modulAjar']
-    soal: typeof routes['express.soal']
-    protaPromes: typeof routes['express.protaPromes']
-    rapor: typeof routes['express.rapor']
+    soal: typeof routes['express.soal'] & {
+      generate: typeof routes['express.soal.generate']
+    }
+    protaPromes: typeof routes['express.protaPromes'] & {
+      generate: typeof routes['express.protaPromes.generate']
+    }
+    rapor: typeof routes['express.rapor'] & {
+      generate: typeof routes['express.rapor.generate']
+    }
     katrol: typeof routes['express.katrol']
     jurnal: typeof routes['express.jurnal']
     kokurikuler: typeof routes['express.kokurikuler']

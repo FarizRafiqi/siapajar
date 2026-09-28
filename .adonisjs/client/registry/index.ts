@@ -408,17 +408,35 @@ const routes = {
     tokens: [{"old":"/soal","type":0,"val":"soal","end":""}],
     types: placeholder as Registry['express.soal']['types'],
   },
+  'express.soal.generate': {
+    methods: ["POST"],
+    pattern: '/soal/generate',
+    tokens: [{"old":"/soal/generate","type":0,"val":"soal","end":""},{"old":"/soal/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['express.soal.generate']['types'],
+  },
   'express.protaPromes': {
     methods: ["GET","HEAD"],
     pattern: '/prota-promes',
     tokens: [{"old":"/prota-promes","type":0,"val":"prota-promes","end":""}],
     types: placeholder as Registry['express.protaPromes']['types'],
   },
+  'express.protaPromes.generate': {
+    methods: ["POST"],
+    pattern: '/prota-promes/generate',
+    tokens: [{"old":"/prota-promes/generate","type":0,"val":"prota-promes","end":""},{"old":"/prota-promes/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['express.protaPromes.generate']['types'],
+  },
   'express.rapor': {
     methods: ["GET","HEAD"],
     pattern: '/rapor',
     tokens: [{"old":"/rapor","type":0,"val":"rapor","end":""}],
     types: placeholder as Registry['express.rapor']['types'],
+  },
+  'express.rapor.generate': {
+    methods: ["POST"],
+    pattern: '/rapor/generate',
+    tokens: [{"old":"/rapor/generate","type":0,"val":"rapor","end":""},{"old":"/rapor/generate","type":0,"val":"generate","end":""}],
+    types: placeholder as Registry['express.rapor.generate']['types'],
   },
   'express.katrol': {
     methods: ["GET","HEAD"],
