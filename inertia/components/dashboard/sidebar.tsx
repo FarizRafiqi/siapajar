@@ -540,7 +540,7 @@ function SidebarNavigationTooltip({
   return (
     <div
       ref={triggerRef}
-      className="relative w-full"
+      className={cn('relative w-full', collapsed && 'md:flex md:justify-center')}
       onMouseEnter={updatePosition}
       onMouseLeave={() => setPosition(null)}
       onFocus={updatePosition}
@@ -634,6 +634,7 @@ function renderNavigationItem(
           }}
           className={cn(
             'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-all',
+            collapsed && 'md:justify-center md:px-0 md:w-10 md:h-10 md:mx-auto',
             'border border-emerald-500/30 bg-emerald-700/50 text-amber-300 shadow-xs hover:bg-emerald-600/70 hover:text-amber-200'
           )}
         >
@@ -655,6 +656,7 @@ function renderNavigationItem(
         }}
         className={cn(
           'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
+          collapsed && 'md:justify-center md:px-0 md:w-10 md:h-10 md:mx-auto',
           isActive
             ? 'border-2 border-black bg-amber-300 font-black text-neutral-950 shadow-[2px_2px_0px_#000000]'
             : 'font-medium text-white hover:bg-emerald-700/60 hover:text-white'
@@ -669,79 +671,57 @@ function renderNavigationItem(
   )
 }
 
-export default function Sidebar({
-  user,
-  collapsed = false,
-  onToggle,
-  mobileOpen = false,
-  onMobileClose,
-  onTopupClick,
-}: Readonly<SidebarProps>) {
-  const page = usePage()
-  const currentUrl = page.url
-  const isAdmin = user.role === 'admin'
-  const isPrincipal = user.role === 'kepala_sekolah'
-  const isPaud = isPaudProfile(user.educationLevel, user.institutionType)
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
-    const routeMode = getRouteMode(currentUrl)
-    if (routeMode) return routeMode
+function getInitialSidebarMode(currentUrl: string): SidebarMode {
+  const routeMode = getRouteMode(currentUrl)
+  if (routeMode) return routeMode
 
-    if (typeof window !== 'undefined') {
-      try {
-        const storedMode = window.localStorage.getItem(SIDEBAR_MODE_STORAGE_KEY)
-        if (storedMode === 'express' || storedMode === 'structured') return storedMode
-      } catch {
-        // ignore storage failures
-      }
-    }
-
-    return 'express'
-  })
-  const isStructuredMode = sidebarMode === 'structured'
-  let navigation: NavigationEntry[] = isStructuredMode
-    ? isPaud
-      ? guruTkStructuredNavigation
-      : guruSdStructuredNavigation
-    : guruSdExpressNavigation
-  if (isAdmin) {
-    navigation = adminNavigation
-  } else if (isPrincipal) {
-    navigation = principalNavigation
-  } else if (isPaud && !isStructuredMode) {
-    navigation = guruTkExpressNavigation
-  }
-
-  const changeSidebarMode = (mode: SidebarMode) => {
-    setSidebarMode(mode)
-    persistSidebarMode(mode)
-  }
-
-  const handleNavigationMode = (href: string) => {
-    const routeMode = getRouteMode(href)
-    if (routeMode) changeSidebarMode(routeMode)
-  }
-
-  const roleLabels: Record<string, string> = {
-    admin: 'Administrator',
-    kepala_sekolah: 'Kepala Sekolah',
-    guru: 'Guru',
-  }
-
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [logoHovered, setLogoHovered] = useState(false)
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') return { Akun: true }
+  if (typeof window !== 'undefined') {
     try {
-      return {
-        Akun: true,
-        ...JSON.parse(window.localStorage.getItem('siapajar:sidebar-groups') ?? '{}'),
-      }
+      const storedMode = window.localStorage.getItem(SIDEBAR_MODE_STORAGE_KEY)
+      if (storedMode === 'express' || storedMode === 'structured') return storedMode
     } catch {
-      return { Akun: true }
+      // ignore storage failures
     }
-  })
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const navigationRef = useRef<HTMLElement>(null)
+  }
+
+  return 'express'
+}
+
+function getInitialCollapsedGroups(): Record<string, boolean> {
+  if (typeof window === 'undefined') return { Akun: true }
+  try {
+    return {
+      Akun: true,
+      ...JSON.parse(window.localStorage.getItem('siapajar:sidebar-groups') ?? '{}'),
+    }
+  } catch {
+    return { Akun: true }
+  }
+}
+
+function resolveNavigation(
+  sidebarMode: SidebarMode,
+  isPaud: boolean,
+  isAdmin: boolean,
+  isPrincipal: boolean
+): NavigationEntry[] {
+  if (isAdmin) return adminNavigation
+  if (isPrincipal) return principalNavigation
+  if (sidebarMode === 'structured') {
+    return isPaud ? guruTkStructuredNavigation : guruSdStructuredNavigation
+  }
+  return isPaud ? guruTkExpressNavigation : guruSdExpressNavigation
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrator',
+  kepala_sekolah: 'Kepala Sekolah',
+  guru: 'Guru',
+}
+
+function useSidebarGroups(navigation: NavigationEntry[], currentUrl: string) {
+  const [collapsedGroups, setCollapsedGroups] =
+    useState<Record<string, boolean>>(getInitialCollapsedGroups)
 
   const activeGroupNames = useMemo(
     () =>
@@ -771,23 +751,18 @@ export default function Sidebar({
   }, [activeGroupNames])
 
   useEffect(() => {
-    const routeMode = getRouteMode(currentUrl)
-    if (routeMode) {
-      setSidebarMode(routeMode)
-    }
-  }, [currentUrl])
-
-  useEffect(() => {
-    persistSidebarMode(sidebarMode)
-  }, [sidebarMode])
-
-  useEffect(() => {
     try {
       window.localStorage.setItem('siapajar:sidebar-groups', JSON.stringify(collapsedGroups))
     } catch {
       // ignore
     }
   }, [collapsedGroups])
+
+  return [collapsedGroups, setCollapsedGroups] as const
+}
+
+function useSidebarScrollRestore(currentUrl: string, collapsedGroups: Record<string, boolean>) {
+  const navigationRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const navigationElement = navigationRef.current
@@ -803,6 +778,245 @@ export default function Sidebar({
     return () => window.cancelAnimationFrame(frame)
   }, [currentUrl, collapsedGroups])
 
+  return navigationRef
+}
+
+function SidebarLogoHeader({
+  collapsed,
+  onToggle,
+  onMobileClose,
+}: Readonly<{
+  collapsed: boolean
+  onToggle?: () => void
+  onMobileClose?: () => void
+}>) {
+  const [logoHovered, setLogoHovered] = useState(false)
+
+  if (collapsed) {
+    return (
+      <div className="flex h-16 items-center justify-center border-b border-emerald-800/80 px-0 dark:border-emerald-950/80">
+        <button
+          type="button"
+          onClick={() => {
+            setLogoHovered(false)
+            onToggle?.()
+          }}
+          onMouseEnter={() => setLogoHovered(true)}
+          onMouseLeave={() => setLogoHovered(false)}
+          className="group relative hidden h-10 w-10 items-center justify-center rounded-xl p-1 transition-colors hover:bg-emerald-700/60 md:flex"
+          title="Buka sidebar"
+        >
+          <img
+            src="/images/logo.png"
+            alt="SiapAjar Logo"
+            className={cn(
+              'absolute h-8 w-8 object-contain drop-shadow-sm transition-all duration-200',
+              logoHovered ? 'scale-75 opacity-0' : 'scale-100 opacity-100'
+            )}
+          />
+          <PanelLeftOpen
+            className={cn(
+              'h-6 w-6 text-white transition-all duration-200',
+              logoHovered ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
+            )}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={onMobileClose}
+          className="flex items-center justify-center rounded-lg p-2 text-white hover:bg-emerald-700/60 hover:text-white transition-colors md:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex h-16 items-center justify-between border-b border-emerald-800/80 pl-4 pr-2 dark:border-emerald-950/80">
+      <Link href="/dashboard" className="hidden min-w-0 items-center gap-2.5 md:flex">
+        <img
+          src="/images/logo.png"
+          alt="SiapAjar Logo"
+          className="h-8 w-8 flex-shrink-0 object-contain drop-shadow-sm"
+        />
+        <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
+      </Link>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="hidden rounded-lg p-2 text-white transition-colors hover:bg-emerald-700/60 md:flex"
+        title="Tutup sidebar"
+        aria-label="Tutup sidebar"
+      >
+        <PanelLeftClose className="h-5 w-5" />
+      </button>
+      <Link href="/dashboard" className="flex items-center gap-2.5 md:hidden">
+        <img
+          src="/images/logo.png"
+          alt="SiapAjar Logo"
+          className="h-8 w-8 object-contain drop-shadow-sm"
+        />
+        <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
+      </Link>
+      <button
+        type="button"
+        onClick={onMobileClose}
+        className="rounded-lg p-1.5 text-white hover:bg-emerald-800 hover:text-white md:hidden"
+      >
+        <X className="h-5 w-5" />
+      </button>
+    </div>
+  )
+}
+
+function SidebarNav({
+  navigationRef,
+  navigation,
+  currentUrl,
+  collapsed,
+  isAdmin,
+  isPrincipal,
+  isStructuredMode,
+  collapsedGroups,
+  setCollapsedGroups,
+  onMobileClose,
+  onTopupClick,
+  changeSidebarMode,
+  handleNavigationMode,
+}: Readonly<{
+  navigationRef: React.RefObject<HTMLElement | null>
+  navigation: NavigationEntry[]
+  currentUrl: string
+  collapsed: boolean
+  isAdmin: boolean
+  isPrincipal: boolean
+  isStructuredMode: boolean
+  collapsedGroups: Record<string, boolean>
+  setCollapsedGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+  onMobileClose?: () => void
+  onTopupClick?: () => void
+  changeSidebarMode: (mode: SidebarMode) => void
+  handleNavigationMode: (href: string) => void
+}>) {
+  return (
+    <nav
+      ref={navigationRef}
+      onScroll={(event) => {
+        window.sessionStorage.setItem(
+          'siapajar:sidebar-scroll-top',
+          String(event.currentTarget.scrollTop)
+        )
+      }}
+      className={cn(
+        'space-y-1 overflow-x-hidden overflow-y-auto py-4 custom-scrollbar',
+        collapsed ? 'px-0 md:px-0 sidebar-navigation-collapsed' : 'px-3'
+      )}
+      style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
+    >
+      {!isAdmin && !isPrincipal && (
+        <SidebarNavigationTooltip
+          label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+          collapsed={collapsed}
+        >
+          <Link
+            href={isStructuredMode ? '/dashboard' : '/panel/dashboard'}
+            onClick={() => {
+              changeSidebarMode(isStructuredMode ? 'express' : 'structured')
+              onMobileClose?.()
+            }}
+            className={cn(
+              'mb-3 flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-black transition-all',
+              collapsed && 'md:justify-center md:px-0 md:w-10 md:h-10 md:mx-auto',
+              isStructuredMode
+                ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] hover:bg-amber-200'
+                : 'border-emerald-300/60 bg-emerald-900/35 text-white hover:border-white hover:bg-emerald-700/70'
+            )}
+            aria-label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+          >
+            {isStructuredMode ? (
+              <BookOpen className="h-5 w-5 flex-shrink-0 text-neutral-950" />
+            ) : (
+              <Route className="h-5 w-5 flex-shrink-0 text-amber-300" />
+            )}
+            <span className={cn(collapsed && 'md:hidden')}>
+              {isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
+            </span>
+          </Link>
+        </SidebarNavigationTooltip>
+      )}
+      {navigation.map((entry) => {
+        if ('items' in entry) {
+          const groupIsActive = entry.items.some((item) => isNavigationItemActive(item, currentUrl))
+          const groupIsOpen = !collapsedGroups[entry.name]
+          return (
+            <div key={entry.name} className="pt-3 first:pt-0">
+              <button
+                type="button"
+                aria-expanded={groupIsOpen}
+                aria-controls={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
+                onClick={() =>
+                  setCollapsedGroups((previous) => ({
+                    ...previous,
+                    [entry.name]: groupIsOpen,
+                  }))
+                }
+                className={cn(
+                  'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-black uppercase tracking-wider text-white hover:bg-emerald-800/40 hover:text-white',
+                  collapsed && 'md:hidden',
+                  groupIsActive && 'text-amber-300'
+                )}
+              >
+                {entry.name}
+                <ChevronDown
+                  className={cn('h-3.5 w-3.5 transition-transform', !groupIsOpen && '-rotate-90')}
+                />
+              </button>
+              <div
+                id={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
+                className={cn('space-y-1', !collapsed && !groupIsOpen && 'hidden')}
+              >
+                {entry.items.map((item) =>
+                  renderNavigationItem(
+                    item,
+                    currentUrl,
+                    collapsed,
+                    onMobileClose,
+                    onTopupClick,
+                    handleNavigationMode
+                  )
+                )}
+              </div>
+            </div>
+          )
+        }
+        return renderNavigationItem(
+          entry,
+          currentUrl,
+          collapsed,
+          onMobileClose,
+          onTopupClick,
+          handleNavigationMode
+        )
+      })}
+    </nav>
+  )
+}
+
+function SidebarUserSection({
+  user,
+  collapsed,
+  roleLabels,
+  onMobileClose,
+}: Readonly<{
+  user: User
+  collapsed: boolean
+  roleLabels: Record<string, string>
+  onMobileClose?: () => void
+}>) {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -812,6 +1026,126 @@ export default function Sidebar({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  return (
+    <div
+      className={cn(
+        'absolute bottom-0 left-0 right-0 border-t border-emerald-800/80 bg-emerald-950/60 dark:border-emerald-950/80',
+        collapsed ? 'p-2 flex justify-center' : 'p-3'
+      )}
+    >
+      <div className="relative" ref={dropdownRef} data-tour="profile-menu">
+        <button
+          type="button"
+          onClick={() => setDropdownOpen((prev) => !prev)}
+          className={cn(
+            'flex w-full cursor-pointer items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-emerald-900/60',
+            collapsed && 'md:justify-center md:p-0 md:w-10 md:h-10 md:mx-auto'
+          )}
+          title={collapsed ? user.fullName : undefined}
+        >
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.fullName ?? 'Avatar'}
+              className="h-9 w-9 flex-shrink-0 rounded-full object-cover border border-emerald-400/40"
+            />
+          ) : (
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-black text-neutral-950 border border-emerald-300">
+              {user.initials}
+            </div>
+          )}
+          <div className={cn('flex-1 overflow-hidden text-left', collapsed && 'md:hidden')}>
+            <p className="truncate text-sm font-bold text-white">{user.fullName}</p>
+            <p className="truncate text-xs font-medium text-white">
+              {roleLabels[user.role] || user.role}
+            </p>
+          </div>
+          <ChevronRight
+            className={cn(
+              'h-4 w-4 flex-shrink-0 text-white transition-transform',
+              collapsed && 'md:hidden',
+              dropdownOpen && 'rotate-180'
+            )}
+          />
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-2xl border-2 border-black bg-white shadow-[4px_4px_0px_#000000] dark:border-neutral-700 dark:bg-neutral-900 md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48">
+            <Link
+              href="/settings"
+              onClick={() => {
+                setDropdownOpen(false)
+                onMobileClose?.()
+              }}
+              className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            >
+              <Settings className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+              Pengaturan
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setDropdownOpen(false)
+                router.post('/logout')
+              }}
+              className="flex w-full items-center gap-2 border-t border-neutral-100 px-4 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-800 dark:text-red-400 dark:hover:bg-red-950"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function Sidebar({
+  user,
+  collapsed = false,
+  onToggle,
+  mobileOpen = false,
+  onMobileClose,
+  onTopupClick,
+}: Readonly<SidebarProps>) {
+  const page = usePage()
+  const currentUrl = page.url
+  const isAdmin = user.role === 'admin'
+  const isPrincipal = user.role === 'kepala_sekolah'
+  const isPaud = isPaudProfile(user.educationLevel, user.institutionType)
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() =>
+    getInitialSidebarMode(currentUrl)
+  )
+  const isStructuredMode = sidebarMode === 'structured'
+  const navigation = useMemo(
+    () => resolveNavigation(sidebarMode, isPaud, isAdmin, isPrincipal),
+    [sidebarMode, isPaud, isAdmin, isPrincipal]
+  )
+
+  const changeSidebarMode = (mode: SidebarMode) => {
+    setSidebarMode(mode)
+    persistSidebarMode(mode)
+  }
+
+  const handleNavigationMode = (href: string) => {
+    const routeMode = getRouteMode(href)
+    if (routeMode) changeSidebarMode(routeMode)
+  }
+
+  const [collapsedGroups, setCollapsedGroups] = useSidebarGroups(navigation, currentUrl)
+  const navigationRef = useSidebarScrollRestore(currentUrl, collapsedGroups)
+
+  useEffect(() => {
+    const routeMode = getRouteMode(currentUrl)
+    if (routeMode) {
+      setSidebarMode(routeMode)
+    }
+  }, [currentUrl])
+
+  useEffect(() => {
+    persistSidebarMode(sidebarMode)
+  }, [sidebarMode])
 
   return (
     <>
@@ -834,265 +1168,34 @@ export default function Sidebar({
           collapsed ? 'md:w-[68px]' : 'md:w-64'
         )}
       >
-        {/* Logo */}
-        <div
-          className={cn(
-            'flex h-16 items-center border-b border-emerald-800/80 dark:border-emerald-950/80',
-            collapsed ? 'justify-center px-0' : 'justify-between pl-4 pr-2'
-          )}
-        >
-          {collapsed ? (
-            /* Collapsed state: logo berubah menjadi tombol expand saat di-hover */
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setLogoHovered(false)
-                  onToggle?.()
-                }}
-                onMouseEnter={() => setLogoHovered(true)}
-                onMouseLeave={() => setLogoHovered(false)}
-                className="group relative hidden h-10 w-10 items-center justify-center rounded-xl p-1 transition-colors hover:bg-emerald-700/60 md:flex"
-                title="Buka sidebar"
-              >
-                <img
-                  src="/images/logo.png"
-                  alt="SiapAjar Logo"
-                  className={cn(
-                    'absolute h-8 w-8 object-contain drop-shadow-sm transition-all duration-200',
-                    logoHovered ? 'scale-75 opacity-0' : 'scale-100 opacity-100'
-                  )}
-                />
-                <PanelLeftOpen
-                  className={cn(
-                    'h-6 w-6 text-white transition-all duration-200',
-                    logoHovered ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
-                  )}
-                />
-              </button>
-              {/* Mobile close button (hanya muncul di mobile) */}
-              <button
-                type="button"
-                onClick={onMobileClose}
-                className="flex items-center justify-center rounded-lg p-2 text-white hover:bg-emerald-700/60 hover:text-white transition-colors md:hidden"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </>
-          ) : (
-            /* Expanded state: tombol collapse berada di sisi kanan logo */
-            <>
-              <Link href="/dashboard" className="hidden min-w-0 items-center gap-2.5 md:flex">
-                <img
-                  src="/images/logo.png"
-                  alt="SiapAjar Logo"
-                  className="h-8 w-8 flex-shrink-0 object-contain drop-shadow-sm"
-                />
-                <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
-              </Link>
-              <button
-                type="button"
-                onClick={onToggle}
-                className="hidden rounded-lg p-2 text-white transition-colors hover:bg-emerald-700/60 md:flex"
-                title="Tutup sidebar"
-                aria-label="Tutup sidebar"
-              >
-                <PanelLeftClose className="h-5 w-5" />
-              </button>
-              {/* Logo untuk mobile (non-clickable untuk collapse, pakai Link) */}
-              <Link href="/dashboard" className="flex items-center gap-2.5 md:hidden">
-                <img
-                  src="/images/logo.png"
-                  alt="SiapAjar Logo"
-                  className="h-8 w-8 object-contain drop-shadow-sm"
-                />
-                <span className="text-lg font-black tracking-tight text-white">SiapAjar</span>
-              </Link>
-              {/* Mobile close button */}
-              <button
-                type="button"
-                onClick={onMobileClose}
-                className="rounded-lg p-1.5 text-white hover:bg-emerald-800 hover:text-white md:hidden"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </>
-          )}
-        </div>
+        <SidebarLogoHeader
+          collapsed={collapsed}
+          onToggle={onToggle}
+          onMobileClose={onMobileClose}
+        />
 
-        {/* Navigation */}
-        <nav
-          ref={navigationRef}
-          onScroll={(event) => {
-            window.sessionStorage.setItem(
-              'siapajar:sidebar-scroll-top',
-              String(event.currentTarget.scrollTop)
-            )
-          }}
-          className={cn(
-            'space-y-1 overflow-x-hidden overflow-y-auto px-3 py-4 custom-scrollbar',
-            collapsed && 'sidebar-navigation-collapsed'
-          )}
-          style={{ height: 'calc(100% - 4rem - 4.5rem)' }}
-        >
-          {!isAdmin && !isPrincipal && (
-            <SidebarNavigationTooltip
-              label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
-              collapsed={collapsed}
-            >
-              <Link
-                href={isStructuredMode ? '/dashboard' : '/panel/dashboard'}
-                onClick={() => {
-                  changeSidebarMode(isStructuredMode ? 'express' : 'structured')
-                  onMobileClose?.()
-                }}
-                className={cn(
-                  'mb-3 flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-black transition-all',
-                  isStructuredMode
-                    ? 'border-black bg-amber-300 text-neutral-950 shadow-[2px_2px_0px_#000000] hover:bg-amber-200'
-                    : 'border-emerald-300/60 bg-emerald-900/35 text-white hover:border-white hover:bg-emerald-700/70'
-                )}
-                aria-label={isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
-              >
-                {isStructuredMode ? (
-                  <BookOpen className="h-5 w-5 flex-shrink-0 text-neutral-950" />
-                ) : (
-                  <Route className="h-5 w-5 flex-shrink-0 text-amber-300" />
-                )}
-                <span className={cn(collapsed && 'md:hidden')}>
-                  {isStructuredMode ? 'Kembali ke Tool Instan' : 'Buka Panel Lengkap'}
-                </span>
-              </Link>
-            </SidebarNavigationTooltip>
-          )}
-          {navigation.map((entry) => {
-            if ('items' in entry) {
-              const groupIsActive = entry.items.some((item) =>
-                isNavigationItemActive(item, currentUrl)
-              )
-              const groupIsOpen = !collapsedGroups[entry.name]
-              return (
-                <div key={entry.name} className="pt-3 first:pt-0">
-                  <button
-                    type="button"
-                    aria-expanded={groupIsOpen}
-                    aria-controls={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
-                    onClick={() =>
-                      setCollapsedGroups((previous) => ({
-                        ...previous,
-                        [entry.name]: groupIsOpen,
-                      }))
-                    }
-                    className={cn(
-                      'mb-1 flex w-full cursor-pointer items-center justify-between rounded px-3 py-1 text-left text-[10px] font-black uppercase tracking-wider text-white hover:bg-emerald-800/40 hover:text-white',
-                      collapsed && 'md:hidden',
-                      groupIsActive && 'text-amber-300'
-                    )}
-                  >
-                    {entry.name}
-                    <ChevronDown
-                      className={cn(
-                        'h-3.5 w-3.5 transition-transform',
-                        !groupIsOpen && '-rotate-90'
-                      )}
-                    />
-                  </button>
-                  <div
-                    id={`sidebar-group-${entry.name.replace(/\W+/g, '-').toLowerCase()}`}
-                    className={cn('space-y-1', !groupIsOpen && 'hidden')}
-                  >
-                    {entry.items.map((item) =>
-                      renderNavigationItem(
-                        item,
-                        currentUrl,
-                        collapsed,
-                        onMobileClose,
-                        onTopupClick,
-                        handleNavigationMode
-                      )
-                    )}
-                  </div>
-                </div>
-              )
-            }
-            return renderNavigationItem(
-              entry,
-              currentUrl,
-              collapsed,
-              onMobileClose,
-              onTopupClick,
-              handleNavigationMode
-            )
-          })}
-        </nav>
+        <SidebarNav
+          navigationRef={navigationRef}
+          navigation={navigation}
+          currentUrl={currentUrl}
+          collapsed={collapsed}
+          isAdmin={isAdmin}
+          isPrincipal={isPrincipal}
+          isStructuredMode={isStructuredMode}
+          collapsedGroups={collapsedGroups}
+          setCollapsedGroups={setCollapsedGroups}
+          onMobileClose={onMobileClose}
+          onTopupClick={onTopupClick}
+          changeSidebarMode={changeSidebarMode}
+          handleNavigationMode={handleNavigationMode}
+        />
 
-        {/* User section */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-emerald-800/80 bg-emerald-950/60 p-3 dark:border-emerald-950/80">
-          <div className="relative" ref={dropdownRef} data-tour="profile-menu">
-            <button
-              type="button"
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className={cn(
-                'flex w-full cursor-pointer items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-emerald-900/60',
-                collapsed && 'md:justify-center'
-              )}
-              title={collapsed ? user.fullName : undefined}
-            >
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.fullName ?? 'Avatar'}
-                  className="h-9 w-9 flex-shrink-0 rounded-full object-cover border border-emerald-400/40"
-                />
-              ) : (
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-black text-neutral-950 border border-emerald-300">
-                  {user.initials}
-                </div>
-              )}
-              <div className={cn('flex-1 overflow-hidden text-left', collapsed && 'md:hidden')}>
-                <p className="truncate text-sm font-bold text-white">{user.fullName}</p>
-                <p className="truncate text-xs font-medium text-white">
-                  {roleLabels[user.role] || user.role}
-                </p>
-              </div>
-              <ChevronRight
-                className={cn(
-                  'h-4 w-4 flex-shrink-0 text-white transition-transform',
-                  collapsed && 'md:hidden',
-                  dropdownOpen && 'rotate-180'
-                )}
-              />
-            </button>
-
-            {/* Dropdown position (bottom-full on mobile, left-full on desktop) */}
-            {dropdownOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-2xl border-2 border-black bg-white shadow-[4px_4px_0px_#000000] dark:border-neutral-700 dark:bg-neutral-900 md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48">
-                <Link
-                  href="/settings"
-                  onClick={() => {
-                    setDropdownOpen(false)
-                    onMobileClose?.()
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
-                >
-                  <Settings className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
-                  Pengaturan
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDropdownOpen(false)
-                    router.post('/logout')
-                  }}
-                  className="flex w-full items-center gap-2 border-t border-neutral-100 px-4 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-neutral-800 dark:text-red-400 dark:hover:bg-red-950"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <SidebarUserSection
+          user={user}
+          collapsed={collapsed}
+          roleLabels={ROLE_LABELS}
+          onMobileClose={onMobileClose}
+        />
       </aside>
     </>
   )

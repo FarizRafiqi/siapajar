@@ -28,17 +28,40 @@ interface DashboardLayoutProps {
   breadcrumbs?: { label: string; href?: string }[]
 }
 
+function resolveTourName(isGuru: boolean, url: string): DashboardTourName | null {
+  if (!isGuru) return null
+  if (url === '/dashboard') return 'dashboard'
+  if (url.startsWith('/curriculum')) return 'curriculum'
+  if (url.startsWith('/paud-assessments')) return 'paud-assessment'
+  return null
+}
+
 export default function DashboardLayout({
   children,
   user,
   title,
   breadcrumbs,
 }: Readonly<DashboardLayoutProps>) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return window.localStorage.getItem('siapajar:sidebar-collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
   const [topupOpen, setTopupOpen] = useState(false)
   const [displayCredits, setDisplayCredits] = useState(user.creditsBalance)
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('siapajar:sidebar-collapsed', String(sidebarCollapsed))
+    } catch {
+      // ignore
+    }
+  }, [sidebarCollapsed])
 
   const openTopup = useCallback(() => setTopupOpen(true), [])
   const closeTopup = useCallback(() => setTopupOpen(false), [])
@@ -71,14 +94,7 @@ export default function DashboardLayout({
   const page = usePage()
   const isGuru = user.role === 'guru'
   const isAdmin = user.role === 'admin'
-  const tourName: DashboardTourName | null =
-    isGuru && page.url === '/dashboard'
-      ? 'dashboard'
-      : isGuru && page.url.startsWith('/curriculum')
-        ? 'curriculum'
-        : isGuru && page.url.startsWith('/paud-assessments')
-          ? 'paud-assessment'
-          : null
+  const tourName = resolveTourName(isGuru, page.url)
   const isTourAvailable = tourName !== null
   const startTour = useCallback(() => setTourOpen(true), [])
   const finishTour = useCallback(() => setTourOpen(false), [])
