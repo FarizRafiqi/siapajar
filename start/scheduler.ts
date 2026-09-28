@@ -6,6 +6,8 @@
 
 import env from '#start/env'
 import SyncCreditBalances from '#jobs/sync_credit_balances'
+import ReconcileMayarPayments from '#jobs/reconcile_mayar_payments'
+import RecoverStaleAiJobs from '#jobs/recover_stale_ai_jobs'
 
 /**
  * Reconcile the denormalized balance once per day in a maintenance queue.
@@ -25,6 +27,30 @@ if (
     .catch((error: unknown) => {
       console.error(
         'Failed to register the credit balance maintenance schedule:',
+        error instanceof Error ? error.message : error
+      )
+    })
+
+  void ReconcileMayarPayments.schedule({ batchSize: 100 })
+    .id('maintenance-reconcile-mayar-payments')
+    .cron('45 3 * * *')
+    .timezone('Asia/Jakarta')
+    .run()
+    .catch((error: unknown) => {
+      console.error(
+        'Failed to register the Mayar payment reconciliation schedule:',
+        error instanceof Error ? error.message : error
+      )
+    })
+
+  void RecoverStaleAiJobs.schedule({ batchSize: 100 })
+    .id('maintenance-recover-stale-ai-jobs')
+    .cron('*/10 * * * *')
+    .timezone('Asia/Jakarta')
+    .run()
+    .catch((error: unknown) => {
+      console.error(
+        'Failed to register the stale AI job recovery schedule:',
         error instanceof Error ? error.message : error
       )
     })

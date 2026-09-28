@@ -14,6 +14,9 @@ import { packageEntitlementRepository } from '#repositories/package_entitlement_
 import type { PackageEntitlementRepository } from '#repositories/package_entitlement_repository'
 import { adminUserRepository } from '#repositories/admin_user_repository'
 import type { AdminUserRepository } from '#repositories/admin_user_repository'
+import { packageRepository } from '#repositories/package_repository'
+import type { PackageRepository } from '#repositories/package_repository'
+import { auditService } from '#services/audit_service'
 
 export const DEFAULT_FEATURES = [
   'classes',
@@ -33,7 +36,8 @@ export class AdminCatalogService {
     private readonly schools: SchoolRepository = schoolRepository,
     private readonly presets: CurriculumPresetRepository = curriculumPresetRepository,
     private readonly entitlements: PackageEntitlementRepository = packageEntitlementRepository,
-    private readonly users: AdminUserRepository = adminUserRepository
+    private readonly users: AdminUserRepository = adminUserRepository,
+    private readonly packages: PackageRepository = packageRepository
   ) {}
 
   async listAcademicYears() {
@@ -44,93 +48,176 @@ export class AdminCatalogService {
     return AcademicYear.find(id)
   }
 
-  async findAcademicYearByName(name: string) {
-    return AcademicYear.findBy('name', name)
+  async findAcademicYearByName(name: string, exceptId?: string | number) {
+    const query = AcademicYear.query().where('name', name)
+    if (exceptId !== undefined) query.whereNot('id', exceptId)
+    return query.first()
   }
 
-  async createAcademicYear(data: Record<string, any>) {
-    return AcademicYear.create(data)
-  }
-
-  async updateAcademicYear(id: string | number, data: Record<string, any>) {
-    const academicYear = await this.findAcademicYear(id)
-    if (!academicYear) return null
-    await academicYear.merge(data).save()
+  async createAcademicYear(data: Record<string, any>, actorId?: number) {
+    const academicYear = await AcademicYear.create(data)
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.academic_year.created',
+      entityType: 'academic_year',
+      entityId: academicYear.id,
+      metadata: { changedFields: Object.keys(data).sort() },
+    })
     return academicYear
   }
 
-  async deleteAcademicYear(id: string | number) {
+  async updateAcademicYear(id: string | number, data: Record<string, any>, actorId?: number) {
+    const academicYear = await this.findAcademicYear(id)
+    if (!academicYear) return null
+    await academicYear.merge(data).save()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.academic_year.updated',
+      entityType: 'academic_year',
+      entityId: academicYear.id,
+      metadata: { changedFields: Object.keys(data).sort() },
+    })
+    return academicYear
+  }
+
+  async deleteAcademicYear(id: string | number, actorId?: number) {
     const academicYear = await this.findAcademicYear(id)
     if (!academicYear) return false
     await academicYear.delete()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.academic_year.deleted',
+      entityType: 'academic_year',
+      entityId: id,
+      metadata: { deleted: true },
+    })
     return true
   }
 
   async listSchools() {
-    return School.query().orderBy('name')
+    return this.schools.listForAdmin()
   }
 
   async findSchool(id: string | number) {
     return School.find(id)
   }
 
-  async createSchool(data: Record<string, any>) {
+  async createSchool(data: Record<string, any>, actorId?: number) {
     const duplicate = await this.schools.findDuplicateByNormalizedName(data.name)
     if (duplicate) return false
-    await School.create(data)
+    const school = await School.create(data)
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.school.created',
+      entityType: 'school',
+      entityId: school.id,
+      metadata: { changedFields: Object.keys(data).sort() },
+    })
     return true
   }
 
-  async updateSchool(id: string | number, data: Record<string, any>) {
+  async updateSchool(id: string | number, data: Record<string, any>, actorId?: number) {
     const school = await this.findSchool(id)
     if (!school) return null
+    if (data.name) {
+      const duplicate = await this.schools.findDuplicateByNormalizedName(data.name, id)
+      if (duplicate) return 'duplicate' as const
+    }
     await school.merge(data).save()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.school.updated',
+      entityType: 'school',
+      entityId: school.id,
+      metadata: { changedFields: Object.keys(data).sort() },
+    })
     return school
   }
 
-  async deleteSchool(id: string | number) {
+  async deleteSchool(id: string | number, actorId?: number) {
     const school = await this.findSchool(id)
     if (!school) return false
-    await school.delete()
+    await this.schools.deleteForAdmin(school)
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.school.deleted',
+      entityType: 'school',
+      entityId: id,
+      metadata: { deleted: true },
+    })
     return true
   }
 
   async listPackages() {
-    return Package.query().orderBy('sort_order', 'asc')
+    return this.packages.listForAdmin()
   }
 
   async findPackage(id: string | number) {
     return Package.find(id)
   }
 
-  async createPackage(data: Record<string, any>) {
-    return Package.create({ ...data, features: data.features ?? [] })
+  async findPackageByName(name: string) {
+    return Package.findBy('name', name)
   }
 
-  async updatePackage(id: string | number, data: Record<string, any>) {
-    const pkg = await this.findPackage(id)
-    if (!pkg) return null
-    await pkg.merge(data).save()
+  async createPackage(data: Record<string, any>, actorId?: number) {
+    const pkg = await Package.create({ ...data, features: data.features ?? [] })
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.package.created',
+      entityType: 'package',
+      entityId: pkg.id,
+      metadata: packageAuditState(pkg),
+    })
     return pkg
   }
 
-  async deletePackage(id: string | number) {
+  async updatePackage(id: string | number, data: Record<string, any>, actorId?: number) {
     const pkg = await this.findPackage(id)
-    if (!pkg) return false
+    if (!pkg) return null
+    const before = packageAuditState(pkg)
+    await pkg.merge(data).save()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.package.updated',
+      entityType: 'package',
+      entityId: pkg.id,
+      metadata: {
+        changedFields: Object.keys(data).sort(),
+        before,
+        after: packageAuditState(pkg),
+      },
+    })
+    return pkg
+  }
+
+  async deletePackage(id: string | number, actorId?: number) {
+    const pkg = await this.findPackage(id)
+    if (!pkg) return 'not_found' as const
+    const users = await pkg.related('users').query().count('* as total')
+    if (Number(users[0]?.$extras.total ?? 0) > 0) return 'in_use' as const
+    const deletedPackage = packageAuditState(pkg)
     await pkg.delete()
-    return true
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.package.deleted',
+      entityType: 'package',
+      entityId: id,
+      metadata: deletedPackage,
+    })
+    return 'deleted' as const
   }
 
   async listCurriculumPresets(educationLevel: string, semester: number) {
     return this.presets.listForAdmin(educationLevel, semester)
   }
 
-  async findCurriculumPresetByCode(code: string) {
-    return CurriculumPreset.findBy('code', code)
+  async findCurriculumPresetByCode(code: string, exceptId?: string | number) {
+    return this.presets.findByCode(code, exceptId)
   }
 
-  async createCurriculumPreset(payload: Record<string, any>) {
-    return CurriculumPreset.create({
+  async createCurriculumPreset(payload: Record<string, any>, actorId?: number) {
+    const preset = await CurriculumPreset.create({
       educationLevel: payload.educationLevel,
       curriculumVersion: payload.curriculumVersion,
       semester: payload.semester,
@@ -149,9 +236,25 @@ export class AdminCatalogService {
       isActive: payload.isActive ?? true,
       sortOrder: payload.sortOrder ?? payload.weekNumber ?? 1,
     })
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.curriculum_preset.created',
+      entityType: 'curriculum_preset',
+      entityId: preset.id,
+      metadata: {
+        educationLevel: preset.educationLevel,
+        semester: preset.semester,
+        weekNumber: preset.weekNumber,
+      },
+    })
+    return preset
   }
 
-  async updateCurriculumPreset(id: string | number, payload: Record<string, any>) {
+  async updateCurriculumPreset(
+    id: string | number,
+    payload: Record<string, any>,
+    actorId?: number
+  ) {
     const preset = await CurriculumPreset.findOrFail(id)
 
     if (payload.educationLevel !== undefined) preset.educationLevel = payload.educationLevel
@@ -179,16 +282,36 @@ export class AdminCatalogService {
     }
 
     await preset.save()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.curriculum_preset.updated',
+      entityType: 'curriculum_preset',
+      entityId: preset.id,
+      metadata: { changedFields: Object.keys(payload).sort() },
+    })
     return preset
   }
 
-  async deleteCurriculumPreset(id: string | number) {
+  async deleteCurriculumPreset(id: string | number, actorId?: number) {
     const preset = await CurriculumPreset.findOrFail(id)
     await preset.delete()
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.curriculum_preset.deleted',
+      entityType: 'curriculum_preset',
+      entityId: id,
+      metadata: { deleted: true },
+    })
   }
 
-  async resetCurriculumPresets() {
+  async resetCurriculumPresets(actorId?: number) {
     await this.presets.resetDefaults(MASTER_KBC_PRESETS)
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.curriculum_presets.reset_defaults',
+      entityType: 'curriculum_preset_catalog',
+      metadata: { templateCount: MASTER_KBC_PRESETS.length },
+    })
   }
 
   async listEntitlements() {
@@ -207,20 +330,40 @@ export class AdminCatalogService {
     }))
   }
 
-  async updateEntitlement(packageId: string | number, payload: Record<string, any>) {
+  async updateEntitlement(
+    packageId: string | number,
+    payload: Record<string, any>,
+    actorId?: number
+  ) {
     const pkg = await this.findPackage(packageId)
     if (!pkg) return false
 
+    const previous = await this.entitlements.findForFeature(pkg.id, payload.featureKey)
+    const nextIsEnabled = payload.isEnabled === true || payload.isEnabled === 'true'
+    const nextLimitValue =
+      payload.limitValue === '' || payload.limitValue === null ? null : Number(payload.limitValue)
     await PackageEntitlement.updateOrCreate(
       { packageId: pkg.id, featureKey: payload.featureKey },
       {
-        isEnabled: payload.isEnabled === true || payload.isEnabled === 'true',
-        limitValue:
-          payload.limitValue === '' || payload.limitValue === null
-            ? null
-            : Number(payload.limitValue),
+        isEnabled: nextIsEnabled,
+        limitValue: nextLimitValue,
       }
     )
+    await auditService.recordCritical({
+      actorId,
+      action: 'admin.package.entitlement.updated',
+      entityType: 'package_entitlement',
+      entityId: `${pkg.id}:${payload.featureKey}`,
+      metadata: {
+        packageId: pkg.id,
+        featureKey: payload.featureKey,
+        before: {
+          isEnabled: previous?.isEnabled ?? false,
+          limitValue: previous?.limitValue ?? null,
+        },
+        after: { isEnabled: nextIsEnabled, limitValue: nextLimitValue },
+      },
+    })
     return true
   }
 
@@ -242,6 +385,7 @@ export class AdminCatalogService {
     if (!user) return 'not_found'
     if (user.id === currentUserId) return 'self'
 
+    const before = userAuditState(user)
     const previousPackageId = user.packageId
     user.merge(data)
 
@@ -256,6 +400,18 @@ export class AdminCatalogService {
       await user.save()
     }
 
+    await auditService.recordCritical({
+      actorId: currentUserId,
+      action: 'admin.user.updated',
+      entityType: 'user',
+      entityId: user.id,
+      metadata: {
+        changedFields: Object.keys(data).filter(isAuditedUserField).sort(),
+        before,
+        after: userAuditState(user),
+      },
+    })
+
     return 'updated'
   }
 
@@ -267,8 +423,53 @@ export class AdminCatalogService {
     if (!user) return 'not_found'
     if (user.id === currentUserId) return 'self'
     await user.delete()
+    await auditService.recordCritical({
+      actorId: currentUserId,
+      action: 'admin.user.deleted',
+      entityType: 'user',
+      entityId: user.id,
+      metadata: { deleted: true },
+    })
     return 'deleted'
   }
 }
 
 export const adminCatalogService = new AdminCatalogService()
+
+function packageAuditState(pkg: Package) {
+  const features = Array.isArray(pkg.features) ? pkg.features : []
+  return {
+    name: pkg.name,
+    priceMonthly: pkg.priceMonthly,
+    priceYearly: pkg.priceYearly,
+    isActive: pkg.isActive,
+    isHighlighted: pkg.isHighlighted,
+    featureCount: features.length,
+    creditEntitlements: features
+      .filter(
+        (feature): feature is string => typeof feature === 'string' && /\bkredit\b/i.test(feature)
+      )
+      .slice(0, 10),
+  }
+}
+
+function isAuditedUserField(field: string) {
+  return [
+    'role',
+    'packageId',
+    'schoolId',
+    'schoolName',
+    'educationLevel',
+    'institutionType',
+  ].includes(field)
+}
+
+function userAuditState(user: User) {
+  return {
+    role: user.role,
+    packageId: user.packageId,
+    schoolId: user.schoolId,
+    educationLevel: user.educationLevel,
+    institutionType: user.institutionType,
+  }
+}

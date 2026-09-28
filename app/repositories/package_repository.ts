@@ -11,28 +11,37 @@ export class PackageRepository {
     return Package.query().where('is_active', true).orderBy('sort_order', 'asc')
   }
 
+  async listForAdmin() {
+    return Package.query().withCount('users').orderBy('sort_order', 'asc').orderBy('id', 'asc')
+  }
+
   async findForCheckout(packageId?: string | number | null, packageName?: string | null) {
-    let pkg: Package | null = null
-
-    if (packageId && !Number.isNaN(Number(packageId))) {
-      pkg = await Package.find(Number(packageId))
-    }
-
-    if (!pkg && (packageName || packageId)) {
-      const identifier = String(packageName || packageId).trim()
-      pkg = await Package.query()
-        .where('name', identifier)
-        .orWhere('name', identifier.toLowerCase().replace(/\s+/g, '_'))
+    // A checkout request must identify one explicit, currently sellable package.
+    // Never fall back to a highlighted/first package: doing so can charge the
+    // customer for a different offer when the client sends a stale or malformed id.
+    const numericId = Number(packageId)
+    if (Number.isInteger(numericId) && numericId > 0) {
+      return Package.query()
+        .where('id', numericId)
+        .where('is_active', true)
+        .where('price_monthly', '>', 0)
         .first()
     }
 
-    if (!pkg) {
-      pkg =
-        (await Package.query().where('is_active', true).where('is_highlighted', true).first()) ||
-        (await Package.query().where('is_active', true).first())
-    }
+    if (!packageName && (packageId === null || packageId === undefined)) return null
 
-    return pkg
+    const identifier = String(packageName || packageId).trim()
+    if (!identifier) return null
+
+    return Package.query()
+      .where('is_active', true)
+      .where('price_monthly', '>', 0)
+      .where((query) => {
+        query
+          .where('name', identifier)
+          .orWhere('name', identifier.toLowerCase().replace(/\s+/g, '_'))
+      })
+      .first()
   }
 }
 

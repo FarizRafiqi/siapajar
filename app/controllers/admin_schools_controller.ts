@@ -7,14 +7,17 @@ export default class AdminSchoolsController {
     const schools = await adminCatalogService.listSchools()
 
     return inertia.render('dashboard/admin/schools/index', {
-      schools: schools.map((s) => s.toJSON()),
+      schools: schools.map((school) => ({
+        ...school.toJSON(),
+        userCount: Number(school.$extras.users_count ?? 0),
+      })),
     })
   }
 
-  async store({ request, response, session }: HttpContext) {
+  async store({ request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(createSchoolValidator)
 
-    const created = await adminCatalogService.createSchool(data)
+    const created = await adminCatalogService.createSchool(data, auth.user!.id)
 
     if (!created) {
       session.flash('error', `Sekolah "${data.name}" sudah ada`)
@@ -25,9 +28,13 @@ export default class AdminSchoolsController {
     return response.redirect().back()
   }
 
-  async update({ params, request, response, session }: HttpContext) {
+  async update({ params, request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(updateSchoolValidator)
-    const school = await adminCatalogService.updateSchool(params.id, data)
+    const school = await adminCatalogService.updateSchool(params.id, data, auth.user!.id)
+    if (school === 'duplicate') {
+      session.flash('error', `Sekolah "${data.name}" sudah ada`)
+      return response.redirect().back()
+    }
     if (!school) {
       return response.redirect('/admin/schools')
     }
@@ -36,8 +43,8 @@ export default class AdminSchoolsController {
     return response.redirect().back()
   }
 
-  async destroy({ params, response, session }: HttpContext) {
-    const deleted = await adminCatalogService.deleteSchool(params.id)
+  async destroy({ params, response, session, auth }: HttpContext) {
+    const deleted = await adminCatalogService.deleteSchool(params.id, auth.user!.id)
     if (!deleted) return response.redirect('/admin/schools')
 
     session.flash('success', 'Sekolah berhasil dihapus')

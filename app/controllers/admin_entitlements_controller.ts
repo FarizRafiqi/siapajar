@@ -8,9 +8,9 @@ export default class AdminEntitlementsController {
     })
   }
 
-  async update({ params, request, response, session }: HttpContext) {
+  async update({ params, request, response, session, auth }: HttpContext) {
     const payload = request.only(['featureKey', 'isEnabled', 'limitValue'])
-    const updated = await adminCatalogService.updateEntitlement(params.id, payload)
+    const updated = await adminCatalogService.updateEntitlement(params.id, payload, auth.user!.id)
     if (!updated) return response.redirect('/admin/entitlements')
     session.flash('success', 'Hak fitur paket berhasil diperbarui')
     return response.redirect().back()

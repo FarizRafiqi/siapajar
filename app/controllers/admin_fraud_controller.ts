@@ -7,7 +7,12 @@ export default class AdminFraudController {
     const perPage = Math.min(Math.max(Number(request.input('perPage', 15)) || 15, 5), 50)
     return inertia.render(
       'dashboard/admin/fraud/index' as any,
-      (await adminFraudService.list(page, perPage, request.input('status'))) as any
+      (await adminFraudService.list(
+        page,
+        perPage,
+        request.input('status'),
+        request.input('q')
+      )) as any
     )
   }
 

@@ -41,7 +41,9 @@ export class FreeBenefitRepository {
       claim.fill({ userId, ...identity, source, claimedAt: DateTime.now() })
       await claim.save()
 
-      if (freePackage) {
+      // A teacher may verify email after already buying a paid credit package.
+      // Grant the one-time free credits without downgrading that paid package.
+      if (freePackage && (!user.packageId || user.packageId === freePackage.id)) {
         user.packageId = freePackage.id
         const existingSubscription = await PackageSubscription.query({ client: trx })
           .where('userId', userId)

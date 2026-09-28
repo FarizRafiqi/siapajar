@@ -44,17 +44,17 @@ export default class AdminAiSettingsController {
     })
   }
 
-  async update({ request, response, session }: HttpContext) {
+  async update({ request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(updateAiSettingValidator)
-    await aiSettingsService.update(data)
+    await aiSettingsService.update(data, auth.user!.id)
 
     session.flash('success', 'Konfigurasi AI berhasil disimpan')
     return response.redirect().back()
   }
 
-  async oauthStart({ response, session }: HttpContext) {
+  async oauthStart({ response, session, auth }: HttpContext) {
     try {
-      await aiSettingsService.enableOpenAiOAuth()
+      await aiSettingsService.enableOpenAiOAuth(auth.user!.id)
       return response.redirect(await startCodexChatGptLogin())
     } catch (error) {
       session.flash(
@@ -99,7 +99,7 @@ export default class AdminAiSettingsController {
     return response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`)
   }
 
-  async geminiOauthCallback({ request, response, session }: HttpContext) {
+  async geminiOauthCallback({ request, response, session, auth }: HttpContext) {
     const flow = session.get('ai_gemini_oauth_flow') as
       { state: string; redirectUri: string } | undefined
     const error = request.input('error')
@@ -139,12 +139,15 @@ export default class AdminAiSettingsController {
         throw new AiServiceError('Google tidak mengembalikan token OAuth Gemini yang lengkap.')
       }
 
-      await aiSettingsService.completeGeminiOAuth({
-        accessToken: payload.access_token,
-        refreshToken: payload.refresh_token,
-        expiresIn: payload.expires_in,
-        projectId: env.get('GEMINI_OAUTH_PROJECT_ID') || null,
-      })
+      await aiSettingsService.completeGeminiOAuth(
+        {
+          accessToken: payload.access_token,
+          refreshToken: payload.refresh_token,
+          expiresIn: payload.expires_in,
+          projectId: env.get('GEMINI_OAUTH_PROJECT_ID') || null,
+        },
+        auth.user!.id
+      )
       session.flash('success', 'Akun Google berhasil terhubung ke Gemini OAuth.')
     } catch (oauthError) {
       session.flash(
@@ -219,7 +222,7 @@ export default class AdminAiSettingsController {
 
       if (setting.gateway) {
         await callAiJson<{ ok: boolean }>({
-          combo: model || 'default',
+          operation: 'admin.ai.connection_test',
           systemPrompt: 'Balas HANYA JSON valid: {"ok": true}',
           userPrompt: 'Tes koneksi.',
         })
@@ -229,7 +232,7 @@ export default class AdminAiSettingsController {
         session.flash('success', `Koneksi ke 9router berhasil — model "${model}" merespon.`)
       } else {
         await callAiJson<{ ok: boolean }>({
-          combo: model || 'gpt-4o-mini',
+          operation: 'admin.ai.connection_test',
           systemPrompt: 'Balas HANYA JSON valid: {"ok": true}',
           userPrompt: 'Tes koneksi.',
         })

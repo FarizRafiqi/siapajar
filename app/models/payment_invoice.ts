@@ -18,6 +18,9 @@ export default class PaymentInvoice extends BaseModel {
   @column({ columnName: 'package_name' })
   declare packageName: string
 
+  @column({ columnName: 'package_id' })
+  declare packageId: number | null
+
   @column({ columnName: 'credits_amount' })
   declare creditsAmount: number
 

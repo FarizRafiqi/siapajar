@@ -26,12 +26,12 @@ export class AiJobSchema extends BaseModel {
   static $columns = [
     'attempts',
     'availableAt',
-    'combo',
     'createdAt',
     'error',
     'finishedAt',
     'id',
     'jobKey',
+    'operation',
     'payload',
     'result',
     'startedAt',
@@ -44,8 +44,6 @@ export class AiJobSchema extends BaseModel {
   declare attempts: number
   @column.dateTime()
   declare availableAt: DateTime
-  @column()
-  declare combo: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -56,6 +54,8 @@ export class AiJobSchema extends BaseModel {
   declare id: number
   @column()
   declare jobKey: string
+  @column()
+  declare operation: string
   @column()
   declare payload: any
   @column()
@@ -1023,6 +1023,7 @@ export class PaymentInvoiceSchema extends BaseModel {
     'id',
     'invoiceNo',
     'metadata',
+    'packageId',
     'packageName',
     'paidAt',
     'paymentGateway',
@@ -1051,6 +1052,8 @@ export class PaymentInvoiceSchema extends BaseModel {
   declare invoiceNo: string
   @column()
   declare metadata: any | null
+  @column()
+  declare packageId: number | null
   @column()
   declare packageName: string
   @column.dateTime()

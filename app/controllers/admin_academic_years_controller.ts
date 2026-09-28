@@ -11,7 +11,7 @@ export default class AdminAcademicYearsController {
     })
   }
 
-  async store({ request, response, session }: HttpContext) {
+  async store({ request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(createAcademicYearValidator)
 
     const duplicate = await adminCatalogService.findAcademicYearByName(data.name)
@@ -20,16 +20,25 @@ export default class AdminAcademicYearsController {
       return response.redirect().back()
     }
 
-    await adminCatalogService.createAcademicYear(data)
+    await adminCatalogService.createAcademicYear(data, auth.user!.id)
 
     session.flash('success', 'Tahun ajaran berhasil dibuat')
     return response.redirect().back()
   }
 
-  async update({ params, request, response, session }: HttpContext) {
+  async update({ params, request, response, session, auth }: HttpContext) {
+    const data = await request.validateUsing(updateAcademicYearValidator)
+    if (data.name) {
+      const duplicate = await adminCatalogService.findAcademicYearByName(data.name, params.id)
+      if (duplicate) {
+        session.flash('error', `Tahun ajaran "${data.name}" sudah ada`)
+        return response.redirect().back()
+      }
+    }
     const academicYear = await adminCatalogService.updateAcademicYear(
       params.id,
-      await request.validateUsing(updateAcademicYearValidator)
+      data,
+      auth.user!.id
     )
     if (!academicYear) {
       return response.redirect('/admin/academic-years')
@@ -39,8 +48,8 @@ export default class AdminAcademicYearsController {
     return response.redirect().back()
   }
 
-  async destroy({ params, response, session }: HttpContext) {
-    const deleted = await adminCatalogService.deleteAcademicYear(params.id)
+  async destroy({ params, response, session, auth }: HttpContext) {
+    const deleted = await adminCatalogService.deleteAcademicYear(params.id, auth.user!.id)
     if (!deleted) return response.redirect('/admin/academic-years')
 
     session.flash('success', 'Tahun ajaran berhasil dihapus')

@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { mayarService } from '#services/mayar_service'
 import env from '#start/env'
+import logger from '@adonisjs/core/services/logger'
+import { auditService } from '#services/audit_service'
 
 export default class MayarPaymentsController {
   /**
@@ -50,6 +52,10 @@ export default class MayarPaymentsController {
    */
   async webhook({ request, response, params }: HttpContext) {
     if (!mayarService.verifyWebhookPath(params.secret)) {
+      logger.warn(
+        { event: 'payment.webhook.rejected', gateway: 'mayar', reason: 'invalid_path_secret' },
+        'Mayar webhook rejected'
+      )
       return response.unauthorized({ message: 'Invalid webhook token' })
     }
 
@@ -65,7 +71,24 @@ export default class MayarPaymentsController {
         message: 'Payment processed and credits added',
         invoiceNo: invoice.invoiceNo,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      await auditService.recordCritical({
+        action: 'payment.webhook.processing_failed',
+        entityType: 'payment_gateway',
+        entityId: 'mayar',
+        metadata: {
+          gateway: 'mayar',
+          errorName: error instanceof Error ? error.name : 'UnknownError',
+        },
+      })
+      logger.error(
+        {
+          event: 'payment.webhook.handler_failed',
+          gateway: 'mayar',
+          errorName: error instanceof Error ? error.name : 'UnknownError',
+        },
+        'Mayar webhook handler failed'
+      )
       return response.internalServerError({
         status: 'error',
         message: 'Pembayaran belum dapat diproses.',
@@ -87,12 +110,17 @@ export default class MayarPaymentsController {
       return response.notFound({ message: 'Tagihan tidak ditemukan' })
     }
 
+    let reconciled = invoice
+    if (invoice.status === 'pending') {
+      reconciled = await mayarService.reconcileInvoice(invoice).catch(() => invoice)
+    }
+
     return response.ok({
       invoiceNo: invoice.invoiceNo,
-      status: invoice.status,
-      creditsAmount: invoice.creditsAmount,
-      grossAmount: invoice.grossAmount,
-      paidAt: invoice.paidAt,
+      status: reconciled.status,
+      creditsAmount: reconciled.creditsAmount,
+      grossAmount: reconciled.grossAmount,
+      paidAt: reconciled.paidAt,
     })
   }
 }

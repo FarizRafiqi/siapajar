@@ -2,8 +2,11 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { billingService } from '#services/billing_service'
 
 export default class AccountBillingController {
-  async index({ inertia, auth }: HttpContext) {
-    return inertia.render('dashboard/billing/index', await billingService.getOverview(auth.user!))
+  async index({ response }: HttpContext) {
+    // Keep one source of truth for package IDs/prices. The old overview page
+    // contained a second, stale package catalog; /my-package owns the live
+    // catalog and invoice history now.
+    return response.redirect().toRoute('account.package')
   }
 
   async package({ inertia, auth, request }: HttpContext) {

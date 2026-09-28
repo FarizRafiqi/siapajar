@@ -7,21 +7,29 @@ export default class AdminPackagesController {
     const packages = await adminCatalogService.listPackages()
 
     return inertia.render('dashboard/admin/packages/index', {
-      packages: packages.map((p) => p.toJSON()),
+      packages: packages.map((pkg) => ({
+        ...pkg.toJSON(),
+        userCount: Number(pkg.$extras.users_count ?? 0),
+      })),
     })
   }
 
-  async store({ request, response, session }: HttpContext) {
+  async store({ request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(createPackageValidator)
-    await adminCatalogService.createPackage(data)
+    const existing = await adminCatalogService.findPackageByName(data.name)
+    if (existing) {
+      session.flash('error', `Kode paket "${data.name}" sudah digunakan`)
+      return response.redirect().back()
+    }
+    await adminCatalogService.createPackage(data, auth.user!.id)
 
     session.flash('success', 'Paket berhasil dibuat')
     return response.redirect().back()
   }
 
-  async update({ params, request, response, session }: HttpContext) {
+  async update({ params, request, response, session, auth }: HttpContext) {
     const data = await request.validateUsing(updatePackageValidator)
-    const pkg = await adminCatalogService.updatePackage(params.id, data)
+    const pkg = await adminCatalogService.updatePackage(params.id, data, auth.user!.id)
     if (!pkg) {
       return response.redirect('/admin/packages')
     }
@@ -30,9 +38,16 @@ export default class AdminPackagesController {
     return response.redirect().back()
   }
 
-  async destroy({ params, response, session }: HttpContext) {
-    const deleted = await adminCatalogService.deletePackage(params.id)
-    if (!deleted) return response.redirect('/admin/packages')
+  async destroy({ params, response, session, auth }: HttpContext) {
+    const deleted = await adminCatalogService.deletePackage(params.id, auth.user!.id)
+    if (deleted === 'not_found') return response.redirect('/admin/packages')
+    if (deleted === 'in_use') {
+      session.flash(
+        'error',
+        'Paket masih dipakai pengguna. Nonaktifkan paket jika ingin mengarsipkannya.'
+      )
+      return response.redirect().back()
+    }
 
     session.flash('success', 'Paket berhasil dihapus')
     return response.redirect().toRoute('admin.packages.index')
