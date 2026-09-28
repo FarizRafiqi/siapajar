@@ -1242,6 +1242,12 @@ const routes = {
     tokens: [{"old":"/admin/fraud-cases","type":0,"val":"admin","end":""},{"old":"/admin/fraud-cases","type":0,"val":"fraud-cases","end":""}],
     types: placeholder as Registry['admin.fraud.index']['types'],
   },
+  'admin.operations.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/operations',
+    tokens: [{"old":"/admin/operations","type":0,"val":"admin","end":""},{"old":"/admin/operations","type":0,"val":"operations","end":""}],
+    types: placeholder as Registry['admin.operations.index']['types'],
+  },
   'admin.fraud.review': {
     methods: ["PUT"],
     pattern: '/admin/fraud-cases/:id',

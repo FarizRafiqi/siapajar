@@ -1,9 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { expressToolsService } from '#services/express_tools_service'
 import { creditService } from '#services/credit_service'
-import { generateProtaPromesValidator } from '#validators/generate'
-import { generateExamValidator } from '#validators/generate'
-import { generateReportNarrativesValidator } from '#validators/generate'
+import {
+  generateProtaPromesValidator,
+  generateExamValidator,
+  generateReportNarrativesValidator,
+} from '#validators/generate'
 import { examService } from '#services/exam_service'
 import { reportCardService } from '#services/report_card_service'
 
@@ -69,14 +71,15 @@ export default class ExpressToolsController {
     const data = await request.validateUsing(generateProtaPromesValidator)
     const result = await expressToolsService.generateProtaPromes(auth.user!, data)
 
-    if (result.status === 'invalid_input' || result.status === 'missing_reference') {
+    if (result.status === 'invalid_input') {
       session.flash('error', result.message)
       return response.redirect().back()
     }
     if (result.status === 'insufficient_credits') {
+      const needed = data.planType === 'prota' || data.planType === 'promes' ? 1 : 2
       session.flash(
         'error',
-        'Saldo kredit Anda tidak mencukupi (butuh 2 kredit). Silakan top-up kredit.'
+        `Saldo kredit Anda tidak mencukupi (butuh ${needed} kredit). Silakan top-up kredit.`
       )
       return response.redirect().back()
     }
@@ -85,7 +88,14 @@ export default class ExpressToolsController {
       return response.redirect().back()
     }
 
-    session.flash('success', 'Prota dan Promes berhasil digenerate.')
+    let successMsg = 'Prota dan Promes berhasil dibuat.'
+    if (result.planType === 'prota') {
+      successMsg = 'Program Tahunan (PROTA) berhasil dibuat.'
+    } else if (result.planType === 'promes') {
+      successMsg = 'Program Semester (PROMES) berhasil dibuat.'
+    }
+
+    session.flash('success', successMsg)
     return response.redirect().toRoute('express.protaPromes')
   }
 

@@ -2479,6 +2479,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_fraud_controller').default['index']>>>
     }
   }
+  'admin.operations.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/operations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_operations_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_operations_controller').default['index']>>>
+    }
+  }
   'admin.fraud.review': {
     methods: ["PUT"]
     pattern: '/admin/fraud-cases/:id'

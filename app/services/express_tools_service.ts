@@ -101,18 +101,26 @@ export class ExpressToolsService {
   }
 
   async getProtaPromesData(user: User) {
-    const { classes, subjects, annualPlans, semesterPlans, academicYears, semesters } =
+    const { classes, subjects, annualPlans, semesterPlans, academicYears, semesters, cps } =
       await this.repository.getProtaPromesData(user.id)
     return {
       isTk: user.isTk,
       educationLevel: user.educationLevel,
       institutionType: user.institutionType,
+      userProfile: {
+        fullName: user.fullName,
+        schoolName: user.schoolName,
+        educationLevel: user.educationLevel,
+        institutionType: user.institutionType,
+        defaultGroupContext: user.defaultGroupContext,
+      },
       classes: classes.map((schoolClass) => schoolClass.toJSON()),
       subjects: subjects.map((subject) => subject.toJSON()),
       annualPlans: annualPlans.map((plan) => plan.toJSON()),
       semesterPlans: semesterPlans.map((plan) => plan.toJSON()),
       academicYears: academicYears.map((year) => year.toJSON()),
       semesters: semesters.map((semester) => semester.toJSON()),
+      cps: cps.map((cp) => cp.toJSON()),
     }
   }
 
@@ -121,72 +129,86 @@ export class ExpressToolsService {
     input: Record<string, any>
   ): Promise<
     | { status: 'invalid_input'; message: string }
-    | { status: 'missing_reference'; message: string }
     | { status: 'insufficient_credits' }
     | { status: 'generation_error'; message: string }
-    | { status: 'created'; annualPlan: AnnualPlan; semesterPlan: SemesterPlan }
-  > {
-    const classId = Number(input.classId)
-    const academicYearId = Number(input.academicYearId)
-    const semesterId = Number(input.semesterId)
-    const subject = typeof input.subject === 'string' ? input.subject.trim() : ''
-    const learningSequenceId = input.learningSequenceId
-      ? Number(input.learningSequenceId)
-      : undefined
-
-    if (
-      !Number.isInteger(classId) ||
-      !Number.isInteger(academicYearId) ||
-      !Number.isInteger(semesterId)
-    ) {
-      return {
-        status: 'invalid_input',
-        message: 'Kelas, tahun ajaran, dan semester wajib dipilih.',
+    | {
+        status: 'created'
+        annualPlan?: AnnualPlan
+        semesterPlan?: SemesterPlan
+        planType: 'all' | 'prota' | 'promes'
       }
-    }
+  > {
+    const subject = typeof input.subject === 'string' ? input.subject.trim() : ''
+    const planType: 'all' | 'prota' | 'promes' =
+      input.planType === 'prota' || input.planType === 'promes' ? input.planType : 'all'
+    const creditsNeeded = planType === 'all' ? 2 : 1
+
     if (!subject) {
       return { status: 'invalid_input', message: 'Mata pelajaran atau tema wajib diisi.' }
     }
 
-    const references = await this.repository.findProtaPromesReferences(
-      user.id,
-      classId,
-      academicYearId,
-      semesterId
-    )
-    if (!references) {
-      return {
-        status: 'missing_reference',
-        message: 'Kombinasi kelas, tahun ajaran, dan semester tidak tersedia untuk akun ini.',
-      }
-    }
+    const { academicYear, semester, schoolClass } =
+      await this.repository.resolveOrCreateProtaPromesReferences({
+        userId: user.id,
+        academicYearId: input.academicYearId ? Number(input.academicYearId) : undefined,
+        academicYearName: input.academicYearName,
+        semesterId: input.semesterId ? Number(input.semesterId) : undefined,
+        semesterName: input.semesterName,
+        classId: input.classId ? Number(input.classId) : undefined,
+        className: input.className,
+      })
 
-    if (!(await creditService.hasEnoughGenerationCredits(user, 2))) {
+    if (!(await creditService.hasEnoughGenerationCredits(user, creditsNeeded))) {
       return { status: 'insufficient_credits' }
     }
 
     try {
-      const curriculum = await getCurriculumContext(user.id, learningSequenceId)
+      const curriculum = await getCurriculumContext(user.id, input.learningSequenceId)
+      const educationLevel = input.educationLevel || user.educationLevel
+      const institutionType = user.institutionType
+      const curriculumVersion = input.curriculumType || user.curriculumVersion
+      const schoolName = input.schoolName?.trim() || user.schoolName || 'Satuan Pendidikan'
+      const teacherName = input.teacherName?.trim() || user.fullName || 'Guru Kelas'
+      const weeklyJp = input.weeklyJp ? Number(input.weeklyJp) : undefined
+      const effectiveWeeks = input.effectiveWeeks ? Number(input.effectiveWeeks) : 18
+      const effectiveWeeksSem2 = input.effectiveWeeksSem2 ? Number(input.effectiveWeeksSem2) : 18
+      const startMonth = input.startMonth?.trim()
+      const cpText = input.cpText?.trim()
+      const rawMaterials = input.rawMaterials?.trim()
+
+      let creditDescription = `Prota & Promes: ${subject}`
+      if (planType === 'prota') {
+        creditDescription = `Prota: ${subject}`
+      } else if (planType === 'promes') {
+        creditDescription = `Promes: ${subject}`
+      }
+
       const created = await creditService.withGenerationCredit(
         user,
-        2,
-        `Prota & Promes: ${subject}`,
+        creditsNeeded,
+        creditDescription,
         'express_tools.generate_planning',
         async (reservationKey) => {
-          const annualPrompt = annualPlanPrompt({
-            subject,
-            educationLevel: user.educationLevel,
-            institutionType: user.institutionType,
-            curriculumVersion: user.curriculumVersion,
-          })
-          const semesterPrompt = semesterPlanPrompt({
-            subject,
-            educationLevel: user.educationLevel,
-            institutionType: user.institutionType,
-            curriculumVersion: user.curriculumVersion,
-          })
-          const [annualRaw, semesterRaw] = await Promise.all([
-            callAiJsonForUser<Record<string, unknown>>(
+          let annualPlan: AnnualPlan | undefined
+          let semesterPlan: SemesterPlan | undefined
+
+          if (planType === 'all' || planType === 'prota') {
+            const annualPrompt = annualPlanPrompt({
+              subject,
+              educationLevel,
+              institutionType,
+              curriculumVersion,
+              academicYear: academicYear.name,
+              className: schoolClass.name,
+              weeklyJp,
+              effectiveWeeksSem1: effectiveWeeks,
+              effectiveWeeksSem2: effectiveWeeksSem2,
+              schoolName,
+              teacherName,
+              cpText,
+              rawMaterials,
+            })
+            const annualRaw = await callAiJsonForUser<Record<string, unknown>>(
               user,
               {
                 operation: 'express_tools.generate_planning',
@@ -195,11 +217,52 @@ export class ExpressToolsService {
               },
               {
                 reservationKey,
-                amount: 2,
-                description: `Prota & Promes: ${subject}`,
+                amount: creditsNeeded,
+                description: `Prota: ${subject}`,
               }
-            ),
-            callAiJsonForUser<Record<string, unknown>>(
+            )
+            const annualContent: Record<string, any> = normalizeStringArraySections(annualRaw, [
+              'kompetensi',
+              'alokasiWaktu',
+              'kegiatan',
+              'minggu',
+            ])
+            annualContent.curriculum = curriculum
+            annualContent.metadata = {
+              academicYear: academicYear.name,
+              schoolName,
+              teacherName,
+              className: schoolClass.name,
+              weeklyJp,
+              effectiveWeeksSem1: effectiveWeeks,
+              effectiveWeeksSem2: effectiveWeeksSem2,
+            }
+            annualPlan = await this.repository.createSingleAnnualPlan({
+              userId: user.id,
+              academicYearId: academicYear.id,
+              subject,
+              annualContent,
+            })
+          }
+
+          if (planType === 'all' || planType === 'promes') {
+            const semesterPrompt = semesterPlanPrompt({
+              subject,
+              educationLevel,
+              institutionType,
+              curriculumVersion,
+              academicYear: academicYear.name,
+              semesterName: semester.name,
+              startMonth,
+              className: schoolClass.name,
+              weeklyJp,
+              effectiveWeeks,
+              schoolName,
+              teacherName,
+              cpText,
+              rawMaterials,
+            })
+            const semesterRaw = await callAiJsonForUser<Record<string, unknown>>(
               user,
               {
                 operation: 'express_tools.generate_planning',
@@ -208,35 +271,37 @@ export class ExpressToolsService {
               },
               {
                 reservationKey,
-                amount: 2,
-                description: `Prota & Promes: ${subject}`,
+                amount: creditsNeeded,
+                description: `Promes: ${subject}`,
               }
-            ),
-          ])
-          const annualContent: Record<string, any> = normalizeStringArraySections(annualRaw, [
-            'kompetensi',
-            'alokasiWaktu',
-            'kegiatan',
-            'minggu',
-          ])
-          annualContent.curriculum = curriculum
-          const semesterContent: Record<string, any> = normalizeStringArraySections(semesterRaw, [
-            'minggu',
-            'kegiatan',
-            'target',
-            'materi',
-          ])
-          semesterContent.curriculum = curriculum
+            )
+            const semesterContent: Record<string, any> = normalizeStringArraySections(semesterRaw, [
+              'minggu',
+              'kegiatan',
+              'target',
+              'materi',
+            ])
+            semesterContent.curriculum = curriculum
+            semesterContent.metadata = {
+              academicYear: academicYear.name,
+              semesterName: semester.name,
+              schoolName,
+              teacherName,
+              className: schoolClass.name,
+              weeklyJp,
+              effectiveWeeks,
+              startMonth,
+            }
+            semesterPlan = await this.repository.createSingleSemesterPlan({
+              userId: user.id,
+              classId: schoolClass.id,
+              semesterId: semester.id,
+              subject,
+              semesterContent,
+            })
+          }
 
-          return this.repository.createProtaPromes({
-            userId: user.id,
-            academicYearId,
-            classId,
-            semesterId,
-            subject,
-            annualContent,
-            semesterContent,
-          })
+          return { annualPlan, semesterPlan, planType }
         }
       )
       return { status: 'created', ...created }

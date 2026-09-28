@@ -360,6 +360,9 @@ export interface ApiDefinition {
       index: typeof routes['admin.fraud.index']
       review: typeof routes['admin.fraud.review']
     }
+    operations: {
+      index: typeof routes['admin.operations.index']
+    }
     packages: {
       index: typeof routes['admin.packages.index']
       store: typeof routes['admin.packages.store']

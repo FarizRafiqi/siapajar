@@ -66,9 +66,23 @@ export const generateSemesterPlanValidator = vine.create(
 
 export const generateProtaPromesValidator = vine.create(
   vine.object({
-    classId: vine.number().positive(),
-    academicYearId: vine.number().positive(),
-    semesterId: vine.number().positive(),
+    planType: vine.enum(['all', 'prota', 'promes']).optional(),
+    classId: vine.number().positive().optional(),
+    academicYearId: vine.number().positive().optional(),
+    semesterId: vine.number().positive().optional(),
+    academicYearName: vine.string().trim().maxLength(50).optional(),
+    semesterName: vine.string().trim().maxLength(50).optional(),
+    className: vine.string().trim().maxLength(100).optional(),
+    educationLevel: vine.string().trim().maxLength(50).optional(),
+    schoolName: vine.string().trim().maxLength(200).optional(),
+    teacherName: vine.string().trim().maxLength(200).optional(),
+    weeklyJp: vine.number().min(1).max(50).optional(),
+    effectiveWeeks: vine.number().min(1).max(30).optional(),
+    effectiveWeeksSem2: vine.number().min(1).max(30).optional(),
+    startMonth: vine.string().trim().maxLength(30).optional(),
+    curriculumType: vine.string().trim().maxLength(50).optional(),
+    cpText: vine.string().trim().maxLength(3000).optional(),
+    rawMaterials: vine.string().trim().maxLength(5000).optional(),
     subject: vine.string().trim().minLength(1).maxLength(100),
     learningSequenceId: vine.number().positive().optional(),
   })

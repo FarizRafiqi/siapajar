@@ -210,6 +210,7 @@ export type ScannedRoutes = {
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.fraud.index': { paramsTuple?: []; params?: {} }
+    'admin.operations.index': { paramsTuple?: []; params?: {} }
     'admin.fraud.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.packages.store': { paramsTuple?: []; params?: {} }
@@ -425,6 +426,7 @@ export type ScannedRoutes = {
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.fraud.index': { paramsTuple?: []; params?: {} }
+    'admin.operations.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
@@ -561,6 +563,7 @@ export type ScannedRoutes = {
     'settings.index': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.fraud.index': { paramsTuple?: []; params?: {} }
+    'admin.operations.index': { paramsTuple?: []; params?: {} }
     'admin.packages.index': { paramsTuple?: []; params?: {} }
     'admin.entitlements.index': { paramsTuple?: []; params?: {} }
     'admin.academic-years.index': { paramsTuple?: []; params?: {} }
