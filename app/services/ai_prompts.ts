@@ -33,6 +33,10 @@ export function teachingModulePrompt(params: {
     ? ` Catatan/tujuan khusus guru: ${params.additionalNotes.trim()}.`
     : ''
 
+  const approachText = params.learningApproach
+    ? ` Terapkan juga pendekatan ${params.learningApproach}.`
+    : ''
+
   return {
     system:
       `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
@@ -43,8 +47,8 @@ export function teachingModulePrompt(params: {
       `Gunakan istilah dan tingkat perkembangan yang sesuai ${profile.audience}; jangan memaksakan contoh dari jenjang lain.`,
     user:
       `Buatkan Modul Ajar ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject}, topik "${params.topic}", Fase ${params.phase}. ` +
-      `Gunakan model pembelajaran ${params.learningModel || 'Problem Based Learning (PBL)'}. ` +
-      `${params.learningApproach ? `Terapkan juga pendekatan ${params.learningApproach}.` : ''}${durationText}${notesText}`,
+      `Gunakan model pembelajaran ${params.learningModel || 'Problem Based Learning (PBL)'}.` +
+      `${approachText}${durationText}${notesText}`,
   }
 }
 
@@ -144,18 +148,46 @@ export function annualPlanPrompt(params: {
   educationLevel?: string | null
   institutionType?: string | null
   curriculumVersion?: string | null
+  academicYear?: string
+  className?: string
+  weeklyJp?: number
+  effectiveWeeksSem1?: number
+  effectiveWeeksSem2?: number
+  schoolName?: string
+  teacherName?: string
+  cpText?: string
+  rawMaterials?: string
 }): AiPrompt {
   const profile = resolveEducationProfile(
     params.educationLevel,
     params.institutionType,
     params.curriculumVersion
   )
+  const jpInfo = params.weeklyJp ? ` Alokasi: ${params.weeklyJp} JP/minggu.` : ''
+  const sem1Weeks = params.effectiveWeeksSem1 ?? 18
+  const sem2Weeks = params.effectiveWeeksSem2 ?? 18
+  const contextNotes = [
+    params.academicYear ? `Tahun Pelajaran: ${params.academicYear}` : '',
+    params.className ? `Kelas/Kelompok: ${params.className}` : '',
+    params.schoolName ? `Satuan Pendidikan: ${params.schoolName}` : '',
+    params.teacherName ? `Guru: ${params.teacherName}` : '',
+    jpInfo,
+    `Minggu Efektif: Sem 1 = ${sem1Weeks} minggu, Sem 2 = ${sem2Weeks} minggu.`,
+    params.cpText ? `Referensi Capaian Pembelajaran (CP):\n${params.cpText}` : '',
+    params.rawMaterials ? `Materi/Daftar Bab Acuan:\n${params.rawMaterials}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
   return {
     system:
       `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
       'dengan struktur persis: {"kompetensi": string[], "alokasiWaktu": string[], "kegiatan": string[], "minggu": string[]}. ' +
       `Sesuaikan istilah, beban belajar, dan perkembangan peserta didik untuk ${profile.audience}; jangan memaksakan format jenjang lain.`,
-    user: `Buatkan Program Tahunan (Prota) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject} selama satu tahun ajaran.`,
+    user:
+      `Buatkan Program Tahunan (Prota) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran/tema ${params.subject} selama satu tahun ajaran (Semester 1 & 2).\n\n` +
+      (contextNotes ? `Informasi & Parameter:\n${contextNotes}\n\n` : '') +
+      `Pastikan distribusi materi dan alokasi waktu terbagi proporsional antara Semester 1 dan Semester 2 sesuai alokasi JP.`,
   }
 }
 
@@ -164,18 +196,52 @@ export function semesterPlanPrompt(params: {
   educationLevel?: string | null
   institutionType?: string | null
   curriculumVersion?: string | null
+  academicYear?: string
+  semesterName?: string
+  startMonth?: string
+  className?: string
+  weeklyJp?: number
+  effectiveWeeks?: number
+  schoolName?: string
+  teacherName?: string
+  cpText?: string
+  rawMaterials?: string
 }): AiPrompt {
   const profile = resolveEducationProfile(
     params.educationLevel,
     params.institutionType,
     params.curriculumVersion
   )
+  const semester = params.semesterName || 'Semester 1'
+  const startMonth =
+    params.startMonth ||
+    (semester.toLowerCase().includes('2') || semester.toLowerCase().includes('genap')
+      ? 'Januari'
+      : 'Juli')
+  const weeks = params.effectiveWeeks ?? 18
+  const jpInfo = params.weeklyJp ? ` ${params.weeklyJp} JP/minggu.` : ''
+  const contextNotes = [
+    params.academicYear ? `Tahun Pelajaran: ${params.academicYear}` : '',
+    `Semester: ${semester} (Mulai Bulan: ${startMonth}, Durasi: ${weeks} Minggu Efektif)`,
+    params.className ? `Kelas/Kelompok: ${params.className}` : '',
+    params.schoolName ? `Satuan Pendidikan: ${params.schoolName}` : '',
+    params.teacherName ? `Guru: ${params.teacherName}` : '',
+    jpInfo,
+    params.cpText ? `Referensi Capaian Pembelajaran (CP):\n${params.cpText}` : '',
+    params.rawMaterials ? `Materi/Daftar Bab Acuan:\n${params.rawMaterials}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
   return {
     system:
       `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
       'dengan struktur persis: {"minggu": string[], "kegiatan": string[], "target": string[], "materi": string[]}. ' +
       `Sesuaikan istilah, beban belajar, dan perkembangan peserta didik untuk ${profile.audience}; jangan memaksakan format jenjang lain.`,
-    user: `Buatkan Program Semester (Promes) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject}.`,
+    user:
+      `Buatkan Program Semester (Promes) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran/tema ${params.subject} untuk ${semester}.\n\n` +
+      (contextNotes ? `Informasi & Parameter:\n${contextNotes}\n\n` : '') +
+      `Rincikan sebaran per minggu (Minggu 1 s.d. Minggu ${weeks}) dengan target kompetensi, lingkup materi, dan alokasi waktu yang jelas.`,
   }
 }
 
@@ -491,8 +557,25 @@ export function kokurikulerPrompt(params: {
   const profile = resolveEducationProfile(params.educationLevel, params.institutionType)
   const isRa = profile.isReligiousEarlyChildhood
   const isPaud = profile.isEarlyChildhood || params.phase.toLowerCase() === 'fondasi'
-  const framework = isRa ? 'P5 dan P2RA' : isPaud ? 'P5 Fase Fondasi' : 'P5'
-  const audience = isRa ? 'RA (Raudhatul Athfal)' : isPaud ? 'PAUD/TK' : profile.audience
+
+  let framework = 'P5'
+  if (isRa) {
+    framework = 'P5 dan P2RA'
+  } else if (isPaud) {
+    framework = 'P5 Fase Fondasi'
+  }
+
+  let audience = profile.audience
+  if (isRa) {
+    audience = 'RA (Raudhatul Athfal)'
+  } else if (isPaud) {
+    audience = 'PAUD/TK'
+  }
+
+  const targetDurationText = params.targetDuration
+    ? ` Alokasi waktu yang diinginkan: ${params.targetDuration}.`
+    : ''
+
   return {
     system:
       `Kamu fasilitator ${framework} Kurikulum Merdeka Indonesia untuk ${audience}. Balas HANYA JSON valid tanpa teks lain dengan struktur: ` +
@@ -501,6 +584,6 @@ export function kokurikulerPrompt(params: {
       '"asesmen": {"formatif": string[], "sumatif": string, "rubrik": string[]}, "lembarRefleksiSiswa": string[]}. ' +
       `Format lengkap, aplikatif, dan siap didownload/dicetak guru. Sesuaikan aktivitas dengan ${audience}; jangan memaksakan istilah SD pada PAUD/RA. ` +
       'Sertakan projectSummary yang merangkum tujuan dan konteks projek serta assessmentRubric sebagai ringkasan rubrik.',
-    user: `Buatkan Modul Projek ${framework} untuk Fase ${params.phase} (${params.targetLevel}) dengan Tema "${params.theme}", Topik "${params.topic}", Dimensi: ${dims}.${params.targetDuration ? ` Alokasi waktu yang diinginkan: ${params.targetDuration}.` : ''}`,
+    user: `Buatkan Modul Projek ${framework} untuk Fase ${params.phase} (${params.targetLevel}) dengan Tema "${params.theme}", Topik "${params.topic}", Dimensi: ${dims}.${targetDurationText}`,
   }
 }

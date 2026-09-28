@@ -233,7 +233,7 @@ Kebijakan kredit yang konsisten untuk MVP:
 
 | Aksi                              |                                                                       Biaya |
 | --------------------------------- | --------------------------------------------------------------------------: |
-| Modul Ajar/RPPM/RPPH/Prota/Promes |                                                                    1 kredit |
+| Modul Ajar/RPPM/RPPH/Prota/Promes |            1 kredit (2 kredit jika generate paket Prota + Promes sekaligus) |
 | LKPD                              |                                 1 kredit + kuota visual bila memakai gambar |
 | Bank Soal                         |                                 1 kredit + kuota visual bila memakai gambar |
 | Media Ajar                        |                                                     1 kredit + kuota visual |
