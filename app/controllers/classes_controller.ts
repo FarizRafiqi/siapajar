@@ -95,10 +95,14 @@ export default class ClassesController {
     )
     if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
 
-    const { classId, date, items } = ctx.request.all()
-    const result = classesService.quickSubmitAttendance(classId, date, items)
-
-    return ctx.response.ok({ status: 'success', ...result })
+    // The repository has no attendance table yet. Returning a fake success here
+    // would make a mobile client believe records were persisted when they were
+    // silently discarded, so keep the contract explicit until persistence is
+    // implemented with ownership and idempotency checks.
+    return ctx.response.status(501).json({
+      status: 'not_implemented',
+      message: 'Presensi belum tersedia pada versi MVP ini.',
+    })
   }
 
   async store({ request, response, session, auth }: HttpContext) {

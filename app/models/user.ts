@@ -45,7 +45,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare educationLevel: string | null
 
   @column({ columnName: 'institution_type' })
-  declare institutionType: 'tk' | 'ra' | null
+  declare institutionType: string | null
 
   @column({ columnName: 'curriculum_version' })
   declare curriculumVersion: string | null
@@ -130,10 +130,18 @@ export default class User extends compose(BaseModel, AuthFinder) {
   }
 
   get isTk() {
-    return this.educationLevel === 'tk'
+    const educationLevel = this.educationLevel?.trim().toLowerCase()
+    const institutionType = this.institutionType?.trim().toLowerCase()
+    if (educationLevel && !['tk', 'paud'].includes(educationLevel)) return false
+    return (
+      educationLevel === 'tk' ||
+      educationLevel === 'paud' ||
+      institutionType === 'tk' ||
+      institutionType === 'ra'
+    )
   }
 
   get isSd() {
-    return this.educationLevel === 'sd'
+    return this.educationLevel?.trim().toLowerCase() === 'sd'
   }
 }

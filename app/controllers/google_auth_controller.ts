@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { accountService } from '#services/account_service'
+import { apiTokenService } from '#services/api_token_service'
 
 function isApi(ctx: HttpContext): boolean {
   return (
@@ -78,8 +79,7 @@ export default class GoogleAuthController {
     await auth.use('web').login(user)
 
     if (isApi(ctx)) {
-      const tokenPayload = `${user.id}:${Date.now()}`
-      const token = Buffer.from(tokenPayload).toString('base64')
+      const token = apiTokenService.issue(user.id)
       return response.ok({
         status: 'success',
         data: {
@@ -90,6 +90,7 @@ export default class GoogleAuthController {
             email: user.email,
             schoolName: user.schoolName,
             educationLevel: user.educationLevel,
+            institutionType: user.institutionType,
             role: user.role,
           },
         },

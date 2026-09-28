@@ -3,7 +3,15 @@ import DocumentPreview from '~/components/dashboard/document-preview'
 import ExportDownloadButton from '~/components/dashboard/export-download-button'
 import { Head, Link } from '@inertiajs/react'
 import { useCallback, useState } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Box, ShieldAlert } from 'lucide-react'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Box,
+  ShieldAlert,
+  Lightbulb,
+} from 'lucide-react'
 
 interface SchoolClass {
   id: number
@@ -203,7 +211,10 @@ export default function MediaModuleShow({ mediaModule }: MediaModuleShowProps) {
 
             {/* Catatan Panduan Guru saat Menampilkan Slide Ini */}
             <div className="rounded-xl bg-neutral-800/50 p-4 text-xs text-neutral-300 border border-neutral-700">
-              <span className="font-bold text-neutral-100">💡 Panduan Peragaan Guru: </span>
+              <span className="inline-flex items-center gap-1.5 font-bold text-neutral-100">
+                <Lightbulb className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                Panduan Peragaan Guru:
+              </span>{' '}
               {currentSlide.teacherNotes}
             </div>
 

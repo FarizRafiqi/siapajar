@@ -46,6 +46,13 @@ interface TeachingModuleItem {
 
 interface ModulAjarProps {
   isTk: boolean
+  educationLevel?: string | null
+  institutionType?: string | null
+  educationProfile?: {
+    audience?: string
+    defaultPhase?: string
+    isEarlyChildhood?: boolean
+  }
   classes: SchoolClass[]
   subjects: Subject[]
   recentModules: TeachingModuleItem[]
@@ -67,6 +74,14 @@ const SD_LEARNING_MODELS = [
   'Inquiry Learning',
   'Cooperative Learning',
 ]
+
+const GENERAL_LEARNING_MODELS = [
+  ...SD_LEARNING_MODELS,
+  'Pembelajaran Berdiferensiasi',
+  'Case Method',
+]
+
+const GENERAL_PHASES = ['A', 'B', 'C', 'D', 'E', 'F']
 
 const SD_LEARNING_APPROACHES = [
   'Tidak ada',
@@ -99,21 +114,25 @@ function formatCreatedAt(value: string) {
 
 export default function ModulAjarExpress({
   isTk,
+  educationProfile,
   classes = [],
   subjects = [],
   recentModules = [],
 }: Readonly<ModulAjarProps>) {
+  const isEarlyChildhood = educationProfile?.isEarlyChildhood ?? isTk
+  const audience =
+    educationProfile?.audience || (isEarlyChildhood ? 'PAUD/TK' : 'satuan pendidikan')
+  const phaseOptions = isEarlyChildhood ? ['Fondasi'] : GENERAL_PHASES
+  const learningModels = isEarlyChildhood ? PAUD_LEARNING_MODELS : GENERAL_LEARNING_MODELS
   const [activeTab, setActiveTab] = useState<'create' | 'list'>('create')
   const [classId, setClassId] = useState<string>(classes[0] ? String(classes[0].id) : '')
-  const [subject, setSubject] = useState<string>(
-    subjects[0] ? subjects[0].name : 'Pendidikan Pancasila'
-  )
+  const [subject, setSubject] = useState<string>(subjects[0]?.name || '')
   const [topic, setTopic] = useState<string>('')
-  const [phase, setPhase] = useState<string>(isTk ? 'Fondasi' : 'A')
-  const [duration, setDuration] = useState<string>('2 x 35 Menit (1 Pertemuan)')
-  const [learningModel, setLearningModel] = useState<string>(
-    isTk ? PAUD_LEARNING_MODELS[0] : SD_LEARNING_MODELS[0]
+  const [phase, setPhase] = useState<string>(
+    educationProfile?.defaultPhase || (isEarlyChildhood ? 'Fondasi' : 'A')
   )
+  const [duration, setDuration] = useState<string>('2 x 35 Menit (1 Pertemuan)')
+  const [learningModel, setLearningModel] = useState<string>(learningModels[0])
   const [learningApproach, setLearningApproach] = useState<string>('Tidak ada')
   const [specificObjectives, setSpecificObjectives] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -161,6 +180,8 @@ export default function ModulAjarExpress({
           topic,
           phase,
           learningModel,
+          duration,
+          additionalNotes: specificObjectives,
           learningApproach: learningApproach === 'Tidak ada' ? undefined : learningApproach,
         },
         {
@@ -214,7 +235,7 @@ export default function ModulAjarExpress({
 
   return (
     <DashboardWrapper
-      title={isTk ? 'Generator Modul Ajar (RPPM)' : 'Generator Modul Ajar'}
+      title={isTk ? 'Generator Modul Ajar (RPPM)' : `Generator Modul Ajar ${audience}`}
       breadcrumbs={[
         { label: 'Dashboard', href: '/dashboard' },
         { label: isTk ? 'Modul Ajar RPPM' : 'Modul Ajar' },
@@ -253,7 +274,7 @@ export default function ModulAjarExpress({
             </div>
             <div>
               <h2 className="text-xl font-black text-neutral-900 dark:text-white">
-                {isTk ? 'Generator Modul Ajar RPPM' : 'Generator Modul Ajar AI'}
+                {isTk ? 'Generator Modul Ajar RPPM' : `Generator Modul Ajar ${audience} AI`}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 1-Klik Jadi sesuai standar Kurikulum Merdeka Kemendikbudristek & Kemenag
@@ -374,20 +395,39 @@ export default function ModulAjarExpress({
 
                 <div>
                   <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
-                    {isTk ? 'Model Pembelajaran PAUD' : 'Model Pembelajaran SD'}
+                    {`Model Pembelajaran ${audience}`}
                   </label>
                   <select
                     value={learningModel}
                     onChange={(e) => setLearningModel(e.target.value)}
                     className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
-                    {(isTk ? PAUD_LEARNING_MODELS : SD_LEARNING_MODELS).map((model) => (
+                    {learningModels.map((model) => (
                       <option key={model} value={model}>
                         {model}
                       </option>
                     ))}
                   </select>
                 </div>
+
+                {!isEarlyChildhood && (
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Fase Pembelajaran *
+                    </label>
+                    <select
+                      value={phase}
+                      onChange={(e) => setPhase(e.target.value)}
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      {phaseOptions.map((item) => (
+                        <option key={item} value={item}>
+                          Fase {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {!isTk && (
                   <div>

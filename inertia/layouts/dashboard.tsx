@@ -15,7 +15,8 @@ interface User {
   email: string
   initials: string
   role: string
-  educationLevel: 'tk' | 'sd' | null
+  educationLevel: string | null
+  institutionType?: string | null
   avatarUrl: string | null
   creditsBalance?: number
 }
@@ -129,8 +130,12 @@ export default function DashboardLayout({
       {tourName && (
         <DashboardTour
           active={tourOpen}
-          autoStart
+          // Start only when the user explicitly asks for the tour from Help.
+          // Auto-opening a modal on every new device obscures the dashboard,
+          // especially on a small viewport.
+          autoStart={false}
           educationLevel={user.educationLevel}
+          institutionType={user.institutionType}
           tourName={tourName}
           onAutoStart={startTour}
           onFinish={finishTour}

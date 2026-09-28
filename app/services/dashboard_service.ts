@@ -2,6 +2,7 @@ import type User from '#models/user'
 import { dashboardRepository } from '#repositories/dashboard_repository'
 import type { DashboardRepository } from '#repositories/dashboard_repository'
 import type { DashboardStats } from '#repositories/dashboard_repository'
+import { resolveEducationProfile } from '#services/education_profile'
 
 export class DashboardService {
   constructor(private readonly dashboards: DashboardRepository = dashboardRepository) {}
@@ -9,11 +10,16 @@ export class DashboardService {
   async getPanelData(user: User) {
     return {
       educationLevel: user.educationLevel,
+      institutionType: user.institutionType,
       stats: await this.dashboards.getTeacherStats(user.id),
     }
   }
 
   async getPageData(user: User) {
+    const isPaud = resolveEducationProfile(
+      user.educationLevel,
+      user.institutionType
+    ).isEarlyChildhood
     const isAdmin = user.isAdmin
     const [dashboard, recent] = await Promise.all([
       isAdmin
@@ -22,20 +28,20 @@ export class DashboardService {
             stats,
             adminStats: null,
           })),
-      this.dashboards.getRecentResources(user.id),
+      isAdmin ? Promise.resolve(null) : this.dashboards.getRecentResources(user.id),
     ])
 
     return {
       role: user.role,
       educationLevel: user.educationLevel,
+      institutionType: user.institutionType,
       stats: dashboard.stats,
       adminStats: dashboard.adminStats,
       recentTeachingModules:
-        user.educationLevel === 'tk' ? [] : recent.teachingModules.map((item) => item.toJSON()),
-      recentExams: user.educationLevel === 'tk' ? [] : recent.exams.map((item) => item.toJSON()),
-      recentLkpds: user.educationLevel === 'tk' ? recent.lkpds.map((item) => item.toJSON()) : [],
-      recentMediaModules:
-        user.educationLevel === 'tk' ? recent.mediaModules.map((item) => item.toJSON()) : [],
+        isPaud || !recent ? [] : recent.teachingModules.map((item) => item.toJSON()),
+      recentExams: isPaud || !recent ? [] : recent.exams.map((item) => item.toJSON()),
+      recentLkpds: isPaud || !recent ? [] : recent.lkpds.map((item) => item.toJSON()),
+      recentMediaModules: isPaud || !recent ? [] : recent.mediaModules.map((item) => item.toJSON()),
     }
   }
 }

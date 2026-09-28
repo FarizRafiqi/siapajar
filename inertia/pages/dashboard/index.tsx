@@ -10,16 +10,23 @@ import {
   Presentation,
   TrendingUp,
   ClipboardList,
+  ClipboardCheck,
   Compass,
   Award,
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
+  ShieldAlert,
+  Building2,
+  PackageCheck,
+  BrainCircuit,
+  CreditCard,
   Rocket,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import { isPaudProfile } from '~/lib/education'
 
 interface Stats {
   classes: number
@@ -51,11 +58,16 @@ interface AdminStats {
   admin: number
   lkpds: number
   mediaModules: number
+  schools: number
+  activePackages: number
+  activeSubscriptions: number
+  openFraudCases: number
 }
 
 interface DashboardProps {
   readonly role: string
-  readonly educationLevel: 'tk' | 'sd' | null
+  readonly educationLevel: string | null
+  readonly institutionType?: string | null
   readonly stats: Stats
   readonly adminStats: AdminStats | null
   readonly recentTeachingModules: RecentItem[]
@@ -77,6 +89,7 @@ interface ExpressTool {
 export default function Dashboard({
   role,
   educationLevel,
+  institutionType = null,
   stats,
   adminStats,
   recentTeachingModules = [],
@@ -85,7 +98,213 @@ export default function Dashboard({
   recentMediaModules = [],
 }: Readonly<DashboardProps>) {
   const isAdmin = role === 'admin'
-  const isTk = educationLevel === 'tk'
+  const isPaud = isPaudProfile(educationLevel, institutionType)
+
+  if (isAdmin) {
+    const adminMetrics = [
+      {
+        label: 'Total Pengguna',
+        value: adminStats?.users ?? 0,
+        href: '/admin/users',
+        icon: Users,
+        color: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
+      },
+      {
+        label: 'Sekolah Terdaftar',
+        value: adminStats?.schools ?? 0,
+        href: '/admin/schools',
+        icon: Building2,
+        color: 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200',
+      },
+      {
+        label: 'Kasus Perlu Ditinjau',
+        value: adminStats?.openFraudCases ?? 0,
+        href: '/admin/fraud-cases',
+        icon: ShieldAlert,
+        color: 'bg-rose-100 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200',
+      },
+      {
+        label: 'Subscription Aktif',
+        value: adminStats?.activeSubscriptions ?? 0,
+        href: '/admin/packages',
+        icon: CreditCard,
+        color: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200',
+      },
+    ]
+    const adminLinks = [
+      {
+        label: 'Kelola Pengguna',
+        description: 'Atur role, sekolah, dan paket akun.',
+        href: '/admin/users',
+        icon: Users,
+      },
+      {
+        label: 'Kelola Sekolah',
+        description: 'Pantau sekolah dan anggota tertaut.',
+        href: '/admin/schools',
+        icon: Building2,
+      },
+      {
+        label: 'Review Anti-Fraud',
+        description: 'Tinjau sinyal penyalahgunaan benefit.',
+        href: '/admin/fraud-cases',
+        icon: ShieldAlert,
+      },
+      {
+        label: 'Kelola Paket',
+        description: 'Atur paket aktif dan arsip paket lama.',
+        href: '/admin/packages',
+        icon: PackageCheck,
+      },
+      {
+        label: 'Konfigurasi AI',
+        description: 'Atur provider, model, dan koneksi AI.',
+        href: '/admin/ai-settings',
+        icon: BrainCircuit,
+      },
+      {
+        label: 'Preset Kurikulum',
+        description: 'Kelola master referensi untuk guru.',
+        href: '/admin/curriculum-presets',
+        icon: BookOpen,
+      },
+    ]
+
+    return (
+      <DashboardWrapper title="Dashboard Admin SiapAjar">
+        <Head title="Dashboard Admin - SiapAjar" />
+        <div className="mx-auto max-w-7xl space-y-8">
+          <section className="relative overflow-hidden rounded-3xl border-2 border-black bg-gradient-to-br from-slate-800 via-slate-900 to-emerald-950 p-6 text-white shadow-[4px_4px_0px_#000000] sm:p-10">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-8 -top-10 hidden rotate-12 text-white/10 sm:block"
+            >
+              <ShieldCheck className="h-56 w-56" strokeWidth={1.25} />
+            </div>
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-amber-300 px-3 py-1 text-xs font-bold text-neutral-950 shadow-[2px_2px_0px_#000000]">
+                <ShieldCheck className="h-3.5 w-3.5" /> Pusat Operasional
+              </div>
+              <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+                Dashboard Admin SiapAjar
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                Pantau pengguna, sekolah, paket, keamanan akun, dan layanan AI dari satu tempat.
+              </p>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {adminMetrics.map((metric) => {
+              const Icon = metric.icon
+              return (
+                <Link
+                  key={metric.href}
+                  href={metric.href}
+                  className="group rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        {metric.label}
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-neutral-950 dark:text-white">
+                        {metric.value}
+                      </p>
+                    </div>
+                    <div className={`rounded-2xl p-3 ${metric.color}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <span className="mt-4 inline-flex text-sm font-semibold text-emerald-700 group-hover:translate-x-0.5 dark:text-emerald-300">
+                    Buka data <ArrowRight className="ml-1 h-4 w-4" />
+                  </span>
+                </Link>
+              )
+            })}
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-bold text-neutral-950 dark:text-white">
+                Akses Operasional
+              </h2>
+              <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                Aksi utama yang relevan untuk pengelolaan platform.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {adminLinks.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="group flex items-start gap-3 rounded-2xl border border-neutral-200 bg-white p-5 transition hover:border-emerald-500 hover:bg-emerald-50/50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-emerald-950/20"
+                  >
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-neutral-950 dark:text-white">
+                        {item.label}
+                      </h3>
+                      <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                        {item.description}
+                      </p>
+                    </div>
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-neutral-500 transition group-hover:translate-x-1 group-hover:text-emerald-600" />
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-950 dark:text-white">
+                  Ringkasan Aktivitas Platform
+                </h2>
+                <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                  Jumlah data lintas pengguna untuk pemantauan kapasitas platform.
+                </p>
+              </div>
+              <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                {adminStats?.activePackages ?? 0} paket aktif
+              </span>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">Kelas</p>
+                <p className="mt-1 text-2xl font-bold text-neutral-950 dark:text-white">
+                  {stats?.classes ?? 0}
+                </p>
+              </div>
+              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">Siswa</p>
+                <p className="mt-1 text-2xl font-bold text-neutral-950 dark:text-white">
+                  {stats?.students ?? 0}
+                </p>
+              </div>
+              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">LKPD</p>
+                <p className="mt-1 text-2xl font-bold text-neutral-950 dark:text-white">
+                  {stats?.lkpds ?? 0}
+                </p>
+              </div>
+              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">Media Ajar</p>
+                <p className="mt-1 text-2xl font-bold text-neutral-950 dark:text-white">
+                  {stats?.mediaModules ?? 0}
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </DashboardWrapper>
+    )
+  }
 
   // Supervision Checklist State calculation
   const hasModules = (stats?.teachingModules ?? 0) > 0 || (stats?.weeklyLessonPlans ?? 0) > 0
@@ -95,10 +314,12 @@ export default function Dashboard({
 
   const checklistItems = [
     {
-      title: isTk ? 'Modul Ajar / RPPM Mingguan' : 'Modul Ajar Pembelajaran',
-      desc: isTk ? 'Rencana kegiatan mingguan terstandar' : 'Perangkat ajar lengkap komponen inti',
+      title: isPaud ? 'Modul Ajar / RPPM Mingguan' : 'Modul Ajar Pembelajaran',
+      desc: isPaud
+        ? 'Rencana kegiatan mingguan terstandar'
+        : 'Perangkat ajar lengkap komponen inti',
       done: hasModules,
-      href: isTk ? '/modul-ajar' : '/modul-ajar',
+      href: '/modul-ajar',
     },
     {
       title: 'Distribusi Waktu Prota & Promes',
@@ -107,13 +328,15 @@ export default function Dashboard({
       href: '/prota-promes',
     },
     {
-      title: 'Bank Soal & Asesmen Sumatif / Formatif',
-      desc: 'Kisi-kisi, instrumen evaluasi & rubrik penilaian',
-      done: hasAssessments,
-      href: '/soal',
+      title: isPaud ? 'Asesmen Perkembangan PAUD' : 'Bank Soal & Asesmen Sumatif / Formatif',
+      desc: isPaud
+        ? 'Ceklis, catatan anekdot, hasil karya, dan foto berseri'
+        : 'Kisi-kisi, instrumen evaluasi & rubrik penilaian',
+      done: isPaud ? (stats?.paudAssessments ?? 0) > 0 : hasAssessments,
+      href: isPaud ? '/paud-assessments' : '/soal',
     },
     {
-      title: isTk ? 'Lembar Kerja Anak (LKPD)' : 'Lembar Kerja Peserta Didik (LKPD)',
+      title: isPaud ? 'Lembar Kerja Anak (LKPD)' : 'Lembar Kerja Peserta Didik (LKPD)',
       desc: 'Aktivitas pengayaan & stimulus bernalar',
       done: hasLkpds,
       href: '/lkpd',
@@ -138,7 +361,7 @@ export default function Dashboard({
   // 8 Tool-First Express Tools
   const expressTools: ExpressTool[] = [
     {
-      title: isTk ? 'Modul Ajar RPPM' : 'Modul Ajar AI',
+      title: isPaud ? 'Modul Ajar RPPM' : 'Modul Ajar AI',
       desc: 'Perangkat ajar lengkap 1-klik jadi',
       icon: BookOpen,
       href: '/modul-ajar',
@@ -178,14 +401,23 @@ export default function Dashboard({
       accentColor: 'from-rose-500/15 to-rose-500/5 hover:border-rose-500/60',
       iconColor: 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300',
     },
-    {
-      title: 'Katrol Nilai Transparan',
-      desc: 'Kalkulator normalisasi adil + justifikasi supervisi',
-      icon: TrendingUp,
-      href: '/katrol',
-      accentColor: 'from-cyan-500/15 to-cyan-500/5 hover:border-cyan-500/60',
-      iconColor: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300',
-    },
+    isPaud
+      ? {
+          title: 'Asesmen Perkembangan PAUD',
+          desc: 'Catat bukti perkembangan anak dan narasi observasi',
+          icon: ClipboardCheck,
+          href: '/paud-assessments',
+          accentColor: 'from-cyan-500/15 to-cyan-500/5 hover:border-cyan-500/60',
+          iconColor: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300',
+        }
+      : {
+          title: 'Katrol Nilai Transparan',
+          desc: 'Kalkulator normalisasi adil + justifikasi supervisi',
+          icon: TrendingUp,
+          href: '/katrol',
+          accentColor: 'from-cyan-500/15 to-cyan-500/5 hover:border-cyan-500/60',
+          iconColor: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300',
+        },
     {
       title: 'Jurnal Harian Mengajar',
       desc: 'Dokumentasi kelas & catatan refleksi guru',
@@ -227,8 +459,9 @@ export default function Dashboard({
                 {isAdmin ? 'Panel Kontrol Admin SiapAjar' : 'Mau Bikin Dokumen Apa Hari Ini?'}
               </h1>
               <p className="text-emerald-50 text-xs sm:text-sm leading-relaxed font-medium">
-                Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, bank soal, atau katrol
-                nilai hanya dalam hitungan detik.
+                {isPaud
+                  ? 'Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, asesmen perkembangan, atau jurnal hanya dalam hitungan detik.'
+                  : 'Pilih tool kilat di bawah untuk menyusun modul ajar, LKPD, bank soal, atau katrol nilai hanya dalam hitungan detik.'}
               </p>
             </div>
           </div>
@@ -351,72 +584,6 @@ export default function Dashboard({
                   <ArrowRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all mt-1" />
                 </Link>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Admin Stats Section */}
-        {isAdmin && adminStats && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    Total Users
-                  </p>
-                  <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300">
-                    {adminStats.users}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-emerald-100 p-3 dark:bg-emerald-900/60">
-                  <Users className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    Total Guru Aktif
-                  </p>
-                  <p className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-                    {adminStats.guru}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-blue-100 p-3 dark:bg-blue-900/30">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    Total LKPD Terbuat
-                  </p>
-                  <p className="text-2xl font-extrabold text-purple-600 dark:text-purple-400">
-                    {adminStats.lkpds}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-purple-100 p-3 dark:bg-purple-900/30">
-                  <FileSpreadsheet className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </div>
-            <div className="rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    Media Ajar & Slide
-                  </p>
-                  <p className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
-                    {adminStats.mediaModules}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-orange-100 p-3 dark:bg-orange-900/30">
-                  <Presentation className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
             </div>
           </div>
         )}

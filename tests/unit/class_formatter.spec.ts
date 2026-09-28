@@ -1,9 +1,11 @@
 import { test } from '@japa/runner'
 import {
+  detectInstitutionInfo,
   formatRpmClassCover,
   formatRpmClassGroupDetail,
   formatSchoolClassName,
 } from '#services/class_formatter'
+import { resolveEducationProfile } from '#services/education_profile'
 
 test.group('Class Formatter Service', () => {
   test('formats cover string for RA with rombel number and nickname', ({ assert }) => {
@@ -65,5 +67,14 @@ test.group('Class Formatter Service', () => {
       'sd'
     )
     assert.equal(res, 'Kelas 4A')
+  })
+
+  test('explicit non-PAUD level wins over stale TK/RA metadata', ({ assert }) => {
+    const info = detectInstitutionInfo('Sekolah Dasar Negeri 1', 'sd', 'ra')
+    assert.equal(info.level, 'SD')
+    assert.equal(resolveEducationProfile('sd', 'ra').isEarlyChildhood, false)
+    assert.equal(resolveEducationProfile('tk', 'tk').isEarlyChildhood, true)
+    assert.equal(resolveEducationProfile('tk', 'ra').isReligiousEarlyChildhood, true)
+    assert.equal(resolveEducationProfile(null, 'ra').isEarlyChildhood, true)
   })
 })

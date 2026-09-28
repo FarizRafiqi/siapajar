@@ -1,5 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import CurriculumGlossary from '~/components/dashboard/curriculum-glossary'
+import { isPaudProfile } from '~/lib/education'
 import { Head, useForm, router } from '@inertiajs/react'
 import { useState } from 'react'
 import {
@@ -649,8 +650,12 @@ function ExploreTab({
 }
 
 export default function CurriculumIndex({ cps, sequences, profile }: Props) {
-  const isPaud = profile.educationLevel === 'tk'
-  const institutionLabel = profile.institutionType === 'ra' ? 'RA' : 'TK'
+  const isPaud = isPaudProfile(profile.educationLevel, profile.institutionType)
+  const institutionLabel = isPaud
+    ? profile.institutionType === 'ra'
+      ? 'RA'
+      : 'TK'
+    : (profile.educationLevel || 'SD').toUpperCase()
 
   const [activeTab, setActiveTab] = useState<CurriculumTab>('explore')
   const [selectedCp, setSelectedCp] = useState(cps[0]?.id ?? 0)

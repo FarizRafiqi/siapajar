@@ -41,12 +41,10 @@ interface JurnalResponse {
 
 export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<JurnalProps>) {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [selectedClass, setSelectedClass] = useState(classes[0]?.name || 'Kelas 1A')
-  const [selectedSubject, setSelectedSubject] = useState(
-    subjects[0]?.name || 'Pendidikan Pancasila'
-  )
+  const [selectedClass, setSelectedClass] = useState(classes[0]?.name || '')
+  const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || '')
   const [topic, setTopic] = useState('')
-  const [attendanceNotes, setAttendanceNotes] = useState('28 Hadir, 1 Izin, 1 Sakit')
+  const [attendanceNotes, setAttendanceNotes] = useState('')
   const [teacherNotes, setTeacherNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<JurnalResponse | null>(null)
@@ -218,7 +216,7 @@ export default function JurnalExpress({ classes = [], subjects = [] }: Readonly<
                   type="text"
                   value={attendanceNotes}
                   onChange={(e) => setAttendanceNotes(e.target.value)}
-                  placeholder="Contoh: 28 Hadir, 1 Sakit (Budi)"
+                  placeholder="Contoh: 28 Hadir, 1 Sakit"
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>

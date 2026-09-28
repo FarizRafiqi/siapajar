@@ -48,9 +48,9 @@ export default function KatrolExpress() {
   const [targetMin, setTargetMin] = useState(75)
   const [targetMax, setTargetMax] = useState(95)
   const [passingGrade, setPassingGrade] = useState(75)
-  const [rawInput, setRawInput] = useState(
-    'Ahmad Fauzi: 45\nBudi Santoso: 62\nCitra Lestari: 88\nDewi Sartika: 54\nEko Prasetyo: 71\nFani Rahma: 92\nGilang Ramadhan: 40\nHani Permata: 78'
-  )
+  // Start empty so a teacher never mistakes fixture names/scores for real
+  // student data. The format hint below explains how to paste their own data.
+  const [rawInput, setRawInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<KatrolResponse | null>(null)
   const [copied, setCopied] = useState(false)

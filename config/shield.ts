@@ -1,5 +1,6 @@
 import { defineConfig } from '@adonisjs/shield'
 import type { HttpContext } from '@adonisjs/core/http'
+import env from '#start/env'
 
 const shieldConfig = defineConfig({
   /**
@@ -10,12 +11,32 @@ const shieldConfig = defineConfig({
     /**
      * Enable the Content-Security-Policy header.
      */
-    enabled: false,
+    // Keep development/HMR permissive, but enforce a baseline policy in the
+    // production server. The inline theme bootstrap and Tailwind runtime
+    // styles are intentionally allowed; third-party origins are explicit.
+    enabled: env.get('NODE_ENV') === 'production',
 
     /**
      * Per-resource CSP directives.
      */
-    directives: {},
+    useDefaults: true,
+    directives: {
+      'base-uri': ["'self'"],
+      'object-src': ["'none'"],
+      'frame-ancestors': ["'none'"],
+      'script-src': [
+        "'self'",
+        "'unsafe-inline'",
+        'https://challenges.cloudflare.com',
+        'https://fpjscdn.net',
+      ],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+      'connect-src': ["'self'", 'https://challenges.cloudflare.com', 'https://fpjscdn.net'],
+      'frame-src': ["'self'", 'https://challenges.cloudflare.com'],
+      'worker-src': ["'self'", 'blob:'],
+    },
 
     /**
      * Report violations without blocking resources.

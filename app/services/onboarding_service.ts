@@ -25,8 +25,17 @@ export class OnboardingService {
 
     user.schoolName = normalizedName
     user.schoolId = school.id
-    if (data.educationLevel) user.educationLevel = data.educationLevel
-    if (data.institutionType) user.institutionType = data.institutionType
+    if (data.educationLevel) {
+      const level = data.educationLevel.trim().toLowerCase()
+      user.educationLevel = level
+      // Do not let the old TK/RA value keep classifying an account as PAUD
+      // after switching to SD (or a future non-PAUD level).
+      user.institutionType = ['tk', 'paud'].includes(level)
+        ? data.institutionType?.trim().toLowerCase() === 'ra'
+          ? 'ra'
+          : 'tk'
+        : null
+    }
     if (data.curriculumVersion) user.curriculumVersion = data.curriculumVersion
     if (data.defaultGroupContext) user.defaultGroupContext = data.defaultGroupContext
 

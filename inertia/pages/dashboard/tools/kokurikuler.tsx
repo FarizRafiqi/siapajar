@@ -3,12 +3,15 @@ import { useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 import { emitCreditsUpdated } from '~/lib/credits'
+import { isPaudProfile } from '~/lib/education'
 import { Compass, Coins, Zap, RotateCw, Copy, Check, Printer } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
 
 interface KokurikulerProps {
   isTk: boolean
+  educationLevel?: string | null
+  institutionType?: string | null
 }
 
 interface KokurikulerResponse {
@@ -48,12 +51,22 @@ const P5_THEMES = [
   'Imajinasi dan Kreativitasku (Fase Fondasi)',
 ]
 
-export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>) {
+export default function KokurikulerExpress({
+  isTk,
+  educationLevel,
+  institutionType,
+}: Readonly<KokurikulerProps>) {
+  const isPaud = isPaudProfile(educationLevel, institutionType) || (!educationLevel && isTk)
+  const isRa = isPaud && institutionType?.toLowerCase() === 'ra'
+  const frameworkLabel = isRa ? 'P5/P2RA' : isPaud ? 'P5 Fase Fondasi' : 'P5'
+  const themeOptions = isPaud
+    ? P5_THEMES
+    : P5_THEMES.filter((theme) => !theme.includes('(Fase Fondasi)'))
   const [theme, setTheme] = useState(
-    isTk ? 'Aku Sayang Bumi (Fase Fondasi)' : 'Gaya Hidup Berkelanjutan'
+    isPaud ? 'Aku Sayang Bumi (Fase Fondasi)' : 'Gaya Hidup Berkelanjutan'
   )
   const [projectTitle, setProjectTitle] = useState('')
-  const [phase, setPhase] = useState(isTk ? 'Fondasi' : 'A')
+  const [phase, setPhase] = useState(isPaud ? 'Fondasi' : 'A')
   const [targetDuration, setTargetDuration] = useState('2-3 Pekan (30 JP)')
   const [selectedDimensions, setSelectedDimensions] = useState<string[]>([
     'Beriman, Bertakwa kepada Tuhan YME, dan Berakhlak Mulia',
@@ -130,10 +143,10 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
 
   return (
     <DashboardWrapper
-      title="Generator Modul Kokurikuler & P5"
+      title={`Generator Modul Kokurikuler & ${frameworkLabel}`}
       breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Modul Kokurikuler' }]}
     >
-      <Head title="Generator Modul Kokurikuler & P5 - SiapAjar" />
+      <Head title={`Generator Modul Kokurikuler & ${frameworkLabel} - SiapAjar`} />
 
       <GenerationProgressModal
         isOpen={isLoading}
@@ -155,7 +168,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
             </div>
             <div>
               <h2 className="text-xl font-black text-neutral-900 dark:text-white">
-                Generator Modul Kokurikuler & P5 AI
+                Generator Modul Kokurikuler & {frameworkLabel} AI
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 Panduan projek kokurikuler lengkap dengan alur tahapan aksi, dimensi profil, dan
@@ -164,7 +177,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
             </div>
           </div>
           <span className="badge-kawaii-emerald self-start sm:self-auto">
-            <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
+            <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 2 Kredit
           </span>
         </div>
 
@@ -185,7 +198,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   onChange={(e) => setTheme(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-xs font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  {P5_THEMES.map((t) => (
+                  {themeOptions.map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
@@ -207,6 +220,8 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                   <option value="B">Fase B (Kelas 3 - 4 SD)</option>
                   <option value="C">Fase C (Kelas 5 - 6 SD)</option>
                   <option value="D">Fase D (Kelas 7 - 9 SMP)</option>
+                  <option value="E">Fase E (Kelas 10 SMA/SMK)</option>
+                  <option value="F">Fase F (Kelas 11 - 12 SMA/SMK)</option>
                 </select>
               </div>
             </div>
@@ -243,7 +258,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200">
-                  Fokus Dimensi Profil Pelajar Pancasila (P5)
+                  Fokus Dimensi Profil Pelajar Pancasila ({frameworkLabel})
                 </label>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
                   Pilih satu atau beberapa dimensi karakter utama untuk modul projek ini
@@ -302,7 +317,7 @@ export default function KokurikulerExpress({ isTk }: Readonly<KokurikulerProps>)
                 ) : (
                   <>
                     <Zap className="w-4 h-4" />
-                    Generate Modul Projek (1 Kredit)
+                    Generate Modul Projek (2 Kredit)
                   </>
                 )}
               </button>

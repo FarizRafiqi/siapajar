@@ -46,7 +46,7 @@ interface InvoiceItem {
   creditsAmount: number
   grossAmount: number
   status: 'pending' | 'paid' | 'expired' | 'failed'
-  mayarPaymentUrl?: string
+  paymentUrl?: string
 }
 
 interface PaginationMeta {
@@ -260,9 +260,9 @@ function InvoiceHistory({
                       </span>
                     </td>
                     <td className="space-x-2 px-3 py-3.5 text-right">
-                      {invoice.status === 'pending' && invoice.mayarPaymentUrl && (
+                      {invoice.status === 'pending' && invoice.paymentUrl && (
                         <a
-                          href={invoice.mayarPaymentUrl}
+                          href={invoice.paymentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn-kawaii-primary !rounded-xl !px-3 !py-1.5 !text-xs"

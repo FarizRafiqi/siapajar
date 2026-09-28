@@ -1,4 +1,5 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
+import db from '@adonisjs/lucid/services/db'
 import Package from '#models/package'
 
 export interface PackageSeedData {
@@ -32,7 +33,7 @@ export default class PackageSeeder extends BaseSeeder {
       paket_pemula: { classes: 3, ai: 30, img: 15, svg: 50, docx: 1, atp: 1, iktp: 1 },
       paket_sahabat_guru: { classes: 10, ai: null, img: null, svg: null, docx: 1, atp: 1, iktp: 1 },
       paket_guru_teladan: { classes: 10, ai: null, img: null, svg: null, docx: 1, atp: 1, iktp: 1 },
-      paket_sekolah: { classes: null, ai: null, img: null, svg: null, docx: 1, atp: 1, iktp: 1 },
+      sekolah: { classes: null, ai: null, img: null, svg: null, docx: 1, atp: 1, iktp: 1 },
     }
 
     const current = limits[pkgName] || limits.free
@@ -53,6 +54,18 @@ export default class PackageSeeder extends BaseSeeder {
     await Package.query().update({ isActive: false })
 
     const packages: PackageSeedData[] = [
+      {
+        name: 'free',
+        displayName: 'Paket Gratis',
+        description: 'Paket awal untuk mencoba fitur dasar SiapAjar.',
+        priceMonthly: 0,
+        priceYearly: null,
+        features: ['1 Kelas', '5 Generate AI per bulan', 'Export PDF'],
+        isHighlighted: false,
+        isActive: true,
+        ctaLabel: 'Mulai Gratis',
+        sortOrder: 0,
+      },
       {
         name: 'paket_pemula',
         displayName: 'Paket Pemula',
@@ -114,7 +127,7 @@ export default class PackageSeeder extends BaseSeeder {
         sortOrder: 3,
       },
       {
-        name: 'paket_sekolah',
+        name: 'sekolah',
         displayName: 'Paket Sekolah',
         description: 'Multi-guru & akreditasi lengkap untuk 1 institusi.',
         priceMonthly: 249000,
@@ -144,6 +157,42 @@ export default class PackageSeeder extends BaseSeeder {
           .related('entitlements')
           .updateOrCreate({ featureKey }, { featureKey, limitValue, isEnabled: limitValue !== 0 })
       }
+    }
+
+    // Commercial package rows from the old experiments are purged only when
+    // explicitly requested for a local reset. Never make a production seeder
+    // delete billing history implicitly; set PURGE_LEGACY_PACKAGES=true only
+    // for a disposable/local database.
+    const legacyPackageNames = [
+      'basic',
+      'pro',
+      'paket_sekolah',
+      'guru_aktif',
+      'guru_pro',
+      'guru_teladan',
+      'topup_pemula',
+      'topup_sahabat',
+      'topup_teladan',
+      'guru_pemula',
+    ]
+
+    if (process.env.PURGE_LEGACY_PACKAGES === 'true') {
+      await db.transaction(async (trx) => {
+        const legacyPackages = await Package.query({ client: trx })
+          .whereIn('name', legacyPackageNames)
+          .select('id')
+        const legacyIds = legacyPackages.map((pkg) => pkg.id)
+        if (legacyIds.length === 0) return
+
+        // Local fixture accounts/subscriptions may still point at an old row.
+        // Remove those references before deleting the package and its
+        // entitlements. Payment invoices intentionally have no FK to packages
+        // because their package name is an immutable billing snapshot.
+        await trx.from('users').whereIn('package_id', legacyIds).update({ package_id: null })
+        await trx.from('package_subscriptions').whereIn('package_id', legacyIds).delete()
+        await trx.from('package_entitlements').whereIn('package_id', legacyIds).delete()
+        await trx.from('packages').whereIn('id', legacyIds).delete()
+      })
     }
   }
 

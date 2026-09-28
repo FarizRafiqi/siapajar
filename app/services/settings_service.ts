@@ -37,6 +37,7 @@ export class SettingsService {
         initials: user.initials,
         schoolName: user.schoolName,
         educationLevel: user.educationLevel,
+        institutionType: user.institutionType,
         role: user.role,
         avatarUrl: user.avatarUrl,
         kopSurat: user.kopSurat || {},
@@ -52,7 +53,12 @@ export class SettingsService {
 
     if (!user.isAdmin) {
       user.schoolName = data.schoolName ?? user.schoolName
-      user.educationLevel = data.educationLevel ?? user.educationLevel
+      if (data.educationLevel) {
+        const level = data.educationLevel.trim().toLowerCase()
+        user.educationLevel = level
+        // Clear stale PAUD metadata when the selected level is non-PAUD.
+        user.institutionType = ['tk', 'paud'].includes(level) ? user.institutionType || 'tk' : null
+      }
 
       const currentKop = user.kopSurat || {}
       const updatedKop = data.kopSurat || {}

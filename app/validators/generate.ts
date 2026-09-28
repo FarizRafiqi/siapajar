@@ -27,6 +27,8 @@ export const generateTeachingModuleValidator = vine.create(
         'Teaching at the Right Level (TaRL) + Culturally Responsive Teaching (CRT)',
       ])
       .optional(),
+    duration: vine.string().trim().maxLength(100).optional(),
+    additionalNotes: vine.string().trim().maxLength(1000).optional(),
     learningSequenceId: vine.number().positive().optional(),
   })
 )
@@ -59,6 +61,23 @@ export const generateSemesterPlanValidator = vine.create(
     semesterId: vine.number().positive(),
     subject: vine.string().trim().minLength(1).maxLength(100),
     learningSequenceId: vine.number().positive().optional(),
+  })
+)
+
+export const generateProtaPromesValidator = vine.create(
+  vine.object({
+    classId: vine.number().positive(),
+    academicYearId: vine.number().positive(),
+    semesterId: vine.number().positive(),
+    subject: vine.string().trim().minLength(1).maxLength(100),
+    learningSequenceId: vine.number().positive().optional(),
+  })
+)
+
+export const generateReportNarrativesValidator = vine.create(
+  vine.object({
+    classId: vine.number().positive(),
+    semesterId: vine.number().positive(),
   })
 )
 

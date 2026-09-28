@@ -14,6 +14,12 @@ export type CurriculumPresetResetItem = {
 }
 
 export class CurriculumPresetRepository {
+  async findByCode(code: string, exceptId?: string | number) {
+    const query = CurriculumPreset.query().where('code', code)
+    if (exceptId !== undefined) query.whereNot('id', exceptId)
+    return query.first()
+  }
+
   async listForAdmin(educationLevel: string, semester: number) {
     return CurriculumPreset.query()
       .where('education_level', educationLevel)

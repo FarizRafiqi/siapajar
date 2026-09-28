@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Coins, Check, X, ExternalLink, ShieldCheck, Clock, Zap, Ticket } from 'lucide-react'
+import { Coins, Check, X, ExternalLink, ShieldCheck, Clock, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '~/lib/utils'
 
@@ -24,70 +24,25 @@ interface TopupTier {
   description: string
 }
 
-const FALLBACK_TIERS: TopupTier[] = [
-  {
-    id: 'paket_pemula',
-    name: 'Paket Pemula',
-    credits: 15,
-    price: 20000,
-    priceFormatted: 'Rp 20rb',
-    pricePerCredit: 'Rp 1.333/kredit',
-    approxDocs: '≈ 8-10 Modul Ajar',
-    description: 'Cocok untuk coba-coba atau kebutuhan mendesak beberapa dokumen',
-  },
-  {
-    id: 'paket_sahabat_guru',
-    name: 'Paket Sahabat Guru',
-    credits: 45,
-    price: 45000,
-    priceFormatted: 'Rp 45rb',
-    pricePerCredit: 'Rp 1.000/kredit',
-    approxDocs: '≈ 25-30 Modul Ajar',
-    badge: 'Terlaris',
-    description: 'Paling favorit untuk persiapan administrasi 1 semester',
-  },
-  {
-    id: 'paket_guru_teladan',
-    name: 'Paket Guru Teladan',
-    credits: 100,
-    price: 85000,
-    priceFormatted: 'Rp 85rb',
-    pricePerCredit: 'Rp 850/kredit',
-    approxDocs: '≈ 60-70 Modul Ajar',
-    description: 'Paket super hemat 100 kredit untuk guru produktif',
-  },
-  {
-    id: 'paket_sekolah',
-    name: 'Paket Sekolah',
-    credits: 350,
-    price: 249000,
-    priceFormatted: 'Rp 249rb',
-    pricePerCredit: 'Rp 711/kredit',
-    approxDocs: '≈ 200+ Modul Ajar',
-    badge: 'Paling Hemat',
-    description: 'Multi-guru & akreditasi lengkap untuk 1 institusi',
-  },
-]
-
 const TOOL_COSTS = [
   {
-    name: 'Modul Ajar',
-    cost: '2 kredit',
+    name: 'Dokumen AI',
+    cost: '1 kredit',
     bg: 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200',
   },
   {
-    name: 'Bank Soal · LKPD',
-    cost: '1,5 kredit',
+    name: 'Bank Soal & LKPD',
+    cost: '1 kredit',
     bg: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200',
   },
   {
-    name: 'Prota · Promes · Rubrik',
-    cost: '1 kredit',
+    name: 'Gambar & ilustrasi',
+    cost: 'Kuota AI',
     bg: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200',
   },
   {
-    name: 'Komentar Rapor',
-    cost: '0,5 kredit',
+    name: 'Export PDF/DOCX',
+    cost: 'Kuota paket',
     bg: 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200',
   },
 ]
@@ -104,70 +59,79 @@ export default function TopupModal({
   currentCredits = 0,
 }: Readonly<TopupModalProps>) {
   const [tiers, setTiers] = useState<TopupTier[]>([])
-  const [selectedTierId, setSelectedTierId] = useState<string | number>('paket_sahabat_guru')
+  const [selectedTierId, setSelectedTierId] = useState<string | number | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [promoCode, setPromoCode] = useState('')
-  const [showPromoInput, setShowPromoInput] = useState(false)
   const [mobile, setMobile] = useState('')
+  const [isLoadingTiers, setIsLoadingTiers] = useState(true)
+  const [tiersError, setTiersError] = useState('')
 
-  // Fetch live packages from Database
+  // Fetch the live catalog. Pricing and credit amounts must never be guessed
+  // on the client because a stale fallback can charge the wrong offer.
   useEffect(() => {
     let isMounted = true
+    setIsLoadingTiers(true)
+    setTiersError('')
     fetch('/api/packages')
-      .then((res) => res.json())
-      .then((data: any[]) => {
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Paket pembayaran belum dapat dimuat.')
+        return (await res.json()) as unknown
+      })
+      .then((data) => {
         if (!isMounted) return
-        if (Array.isArray(data) && data.length > 0) {
-          const parsedTiers: TopupTier[] = data.map((pkg) => {
-            const creditFallbackMap: Record<string, number> = {
-              paket_pemula: 15,
-              guru_aktif: 15,
-              topup_pemula: 15,
-              paket_sahabat_guru: 45,
-              guru_pro: 45,
-              topup_sahabat: 45,
-              paket_guru_teladan: 100,
-              topup_teladan: 100,
-              paket_sekolah: 350,
-              sekolah: 350,
-            }
-            const cf = (pkg.features || []).find((f: string) => f.toLowerCase().includes('kredit'))
-            let credits: number
-            if (cf) {
-              const match = cf.match(/^(\d+)/) ?? cf.match(/\d+/)
-              credits = match
-                ? Number.parseInt(match[1] ?? match[0], 10)
-                : (creditFallbackMap[pkg.name] ?? 45)
-            } else {
-              credits = creditFallbackMap[pkg.name] ?? 45
-            }
+        const packages = Array.isArray(data) ? data : []
+        const parsedTiers = packages.flatMap((pkg: any): TopupTier[] => {
+          // The API catalog is the only source of truth. Packages without an
+          // explicit integer credit feature (including the free package) are
+          // not rendered as purchasable top-ups.
+          const creditFeature = (Array.isArray(pkg.features) ? pkg.features : []).find(
+            (feature: unknown) => typeof feature === 'string' && /\b\d+\s*kredit\b/i.test(feature)
+          )
+          const match =
+            typeof creditFeature === 'string' ? creditFeature.match(/\b(\d+)\s*kredit\b/i) : null
+          const credits = match ? Number.parseInt(match[1], 10) : 0
+          const price = Number(pkg.priceMonthly)
+          if (
+            !pkg.id ||
+            !Number.isInteger(credits) ||
+            credits <= 0 ||
+            !Number.isFinite(price) ||
+            price <= 0
+          ) {
+            return []
+          }
 
-            const perCredit = Math.round(pkg.priceMonthly / credits)
-            const approxDocs = `≈ ${Math.round(credits / 1.5)} Modul Ajar`
-
-            let badge: string | undefined
-            if (pkg.isHighlighted) badge = 'Terlaris'
-            else if (credits >= 100) badge = 'Paling Hemat'
-
-            return {
+          const perCredit = Math.round(price / credits)
+          const badge = pkg.isHighlighted ? 'Terlaris' : credits >= 100 ? 'Paling Hemat' : undefined
+          return [
+            {
               id: pkg.id,
               name: pkg.displayName || pkg.name,
               credits,
-              price: pkg.priceMonthly,
-              priceFormatted: `Rp ${(pkg.priceMonthly / 1000).toLocaleString('id-ID')}rb`,
-              pricePerCredit: `Rp ${perCredit.toLocaleString('id-ID')}/kredit`,
-              approxDocs,
+              price,
+              priceFormatted: `Rp${price.toLocaleString('id-ID')}`,
+              pricePerCredit: `Rp${perCredit.toLocaleString('id-ID')}/kredit`,
+              approxDocs: `≈ ${credits} penggunaan dokumen`,
               badge,
-              description: pkg.description || 'Paket administrasi guru',
-            }
-          })
-          setTiers(parsedTiers)
-          const pop = parsedTiers.find((t) => t.badge === 'Terlaris') || parsedTiers[0]
-          setSelectedTierId(pop.id)
-        }
+              description: pkg.description || 'Paket kredit SiapAjar',
+            },
+          ]
+        })
+        setTiers(parsedTiers)
+        setSelectedTierId(
+          parsedTiers.find((tier) => tier.badge === 'Terlaris')?.id ?? parsedTiers[0]?.id ?? null
+        )
+        if (parsedTiers.length === 0) setTiersError('Belum ada paket kredit yang bisa dibeli.')
       })
-      .catch(() => {
-        // fallback to FALLBACK_TIERS
+      .catch((error: unknown) => {
+        if (!isMounted) return
+        setTiers([])
+        setSelectedTierId(null)
+        setTiersError(
+          error instanceof Error ? error.message : 'Paket pembayaran belum dapat dimuat.'
+        )
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingTiers(false)
       })
     return () => {
       isMounted = false
@@ -176,10 +140,14 @@ export default function TopupModal({
 
   if (!isOpen) return null
 
-  const availableTiers = tiers.length > 0 ? tiers : FALLBACK_TIERS
-  const selectedTier = availableTiers.find((t) => t.id === selectedTierId) || availableTiers[0]
+  const availableTiers = tiers
+  const selectedTier = availableTiers.find((t) => t.id === selectedTierId) ?? null
 
   const handleCheckout = async () => {
+    if (!selectedTier) {
+      toast.error('Pilih paket kredit yang tersedia terlebih dahulu.')
+      return
+    }
     if (
       !/^\+?62\d{8,13}$/.test(mobile.replace(/[^0-9+]/g, '')) &&
       !/^0\d{8,13}$/.test(mobile.replace(/[^0-9+]/g, ''))
@@ -201,7 +169,6 @@ export default function TopupModal({
         body: JSON.stringify({
           packageName: selectedTier.id,
           packageId: selectedTier.id,
-          promoCode: promoCode.trim() || undefined,
           mobile,
         }),
       })
@@ -214,21 +181,13 @@ export default function TopupModal({
       toast.success('Membuka halaman pembayaran Mayar.id...', { id: toastId })
       onClose()
       if (data.paymentUrl) {
-        window.location.href = data.paymentUrl
+        window.location.assign(data.paymentUrl)
       }
     } catch (err: any) {
       toast.error(err.message || 'Terjadi kesalahan sistem pembayaran', { id: toastId })
     } finally {
       setIsProcessing(false)
     }
-  }
-
-  const handleApplyPromo = () => {
-    if (!promoCode.trim()) {
-      toast.error('Masukkan kode promo terlebih dahulu')
-      return
-    }
-    toast.info(`Kode promo "${promoCode.toUpperCase()}" akan diverifikasi saat pembayaran.`)
   }
 
   return (
@@ -300,78 +259,91 @@ export default function TopupModal({
             </div>
 
             {/* Vertical Package Stack */}
-            <div className="space-y-3">
-              {availableTiers.map((tier) => {
-                const isSelected = selectedTierId === tier.id
-                return (
-                  <div key={tier.id} className="relative">
-                    {/* Floating Badge */}
-                    {tier.badge && (
-                      <div className="absolute -top-2.5 left-4 z-10">
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-300 text-neutral-950 border border-black font-black text-[10px] shadow-[1px_1px_0px_#000000]">
-                          {tier.badge}
-                        </span>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedTierId(tier.id)}
-                      className={cn(
-                        'w-full p-4 rounded-2xl text-left transition-all cursor-pointer flex items-center justify-between gap-3',
-                        isSelected
-                          ? 'bg-[#d1fae5] dark:bg-emerald-950/70 border-2 border-black shadow-[3px_3px_0px_#000000]'
-                          : 'bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800 hover:border-black/50'
+            {isLoadingTiers ? (
+              <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 text-center">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                  Memuat paket kredit…
+                </p>
+              </div>
+            ) : availableTiers.length > 0 ? (
+              <div className="space-y-3">
+                {availableTiers.map((tier) => {
+                  const isSelected = selectedTierId === tier.id
+                  return (
+                    <div key={tier.id} className="relative">
+                      {tier.badge && (
+                        <div className="absolute -top-2.5 left-4 z-10">
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-300 text-neutral-950 border border-black font-black text-[10px] shadow-[1px_1px_0px_#000000] whitespace-nowrap">
+                            {tier.badge}
+                          </span>
+                        </div>
                       )}
-                    >
-                      {/* Left: Radio + Name & Description */}
-                      <div className="flex items-start gap-3 min-w-0">
-                        {/* Radio Checkbox */}
-                        <div
-                          className={cn(
-                            'mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors',
-                            isSelected
-                              ? 'bg-emerald-700 text-white border-2 border-black'
-                              : 'border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950'
-                          )}
-                        >
-                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
 
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-sm font-black text-neutral-900 dark:text-white">
-                              {tier.name}
-                            </span>
-                            <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">
-                              {tier.credits} kredit
-                            </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTierId(tier.id)}
+                        className={cn(
+                          'w-full p-4 rounded-2xl text-left transition-all cursor-pointer flex items-center justify-between gap-3',
+                          isSelected
+                            ? 'bg-[#d1fae5] dark:bg-emerald-950/70 border-2 border-black shadow-[3px_3px_0px_#000000]'
+                            : 'bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800 hover:border-black/50'
+                        )}
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div
+                            className={cn(
+                              'mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors',
+                              isSelected
+                                ? 'bg-emerald-700 text-white border-2 border-black'
+                                : 'border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950'
+                            )}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                           </div>
-                          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 font-medium truncate mt-0.5">
-                            {tier.description}
-                          </p>
-                          <p className="text-[10px] text-neutral-500 font-bold mt-0.5">
-                            {tier.approxDocs}
-                          </p>
-                        </div>
-                      </div>
 
-                      {/* Right: Price */}
-                      <div className="text-right shrink-0">
-                        <div className="text-base font-black text-neutral-900 dark:text-white">
-                          {tier.priceFormatted}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-sm font-black text-neutral-900 dark:text-white">
+                                {tier.name}
+                              </span>
+                              <span className="text-sm font-black text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                                {tier.credits} kredit
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 font-medium truncate mt-0.5">
+                              {tier.description}
+                            </p>
+                            <p className="text-[10px] text-neutral-700 dark:text-neutral-300 font-bold mt-0.5">
+                              {tier.approxDocs}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-[10px] text-neutral-500 font-medium">
-                          {tier.pricePerCredit}
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
 
-            {/* Promo Code Box */}
+                        <div className="text-right shrink-0">
+                          <div className="text-base font-black text-neutral-900 dark:text-white">
+                            {tier.priceFormatted}
+                          </div>
+                          <div className="text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">
+                            {tier.pricePerCredit}
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 p-5 text-center">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                  {tiersError || 'Paket kredit belum tersedia.'}
+                </p>
+                <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                  Coba lagi setelah katalog pembayaran diaktifkan.
+                </p>
+              </div>
+            )}
+
+            {/* Payment contact */}
             <div>
               <label
                 htmlFor="topup-mobile"
@@ -389,81 +361,24 @@ export default function TopupModal({
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:border-emerald-600 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
               />
             </div>
-
-            {/* Promo Code Box */}
-            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300/60 dark:border-emerald-800">
-              {!showPromoInput ? (
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-2 rounded-xl bg-white dark:bg-neutral-900 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 shrink-0">
-                      <Ticket className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-black text-neutral-900 dark:text-white">
-                        Punya kode promo?
-                      </p>
-                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">
-                        Masukkan kodenya untuk dapat kredit bonus
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowPromoInput(true)}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border-2 border-black text-xs font-black text-neutral-900 dark:text-white hover:bg-neutral-50 shadow-[1px_1px_0px_#000000] shrink-0"
-                  >
-                    Gunakan
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-white dark:bg-neutral-900 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 shrink-0">
-                    <Ticket className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    placeholder="Masukkan kode promo..."
-                    className="flex-1 min-w-0 px-3 py-1.5 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white uppercase focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyPromo}
-                    className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 shrink-0"
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPromoInput(false)
-                      setPromoCode('')
-                    }}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 shrink-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Sticky Modal Footer */}
           <div className="p-4 sm:p-5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 shrink-0 space-y-3">
             <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
               <span className="text-neutral-700 dark:text-neutral-300">
-                {selectedTier.name} · {selectedTier.credits} kredit
+                {selectedTier
+                  ? `${selectedTier.name} · ${selectedTier.credits} kredit`
+                  : 'Belum ada paket dipilih'}
               </span>
               <span className="text-base sm:text-lg font-black text-neutral-950 dark:text-white">
-                Rp {selectedTier.price.toLocaleString('id-ID')}
+                {selectedTier ? `Rp${selectedTier.price.toLocaleString('id-ID')}` : '—'}
               </span>
             </div>
 
             <button
               type="button"
-              disabled={isProcessing}
+              disabled={isProcessing || isLoadingTiers || !selectedTier}
               onClick={handleCheckout}
               className="w-full py-3.5 px-4 rounded-2xl bg-[#047857] hover:bg-[#065f46] text-white font-black text-sm sm:text-base border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >

@@ -10,6 +10,10 @@ import Student from '#models/student'
 import User from '#models/user'
 import Lkpd from '#models/lkpd'
 import MediaModule from '#models/media_module'
+import School from '#models/school'
+import Package from '#models/package'
+import PackageSubscription from '#models/package_subscription'
+import FraudCase from '#models/fraud_case'
 
 type CountRow = { $extras: { total?: string | number } }
 
@@ -92,6 +96,10 @@ export class DashboardRepository {
       totalUsers,
       totalGuru,
       totalAdmin,
+      totalSchools,
+      totalActivePackages,
+      totalActiveSubscriptions,
+      totalOpenFraudCases,
     ] = await Promise.all([
       SchoolClass.query().count('* as total'),
       Student.query().count('* as total'),
@@ -107,6 +115,10 @@ export class DashboardRepository {
       User.query().count('* as total'),
       User.query().where('role', 'guru').count('* as total'),
       User.query().where('role', 'admin').count('* as total'),
+      School.query().count('* as total'),
+      Package.query().where('is_active', true).count('* as total'),
+      PackageSubscription.query().where('status', 'active').count('* as total'),
+      FraudCase.query().where('status', 'open').count('* as total'),
     ])
 
     const stats = {
@@ -131,6 +143,10 @@ export class DashboardRepository {
         admin: count(totalAdmin),
         lkpds: stats.lkpds,
         mediaModules: stats.mediaModules,
+        schools: count(totalSchools),
+        activePackages: count(totalActivePackages),
+        activeSubscriptions: count(totalActiveSubscriptions),
+        openFraudCases: count(totalOpenFraudCases),
       },
     }
   }

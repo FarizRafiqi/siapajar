@@ -1,97 +1,128 @@
-# 💰 Analisis Biaya AI & Strategi Penetapan Harga (Pricing) SiapAjar
+# Pricing & Analisis Biaya AI SiapAjar
 
-Dokumen ini memuat formulasi perhitungan biaya operasional kecerdasan buatan (AI Unit Economics) untuk teks dan **generasi gambar/visual**, perbandingan model resmi terkini (Google Gemini, OpenAI GPT-5.6, Google Imagen 4, OpenAI GPT Image 2), perbandingan kompetitif dengan platform `bahanajar.com`, batas ambang keamanan margin (safety margin), serta struktur paket langganan dan top-up kredit di **SiapAjar**.
+Dokumen ini adalah acuan MVP untuk top-up kredit satu kali. Angka biaya AI
+provider berubah, jadi angka pada bagian simulasi adalah asumsi pengendalian
+risiko, bukan janji harga provider. Harga katalog yang menjadi source of truth
+berada di `database/seeders/package_seeder.ts`; nominal yang ditagihkan ke
+pelanggan dibaca ulang dari database sebelum invoice Mayar dibuat.
 
----
+## Katalog yang dijual
 
-## 1. Unit Economics & Karakteristik Token AI
+Landing page menampilkan empat paket berbayar. Paket gratis tidak dimasukkan ke
+grid harga agar pilihan utama tetap ringkas; benefit gratis diaktifkan dari alur
+verifikasi/anti-abuse, bukan dari checkout.
 
-Setiap dokumen kurikulum (Modul Ajar / RPPM, LKPD, Bank Soal, Rapor Narasi) yang di-generate melalui SiapAjar diproses melalui API model bahasa besar (LLM), dan untuk dokumen bergambar (LKPD Bergambar, Bank Soal Anak PAUD, Media Ajar Slide) diproses melalui model generasi visual.
+| Paket              |     Harga | Kredit | Harga/kredit | Posisi                  |
+| ------------------ | --------: | -----: | -----------: | ----------------------- |
+| Paket Pemula       |  Rp20.000 |     15 |      Rp1.333 | Coba beberapa dokumen   |
+| Paket Sahabat Guru |  Rp45.000 |     45 |      Rp1.000 | Persiapan satu semester |
+| Paket Guru Teladan |  Rp85.000 |    100 |        Rp850 | Guru produktif          |
+| Paket Sekolah      | Rp249.000 |    350 |        Rp711 | Multi-guru/institusi    |
 
-### A. Komposisi Token Teks per Dokumen Rata-Rata
-- **Input Tokens**: ~1.500 token (System instructions, parameter kurikulum, Capaian Pembelajaran, TP/ATP referensi).
-- **Output Tokens**: ~2.000 token (Hasil struktur Modul Ajar / RPPM lengkap berformat JSON/Markdown).
-- **Total per Generate**: ~3.500 token.
-- **Asumsi Kurs**: USD 1 = Rp 16.000.
+Paket gratis tetap ada untuk onboarding (10 kredit setelah verifikasi dan
+pemeriksaan keamanan). Semua biaya kredit adalah bilangan bulat karena ledger
+database bertipe integer. Jangan menjual 0,5 atau 1,5 kredit sebelum seluruh
+ledger, refund, UI, dan rekonsiliasi mendukung pecahan secara atomik.
 
-### B. Komposisi Biaya Gambar / Visual per Dokumen
-- Dokumen non-gambar (Modul Ajar standar, Prota, Promes, Rapor): **0 gambar** (hanya biaya LLM teks).
-- Dokumen bergambar (LKPD PAUD, Soal Bergambar): rata-rata **1 s.d. 3 ilustrasi per dokumen**.
-- **Tarif Model Generasi Gambar Resmi (Agustus 2026)**:
-  - **Google Imagen 4 Fast**: ~$0.02 / gambar (**≈ Rp 320 / gambar**)
-  - **OpenAI GPT Image 2 (Standard Tier)**: ~$0.015 - $0.025 / gambar (**≈ Rp 240 - Rp 400 / gambar**)
-  - **Vector / SVG Line-Art Generation (via LLM Token)**: **≈ Rp 35 - Rp 50 / asset visual**
+## Biaya per operasi
 
----
+Biaya produk yang ditampilkan ke guru harus mengikuti matriks ini, bukan asumsi
+lama yang mencampur kredit dengan kuota ekspor:
 
-## 2. Tabel Biaya AI Provider Terkini (Agustus 2026)
+| Operasi                             | Debit kredit | Kuota/biaya lain                                                  |
+| ----------------------------------- | -----------: | ----------------------------------------------------------------- |
+| Modul Ajar, RPPM/RPPH, Prota/Promes |            1 | —                                                                 |
+| LKPD atau Bank Soal teks            |            1 | —                                                                 |
+| Media Ajar                          |            1 | Kuota visual jika memakai gambar                                  |
+| LKPD/Soal bergambar                 |            1 | Kuota visual per asset                                            |
+| Draft AI Asesmen PAUD               |            1 | —                                                                 |
+| Kokurikuler/P5                      |            2 | —                                                                 |
+| PDF/DOCX                            |            0 | Entitlement export; reserve harus di-commit setelah render sukses |
 
-### 📝 Model Teks / LLM (Per 1 Juta Token)
+Rumus pengendalian margin:
 
-| Provider | Model | Input ($/1M) | Output ($/1M) | Input (Rp/1M) | Output (Rp/1M) | Estimasi Biaya/Dokumen | Karakteristik & Peran |
-|---|---|---|---|---|---|---|---|
-| **Google Gemini** ⭐ | **Gemini 3.7 Flash** | $0.75 | $3.75 | Rp 12.000 | Rp 60.000 | **Rp 138** | **Primary / Default**: Kualitas PAUD & SD optimal |
-| Google Gemini | Gemini 3.6 Flash | $0.75 | $3.75 | Rp 12.000 | Rp 60.000 | **Rp 138** | High-speed Flash model |
-| Google Gemini | Gemini 3.5 Flash | $1.50 | $9.00 | Rp 24.000 | Rp 144.000 | **Rp 260** | General Available Stable Tier |
-| **OpenAI** 🟢 | **GPT-5.6 Luna** | $0.20 | $1.20 | Rp 3.200 | Rp 19.200 | **Rp 43** | **Budget Saver**: Super hemat, volume tinggi |
-| OpenAI | **GPT-5.6 Terra** | $2.00 | $12.00 | Rp 32.000 | Rp 192.000 | **Rp 432** | Balanced tier untuk task kompleks |
-| OpenAI | **GPT-5.6 Sol** | $4.00 | $20.00 | Rp 64.000 | Rp 320.000 | **Rp 736** | Flagship deep reasoning & sains |
+```text
+COGS = biaya AI sukses + biaya retry/gagal + fee Mayar
+       + storage/egress + support + cadangan refund/fraud
+gross profit = harga - COGS
+margin = gross profit / harga
+```
 
-### 🎨 Model Generasi Gambar / Ilustrasi (Per Gambar)
+Ukur biaya berdasarkan `provider`, `model`, `operation`, token input/output,
+`cached_tokens`/cache-read, cache-write, latency, dan jumlah retry. Jangan
+menganggap seluruh kredit pasti menjadi biaya maksimum: cache result aplikasi,
+prompt cache provider, dan penggunaan SVG internal dapat menurunkan COGS.
 
-| Provider | Model | Harga ($ / Gambar) | Harga (Rp / Gambar) | Penggunaan di SiapAjar |
-|---|---|---|---|---|
-| **Google Vertex** | **Imagen 4 Fast** ⭐ | $0.020 | **Rp 320** | Ilustrasi soal anak, gambar tematik LKPD |
-| **OpenAI** | **GPT Image 2** | $0.020 | **Rp 320** | Alternatif gambar realistis & detail |
-| **LLM Inline SVG** | **Gemini / GPT-5.6** | ~$0.002 | **Rp 35** | Icon visual, garis bentuk, tracing angka |
+## Simulasi konservatif untuk keputusan harga
 
----
+Gunakan simulasi berikut sebagai guardrail internal, bukan copy marketing.
+Contoh asumsi bauran normal: AI rata-rata Rp180/kredit, fee pembayaran 4%,
+cadangan retry/refund 10%, dan alokasi infra/support 5% dari revenue.
 
-## 3. Rumus & Formulasi Perhitungan Biaya
+| Paket        | Pendapatan | AI (seluruh kredit) | Fee+cadangan+ops | Gross profit simulasi | Margin |
+| ------------ | ---------: | ------------------: | ---------------: | --------------------: | -----: |
+| Pemula       |   Rp20.000 |             Rp2.700 |          Rp3.800 |              Rp13.500 |  67,5% |
+| Sahabat Guru |   Rp45.000 |             Rp8.100 |          Rp8.550 |              Rp28.350 |  63,0% |
+| Guru Teladan |   Rp85.000 |            Rp18.000 |         Rp16.150 |              Rp50.850 |  59,8% |
+| Sekolah      |  Rp249.000 |            Rp63.000 |         Rp47.310 |             Rp138.690 |  55,7% |
 
-### A. Rumus Biaya Modal Dokumen Lengkap (COGS Teks + Gambar)
-$$\text{COGS}_{\text{dokumen}} = (\text{Input Token} \times \text{Tarif Input}) + (\text{Output Token} \times \text{Tarif Output}) + (N_{\text{gambar}} \times \text{Tarif Gambar}) + \text{Biaya Server}$$
+Angka ini turun bila semua request memakai model gambar mahal atau retry tinggi.
+Untuk menjaga margin moderat 55–70%:
 
-#### 1. Dokumen Teks Murni (Modul Ajar / RPPM / Rapor) dengan Gemini 3.7 Flash:
-$$\text{COGS} = \text{Rp } 18 + \text{Rp } 120 + \text{Rp } 0 + \text{Rp } 10 = \mathbf{\text{Rp } 148}$$
-*(Pengurangan kredit: 1 - 2 kredit = nilai jual Rp 1.422 - Rp 2.666 → **Margin 89% - 94%**)*
+1. jadikan SVG/icon library sebagai default dan gambar model sebagai pilihan;
+2. batasi kuota gambar per paket dan tampilkan konsekuensinya sebelum generate;
+3. batasi output token, timeout, dan retry maksimal satu kali;
+4. pasang budget cap provider dan hentikan/ubah routing ketika biaya per dokumen
+   melewati ambang;
+5. audit p50/p95 biaya per operasi setiap bulan, termasuk fee Mayar dan refund.
 
-#### 2. Dokumen Bergambar (LKPD / Soal PAUD dengan 2 Ilustrasi Imagen 4 Fast):
-$$\text{COGS} = \text{Rp } 18 + \text{Rp } 120 + (2 \times \text{Rp } 320) + \text{Rp } 10 = \text{Rp } 148 + \text{Rp } 640 = \mathbf{\text{Rp } 788}$$
-*(Pengurangan kredit: 1.5 - 2 kredit = nilai jual Rp 1.422 - Rp 2.666 → **Margin 45% - 70%**, tetap sangat aman & untung).*
+Harga/token dan model berubah. Verifikasi angka langsung dari [Gemini API
+pricing](https://ai.google.dev/gemini-api/docs/pricing) atau [OpenAI API
+pricing](https://openai.com/api/pricing/) ketika membuat forecast baru. Paket
+Google AI konsumen bukan saldo API server; billing API harus memakai project dan
+budget cap operasional yang terpisah.
 
----
+## Strategi model murah
 
-## 4. Benchmark Pasar (vs Bahanajar.com)
+- **Default teks:** model Flash/Lite dengan harga rendah dan JSON schema ketat
+  (misalnya lini Gemini Flash-Lite yang tersedia di project API saat launch).
+- **Fallback:** model Flash yang lebih mampu hanya ketika validasi struktur atau
+  kualitas minimum gagal.
+- **Visual:** registry Lucide/SVG composer terlebih dahulu; image model hanya
+  saat guru memilih ilustrasi. Simpan asset berdasarkan hash prompt, style,
+  ukuran, dan versi renderer.
+- **9router:** `operation` menyatakan pekerjaan bisnis, misalnya
+  `teaching_module.generate`. `routingCombo` hanya boleh diisi ketika provider
+  yang dipilih adalah 9router dan admin memang memilih bundle model. Provider
+  lain tidak perlu menerima payload tersebut.
 
-| Indikator | Bahanajar.com | SiapAjar (Paket Baru) | Analisis Keunggulan SiapAjar |
-|---|---|---|---|
-| **Harga Rata-rata per Kredit** | Rp 1.500 – Rp 2.000 | **Rp 711 – Rp 1.333** | Lebih terjangkau **40% – 52%** |
-| **Masa Aktif Kredit** | Berbatas waktu / hangus bulanan | **Kredit Selamanya (Lifetime)** | Guru merasa lebih aman & fleksibel |
-| **Format Ekspor** | Terbatas | **Word (.docx) & PDF Siap Cetak** | Edit instan tanpa ribet copy-paste |
-| **Kesesuaian Regulasi** | Template standar | **PAUD/TK, RA Kemenag, & SD Kurikulum Merdeka** | Format resmi supervisi kepala sekolah & akreditasi |
+Pisahkan dua cache. Result cache SiapAjar mencegah request identik memanggil
+provider lagi dan tetap scope per user. Prompt cache provider hanya menghemat
+input token ketika prefix stabil cocok; ia dapat di-evict dan tidak boleh
+dijanjikan 100% hit. Letakkan instruksi/schema/kurikulum stabil di prefix dan
+data kelas/tanggal di suffix; jangan menambahkan nonce atau timestamp ke prefix.
+Referensi: [OpenAI prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching)
+dan [Gemini context caching](https://ai.google.dev/gemini-api/docs/caching).
 
----
+## Payment dan rekonsiliasi
 
-## 5. Simulasi Keuntungan Bersih per Paket (Bauran Teks & Gambar)
+Mayar harus menerima nominal dan paket yang sudah diverifikasi dari database.
+Webhook hanya pemicu: server memeriksa invoice remote, status paid, nominal
+persis, gateway, lalu settlement dalam transaksi dengan unique/idempotency
+constraint. Gunakan endpoint `POST /api/webhooks/mayar/<secret>` melalui HTTPS,
+set secret khusus di staging/production, dan uji alur invoice → webhook →
+remote verify → ledger sebelum menerima uang nyata. Rujukan payload ada di
+[Mayar create invoice](https://docs.mayar.id/api-reference/invoice/create) dan
+[Mayar webhook](https://docs.mayar.id/integration/webhook).
 
-Dengan rasio penggunaan normal pengguna (80% dokumen teks + 20% dokumen bergambar, rata-rata COGS campuran = **Rp 276 / kredit**):
+## Checklist operasi bulanan
 
-| Nama Paket | Harga Jual | Total Kredit | Harga / Kredit | Estimasi Biaya AI Total (Campuran) | Estimasi Keuntungan Bersih (Gross Profit) | Margin Keuntungan Rata-rata |
-|---|---|---|---|---|---|---|
-| **Paket Pemula** | **Rp 20.000** | 15 | Rp 1.333 | Rp 4.140 | **Rp 15.860** | **79.3%** |
-| **Paket Sahabat Guru** *(Terlaris)* | **Rp 45.000** | 45 | Rp 1.000 | Rp 12.420 | **Rp 32.580** | **72.4%** |
-| **Paket Guru Teladan** | **Rp 85.000** | 100 | Rp 850 | Rp 27.600 | **Rp 57.400** | **67.5%** |
-| **Paket Sekolah / Institusi** | **Rp 249.000** | 350 | Rp 711 | Rp 96.600 | **Rp 152.400** | **61.2%** |
-
-*(Jika pengguna hanya membuat modul ajar teks biasa, margin melonjak menjadi **79.2% – 89.7%**).*
-
----
-
-## 6. Kesimpulan & Kebijakan Kuota Gambar
-
-1. **Skema Konsumsi Kredit Terpadu**:
-   - Modul Ajar / RPPM (Teks): **1 - 2 Kredit**
-   - Bank Soal / LKPD Bergambar: **1.5 - 2 Kredit**
-   - Request Generate Gambar Tunggal / Media Slide: **1 Kredit per gambar**
-2. **Margin Aman (Zero Boncos)**: Bahkan jika pengguna menggunakan 100% kuota kreditnya untuk generate gambar via Imagen 4 Fast (~Rp 320/gambar), harga jual terendah per kredit di SiapAjar adalah **Rp 711/kredit**, sehingga margin kotor terendah tetap di atas **55%**.
+- Rekonsiliasi invoice Mayar paid dengan ledger top-up.
+- Tinjau duplicate webhook, negative-balance attempt, refund, dan chargeback.
+- Bandingkan biaya AI provider dengan `cached_tokens`/cache-write aktual.
+- Cocokkan job yang timeout di HTTP dengan status worker; jangan menganggap
+  timeout berarti provider gagal sebelum refund dikreditkan.
+- Pastikan paket aktif, harga, dan kredit di landing, modal top-up, dan backend
+  berasal dari katalog yang sama.
+- Uji restore backup dan export PDF/DOCX; quota export tidak boleh hilang saat
+  render gagal (reservation dilepas ketika render gagal).

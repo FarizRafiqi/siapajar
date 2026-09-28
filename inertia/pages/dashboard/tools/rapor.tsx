@@ -17,37 +17,42 @@ import {
 interface SchoolClass {
   id: number
   name: string
-  academicYear?: string
+  academicYear?: { name: string } | string
+}
+
+interface Semester {
+  id: number
+  name: string
+  academicYear?: { name: string }
 }
 
 interface RaporProps {
-  isTk: boolean
+  isTk?: boolean
   classes: SchoolClass[]
+  semesters?: Semester[]
+  educationLevel?: string | null
+  institutionType?: string | null
 }
 
-export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps>) {
+export default function RaporExpress({
+  isTk = false,
+  classes = [],
+  semesters = [],
+}: Readonly<RaporProps>) {
   const [classId, setClassId] = useState(classes[0] ? String(classes[0].id) : '')
-  const [semester, setSemester] = useState<'1' | '2'>('1')
+  const [semesterId, setSemesterId] = useState(semesters[0] ? String(semesters[0].id) : '')
   const [isGenerating, setIsGenerating] = useState(false)
 
   const handleGenerateAll = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!classId) return
+    if (!classId || !semesterId) return
 
     setIsGenerating(true)
-    if (isTk) {
-      router.post(
-        `/report-cards/generate-all`,
-        { classId: Number(classId), semester: Number(semester) },
-        { onFinish: () => setIsGenerating(false) }
-      )
-    } else {
-      router.post(
-        `/report-cards/generate-all`,
-        { classId: Number(classId), semester: Number(semester) },
-        { onFinish: () => setIsGenerating(false) }
-      )
-    }
+    router.post(
+      `/rapor/generate`,
+      { classId: Number(classId), semesterId: Number(semesterId) },
+      { onFinish: () => setIsGenerating(false) }
+    )
   }
 
   return (
@@ -126,12 +131,16 @@ export default function RaporExpress({ isTk, classes = [] }: Readonly<RaporProps
                   Semester Rapor *
                 </label>
                 <select
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value as '1' | '2')}
+                  value={semesterId}
+                  onChange={(e) => setSemesterId(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="1">Semester 1 (Ganjil)</option>
-                  <option value="2">Semester 2 (Genap / Kenaikan Kelas)</option>
+                  {semesters.length === 0 && <option value="">Belum ada semester aktif</option>}
+                  {semesters.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} {item.academicYear?.name ? `(${item.academicYear.name})` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

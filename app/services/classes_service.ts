@@ -1,8 +1,8 @@
-import { DateTime } from 'luxon'
 import AcademicYear from '#models/academic_year'
 import SchoolClass from '#models/school_class'
 import Student from '#models/student'
-import User from '#models/user'
+import type User from '#models/user'
+import { apiTokenService } from '#services/api_token_service'
 import { assertEntitled, recordUsage } from '#services/entitlement_service'
 import { parseStudentImportFile, type ParsedStudentRow } from '#services/student_import_service'
 import { classRepository } from '#repositories/class_repository'
@@ -27,12 +27,7 @@ export class ClassesService {
 
   async resolveUser(authUser: User | null | undefined, authorization?: string) {
     if (authorization?.startsWith('Bearer ')) {
-      const token = authorization.substring(7)
-      try {
-        const decoded = Buffer.from(token, 'base64').toString('utf-8')
-        const [userId] = decoded.split(':')
-        if (userId) return User.find(userId)
-      } catch {}
+      return apiTokenService.verify(authorization.substring(7).trim())
     }
 
     return authUser || null
@@ -108,8 +103,7 @@ export class ClassesService {
       classId: String(student.classId),
       className: classDisplayName,
       assessmentCount: assessmentCounts[student.id] || 0,
-      avatarUrl:
-        'https://images.unsplash.com/photo-1595454223600-91fbdd77e268?w=150&auto=format&fit=crop&q=80',
+      avatarUrl: null,
     }))
   }
 
@@ -160,15 +154,10 @@ export class ClassesService {
     }
   }
 
-  quickSubmitAttendance(classId: unknown, date: unknown, items: any) {
-    const recordedCount = items?.length || 0
+  quickSubmitAttendance() {
     return {
-      message: `Presensi ${recordedCount} siswa berhasil disimpan`,
-      data: {
-        classId,
-        date: date || DateTime.now().toISODate(),
-        recordedCount,
-      },
+      status: 'not_implemented' as const,
+      message: 'Presensi belum tersedia pada versi MVP ini.',
     }
   }
 

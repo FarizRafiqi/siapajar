@@ -90,7 +90,11 @@ export class ReportCardService {
     const schoolClass = await this.repository.findOwnedClass(classId, userId, true)
     if (!schoolClass) return null
 
-    const semester = await this.repository.findSemester(semesterId, true)
+    const semester = await this.repository.findSemesterForAcademicYear(
+      semesterId,
+      schoolClass.academicYearId,
+      true
+    )
     if (!semester) return null
 
     return { schoolClass, semester }
@@ -201,9 +205,9 @@ export class ReportCardService {
     studentId: number,
     payload: { element?: unknown; content?: unknown }
   ): Promise<SaveNarrativeResult> {
-    const schoolClass = await this.repository.findOwnedClass(classId, userId)
+    const context = await this.getClassContext(classId, semesterId, userId)
     const student = await this.repository.findStudentInClass(studentId, classId)
-    if (!schoolClass || !student) return 'context_not_found'
+    if (!context || !student) return 'context_not_found'
 
     if (
       typeof payload.element !== 'string' ||
@@ -234,8 +238,8 @@ export class ReportCardService {
     classId: number,
     semesterId: number
   ): Promise<GenerateNarrativesResult> {
-    const schoolClass = await this.repository.findOwnedClass(classId, userId)
-    if (!schoolClass) return { status: 'context_not_found' }
+    const context = await this.getClassContext(classId, semesterId, userId)
+    if (!context) return { status: 'context_not_found' }
 
     const { jobId } = await GenerateNarratives.dispatch({
       userId,

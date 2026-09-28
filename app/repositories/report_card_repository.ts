@@ -35,6 +35,17 @@ export class ReportCardRepository {
     return query.first()
   }
 
+  async findSemesterForAcademicYear(
+    semesterId: number,
+    academicYearId: number,
+    withAcademicYear = false
+  ) {
+    const query = Semester.query().where('id', semesterId).where('academic_year_id', academicYearId)
+    if (withAcademicYear) query.preload('academicYear')
+
+    return query.first()
+  }
+
   async getNumericReportData(classId: number, semesterId: number, userId: number) {
     const [students, rows] = await Promise.all([
       Student.query().where('class_id', classId).orderBy('full_name'),

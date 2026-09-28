@@ -88,10 +88,23 @@ export default class UserSeeder extends BaseSeeder {
   }
 
   async run() {
+    // Demo credentials are useful for local smoke tests, but running this
+    // seeder from a production container must never create a predictable
+    // account. Production deployments should create their first admin via a
+    // controlled release task instead.
+    if (process.env.NODE_ENV === 'production' && process.env.SEED_DEMO_USERS !== 'true') {
+      return
+    }
+
     const freePkg = await Package.findByOrFail('name', 'free')
     const sekolahPkg = await Package.findByOrFail('name', 'sekolah')
     const testingPkg = await Package.findByOrFail('name', 'internal_testing_unlimited')
-    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || ['pass', 'word', '123'].join('')
+    const defaultPassword =
+      process.env.DEFAULT_USER_PASSWORD ||
+      (process.env.NODE_ENV === 'production' ? '' : 'password123')
+    if (!defaultPassword) {
+      throw new Error('DEFAULT_USER_PASSWORD wajib diisi saat men-seed akun demo.')
+    }
 
     await this.seedDefaultUsers(freePkg.id, sekolahPkg.id, testingPkg.id, defaultPassword)
     await this.seedUserSubscriptions()

@@ -28,6 +28,9 @@ import {
   Camera,
   MessageCircle,
   Music2,
+  QrCode,
+  WalletCards,
+  ShieldCheck,
 } from 'lucide-react'
 import { type ReactNode, useState, useEffect, useRef } from 'react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
@@ -127,6 +130,10 @@ const expressTools = [
   },
 ]
 
+// Keep the landing page scannable; the full tool catalog remains available
+// from the authenticated dashboard.
+const featuredTools = expressTools.slice(0, 6)
+
 const faqs = [
   {
     q: 'Apakah dokumen yang dihasilkan sesuai dengan Kurikulum Merdeka?',
@@ -134,7 +141,7 @@ const faqs = [
   },
   {
     q: 'Apakah guru baru mendapatkan kredit gratis?',
-    a: 'Tentu saja. Setiap pengguna yang baru mendaftar langsung mendapatkan bonus kredit gratis untuk mencoba seluruh generator tanpa syarat kartu kredit.',
+    a: 'Tentu saja. Setelah email terverifikasi dan pemeriksaan keamanan singkat, guru baru dapat mengaktifkan 10 kredit gratis untuk mencoba generator tanpa syarat kartu kredit.',
   },
   {
     q: 'Bagaimana cara menggunakan dokumen yang sudah digenerate?',
@@ -164,7 +171,7 @@ function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b-2 border-black shadow-[0_4px_0px_#000000]'
+          ? 'bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b-2 border-black'
           : 'bg-transparent'
       }`}
     >
@@ -253,7 +260,7 @@ function Navbar() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden bg-white dark:bg-neutral-900 border-b-2 border-black shadow-[0_4px_0px_#000000] px-4 py-6 space-y-3"
+            className="md:hidden bg-white dark:bg-neutral-900 border-b-2 border-black px-4 py-6 space-y-3"
           >
             <a
               href="#tools"
@@ -306,7 +313,7 @@ function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="btn-kawaii-primary text-center text-xs py-3"
                   >
-                    Daftar Gratis (3 Kredit)
+                    Daftar Gratis (10 Kredit)
                   </Link>
                 </>
               )}
@@ -495,6 +502,8 @@ function InteractiveWindowMockup() {
 
   // Auto-loop typewriter preview every 7 seconds
   useEffect(() => {
+    if (reduceMotion) return
+
     const timer = setInterval(() => {
       setActiveTool((prev) => {
         const nextIndex = (MOCKUP_TOOLS.findIndex((t) => t.key === prev) + 1) % MOCKUP_TOOLS.length
@@ -503,7 +512,7 @@ function InteractiveWindowMockup() {
     }, 7000)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [reduceMotion])
 
   const toolPathMap: Record<string, string> = {
     modul: 'modul-ajar',
@@ -517,16 +526,22 @@ function InteractiveWindowMockup() {
     <div className="relative mx-auto w-full max-w-3xl">
       {/* Decorative floating badges */}
       <motion.div
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
+        transition={
+          reduceMotion ? { duration: 0 } : { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+        }
         className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
       >
         <Zap className="w-4 h-4 text-amber-700" /> Selesai dalam 45 Detik!
       </motion.div>
 
       <motion.div
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        animate={reduceMotion ? undefined : { y: [0, 6, 0] }}
+        transition={
+          reduceMotion
+            ? { duration: 0 }
+            : { duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }
+        }
         className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
       >
         <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Standar BSKAP & Kemenag
@@ -588,7 +603,7 @@ function InteractiveWindowMockup() {
 
             {/* Bottom Credits in Sidebar */}
             <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center">
-              <span className="text-[10px] font-black text-amber-300 block">3 Kredit Aktif</span>
+              <span className="text-[10px] font-black text-amber-300 block">10 Kredit Aktif</span>
               <span className="text-[9px] text-emerald-200 font-medium">Siap Digunakan</span>
             </div>
           </div>
@@ -629,7 +644,6 @@ function InteractiveWindowMockup() {
                         ? { duration: 0 }
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
-                    aria-hidden={!isPreviewReady}
                     className="relative"
                   >
                     <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
@@ -697,7 +711,6 @@ function InteractiveWindowMockup() {
                         ? { duration: 0 }
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
-                    aria-hidden={!isPreviewReady}
                     className="relative"
                   >
                     <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
@@ -748,7 +761,6 @@ function InteractiveWindowMockup() {
                         ? { duration: 0 }
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
-                    aria-hidden={!isPreviewReady}
                     className="relative"
                   >
                     <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
@@ -802,7 +814,6 @@ function InteractiveWindowMockup() {
                         ? { duration: 0 }
                         : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
                     }
-                    aria-hidden={!isPreviewReady}
                     className="relative"
                   >
                     <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
@@ -863,6 +874,13 @@ interface HomeProps {
 }
 
 export default function Home({ packages }: HomeProps) {
+  // Keep the pricing grid focused on the four paid offers. The free plan is
+  // still reachable through the signup CTA, but it does not compete with the
+  // paid cards visually.
+  const paidPackages = packages.filter((pkg) => pkg.priceMonthly > 0)
+  const { user } = usePage().props as any
+  const toolsCtaHref = user ? '/dashboard' : '/signup'
+
   return (
     <div className="min-h-screen bg-[#fafaf9] dark:bg-neutral-950 text-neutral-900 dark:text-white antialiased font-sans selection:bg-emerald-300 selection:text-neutral-950">
       <Head title="SiapAjar — Generator Modul Ajar & Administrasi Guru AI Terlengkap">
@@ -886,8 +904,17 @@ export default function Home({ packages }: HomeProps) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
             >
               <Zap className="w-4 h-4 text-amber-700 shrink-0" />
-              <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
+              <span>Platform Administrasi Guru AI • Bonus 10 Kredit</span>
             </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="text-sm sm:text-base font-bold text-emerald-800 dark:text-emerald-300"
+            >
+              Administrasi PAUD/RA siap ditinjau dan dicetak
+            </motion.p>
 
             {/* Main Hero Headline */}
             <motion.h1
@@ -941,7 +968,7 @@ export default function Home({ packages }: HomeProps) {
               className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 text-xs font-bold text-neutral-600 dark:text-neutral-400 pt-2"
             >
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Gratis 3 Kredit
+                <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Gratis 10 Kredit
                 untuk Guru Baru
               </span>
               <span className="flex items-center gap-1.5">
@@ -984,7 +1011,7 @@ export default function Home({ packages }: HomeProps) {
           </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {expressTools.map((tool, index) => {
+            {featuredTools.map((tool, index) => {
               const Icon = tool.icon
               return (
                 <ScrollReveal key={tool.title} delay={index * 0.06} className="h-full">
@@ -1034,6 +1061,16 @@ export default function Home({ packages }: HomeProps) {
               )
             })}
           </div>
+
+          <div className="flex flex-col items-center justify-center gap-2 pt-2 text-center">
+            <Link
+              href={toolsCtaHref}
+              className="btn-kawaii-secondary inline-flex items-center gap-2 px-5 py-3 text-sm"
+            >
+              <span>Lihat Semua Alat</span>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -1049,175 +1086,27 @@ export default function Home({ packages }: HomeProps) {
               Pilihan Paket Tanpa Komitmen Ribet
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
-              Pilih paket sesuai kebutuhan mengajar Anda. Mulai dari gratis hingga akses lengkap
-              sekolah.
+              Pilih paket sesuai kebutuhan mengajar Anda. Mulai dari paket pemula hingga akses
+              lengkap sekolah.
             </p>
           </ScrollReveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {packages && packages.length > 0
-              ? packages.map((pkg, index) => {
-                  const { price, period } = formatPackagePrice(pkg)
-                  const isPopular = pkg.isHighlighted
-                  return (
-                    <ScrollReveal key={pkg.id} delay={index * 0.08} className="h-full">
-                      <div
-                        className={cn(
-                          'h-full rounded-3xl border-2 border-black p-6 sm:p-7 flex flex-col justify-between relative transition-all',
-                          isPopular
-                            ? 'bg-[#047857] text-white shadow-[6px_6px_0px_#000000]'
-                            : 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-[4px_4px_0px_#000000]'
-                        )}
-                      >
-                        {isPopular && (
-                          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
-                            Paling Populer
-                          </div>
-                        )}
-
-                        <div className="space-y-4">
-                          <div>
-                            <h3
-                              className={cn(
-                                'font-black text-xl',
-                                isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
-                              )}
-                            >
-                              {pkg.displayName}
-                            </h3>
-                            {pkg.description && (
-                              <p
-                                className={cn(
-                                  'text-xs mt-1 font-medium',
-                                  isPopular
-                                    ? 'text-emerald-200/90'
-                                    : 'text-neutral-500 dark:text-neutral-400'
-                                )}
-                              >
-                                {pkg.description}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="py-2">
-                            <span
-                              className={cn(
-                                'text-3.5xl font-black',
-                                isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
-                              )}
-                            >
-                              {price}
-                            </span>
-                            {period && (
-                              <span
-                                className={cn(
-                                  'text-xs font-bold ml-1',
-                                  isPopular ? 'text-emerald-200' : 'text-neutral-500'
-                                )}
-                              >
-                                {period}
-                              </span>
-                            )}
-                          </div>
-
-                          <div
-                            className={cn(
-                              'space-y-2.5 pt-3 border-t-2 text-xs font-medium',
-                              isPopular
-                                ? 'border-emerald-700/60 text-emerald-100'
-                                : 'border-neutral-100 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
-                            )}
-                          >
-                            {pkg.features.map((feat) => (
-                              <div key={feat} className="flex items-center gap-2">
-                                <CheckCircle2
-                                  className={cn(
-                                    'w-4 h-4 shrink-0',
-                                    isPopular ? 'text-amber-300' : 'text-emerald-600'
-                                  )}
-                                />
-                                <span>{feat}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="pt-6">
-                          <Link
-                            href="/signup"
-                            className={cn(
-                              'w-full text-center text-xs font-black py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
-                              isPopular
-                                ? 'bg-amber-300 hover:bg-amber-400 text-neutral-950'
-                                : 'bg-white hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white'
-                            )}
-                          >
-                            Pilih Paket Ini
-                          </Link>
-                        </div>
-                      </div>
-                    </ScrollReveal>
-                  )
-                })
-              : // Default Pricing Cards Fallback
-                [
-                  {
-                    title: 'Starter Gratis',
-                    price: 'Rp0',
-                    desc: 'Untuk mencoba seluruh generator',
-                    credits: '3 Kredit Gratis',
-                    features: ['Akses 8 Generator AI', 'Export Teks & Print', 'Tanpa Kartu Kredit'],
-                    highlight: false,
-                  },
-                  {
-                    title: 'Paket Hemat Guru',
-                    price: 'Rp19.000',
-                    desc: 'Untuk kebutuhan 1-2 minggu mengajar',
-                    credits: '10 Kredit AI',
-                    features: [
-                      'Akses Semua Fitur',
-                      'Modul Ajar & Soal HOTS',
-                      'Export Word & PDF',
-                      'Masa Aktif Selamanya',
-                    ],
-                    highlight: false,
-                  },
-                  {
-                    title: 'Paket Semesteran',
-                    price: 'Rp49.000',
-                    desc: 'Pilihan favorit guru se-Indonesia',
-                    credits: '30 Kredit AI',
-                    features: [
-                      'Akses Semua Fitur',
-                      'Generator Narasi Rapor',
-                      'Katrol Nilai Smart',
-                      'Prioritas Dukungan WA',
-                    ],
-                    highlight: true,
-                  },
-                  {
-                    title: 'Paket Sekolah',
-                    price: 'Rp99.000',
-                    desc: 'Untuk guru aktif & administrasi penuh',
-                    credits: '75 Kredit AI',
-                    features: [
-                      'Akses Semua Fitur',
-                      'Kredit Bisa Dibagi',
-                      'Bebas Generate Kapan Saja',
-                      'Prioritas Kecepatan Server',
-                    ],
-                    highlight: false,
-                  },
-                ].map((tier, index) => (
-                  <ScrollReveal key={tier.title} delay={index * 0.08} className="h-full">
+            {paidPackages.length > 0 ? (
+              paidPackages.map((pkg, index) => {
+                const { price, period } = formatPackagePrice(pkg)
+                const isPopular = pkg.isHighlighted
+                return (
+                  <ScrollReveal key={pkg.id} delay={index * 0.08} className="h-full">
                     <div
-                      className={`h-full bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 flex flex-col justify-between relative transition-all ${
-                        tier.highlight
-                          ? 'shadow-[6px_6px_0px_#000000] ring-4 ring-emerald-300 dark:ring-emerald-500'
-                          : 'shadow-[4px_4px_0px_#000000]'
-                      }`}
+                      className={cn(
+                        'h-full rounded-3xl border-2 border-black p-6 sm:p-7 flex flex-col justify-between relative transition-all',
+                        isPopular
+                          ? 'bg-[#047857] text-white shadow-[6px_6px_0px_#000000]'
+                          : 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-[4px_4px_0px_#000000]'
+                      )}
                     >
-                      {tier.highlight && (
+                      {isPopular && (
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
                           Paling Populer
                         </div>
@@ -1225,27 +1114,65 @@ export default function Home({ packages }: HomeProps) {
 
                       <div className="space-y-4">
                         <div>
-                          <h3 className="font-black text-lg text-neutral-950 dark:text-white">
-                            {tier.title}
+                          <h3
+                            className={cn(
+                              'font-black text-xl',
+                              isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                            )}
+                          >
+                            {pkg.displayName}
                           </h3>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-medium">
-                            {tier.desc}
-                          </p>
+                          {pkg.description && (
+                            <p
+                              className={cn(
+                                'text-xs mt-1 font-medium',
+                                isPopular
+                                  ? 'text-emerald-200/90'
+                                  : 'text-neutral-500 dark:text-neutral-400'
+                              )}
+                            >
+                              {pkg.description}
+                            </p>
+                          )}
                         </div>
 
                         <div className="py-2">
-                          <span className="text-3xl font-black text-neutral-950 dark:text-white">
-                            {tier.price}
+                          <span
+                            className={cn(
+                              'text-3.5xl font-black',
+                              isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
+                            )}
+                          >
+                            {price}
                           </span>
+                          {period && (
+                            <span
+                              className={cn(
+                                'text-xs font-bold ml-1',
+                                isPopular ? 'text-emerald-200' : 'text-neutral-500'
+                              )}
+                            >
+                              {period}
+                            </span>
+                          )}
                         </div>
 
-                        <div className="space-y-2 pt-2 border-t-2 border-neutral-100 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                          <div className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                            <Zap className="w-3.5 h-3.5" /> {tier.credits}
-                          </div>
-                          {tier.features.map((feat) => (
+                        <div
+                          className={cn(
+                            'space-y-2.5 pt-3 border-t-2 text-xs font-medium',
+                            isPopular
+                              ? 'border-emerald-700/60 text-emerald-100'
+                              : 'border-neutral-100 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
+                          )}
+                        >
+                          {pkg.features.map((feat) => (
                             <div key={feat} className="flex items-center gap-2">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <CheckCircle2
+                                className={cn(
+                                  'w-4 h-4 shrink-0',
+                                  isPopular ? 'text-amber-300' : 'text-emerald-600'
+                                )}
+                              />
                               <span>{feat}</span>
                             </div>
                           ))}
@@ -1255,16 +1182,90 @@ export default function Home({ packages }: HomeProps) {
                       <div className="pt-6">
                         <Link
                           href="/signup"
-                          className={`w-full text-center text-xs py-3 block ${
-                            tier.highlight ? 'btn-kawaii-primary' : 'btn-kawaii-secondary'
-                          }`}
+                          className={cn(
+                            'w-full text-center text-xs font-black py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
+                            isPopular
+                              ? 'bg-amber-300 hover:bg-amber-400 text-neutral-950'
+                              : 'bg-white hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white'
+                          )}
                         >
                           Pilih Paket Ini
                         </Link>
                       </div>
                     </div>
                   </ScrollReveal>
-                ))}
+                )
+              })
+            ) : (
+              <div className="sm:col-span-2 lg:col-span-4 rounded-3xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70 p-8 text-center">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                  Paket sedang disiapkan.
+                </p>
+                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                  Silakan coba lagi beberapa saat untuk melihat paket yang tersedia.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Payment Methods / Checkout Trust */}
+      <section className="border-t-2 border-black bg-white px-4 py-12 dark:bg-neutral-900 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-6 rounded-3xl border-2 border-black bg-[#FAF7F2] p-6 shadow-[4px_4px_0px_#000000] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <div className="max-w-md space-y-2">
+              <span className="badge-kawaii-emerald text-[10px] font-black uppercase tracking-wider">
+                Pembayaran fleksibel
+              </span>
+              <h2 className="text-xl font-black text-neutral-950 dark:text-white sm:text-2xl">
+                Bayar dengan cara yang paling nyaman
+              </h2>
+              <p className="text-sm font-medium leading-relaxed text-neutral-700 dark:text-neutral-300">
+                Checkout diproses melalui penyedia pembayaran yang aktif. Kanal yang tampil
+                mengikuti konfigurasi merchant dan dapat berubah sewaktu-waktu.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:min-w-[24rem] sm:grid-cols-3">
+              {[
+                {
+                  label: 'QRIS',
+                  description: 'Scan dari aplikasi pembayaran pilihan Anda',
+                  icon: QrCode,
+                },
+                {
+                  label: 'E-wallet',
+                  description: 'Pilih dompet digital yang tersedia saat checkout',
+                  icon: WalletCards,
+                },
+                {
+                  label: 'Pembayaran terverifikasi',
+                  description: 'Status invoice dan kredit diperbarui setelah pembayaran valid',
+                  icon: ShieldCheck,
+                },
+              ].map((method) => {
+                const Icon = method.icon
+                return (
+                  <div
+                    key={method.label}
+                    className="flex items-start gap-3 rounded-2xl border-2 border-black bg-white p-3 dark:bg-neutral-950"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-black bg-amber-200 text-neutral-950">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-black text-neutral-950 dark:text-white">
+                        {method.label}
+                      </span>
+                      <span className="mt-0.5 block text-[11px] font-medium leading-snug text-neutral-600 dark:text-neutral-300">
+                        {method.description}
+                      </span>
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -1310,7 +1311,7 @@ export default function Home({ packages }: HomeProps) {
                 href="/signup"
                 className="btn-kawaii-primary text-sm sm:text-base py-3.5 px-8 flex items-center justify-center gap-2 w-full sm:w-auto"
               >
-                <span>Daftar Sekarang (Gratis 3 Kredit)</span>
+                <span>Daftar Sekarang (Gratis 10 Kredit)</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -1430,7 +1431,7 @@ export default function Home({ packages }: HomeProps) {
 
         <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500 font-medium">
           <p>© {new Date().getFullYear()} SiapAjar. Hak Cipta Dilindungi.</p>
-          <p>Membantu guru Indonesia lebih siap mengajar dan siap administrasi 🇮🇩</p>
+          <p>Membantu guru Indonesia lebih siap mengajar dan siap administrasi.</p>
         </div>
       </footer>
     </div>

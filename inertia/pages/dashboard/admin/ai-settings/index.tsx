@@ -1,6 +1,6 @@
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { Head, router, useForm } from '@inertiajs/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Sparkles, Zap, RefreshCw } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -163,6 +163,11 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
   const [loadingModels, setLoadingModels] = useState(false)
   const [modelsError, setModelsError] = useState('')
 
+  useEffect(() => {
+    setModels([])
+    setModelsError('')
+  }, [data.provider, data.authMode, data.gateway])
+
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault()
     put('/admin/ai-settings')
@@ -239,7 +244,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
       <div className="max-w-2xl space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Konfigurasi AI</h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
             Pilih penyedia AI untuk generate Modul Ajar, RPPM/RPPH, Soal, Protah, dan Promes.
           </p>
         </div>
@@ -268,11 +273,11 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                     checked={data.provider === p.value}
                     onChange={() => setData('provider', p.value)}
                     aria-label={p.label}
-                    className="mt-1"
+                    className="mt-1 shrink-0"
                   />
                   <div>
                     <p className="font-medium text-neutral-900 dark:text-white">{p.label}</p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300">
                       {p.description}
                     </p>
                   </div>
@@ -289,15 +294,19 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 <p className="mb-2 font-medium">
                   Metode autentikasi {data.provider === 'openai' ? 'OpenAI' : 'Gemini'}
                 </p>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   {(['api_key', 'oauth'] as AuthMode[]).map((mode) => (
-                    <label key={mode} className="flex cursor-pointer items-center gap-2">
+                    <label
+                      key={mode}
+                      className="inline-flex cursor-pointer select-none items-center gap-2.5"
+                    >
                       <input
                         type="radio"
                         name="authMode"
                         value={mode}
                         checked={data.authMode === mode}
                         onChange={() => setData('authMode', mode)}
+                        className="shrink-0"
                       />
                       {getAuthModeLabel(mode, data.provider)}
                     </label>
@@ -375,7 +384,9 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                   >
                     API Key{' '}
                     {setting.hasApiKey && (
-                      <span className="text-neutral-400">(sudah tersimpan — isi untuk ganti)</span>
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        (sudah tersimpan — isi untuk ganti)
+                      </span>
                     )}
                   </label>
                   <input
@@ -410,7 +421,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
                     {GATEWAYS.find((gateway) => gateway.value === data.gateway)?.description}
                   </p>
                 </div>
@@ -467,7 +478,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                       Max (Maksimal) — Tingkat penalaran maksimal (OpenAI docs)
                     </option>
                   </select>
-                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
                     Mengontrol kedalaman proses penalaran internal (thinking / reasoning effort)
                     untuk model GPT-5.6 series (Luna, Terra, Sol) dan model o1/o3/o4.
                   </p>
@@ -481,7 +492,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                 >
                   Model
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   {models.length > 0 ? (
                     <select
                       id="model"
@@ -511,7 +522,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
                     type="button"
                     onClick={handleLoadModels}
                     disabled={loadingModels}
-                    className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    className="flex shrink-0 items-center justify-center gap-2.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   >
                     <RefreshCw className={cn('h-4 w-4', loadingModels && 'animate-spin')} />
                     {loadingModels ? 'Memuat...' : 'Muat Daftar Model'}
@@ -527,7 +538,7 @@ export default function AdminAiSettingsIndex({ setting }: AdminAiSettingsIndexPr
             <button
               type="button"
               onClick={handleTest}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="flex items-center gap-2.5 rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
               <Zap className="h-4 w-4" />
               Tes Koneksi

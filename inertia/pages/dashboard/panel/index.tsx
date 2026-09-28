@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import { cn } from '~/lib/utils'
+import { isPaudProfile } from '~/lib/education'
 
 interface PanelStats {
   classes: number
@@ -35,7 +36,8 @@ interface PanelStats {
 }
 
 interface PanelProps {
-  readonly educationLevel: 'tk' | 'sd' | null
+  readonly educationLevel: string | null
+  readonly institutionType?: string | null
   readonly stats: PanelStats
 }
 
@@ -148,9 +150,9 @@ function PanelSectionCard({ section }: { section: PanelSection }) {
   )
 }
 
-export default function StructuredPanel({ educationLevel, stats }: PanelProps) {
-  const isTk = educationLevel === 'tk'
-  const documentCount = isTk
+export default function StructuredPanel({ educationLevel, institutionType, stats }: PanelProps) {
+  const isPaud = isPaudProfile(educationLevel, institutionType)
+  const documentCount = isPaud
     ? stats.weeklyLessonPlans +
       stats.dailyLessonPlans +
       stats.annualPlans +
@@ -162,9 +164,9 @@ export default function StructuredPanel({ educationLevel, stats }: PanelProps) {
       stats.semesterPlans +
       stats.lkpds +
       stats.mediaModules
-  const assessmentCount = isTk ? stats.paudAssessments + stats.exams : stats.exams
+  const assessmentCount = isPaud ? stats.paudAssessments + stats.exams : stats.exams
 
-  const sections: PanelSection[] = isTk
+  const sections: PanelSection[] = isPaud
     ? [
         {
           title: 'Kurikulum & Data',
@@ -491,14 +493,14 @@ export default function StructuredPanel({ educationLevel, stats }: PanelProps) {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
-            label={isTk ? 'Kelompok' : 'Kelas'}
+            label={isPaud ? 'Kelompok' : 'Kelas'}
             value={stats.classes}
             description="Data rombel aktif"
             icon={Users}
             className="bg-emerald-300"
           />
           <SummaryCard
-            label={isTk ? 'Anak Didik' : 'Siswa'}
+            label={isPaud ? 'Anak Didik' : 'Siswa'}
             value={stats.students}
             description="Peserta didik terdaftar"
             icon={Users}

@@ -37,7 +37,7 @@ interface InvoiceItem {
   creditsAmount: number
   grossAmount: number
   status: 'pending' | 'paid' | 'expired' | 'failed'
-  mayarPaymentUrl?: string
+  paymentUrl?: string
   paidAt?: string
   createdAt: string
 }
@@ -463,9 +463,9 @@ export default function BillingIndex({
                         </span>
                       </td>
                       <td className="py-3.5 text-right space-x-2">
-                        {inv.status === 'pending' && inv.mayarPaymentUrl && (
+                        {inv.status === 'pending' && inv.paymentUrl && (
                           <a
-                            href={inv.mayarPaymentUrl}
+                            href={inv.paymentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs"

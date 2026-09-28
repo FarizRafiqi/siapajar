@@ -90,7 +90,10 @@ export default function Login() {
 
               {/* Bottom Guarantee */}
               <div className="relative z-10 pt-6 mt-6 border-t-2 border-emerald-700/60 flex items-center justify-between text-xs font-bold text-emerald-200">
-                <span>🛡️ Privasi & Data Terjaga</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  Privasi &amp; Data Terjaga
+                </span>
                 <span className="text-amber-300">Siap Cetak & Edit</span>
               </div>
             </motion.div>

@@ -20,7 +20,7 @@ import { cn } from '~/lib/utils'
 function getLevelLabel(level: string | null): string {
   if (level === 'tk') return 'TK / PAUD'
   if (level === 'sd') return 'SD'
-  return '-'
+  return level ? level.toUpperCase() : '-'
 }
 
 interface UserProps {
@@ -30,6 +30,7 @@ interface UserProps {
   initials: string
   schoolName: string | null
   educationLevel: 'tk' | 'sd' | null
+  institutionType?: string | null
   role: string
   avatarUrl: string | null
 }
@@ -95,13 +96,15 @@ export default function Settings({ user, package: packageData, subscription }: S
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight flex items-center gap-2">
-              <span>Pengaturan Profil & Sekolah</span>
+              <span>{isAdmin ? 'Pengaturan Profil' : 'Pengaturan Profil & Sekolah'}</span>
               <span className="p-1 rounded-lg bg-amber-300 text-neutral-950 border border-black text-xs shadow-[1px_1px_0px_#000000]">
                 <Sparkles className="w-3.5 h-3.5" />
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 font-medium">
-              Sesuaikan data pribadi, informasi instansi, dan preferensi jenjang kurikulum Anda.
+              {isAdmin
+                ? 'Sesuaikan identitas akun dan informasi kontak Anda.'
+                : 'Sesuaikan data pribadi, informasi instansi, dan preferensi jenjang kurikulum Anda.'}
             </p>
           </div>
         </div>
@@ -148,7 +151,9 @@ export default function Settings({ user, package: packageData, subscription }: S
                   <h3 className="font-black text-neutral-950 dark:text-white text-base">
                     Profil Pengguna
                   </h3>
-                  <p className="text-xs text-neutral-500 font-medium">Identitas akun guru Anda</p>
+                  <p className="text-xs text-neutral-700 dark:text-neutral-300 font-medium">
+                    Identitas akun Anda
+                  </p>
                 </div>
               </div>
 
@@ -178,9 +183,7 @@ export default function Settings({ user, package: packageData, subscription }: S
                   </button>
                 </div>
                 <div>
-                  <p className="text-xs font-black text-neutral-900 dark:text-white">
-                    Foto Profil Guru
-                  </p>
+                  <p className="text-xs font-black text-neutral-900 dark:text-white">Foto Profil</p>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
                     Format PNG, JPG, WebP. Maksimal 2MB.
                   </p>
@@ -200,7 +203,7 @@ export default function Settings({ user, package: packageData, subscription }: S
                     htmlFor="fullName"
                     className="block text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 mb-1.5"
                   >
-                    Nama Lengkap & Gelar
+                    Nama Lengkap
                   </label>
                   <input
                     id="fullName"

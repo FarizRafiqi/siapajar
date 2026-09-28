@@ -36,12 +36,8 @@ import {
   type WorkSampleItem,
   type PhotoSeriesItem,
 } from '#services/weekly_assessment_loader'
+import { resolveEducationProfile } from '#services/education_profile'
 import env from '#start/env'
-
-async function consumePdfExport(user: User) {
-  const reservationKey = await reservePdfExport(user)
-  if (reservationKey) await commitPdfExport(user, reservationKey)
-}
 
 async function reservePdfExport(user: User) {
   const reservationKey = `export:pdf:${user.id}:${randomUUID()}`
@@ -57,6 +53,24 @@ async function commitPdfExport(user: User, reservationKey: string) {
     entityType: 'document',
     metadata: { format: 'pdf' },
   })
+}
+
+async function withPdfExportQuota<T>(
+  user: User,
+  work: () => Promise<T>,
+  charge = true
+): Promise<T> {
+  if (!charge) return work()
+
+  const reservationKey = await reservePdfExport(user)
+  try {
+    const result = await work()
+    if (reservationKey) await commitPdfExport(user, reservationKey)
+    return result
+  } catch (error) {
+    if (reservationKey) await releaseUsageReservation(reservationKey)
+    throw error
+  }
 }
 
 function toBuffer(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -150,26 +164,31 @@ export async function exportTeachingModulePdf(
   user: User,
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const sections: { key: string; title: string }[] = [
-    { key: 'kompetensiDasar', title: 'Kompetensi Dasar' },
-    { key: 'tujuanPembelajaran', title: 'Tujuan Pembelajaran' },
-    { key: 'kegiatan', title: 'Kegiatan Pembelajaran' },
-    { key: 'penilaian', title: 'Penilaian' },
-    { key: 'sumberBelajar', title: 'Sumber Belajar' },
-  ]
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const sections: { key: string; title: string }[] = [
+        { key: 'kompetensiDasar', title: 'Kompetensi Dasar' },
+        { key: 'tujuanPembelajaran', title: 'Tujuan Pembelajaran' },
+        { key: 'kegiatan', title: 'Kegiatan Pembelajaran' },
+        { key: 'penilaian', title: 'Penilaian' },
+        { key: 'sumberBelajar', title: 'Sumber Belajar' },
+      ]
 
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Modul Ajar')
-  doc.font('Helvetica-Bold').fontSize(16).text(teachingModule.title)
-  doc.font('Helvetica').fontSize(10).text(`Mata Pelajaran: ${teachingModule.subject}`)
-  doc.text(`Fase: ${teachingModule.phase}`)
-  doc.moveDown(1)
-  for (const s of sections) {
-    writeSection(doc, s.title, teachingModule.content[s.key])
-  }
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Modul Ajar')
+      doc.font('Helvetica-Bold').fontSize(16).text(teachingModule.title)
+      doc.font('Helvetica').fontSize(10).text(`Mata Pelajaran: ${teachingModule.subject}`)
+      doc.text(`Fase: ${teachingModule.phase}`)
+      doc.moveDown(1)
+      for (const s of sections) {
+        writeSection(doc, s.title, teachingModule.content[s.key])
+      }
 
-  return toBuffer(doc)
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportExamPdf(exam: Exam, user: User, charge = true) {
@@ -210,43 +229,53 @@ export async function exportExamPdf(exam: Exam, user: User, charge = true) {
 }
 
 export async function exportAnnualPlanPdf(annualPlan: AnnualPlan, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const sections: { key: string; title: string }[] = [
-    { key: 'kompetensi', title: 'Kompetensi' },
-    { key: 'alokasiWaktu', title: 'Alokasi Waktu' },
-    { key: 'kegiatan', title: 'Kegiatan' },
-    { key: 'minggu', title: 'Pembagian Minggu' },
-  ]
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const sections: { key: string; title: string }[] = [
+        { key: 'kompetensi', title: 'Kompetensi' },
+        { key: 'alokasiWaktu', title: 'Alokasi Waktu' },
+        { key: 'kegiatan', title: 'Kegiatan' },
+        { key: 'minggu', title: 'Pembagian Minggu' },
+      ]
 
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Program Tahunan')
-  doc.font('Helvetica-Bold').fontSize(16).text(annualPlan.subject)
-  doc.moveDown(1)
-  for (const s of sections) {
-    writeSection(doc, s.title, annualPlan.content[s.key] ?? [])
-  }
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Program Tahunan')
+      doc.font('Helvetica-Bold').fontSize(16).text(annualPlan.subject)
+      doc.moveDown(1)
+      for (const s of sections) {
+        writeSection(doc, s.title, annualPlan.content[s.key] ?? [])
+      }
 
-  return toBuffer(doc)
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportSemesterPlanPdf(semesterPlan: SemesterPlan, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const sections: { key: string; title: string }[] = [
-    { key: 'minggu', title: 'Pembagian Minggu' },
-    { key: 'kegiatan', title: 'Kegiatan' },
-    { key: 'target', title: 'Target Pembelajaran' },
-    { key: 'materi', title: 'Materi Pembelajaran' },
-  ]
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const sections: { key: string; title: string }[] = [
+        { key: 'minggu', title: 'Pembagian Minggu' },
+        { key: 'kegiatan', title: 'Kegiatan' },
+        { key: 'target', title: 'Target Pembelajaran' },
+        { key: 'materi', title: 'Materi Pembelajaran' },
+      ]
 
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Program Semester')
-  doc.font('Helvetica-Bold').fontSize(16).text(semesterPlan.subject)
-  doc.moveDown(1)
-  for (const s of sections) {
-    writeSection(doc, s.title, semesterPlan.content[s.key] ?? [])
-  }
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Program Semester')
+      doc.font('Helvetica-Bold').fontSize(16).text(semesterPlan.subject)
+      doc.moveDown(1)
+      for (const s of sections) {
+        writeSection(doc, s.title, semesterPlan.content[s.key] ?? [])
+      }
 
-  return toBuffer(doc)
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 interface ReportCardContext {
@@ -261,34 +290,39 @@ export async function exportReportCardPdf(
   ctx: ReportCardContext,
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
 
-  doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
-  doc.font('Helvetica').fontSize(10).text(`NIS: ${report.nis} • Kelas: ${ctx.className}`)
-  doc.moveDown(1)
+      doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
+      doc.font('Helvetica').fontSize(10).text(`NIS: ${report.nis} • Kelas: ${ctx.className}`)
+      doc.moveDown(1)
 
-  doc.font('Helvetica-Bold').fontSize(12).text('Nilai per Mata Pelajaran')
-  doc.font('Helvetica').fontSize(10)
-  for (const subject of report.subjects) {
-    const value = subject.average === null ? '-' : subject.average.toFixed(1)
-    doc.text(`${subject.subject}: ${value}`)
-  }
-  doc.moveDown(1)
+      doc.font('Helvetica-Bold').fontSize(12).text('Nilai per Mata Pelajaran')
+      doc.font('Helvetica').fontSize(10)
+      for (const subject of report.subjects) {
+        const value = subject.average === null ? '-' : subject.average.toFixed(1)
+        doc.text(`${subject.subject}: ${value}`)
+      }
+      doc.moveDown(1)
 
-  doc.font('Helvetica-Bold').fontSize(12).text('Ringkasan')
-  doc.font('Helvetica').fontSize(10)
-  doc.text(
-    `Rata-rata keseluruhan: ${report.overallAverage === null ? '-' : report.overallAverage.toFixed(1)}`
+      doc.font('Helvetica-Bold').fontSize(12).text('Ringkasan')
+      doc.font('Helvetica').fontSize(10)
+      doc.text(
+        `Rata-rata keseluruhan: ${report.overallAverage === null ? '-' : report.overallAverage.toFixed(1)}`
+      )
+      doc.text(
+        report.rank === null
+          ? 'Peringkat: -'
+          : `Peringkat: ${report.rank} dari ${ctx.totalStudents} siswa`
+      )
+
+      return toBuffer(doc)
+    },
+    charge
   )
-  doc.text(
-    report.rank === null
-      ? 'Peringkat: -'
-      : `Peringkat: ${report.rank} dari ${ctx.totalStudents} siswa`
-  )
-
-  return toBuffer(doc)
 }
 
 function formatPaudAnecdotal(c: Record<string, unknown>): string {
@@ -330,34 +364,42 @@ export async function exportNarrativeReportPdf(
   ctx: ReportCardContext,
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
 
-  doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
-  doc.font('Helvetica').fontSize(10).text(`NIS: ${narrative.nis} • Kelompok: ${ctx.className}`)
-  doc.moveDown(1)
+      doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
+      doc.font('Helvetica').fontSize(10).text(`NIS: ${narrative.nis} • Kelompok: ${ctx.className}`)
+      doc.moveDown(1)
 
-  if (narrative.entries.length === 0) {
-    doc.font('Helvetica').fontSize(10).text('Belum ada asesmen yang tercatat pada semester ini.')
-  } else {
-    for (const entry of narrative.entries) {
-      doc.font('Helvetica-Bold').fontSize(11).text(`${entry.typeLabel} — ${entry.date}`)
-      doc.font('Helvetica').fontSize(10).text(formatPaudContent(entry))
-      doc.moveDown(0.5)
-    }
-  }
+      if (narrative.entries.length === 0) {
+        doc
+          .font('Helvetica')
+          .fontSize(10)
+          .text('Belum ada asesmen yang tercatat pada semester ini.')
+      } else {
+        for (const entry of narrative.entries) {
+          doc.font('Helvetica-Bold').fontSize(11).text(`${entry.typeLabel} — ${entry.date}`)
+          doc.font('Helvetica').fontSize(10).text(formatPaudContent(entry))
+          doc.moveDown(0.5)
+        }
+      }
 
-  doc.moveDown(0.75)
-  doc.font('Helvetica-Bold').fontSize(12).text('Narasi Perkembangan')
-  doc.font('Helvetica').fontSize(10)
-  for (const item of narrative.narratives) {
-    doc.font('Helvetica-Bold').text(item.element)
-    doc.font('Helvetica').text(item.content.trim() || 'Belum ada narasi yang disetujui.')
-    doc.moveDown(0.5)
-  }
+      doc.moveDown(0.75)
+      doc.font('Helvetica-Bold').fontSize(12).text('Narasi Perkembangan')
+      doc.font('Helvetica').fontSize(10)
+      for (const item of narrative.narratives) {
+        doc.font('Helvetica-Bold').text(item.element)
+        doc.font('Helvetica').text(item.content.trim() || 'Belum ada narasi yang disetujui.')
+        doc.moveDown(0.5)
+      }
 
-  return toBuffer(doc)
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 function writeMetadata(doc: PDFKit.PDFDocument, values: Array<[string, unknown]>) {
@@ -1054,123 +1096,147 @@ export async function exportCurriculumPdf(
   user: User,
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape' })
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape' })
 
-  const leftX = 30
-  const width = doc.page.width - 60
+      const leftX = 30
+      const width = doc.page.width - 60
 
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(12)
-    .fillColor('#111827')
-    .text((user as any).institutionName || user.schoolName || 'TK / Sekolah', { align: 'center' })
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .fillColor('#047857')
-    .text('DOKUMEN CAPAIAN, TUJUAN & ALUR PEMBELAJARAN (CP, TP & ATP)', { align: 'center' })
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(12)
+        .fillColor('#111827')
+        .text((user as any).institutionName || user.schoolName || 'TK / Sekolah', {
+          align: 'center',
+        })
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .fillColor('#047857')
+        .text('DOKUMEN CAPAIAN, TUJUAN & ALUR PEMBELAJARAN (CP, TP & ATP)', { align: 'center' })
 
-  doc.y += 4
+      doc.y += 4
 
-  const isPaud = (user as any).educationLevel === 'paud' || true
-  const infoHeight = 32
-  const startY = doc.y
+      const educationProfile = resolveEducationProfile(
+        user.educationLevel,
+        user.institutionType,
+        user.curriculumVersion
+      )
+      const isPaud = educationProfile.isEarlyChildhood
+      const exportLevel = (
+        educationProfile.isReligiousEarlyChildhood
+          ? 'RA'
+          : educationProfile.educationLevel || educationProfile.audience
+      ).toUpperCase()
+      const infoHeight = 32
+      const startY = doc.y
 
-  doc.rect(leftX, startY, width, infoHeight).lineWidth(0.5).strokeColor('#059669').stroke()
+      doc.rect(leftX, startY, width, infoHeight).lineWidth(0.5).strokeColor('#059669').stroke()
 
-  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#065F46')
-  doc.text('Satuan Pendidikan', leftX + 10, startY + 6, { width: 110, align: 'left' })
-  doc.text(':', leftX + 122, startY + 6, { width: 8, align: 'left' })
-  doc
-    .font('Helvetica')
-    .fillColor('#111827')
-    .text(
-      (user as any).institutionName || user.schoolName || 'TK Tunas Bangsa',
-      leftX + 132,
-      startY + 6,
-      {
-        width: 250,
-        align: 'left',
+      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#065F46')
+      doc.text('Satuan Pendidikan', leftX + 10, startY + 6, { width: 110, align: 'left' })
+      doc.text(':', leftX + 122, startY + 6, { width: 8, align: 'left' })
+      doc
+        .font('Helvetica')
+        .fillColor('#111827')
+        .text(
+          (user as any).institutionName || user.schoolName || 'Sekolah',
+          leftX + 132,
+          startY + 6,
+          {
+            width: 250,
+            align: 'left',
+          }
+        )
+
+      doc.font('Helvetica-Bold').fillColor('#065F46')
+      doc.text('Jenjang / Fase', leftX + 10, startY + 18, { width: 110, align: 'left' })
+      doc.text(':', leftX + 122, startY + 18, { width: 8, align: 'left' })
+      doc
+        .font('Helvetica')
+        .fillColor('#111827')
+        .text(`${exportLevel} / Fase ${educationProfile.defaultPhase}`, leftX + 132, startY + 18, {
+          width: 250,
+          align: 'left',
+        })
+
+      doc.font('Helvetica-Bold').fillColor('#065F46')
+      doc.text('Tanggal Cetak', leftX + 440, startY + 6, { width: 90, align: 'left' })
+      doc.text(':', leftX + 532, startY + 6, { width: 8, align: 'left' })
+      doc
+        .font('Helvetica')
+        .fillColor('#111827')
+        .text(
+          new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }),
+          leftX + 542,
+          startY + 6,
+          {
+            width: 200,
+            align: 'left',
+          }
+        )
+
+      doc.font('Helvetica-Bold').fillColor('#065F46')
+      doc.text('Versi Kurikulum', leftX + 440, startY + 18, { width: 90, align: 'left' })
+      doc.text(':', leftX + 532, startY + 18, { width: 8, align: 'left' })
+      doc
+        .font('Helvetica')
+        .fillColor('#111827')
+        .text(user.curriculumVersion || 'Kurikulum Merdeka', leftX + 542, startY + 18, {
+          width: 200,
+          align: 'left',
+        })
+
+      doc.y = startY + infoHeight + 8
+
+      if (isPaud) {
+        renderPdfPaudHorizontalGrid(doc, cps, leftX, width)
+      } else {
+        renderPdfCpSection(doc, cps, leftX, width)
       }
-    )
 
-  doc.font('Helvetica-Bold').fillColor('#065F46')
-  doc.text('Jenjang / Fase', leftX + 10, startY + 18, { width: 110, align: 'left' })
-  doc.text(':', leftX + 122, startY + 18, { width: 8, align: 'left' })
-  doc
-    .font('Helvetica')
-    .fillColor('#111827')
-    .text(isPaud ? 'TK / Fase Fondasi' : 'SD / Fase A', leftX + 132, startY + 18, {
-      width: 250,
-      align: 'left',
-    })
+      renderPdfSequenceSection(doc, sequences, leftX, width)
 
-  doc.font('Helvetica-Bold').fillColor('#065F46')
-  doc.text('Tanggal Cetak', leftX + 440, startY + 6, { width: 90, align: 'left' })
-  doc.text(':', leftX + 532, startY + 6, { width: 8, align: 'left' })
-  doc
-    .font('Helvetica')
-    .fillColor('#111827')
-    .text(new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }), leftX + 542, startY + 6, {
-      width: 200,
-      align: 'left',
-    })
+      if (doc.y > 450) doc.addPage()
 
-  doc.font('Helvetica-Bold').fillColor('#065F46')
-  doc.text('Versi Kurikulum', leftX + 440, startY + 18, { width: 90, align: 'left' })
-  doc.text(':', leftX + 532, startY + 18, { width: 8, align: 'left' })
-  doc
-    .font('Helvetica')
-    .fillColor('#111827')
-    .text(user.curriculumVersion || 'Kurikulum Merdeka', leftX + 542, startY + 18, {
-      width: 200,
-      align: 'left',
-    })
+      const sigY = doc.y + 14
+      const sigW = width / 2
 
-  doc.y = startY + infoHeight + 8
+      doc.fillColor('#111827').font('Helvetica-Bold').fontSize(8.5)
+      doc.text('Mengetahui,', leftX, sigY, { width: sigW, align: 'left' })
+      doc.font('Helvetica').text('Kepala Sekolah', leftX, sigY + 12, { width: sigW, align: 'left' })
+      doc
+        .font('Helvetica')
+        .text('NIP. ........................................', leftX, sigY + 56, {
+          width: sigW,
+          align: 'left',
+        })
 
-  if (isPaud) {
-    renderPdfPaudHorizontalGrid(doc, cps, leftX, width)
-  } else {
-    renderPdfCpSection(doc, cps, leftX, width)
-  }
+      doc.font('Helvetica').fontSize(8.5)
+      doc.text('Penyusun / Guru Kelas,', leftX + sigW, sigY, { width: sigW, align: 'left' })
+      doc.text(user.fullName || 'Guru Pengampu', leftX + sigW, sigY + 12, {
+        width: sigW,
+        align: 'left',
+      })
+      doc
+        .font('Helvetica-Bold')
+        .text(`( ${user.fullName || '........................'} )`, leftX + sigW, sigY + 44, {
+          width: sigW,
+          align: 'left',
+        })
+      doc
+        .font('Helvetica')
+        .text('NIP. ........................................', leftX + sigW, sigY + 56, {
+          width: sigW,
+          align: 'left',
+        })
 
-  renderPdfSequenceSection(doc, sequences, leftX, width)
-
-  if (doc.y > 450) doc.addPage()
-
-  const sigY = doc.y + 14
-  const sigW = width / 2
-
-  doc.fillColor('#111827').font('Helvetica-Bold').fontSize(8.5)
-  doc.text('Mengetahui,', leftX, sigY, { width: sigW, align: 'left' })
-  doc.font('Helvetica').text('Kepala Sekolah', leftX, sigY + 12, { width: sigW, align: 'left' })
-  doc.font('Helvetica').text('NIP. ........................................', leftX, sigY + 56, {
-    width: sigW,
-    align: 'left',
-  })
-
-  doc.font('Helvetica').fontSize(8.5)
-  doc.text('Penyusun / Guru Kelas,', leftX + sigW, sigY, { width: sigW, align: 'left' })
-  doc.text(user.fullName || 'Guru Pengampu', leftX + sigW, sigY + 12, {
-    width: sigW,
-    align: 'left',
-  })
-  doc
-    .font('Helvetica-Bold')
-    .text(`( ${user.fullName || '........................'} )`, leftX + sigW, sigY + 44, {
-      width: sigW,
-      align: 'left',
-    })
-  doc
-    .font('Helvetica')
-    .text('NIP. ........................................', leftX + sigW, sigY + 56, {
-      width: sigW,
-      align: 'left',
-    })
-
-  return toBuffer(doc)
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 function drawRpmPdfCover(
@@ -1187,7 +1253,7 @@ function drawRpmPdfCover(
     allocation: string
   }
 ) {
-  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel, user.institutionType)
 
   doc.rect(leftX, 40, contentWidth, 3).fill('#EA580C')
   doc.rect(leftX, 46, contentWidth, 1).fill('#FDBA74')
@@ -1911,7 +1977,7 @@ function drawRpmPdfAppendices(
   },
   assessments?: LoadedWeeklyAssessments
 ) {
-  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
+  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel, user.institutionType)
 
   const renderAppendixHeader = (title: string) => {
     doc.addPage()
@@ -2577,226 +2643,250 @@ export async function exportWeeklyLessonPlanPdf(
   charge = true,
   loadedAssessments?: LoadedWeeklyAssessments
 ) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 40, size: 'A4' })
-  const content = weekly.content ?? {}
-  const isRpm = Boolean(
-    content.identification || content.learningExperience || content.learningDesign
-  )
-
-  if (!isRpm) {
-    writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
-    doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
-    writeMetadata(doc, [
-      ['Kelompok', weekly.schoolClass?.name],
-      ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
-      ['Status', weekly.status],
-    ])
-    writeContentObject(doc, content)
-    return toBuffer(doc)
-  }
-
-  const assessments = loadedAssessments || (await loadWeeklyPlanAssessments(weekly))
-
-  const pageWidth = doc.page.width
-  const contentWidth = pageWidth - 80 // 40 margin each side
-  const leftX = 40
-
-  const instInfo = detectInstitutionInfo(user.schoolName, user.educationLevel)
-  const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
-  const weekStr = content.weekNumber ? `Minggu ke-${content.weekNumber}` : 'Minggu 1'
-  const shortGroupStr = formatRpmClassShortCode(weekly.schoolClass, user, content.groupContext)
-  const shortSemesterWeekStr = `${content.semester || 1}/${content.weekNumber || 1}`
-  const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
-  const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
-  const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
-  const subthemeUpper = (content.subtheme || 'AYO KITA BERKENALAN').toUpperCase()
-
-  // 1. Cover
-  drawRpmPdfCover(doc, leftX, contentWidth, user, {
-    themeUpper,
-    subthemeUpper,
-    groupCoverStr,
-    groupDetailStr,
-    shortSemesterWeekStr,
-    allocation: String(content.allocation || '5 Hari x 180 Menit (15 JP)'),
-  })
-
-  // 2. Konten Isi
-  doc.addPage()
-
-  const drawPageHeader = () => {
-    doc.rect(leftX, 35, contentWidth, 20).fillAndStroke('#EA580C', '#C2410C')
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(9)
-      .fillColor('#FFFFFF')
-      .text(`RENCANA PEMBELAJARAN MENDALAM (RPM) - ${instInfo.level} FASE FONDASI`, leftX, 40, {
-        align: 'center',
-        width: contentWidth,
-      })
-    doc.y = 65
-  }
-
-  drawPageHeader()
-
-  const drawBanner = (title: string, topGap = 10) => {
-    if (doc.y > 690) {
-      doc.addPage()
-      drawPageHeader()
-    }
-    doc.moveDown(topGap / 10)
-    const y = doc.y
-    doc.rect(leftX, y, contentWidth, 24).fillAndStroke('#F3E8FF', '#D8B4FE')
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(10.5)
-      .fillColor('#581C87')
-      .text(title, leftX + 10, y + 6, {
-        width: contentWidth - 20,
-      })
-    doc.y = y + 30
-  }
-
-  const draw2ColRow = (title: string, contentLines: string[], customRowH?: number) => {
-    const col1W = 145
-    const col2W = contentWidth - col1W
-    const col2X = leftX + col1W
-
-    let totalTextH = 0
-    doc.fontSize(8.5)
-    for (const line of contentLines) {
-      totalTextH += doc.heightOfString(line, { width: col2W - 16 }) + 3
-    }
-
-    const rowH = customRowH || Math.max(totalTextH + 16, 28)
-
-    if (doc.y + rowH > 750) {
-      doc.addPage()
-      drawPageHeader()
-    }
-
-    const startY = doc.y
-
-    doc.rect(leftX, startY, col1W, rowH).fillAndStroke('#FAF5FF', '#D8B4FE')
-    doc.rect(col2X, startY, col2W, rowH).stroke('#D8B4FE')
-
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(8.5)
-      .fillColor('#581C87')
-      .text(title, leftX + 8, startY + 8, {
-        width: col1W - 16,
-      })
-
-    let tY = startY + 8
-    doc.font('Helvetica').fontSize(8.5)
-    for (const line of contentLines) {
-      doc.fillColor('#0F172A').text(line, col2X + 8, tY, { width: col2W - 16 })
-      tY = doc.y + 3
-    }
-
-    doc.y = startY + rowH
-  }
-
-  drawRpmPdfIdentification(
-    content.identification || {},
-    weekly.theme,
-    content.subtheme,
-    drawBanner,
-    draw2ColRow
-  )
-  drawRpmPdfLearningDesign(
-    content.learningDesign || {},
-    weekly.theme,
-    content.subtheme,
-    drawBanner,
-    draw2ColRow
-  )
-  drawRpmPdfLearningExperience(
-    doc,
-    leftX,
-    contentWidth,
-    content.learningExperience || {},
-    drawPageHeader,
-    drawBanner
-  )
-  drawRpmPdfAssessmentAndSignatures(
-    doc,
-    leftX,
-    contentWidth,
-    content.assessment || {},
+  return withPdfExportQuota(
     user,
-    drawPageHeader,
-    drawBanner
-  )
-  drawRpmPdfAppendices(
-    doc,
-    leftX,
-    contentWidth,
-    user,
-    { shortGroupStr, shortSemesterWeekStr, groupStr: groupDetailStr, semesterStr, weekStr },
-    assessments
-  )
+    async () => {
+      const doc = new PDFDocument({ margin: 40, size: 'A4' })
+      const content = weekly.content ?? {}
+      const isRpm = Boolean(
+        content.identification || content.learningExperience || content.learningDesign
+      )
 
-  return toBuffer(doc)
+      if (!isRpm) {
+        writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)')
+        doc.font('Helvetica-Bold').fontSize(16).text(weekly.theme)
+        writeMetadata(doc, [
+          ['Kelompok', weekly.schoolClass?.name],
+          ['Mulai minggu', weekly.weekStartDate?.toFormat('dd/MM/yyyy')],
+          ['Status', weekly.status],
+        ])
+        writeContentObject(doc, content)
+        return toBuffer(doc)
+      }
+
+      const assessments = loadedAssessments || (await loadWeeklyPlanAssessments(weekly))
+
+      const pageWidth = doc.page.width
+      const contentWidth = pageWidth - 80 // 40 margin each side
+      const leftX = 40
+
+      const instInfo = detectInstitutionInfo(
+        user.schoolName,
+        user.educationLevel,
+        user.institutionType
+      )
+      const semesterStr = content.semester ? `Semester ${content.semester}` : 'Semester 1'
+      const weekStr = content.weekNumber ? `Minggu ke-${content.weekNumber}` : 'Minggu 1'
+      const shortGroupStr = formatRpmClassShortCode(weekly.schoolClass, user, content.groupContext)
+      const shortSemesterWeekStr = `${content.semester || 1}/${content.weekNumber || 1}`
+      const groupCoverStr = formatRpmClassCover(weekly.schoolClass, user, content.groupContext)
+      const groupDetailStr = formatRpmClassGroupDetail(weekly.schoolClass, content.groupContext)
+      const themeUpper = (weekly.theme || 'AKU HAMBA ALLAH').toUpperCase()
+      const subthemeUpper = (content.subtheme || 'AYO KITA BERKENALAN').toUpperCase()
+
+      // 1. Cover
+      drawRpmPdfCover(doc, leftX, contentWidth, user, {
+        themeUpper,
+        subthemeUpper,
+        groupCoverStr,
+        groupDetailStr,
+        shortSemesterWeekStr,
+        allocation: String(content.allocation || '5 Hari x 180 Menit (15 JP)'),
+      })
+
+      // 2. Konten Isi
+      doc.addPage()
+
+      const drawPageHeader = () => {
+        doc.rect(leftX, 35, contentWidth, 20).fillAndStroke('#EA580C', '#C2410C')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(9)
+          .fillColor('#FFFFFF')
+          .text(`RENCANA PEMBELAJARAN MENDALAM (RPM) - ${instInfo.level} FASE FONDASI`, leftX, 40, {
+            align: 'center',
+            width: contentWidth,
+          })
+        doc.y = 65
+      }
+
+      drawPageHeader()
+
+      const drawBanner = (title: string, topGap = 10) => {
+        if (doc.y > 690) {
+          doc.addPage()
+          drawPageHeader()
+        }
+        doc.moveDown(topGap / 10)
+        const y = doc.y
+        doc.rect(leftX, y, contentWidth, 24).fillAndStroke('#F3E8FF', '#D8B4FE')
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(10.5)
+          .fillColor('#581C87')
+          .text(title, leftX + 10, y + 6, {
+            width: contentWidth - 20,
+          })
+        doc.y = y + 30
+      }
+
+      const draw2ColRow = (title: string, contentLines: string[], customRowH?: number) => {
+        const col1W = 145
+        const col2W = contentWidth - col1W
+        const col2X = leftX + col1W
+
+        let totalTextH = 0
+        doc.fontSize(8.5)
+        for (const line of contentLines) {
+          totalTextH += doc.heightOfString(line, { width: col2W - 16 }) + 3
+        }
+
+        const rowH = customRowH || Math.max(totalTextH + 16, 28)
+
+        if (doc.y + rowH > 750) {
+          doc.addPage()
+          drawPageHeader()
+        }
+
+        const startY = doc.y
+
+        doc.rect(leftX, startY, col1W, rowH).fillAndStroke('#FAF5FF', '#D8B4FE')
+        doc.rect(col2X, startY, col2W, rowH).stroke('#D8B4FE')
+
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8.5)
+          .fillColor('#581C87')
+          .text(title, leftX + 8, startY + 8, {
+            width: col1W - 16,
+          })
+
+        let tY = startY + 8
+        doc.font('Helvetica').fontSize(8.5)
+        for (const line of contentLines) {
+          doc.fillColor('#0F172A').text(line, col2X + 8, tY, { width: col2W - 16 })
+          tY = doc.y + 3
+        }
+
+        doc.y = startY + rowH
+      }
+
+      drawRpmPdfIdentification(
+        content.identification || {},
+        weekly.theme,
+        content.subtheme,
+        drawBanner,
+        draw2ColRow
+      )
+      drawRpmPdfLearningDesign(
+        content.learningDesign || {},
+        weekly.theme,
+        content.subtheme,
+        drawBanner,
+        draw2ColRow
+      )
+      drawRpmPdfLearningExperience(
+        doc,
+        leftX,
+        contentWidth,
+        content.learningExperience || {},
+        drawPageHeader,
+        drawBanner
+      )
+      drawRpmPdfAssessmentAndSignatures(
+        doc,
+        leftX,
+        contentWidth,
+        content.assessment || {},
+        user,
+        drawPageHeader,
+        drawBanner
+      )
+      drawRpmPdfAppendices(
+        doc,
+        leftX,
+        contentWidth,
+        user,
+        { shortGroupStr, shortSemesterWeekStr, groupStr: groupDetailStr, semesterStr, weekStr },
+        assessments
+      )
+
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportDailyLessonPlanPdf(daily: DailyLessonPlan, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Harian (RPPH)')
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(16)
-    .text(String(daily.content?.tema || 'RPPH'))
-  writeMetadata(doc, [
-    ['Kelompok', daily.schoolClass?.name],
-    ['Tanggal', daily.date?.toFormat('dd/MM/yyyy')],
-    ['Status', daily.status],
-  ])
-  writeContentObject(doc, daily.content ?? {})
-  return toBuffer(doc)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Rencana Pelaksanaan Pembelajaran Harian (RPPH)')
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(16)
+        .text(String(daily.content?.tema || 'RPPH'))
+      writeMetadata(doc, [
+        ['Kelompok', daily.schoolClass?.name],
+        ['Tanggal', daily.date?.toFormat('dd/MM/yyyy')],
+        ['Status', daily.status],
+      ])
+      writeContentObject(doc, daily.content ?? {})
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportLkpdPdf(lkpd: Lkpd, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Lembar Kerja Peserta Didik (LKPD)')
-  doc.font('Helvetica-Bold').fontSize(16).text(lkpd.title)
-  writeMetadata(doc, [
-    ['Kelompok', lkpd.schoolClass?.name],
-    ['Usia', lkpd.ageGroup],
-    ['Institusi', lkpd.institutionType],
-    ['Tema', lkpd.theme],
-    ['Subtema', lkpd.subtheme],
-  ])
-  writeContentObject(doc, lkpd.content ?? {})
-  return toBuffer(doc)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Lembar Kerja Peserta Didik (LKPD)')
+      doc.font('Helvetica-Bold').fontSize(16).text(lkpd.title)
+      writeMetadata(doc, [
+        ['Kelompok', lkpd.schoolClass?.name],
+        ['Usia', lkpd.ageGroup],
+        ['Institusi', lkpd.institutionType],
+        ['Tema', lkpd.theme],
+        ['Subtema', lkpd.subtheme],
+      ])
+      writeContentObject(doc, lkpd.content ?? {})
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportAssessmentPdf(assessment: Assessment, user: User, charge = true) {
-  if (charge) await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, 'Rekap Penilaian')
-  doc.font('Helvetica-Bold').fontSize(16).text(assessment.title)
-  writeMetadata(doc, [
-    ['Mata pelajaran', assessment.subject],
-    ['Kelas', assessment.schoolClass?.name],
-    ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
-    ['Jenis', assessment.type],
-    ['Tujuan pembelajaran', assessment.learningObjective],
-  ])
-  doc.font('Helvetica-Bold').fontSize(12).text('Daftar Nilai')
-  doc.font('Helvetica').fontSize(10)
-  for (const [index, score] of (assessment.scores ?? []).entries()) {
-    const valText = score.value ?? '-'
-    const noteText = score.note ? ` — ${score.note}` : ''
-    doc.text(
-      `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${valText}${noteText}`
-    )
-  }
-  return toBuffer(doc)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const doc = new PDFDocument({ margin: 50 })
+      writeKop(doc, user, 'Rekap Penilaian')
+      doc.font('Helvetica-Bold').fontSize(16).text(assessment.title)
+      writeMetadata(doc, [
+        ['Mata pelajaran', assessment.subject],
+        ['Kelas', assessment.schoolClass?.name],
+        ['Tanggal', assessment.date?.toFormat('dd/MM/yyyy')],
+        ['Jenis', assessment.type],
+        ['Tujuan pembelajaran', assessment.learningObjective],
+      ])
+      doc.font('Helvetica-Bold').fontSize(12).text('Daftar Nilai')
+      doc.font('Helvetica').fontSize(10)
+      for (const [index, score] of (assessment.scores ?? []).entries()) {
+        const valText = score.value ?? '-'
+        const noteText = score.note ? ` — ${score.note}` : ''
+        doc.text(
+          `${index + 1}. ${score.student.fullName} (${score.student.nis}) — Nilai: ${valText}${noteText}`
+        )
+      }
+      return toBuffer(doc)
+    },
+    charge
+  )
 }
 
 export async function exportPaudAssessmentPdf(
@@ -2804,9 +2894,14 @@ export async function exportPaudAssessmentPdf(
   user: User,
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const { buildPaudAssessmentPdf } = await import('#services/paud_assessment_export_service')
-  return buildPaudAssessmentPdf(assessment, user)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const { buildPaudAssessmentPdf } = await import('#services/paud_assessment_export_service')
+      return buildPaudAssessmentPdf(assessment, user)
+    },
+    charge
+  )
 }
 
 export async function exportPaudAssessmentBundlePdf(
@@ -2815,9 +2910,15 @@ export async function exportPaudAssessmentBundlePdf(
   themeTitle = 'Kenalkan',
   charge = true
 ) {
-  if (charge) await consumePdfExport(user)
-  const { buildPaudAssessmentBundlePdf } = await import('#services/paud_assessment_export_service')
-  return buildPaudAssessmentBundlePdf(assessments, user, themeTitle)
+  return withPdfExportQuota(
+    user,
+    async () => {
+      const { buildPaudAssessmentBundlePdf } =
+        await import('#services/paud_assessment_export_service')
+      return buildPaudAssessmentBundlePdf(assessments, user, themeTitle)
+    },
+    charge
+  )
 }
 
 export async function exportStudentReportDocPdf(
@@ -2825,24 +2926,25 @@ export async function exportStudentReportDocPdf(
   user: User,
   ctx: { className: string; semesterLabel: string; totalStudents: number }
 ) {
-  await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
-  doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
-  writeMetadata(doc, [
-    ['NIS', report.nis],
-    ['Kelas', ctx.className],
-  ])
-  writeSection(
-    doc,
-    'Nilai per Mata Pelajaran',
-    report.subjects.map((subject) => `${subject.subject}: ${subject.average?.toFixed(1) ?? '-'}`)
-  )
-  writeSection(doc, 'Ringkasan', [
-    `Rata-rata keseluruhan: ${report.overallAverage?.toFixed(1) ?? '-'}`,
-    `Peringkat: ${report.rank ?? '-'} dari ${ctx.totalStudents} siswa`,
-  ])
-  return toBuffer(doc)
+  return withPdfExportQuota(user, async () => {
+    const doc = new PDFDocument({ margin: 50 })
+    writeKop(doc, user, `Rapor — ${ctx.semesterLabel}`)
+    doc.font('Helvetica-Bold').fontSize(16).text(report.fullName)
+    writeMetadata(doc, [
+      ['NIS', report.nis],
+      ['Kelas', ctx.className],
+    ])
+    writeSection(
+      doc,
+      'Nilai per Mata Pelajaran',
+      report.subjects.map((subject) => `${subject.subject}: ${subject.average?.toFixed(1) ?? '-'}`)
+    )
+    writeSection(doc, 'Ringkasan', [
+      `Rata-rata keseluruhan: ${report.overallAverage?.toFixed(1) ?? '-'}`,
+      `Peringkat: ${report.rank ?? '-'} dari ${ctx.totalStudents} siswa`,
+    ])
+    return toBuffer(doc)
+  })
 }
 
 export async function exportNarrativeReportDocPdf(
@@ -2850,23 +2952,24 @@ export async function exportNarrativeReportDocPdf(
   user: User,
   ctx: { className: string; semesterLabel: string }
 ) {
-  await consumePdfExport(user)
-  const doc = new PDFDocument({ margin: 50 })
-  writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
-  doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
-  writeMetadata(doc, [
-    ['NIS', narrative.nis],
-    ['Kelompok', ctx.className],
-  ])
-  for (const entry of narrative.entries)
-    writeSection(
-      doc,
-      `${entry.typeLabel} — ${entry.date}`,
-      Object.entries(entry.content).map(
-        ([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : String(value)}`
+  return withPdfExportQuota(user, async () => {
+    const doc = new PDFDocument({ margin: 50 })
+    writeKop(doc, user, `Rapor Perkembangan — ${ctx.semesterLabel}`)
+    doc.font('Helvetica-Bold').fontSize(16).text(narrative.fullName)
+    writeMetadata(doc, [
+      ['NIS', narrative.nis],
+      ['Kelompok', ctx.className],
+    ])
+    for (const entry of narrative.entries)
+      writeSection(
+        doc,
+        `${entry.typeLabel} — ${entry.date}`,
+        Object.entries(entry.content).map(
+          ([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : String(value)}`
+        )
       )
-    )
-  for (const item of narrative.narratives)
-    writeSection(doc, item.element, item.content.trim() || 'Belum ada narasi yang disetujui.')
-  return toBuffer(doc)
+    for (const item of narrative.narratives)
+      writeSection(doc, item.element, item.content.trim() || 'Belum ada narasi yang disetujui.')
+    return toBuffer(doc)
+  })
 }

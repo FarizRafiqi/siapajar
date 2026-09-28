@@ -6,6 +6,9 @@
   border-radius: 0.75rem;
   font-family: inherit;
   max-width: min(22rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+  z-index: 10001;
 }
 .driver-popover-title {
   color: #047857;
@@ -24,6 +27,13 @@
 }
 .dark .driver-popover-description {
   color: #d4d4d4;
+}
+
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 2rem);
+    margin-inline: 1rem;
+  }
 }
 
 /* Class-based dark mode for Tailwind v4 */

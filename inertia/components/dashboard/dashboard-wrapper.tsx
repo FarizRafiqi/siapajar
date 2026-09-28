@@ -8,7 +8,8 @@ interface User {
   email: string
   initials: string
   role: string
-  educationLevel: 'tk' | 'sd' | null
+  educationLevel: string | null
+  institutionType?: string | null
   avatarUrl: string | null
 }
 

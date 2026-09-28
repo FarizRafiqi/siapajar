@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardWrapper from '~/components/dashboard/dashboard-wrapper'
 import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
 import { CalendarDays, Zap, Coins, RotateCw, ArrowRight } from 'lucide-react'
@@ -13,39 +13,83 @@ interface Subject {
 interface SchoolClass {
   id: number
   name: string
+  academicYearId?: number
 }
 
 interface ProtaPromesProps {
-  isTk: boolean
+  isTk?: boolean
+  educationLevel?: string | null
+  institutionType?: string | null
   subjects: Subject[]
   classes: SchoolClass[]
-  hasGenerated: boolean
+  academicYears?: AcademicYear[]
+  semesters?: Semester[]
+  hasGenerated?: boolean
+}
+
+interface AcademicYear {
+  id: number
+  name: string
+}
+
+interface Semester {
+  id: number
+  name: string
+  academicYearId: number
+  academicYear?: { name: string }
 }
 
 export default function ProtaPromesExpress({
-  isTk,
+  isTk = false,
   subjects = [],
   classes = [],
+  academicYears = [],
+  semesters = [],
 }: Readonly<ProtaPromesProps>) {
-  const [academicYear, setAcademicYear] = useState('2025/2026')
-  const [semester, setSemester] = useState<'1' | '2'>('1')
-  const [selectedSubject, setSelectedSubject] = useState(
-    subjects[0]?.name || 'Pendidikan Pancasila'
-  )
+  const [academicYearId, setAcademicYearId] = useState<number>(academicYears[0]?.id || 0)
+  const [semesterId, setSemesterId] = useState<number>(semesters[0]?.id || 0)
+  const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || '')
   const [classId, setClassId] = useState(classes[0] ? String(classes[0].id) : '')
   const [isGenerating, setIsGenerating] = useState(false)
 
+  const availableSemesters = useMemo(
+    () => semesters.filter((item) => !academicYearId || item.academicYearId === academicYearId),
+    [academicYearId, semesters]
+  )
+  const availableClasses = useMemo(
+    () =>
+      classes.filter(
+        (item) => !academicYearId || !item.academicYearId || item.academicYearId === academicYearId
+      ),
+    [academicYearId, classes]
+  )
+
+  useEffect(() => {
+    if (!availableSemesters.some((item) => item.id === semesterId)) {
+      setSemesterId(availableSemesters[0]?.id || 0)
+    }
+  }, [availableSemesters, semesterId])
+
+  useEffect(() => {
+    if (!availableClasses.some((item) => String(item.id) === classId)) {
+      setClassId(availableClasses[0] ? String(availableClasses[0].id) : '')
+    }
+  }, [availableClasses, classId])
+
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!academicYearId || !semesterId || !classId || (!isTk && !selectedSubject)) {
+      toast.error('Lengkapi tahun ajaran, semester, kelas, dan mata pelajaran terlebih dahulu')
+      return
+    }
     setIsGenerating(true)
     router.post(
       '/prota-promes/generate',
       {
-        academicYear,
-        semester: Number(semester),
-        subject: selectedSubject,
+        academicYearId,
+        semesterId,
+        subject: selectedSubject || 'Tematik PAUD',
         classId: classId ? Number(classId) : undefined,
-        isTk,
       },
       {
         onFinish: () => setIsGenerating(false),
@@ -101,7 +145,7 @@ export default function ProtaPromesExpress({
               </p>
             </div>
             <span className="badge-kawaii-emerald">
-              <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 1 Kredit
+              <Coins className="w-3.5 h-3.5 text-emerald-600" /> Biaya: 2 Kredit
             </span>
           </div>
 
@@ -112,13 +156,18 @@ export default function ProtaPromesExpress({
                   Tahun Ajaran *
                 </label>
                 <select
-                  value={academicYear}
-                  onChange={(e) => setAcademicYear(e.target.value)}
+                  value={academicYearId}
+                  onChange={(e) => setAcademicYearId(Number(e.target.value))}
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="2024/2025">2024/2025</option>
-                  <option value="2025/2026">2025/2026</option>
-                  <option value="2026/2027">2026/2027</option>
+                  {academicYears.length === 0 && (
+                    <option value={0}>Belum ada tahun ajaran aktif</option>
+                  )}
+                  {academicYears.map((year) => (
+                    <option key={year.id} value={year.id}>
+                      {year.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -127,12 +176,18 @@ export default function ProtaPromesExpress({
                   Semester *
                 </label>
                 <select
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value as '1' | '2')}
+                  value={semesterId}
+                  onChange={(e) => setSemesterId(Number(e.target.value))}
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="1">Semester 1 (Ganjil - Juli s/d Desember)</option>
-                  <option value="2">Semester 2 (Genap - Januari s/d Juni)</option>
+                  {availableSemesters.length === 0 && (
+                    <option value={0}>Belum ada semester aktif</option>
+                  )}
+                  {availableSemesters.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} {item.academicYear?.name ? `(${item.academicYear.name})` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -148,7 +203,7 @@ export default function ProtaPromesExpress({
                   className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   required
                 >
-                  {classes.map((c) => (
+                  {availableClasses.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -165,7 +220,13 @@ export default function ProtaPromesExpress({
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
                     className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
                   >
+                    {subjects.length === 0 && (
+                      <option value="" disabled>
+                        Belum ada mata pelajaran
+                      </option>
+                    )}
                     {subjects.map((s) => (
                       <option key={s.id} value={s.name}>
                         {s.name}
@@ -205,7 +266,7 @@ export default function ProtaPromesExpress({
                 ) : (
                   <>
                     <Zap className="w-4 h-4" />
-                    Generate Prota & Promes (1 Kredit)
+                    Generate Prota & Promes (2 Kredit)
                   </>
                 )}
               </button>

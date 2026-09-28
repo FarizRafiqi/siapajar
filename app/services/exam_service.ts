@@ -8,6 +8,7 @@ import { renderExamWorksheetHtml } from '#services/exam_worksheet_service'
 import GenerateExam from '#jobs/generate_exam'
 import { persistUploadedVisualAsset } from '#services/visual_asset_service'
 import { exportFilename } from '#services/export_file_service'
+import { creditService } from '#services/credit_service'
 
 const EXAM_TYPE_LABELS: Record<ExamGenerationData['type'], string> = {
   midterm: 'PTS',
@@ -34,6 +35,7 @@ export type ExamGenerationData = {
 
 export type ExamGenerationResult =
   | { status: 'missing_class' }
+  | { status: 'insufficient_credits' }
   | { status: 'queue_unavailable'; examId: number }
   | { status: 'queued'; exam: Exam }
 
@@ -132,6 +134,10 @@ export class ExamService {
   async generate(user: User, data: ExamGenerationData): Promise<ExamGenerationResult> {
     const schoolClass = await this.repository.findOwnedClass(data.classId, user.id)
     if (!schoolClass) return { status: 'missing_class' }
+
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
+    }
 
     const exam = await Exam.create({
       userId: user.id,

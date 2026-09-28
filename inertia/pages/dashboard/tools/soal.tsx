@@ -28,6 +28,11 @@ interface Subject {
   name: string
 }
 
+interface SchoolClass {
+  id: number
+  name: string
+}
+
 interface AssessmentItem {
   id: number
   title: string
@@ -38,8 +43,12 @@ interface AssessmentItem {
 }
 
 interface SoalProps {
+  classes?: SchoolClass[]
   subjects: Subject[]
   recentAssessments: AssessmentItem[]
+  isTk?: boolean
+  educationLevel?: string | null
+  institutionType?: string | null
 }
 
 type PaginationItem = number | 'ellipsis'
@@ -65,14 +74,18 @@ function formatCreatedAt(value: string) {
 }
 
 export default function SoalExpress({
+  classes = [],
   subjects = [],
   recentAssessments = [],
+  isTk = false,
+  educationLevel,
 }: Readonly<SoalProps>) {
   const [activeTab, setActiveTab] = useState<'create' | 'list'>('create')
-  const [subject, setSubject] = useState<string>(
-    subjects[0] ? subjects[0].name : 'Pendidikan Pancasila'
+  const [subject, setSubject] = useState<string>(subjects[0]?.name || '')
+  const [classId, setClassId] = useState<string>(classes[0] ? String(classes[0].id) : '')
+  const [gradeLevel, setGradeLevel] = useState<string>(
+    isTk ? 'PAUD / TK B (5-6 Tahun)' : `Kelas 1 ${educationLevel?.toUpperCase() || 'SD'}`
   )
-  const [gradeLevel, setGradeLevel] = useState<string>('Kelas 1 SD / MI')
   const [topic, setTopic] = useState<string>('')
   const [assessmentType, setAssessmentType] = useState<string>('Sumatif Lingkup Materi')
   const [questionCount, setQuestionCount] = useState<number>(10)
@@ -100,17 +113,27 @@ export default function SoalExpress({
       toast.error('Topik / Materi evaluasi wajib diisi')
       return
     }
+    if (!classId) {
+      toast.error('Pilih kelas terlebih dahulu')
+      return
+    }
 
     setIsGenerating(true)
     router.post(
-      '/assessments/generate',
+      '/soal/generate',
       {
+        classId: Number(classId),
         subject,
-        gradeLevel,
         topic,
-        assessmentType,
         questionCount,
-        questionTypes,
+        type: assessmentType.includes('Tengah')
+          ? 'midterm'
+          : assessmentType.includes('Akhir')
+            ? 'final'
+            : assessmentType.includes('Diagnostik')
+              ? 'daily'
+              : 'summative',
+        examMode: questionTypes.uraian && !questionTypes.pg ? 'essay' : 'multiple_choice',
       },
       {
         onFinish: () => setIsGenerating(false),
@@ -245,13 +268,37 @@ export default function SoalExpress({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
+                      Pilih Kelas / Rombel *
+                    </label>
+                    <select
+                      value={classId}
+                      onChange={(e) => setClassId(e.target.value)}
+                      className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    >
+                      {classes.length === 0 && <option value="">Belum ada kelas</option>}
+                      {classes.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-neutral-800 dark:text-neutral-200 mb-1.5">
                       Mata Pelajaran *
                     </label>
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
                     >
+                      {subjects.length === 0 && (
+                        <option value="" disabled>
+                          Belum ada mata pelajaran
+                        </option>
+                      )}
                       {subjects.map((sub) => (
                         <option key={sub.id} value={sub.name}>
                           {sub.name}
@@ -269,16 +316,21 @@ export default function SoalExpress({
                       onChange={(e) => setGradeLevel(e.target.value)}
                       className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
-                      <option value="PAUD / TK B (5-6 Tahun)">PAUD / TK B (5-6 Tahun)</option>
-                      <option value="Kelas 1 SD / MI">Kelas 1 SD / MI</option>
-                      <option value="Kelas 2 SD / MI">Kelas 2 SD / MI</option>
-                      <option value="Kelas 3 SD / MI">Kelas 3 SD / MI</option>
-                      <option value="Kelas 4 SD / MI">Kelas 4 SD / MI</option>
-                      <option value="Kelas 5 SD / MI">Kelas 5 SD / MI</option>
-                      <option value="Kelas 6 SD / MI">Kelas 6 SD / MI</option>
-                      <option value="Kelas 7 SMP / MTs">Kelas 7 SMP / MTs</option>
-                      <option value="Kelas 8 SMP / MTs">Kelas 8 SMP / MTs</option>
-                      <option value="Kelas 9 SMP / MTs">Kelas 9 SMP / MTs</option>
+                      {isTk ? (
+                        <option value="PAUD / TK B (5-6 Tahun)">PAUD / TK B (5-6 Tahun)</option>
+                      ) : (
+                        <>
+                          <option value="Kelas 1 SD / MI">Kelas 1 SD / MI</option>
+                          <option value="Kelas 2 SD / MI">Kelas 2 SD / MI</option>
+                          <option value="Kelas 3 SD / MI">Kelas 3 SD / MI</option>
+                          <option value="Kelas 4 SD / MI">Kelas 4 SD / MI</option>
+                          <option value="Kelas 5 SD / MI">Kelas 5 SD / MI</option>
+                          <option value="Kelas 6 SD / MI">Kelas 6 SD / MI</option>
+                          <option value="Kelas 7 SMP / MTs">Kelas 7 SMP / MTs</option>
+                          <option value="Kelas 8 SMP / MTs">Kelas 8 SMP / MTs</option>
+                          <option value="Kelas 9 SMP / MTs">Kelas 9 SMP / MTs</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -562,7 +614,7 @@ export default function SoalExpress({
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                     {paginatedList.map((item, index) => {
-                      const detailHref = `/assessments/${item.id}`
+                      const detailHref = `/exams/${item.id}`
 
                       return (
                         <tr

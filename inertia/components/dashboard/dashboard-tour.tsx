@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { driver, type DriveStep } from 'driver.js'
 import 'driver.js/dist/driver.css'
+import { isPaudProfile } from '~/lib/education'
 
 export type DashboardTourName = 'dashboard' | 'curriculum' | 'paud-assessment'
 
 interface DashboardTourProps {
   readonly active: boolean
   readonly autoStart?: boolean
-  readonly educationLevel: 'tk' | 'sd' | null
+  readonly educationLevel: string | null
+  readonly institutionType?: string | null
   readonly tourName?: DashboardTourName
   readonly onAutoStart?: () => void
   readonly onFinish?: () => void
@@ -35,7 +37,11 @@ function markTourCompleted(tourName: DashboardTourName) {
   }
 }
 
-function getSteps(tourName: DashboardTourName, educationLevel: 'tk' | 'sd' | null): DriveStep[] {
+function getSteps(
+  tourName: DashboardTourName,
+  educationLevel: string | null,
+  institutionType?: string | null
+): DriveStep[] {
   if (tourName === 'curriculum') {
     return [
       {
@@ -140,10 +146,9 @@ function getSteps(tourName: DashboardTourName, educationLevel: 'tk' | 'sd' | nul
       element: '[data-tour="sidebar"]',
       popover: {
         title: 'Menu pembelajaran',
-        description:
-          educationLevel === 'tk'
-            ? 'Gunakan menu ini untuk mengelola kurikulum, kelompok, RPPM, RPPH, media ajar, asesmen, dan rapor PAUD.'
-            : 'Gunakan menu ini untuk mengelola kurikulum, kelas, modul ajar, penilaian, bank soal, dan rapor.',
+        description: isPaudProfile(educationLevel, institutionType)
+          ? 'Gunakan menu ini untuk mengelola kurikulum, kelompok, RPPM, RPPH, media ajar, asesmen, dan rapor PAUD.'
+          : 'Gunakan menu ini untuk mengelola kurikulum, kelas, modul ajar, penilaian, bank soal, dan rapor.',
         side: 'right',
       },
     },
@@ -178,6 +183,7 @@ export default function DashboardTour({
   active,
   autoStart = false,
   educationLevel,
+  institutionType,
   tourName = 'dashboard',
   onAutoStart,
   onFinish,
@@ -188,7 +194,7 @@ export default function DashboardTour({
   useEffect(() => {
     if (!active || hasStartedRef.current) return
 
-    const steps = getSteps(tourName, educationLevel).filter((step) => {
+    const steps = getSteps(tourName, educationLevel, institutionType).filter((step) => {
       if (typeof step.element !== 'string') return false
       const target = document.querySelector(step.element)
       return target && target.getAttribute('data-tour-ready') !== 'false'
@@ -217,7 +223,7 @@ export default function DashboardTour({
       tour.destroy()
       driverRef.current = null
     }
-  }, [active, educationLevel, onFinish, tourName])
+  }, [active, educationLevel, institutionType, onFinish, tourName])
 
   useEffect(() => {
     if (!active) hasStartedRef.current = false

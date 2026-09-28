@@ -20,6 +20,7 @@ import {
 import { cn } from '~/lib/utils'
 import { toast } from 'sonner'
 import GenerationProgressModal from '~/components/dashboard/generation-progress-modal'
+import { isPaudProfile } from '~/lib/education'
 
 interface SchoolClass {
   id: number
@@ -39,7 +40,12 @@ interface LkpdItem {
 interface LkpdProps {
   classes: SchoolClass[]
   recentLkpds: LkpdItem[]
-  institutionType?: string
+  institutionType?: string | null
+  educationLevel?: string | null
+  educationProfile?: {
+    audience?: string
+    isEarlyChildhood?: boolean
+  }
 }
 
 type PaginationItem = number | 'ellipsis'
@@ -67,13 +73,21 @@ function formatCreatedAt(value: string) {
 export default function LkpdExpress({
   classes = [],
   recentLkpds = [],
-  institutionType = 'tk',
+  institutionType,
+  educationLevel,
+  educationProfile,
 }: Readonly<LkpdProps>) {
+  const isEarlyChildhood =
+    educationProfile?.isEarlyChildhood ?? isPaudProfile(educationLevel, institutionType)
+  const audience =
+    educationProfile?.audience || (isEarlyChildhood ? 'PAUD/TK' : 'satuan pendidikan')
   const [activeTab, setActiveTab] = useState<'create' | 'list'>('create')
   const [classId, setClassId] = useState<string>(classes[0] ? String(classes[0].id) : '')
   const [theme, setTheme] = useState<string>('')
   const [subtheme, setSubtheme] = useState<string>('')
-  const [ageGroup, setAgeGroup] = useState<string>('Kelompok B (5-6 Tahun)')
+  const [ageGroup, setAgeGroup] = useState<string>(
+    isEarlyChildhood ? 'Kelompok B (5-6 Tahun)' : `Fase ${educationLevel?.toUpperCase() || 'A'}`
+  )
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Table search & sort state
@@ -178,7 +192,7 @@ export default function LkpdExpress({
                 Generator Lembar Kerja Siswa (LKPD)
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                Lembar aktivitas siap cetak bergambar kontekstual untuk PAUD & Fase Fondasi
+                Lembar aktivitas siap cetak bergambar kontekstual untuk {audience}
               </p>
             </div>
           </div>
@@ -258,9 +272,23 @@ export default function LkpdExpress({
                       onChange={(e) => setAgeGroup(e.target.value)}
                       className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
-                      <option value="Kelompok A (4-5 Tahun)">Kelompok A (4-5 Tahun)</option>
-                      <option value="Kelompok B (5-6 Tahun)">Kelompok B (5-6 Tahun)</option>
-                      <option value="Fase A (Kelas 1-2 SD)">Fase A (Kelas 1-2 SD)</option>
+                      {isEarlyChildhood ? (
+                        <>
+                          <option value="Kelompok A (4-5 Tahun)">Kelompok A (4-5 Tahun)</option>
+                          <option value="Kelompok B (5-6 Tahun)">Kelompok B (5-6 Tahun)</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Fase A (Kelas 1-2 SD)">Fase A (Kelas 1-2 SD)</option>
+                          <option value="Fase D (Kelas 7-9 SMP)">Fase D (Kelas 7-9 SMP)</option>
+                          <option value="Fase E (Kelas 10 SMA/SMK)">
+                            Fase E (Kelas 10 SMA/SMK)
+                          </option>
+                          <option value="Fase F (Kelas 11-12 SMA/SMK)">
+                            Fase F (Kelas 11-12 SMA/SMK)
+                          </option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>

@@ -12,12 +12,14 @@ All-in-one administrasi guru Kurikulum Merdeka. Siap mengajar, siap administrasi
 - **Export:** Canonical RA/TK worksheet preview + PDF (Playwright Chromium) + DOCX (`docx`) + XLSX (`xlsx`)
 - **Typed API client:** Tuyau
 
-### Planned integrations (not yet implemented)
+### Integrations
 
-These are referenced in `.env.example` / the product roadmap but have no code wired up yet:
+- **Payment:** Mayar (checkout, remote invoice verification, and idempotent webhook settlement)
+- **WhatsApp notifications:** Baileys (planned; not wired up yet)
 
-- **Payment:** Xendit
-- **WhatsApp notifications:** Baileys
+Xendit references that remain in historical product documents are not an active
+payment integration. Configure `MAYAR_API_KEY`, `MAYAR_BASE_URL`, and a dedicated
+`MAYAR_WEBHOOK_PATH_SECRET` before using a non-local environment.
 
 ## Quick Start
 

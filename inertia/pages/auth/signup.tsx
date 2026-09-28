@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { Form } from '@adonisjs/inertia/react'
 import { motion } from 'framer-motion'
-import { UserPlus, Zap, Gift, CheckCircle2, ArrowRight } from 'lucide-react'
+import { UserPlus, Zap, Gift, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react'
 import { ThemeToggle } from '~/components/ui/theme-toggle'
 
 export default function Signup() {
@@ -64,7 +64,7 @@ export default function Signup() {
                       <Zap className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white">3 Kredit Starter Tersedia</h4>
+                      <h4 className="text-xs font-bold text-white">10 Kredit Starter Tersedia</h4>
                       <p className="text-[11px] text-emerald-200/80">
                         Langsung coba generate dokumen tanpa biaya awal
                       </p>
@@ -87,7 +87,10 @@ export default function Signup() {
 
               {/* Bottom Guarantee */}
               <div className="relative z-10 pt-6 mt-6 border-t-2 border-emerald-700/60 flex items-center justify-between text-xs font-bold text-emerald-200">
-                <span>🛡️ Tanpa Kartu Kredit</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  Tanpa Kartu Kredit
+                </span>
                 <span className="text-amber-300">Aman & Terpercaya</span>
               </div>
             </motion.div>

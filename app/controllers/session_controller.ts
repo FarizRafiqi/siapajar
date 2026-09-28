@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { accountService } from '#services/account_service'
+import { apiTokenService } from '#services/api_token_service'
 
 function isApiRequest(ctx: HttpContext): boolean {
   return (
@@ -33,8 +34,7 @@ export default class SessionController {
     }
 
     if (isApi) {
-      const tokenPayload = `${user.id}:${Date.now()}`
-      const token = Buffer.from(tokenPayload).toString('base64')
+      const token = apiTokenService.issue(user.id)
       return response.ok({
         status: 'success',
         data: {
@@ -45,6 +45,7 @@ export default class SessionController {
             email: user.email,
             schoolName: user.schoolName,
             educationLevel: user.educationLevel,
+            institutionType: user.institutionType,
             role: user.role,
           },
         },

@@ -21,23 +21,50 @@ export type UserParam = User | PartialUser | null | undefined
 export interface InstitutionInfo {
   ministry: string
   subtitle: string
-  level: 'RA' | 'TK' | 'PAUD' | 'SD'
+  level: string
   assessmentHeaderTitle: string
 }
 
 export function detectInstitutionInfo(
   schoolName?: string | null,
-  educationLevel?: string | null
+  educationLevel?: string | null,
+  institutionType?: string | null
 ): InstitutionInfo {
   const sName = (schoolName || '').trim()
   const edu = (educationLevel || '').trim().toUpperCase()
+  const institution = (institutionType || '').trim().toUpperCase()
+  const explicitNonEarlyLevel = edu && !['RA', 'TK', 'PAUD'].includes(edu)
 
   const hasRa =
-    /\b(RA|Raudhatul|Athfal|Madrasah|Kemenag)\b/i.test(sName) ||
-    edu === 'RA' ||
-    /Raudhatul\s+Athfal/i.test(sName)
-  const hasTk = /\b(TK|Taman\s+Kanak|TKK)\b/i.test(sName) || edu === 'TK'
-  const hasPaud = /\b(PAUD|KB|Kelompok\s+Bermain|TPA|SPS)\b/i.test(sName) || edu === 'PAUD'
+    !explicitNonEarlyLevel &&
+    (institution === 'RA' ||
+      /\b(RA|Raudhatul|Athfal|Madrasah|Kemenag)\b/i.test(sName) ||
+      edu === 'RA' ||
+      /Raudhatul\s+Athfal/i.test(sName))
+  const hasTk =
+    !explicitNonEarlyLevel &&
+    (institution === 'TK' || /\b(TK|Taman\s+Kanak|TKK)\b/i.test(sName) || edu === 'TK')
+  const hasPaud =
+    !explicitNonEarlyLevel &&
+    (institution === 'PAUD' ||
+      /\b(PAUD|KB|Kelompok\s+Bermain|TPA|SPS)\b/i.test(sName) ||
+      edu === 'PAUD')
+
+  // An explicit non-PAUD level wins over stale institution/name metadata.
+  // This keeps legacy SD accounts from receiving RA/TK headers.
+  if (explicitNonEarlyLevel) {
+    const religious = ['MI', 'MTS', 'MA', 'MAK'].includes(edu)
+    const ministry = religious
+      ? 'KEMENTERIAN AGAMA REPUBLIK INDONESIA'
+      : 'KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI'
+    const curriculum = religious ? 'KURIKULUM MERDEKA MADRASAH' : 'KURIKULUM MERDEKA'
+    return {
+      ministry,
+      subtitle: `MODUL AJAR ${curriculum} ${edu}`,
+      level: edu,
+      assessmentHeaderTitle: `ASESMEN ${edu}`,
+    }
+  }
 
   if (hasRa) {
     return {
@@ -96,7 +123,8 @@ export function formatRpmClassShortCode(
 ): string {
   const info = detectInstitutionInfo(
     user?.schoolName,
-    user?.educationLevel || (user?.isTk === false ? 'SD' : 'RA')
+    user?.educationLevel || (user?.isTk === false ? 'SD' : 'RA'),
+    user?.institutionType
   )
   const inst = info.level
 
@@ -124,7 +152,8 @@ export function formatRpmClassCover(
 ): string {
   const info = detectInstitutionInfo(
     user?.schoolName,
-    user?.educationLevel || (user?.isTk === false ? 'SD' : 'RA')
+    user?.educationLevel || (user?.isTk === false ? 'SD' : 'RA'),
+    user?.institutionType
   )
   const inst = info.level
   if (!schoolClass) return resolveFallbackCover(inst, fallbackGroup)

@@ -89,7 +89,10 @@ test.group('P9 content and document workflow layering', () => {
 
       assert.notInclude(source, "from '@adonisjs/lucid/services/db'")
       assert.notMatch(source, /\.query\s*\(/)
-      assert.notMatch(source, /\b(?:whereHas|preload|groupBy|join|forUpdate)\s*\(/)
+      // `express_tools_service` legitimately uses Array#join while formatting
+      // generated documents. Query-builder joins are already covered by the
+      // no-DB-import and no-`.query()` guards above.
+      assert.notMatch(source, /\b(?:whereHas|preload|groupBy|forUpdate)\s*\(/)
     }
 
     assert.include(

@@ -12,6 +12,7 @@ export default class UserTransformer extends BaseTransformer<User> {
       'initials',
       'role',
       'educationLevel',
+      'institutionType',
       'avatarUrl',
       'schoolName',
       'creditsBalance',

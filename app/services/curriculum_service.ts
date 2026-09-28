@@ -9,6 +9,7 @@ import { exportCurriculumPdf } from '#services/pdf_export_service'
 import { PAUD_CURRICULUM_PRESETS, type PresetCp } from '#services/curriculum_presets'
 import { curriculumRepository } from '#repositories/curriculum_repository'
 import type { CurriculumRepository } from '#repositories/curriculum_repository'
+import { resolveEducationProfile } from '#services/education_profile'
 
 export class CurriculumService {
   constructor(private readonly repository: CurriculumRepository = curriculumRepository) {}
@@ -248,13 +249,20 @@ export class CurriculumService {
   }
 
   private getExportProfile(user: User) {
+    const profile = resolveEducationProfile(
+      user.educationLevel,
+      user.institutionType,
+      user.curriculumVersion
+    )
+    const level = (
+      profile.isReligiousEarlyChildhood ? 'RA' : profile.educationLevel || profile.audience
+    ).toUpperCase()
     return {
-      institutionName: (user as any).institutionName || user.schoolName || 'TK Tunas Bangsa',
-      educationLevel:
-        user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK',
-      institutionType: user.institutionType || 'tk',
-      jenjangFase: `${user.institutionType === 'ra' ? 'RA' : user.educationLevel?.toUpperCase() || 'TK'} / Fase Fondasi`,
-      curriculumVersion: user.curriculumVersion || 'Kurikulum Merdeka',
+      institutionName: (user as any).institutionName || user.schoolName || 'Satuan Pendidikan',
+      educationLevel: level,
+      institutionType: profile.institutionType || 'tk',
+      jenjangFase: `${level} / Fase ${profile.defaultPhase}`,
+      curriculumVersion: profile.curriculumLabel,
       teacherName: user.fullName || 'Guru Kelas',
       teacherNip: (user as any).nip || '-',
       principalName: (user as any).principalName || 'Kepala Sekolah',

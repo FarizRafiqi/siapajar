@@ -26,7 +26,7 @@ export default function Onboarding({ role }: OnboardingProps) {
   const [step, setStep] = useState(1)
   const { data, setData, post, processing, errors, transform } = useForm({
     educationLevel: '' as 'tk' | 'sd' | '',
-    institutionType: 'tk' as 'tk' | 'ra',
+    institutionType: 'tk' as 'tk' | 'ra' | null,
     curriculumVersion: 'Kurikulum Merdeka',
     defaultGroupContext: 'b' as 'a' | 'b',
     schoolName: '',
@@ -131,7 +131,10 @@ export default function Onboarding({ role }: OnboardingProps) {
                     {/* TK Option */}
                     <button
                       type="button"
-                      onClick={() => setData('educationLevel', 'tk')}
+                      onClick={() => {
+                        setData('educationLevel', 'tk')
+                        if (!data.institutionType) setData('institutionType', 'tk')
+                      }}
                       className={cn(
                         'group relative flex flex-col items-center sm:items-start p-6 rounded-3xl border-2 text-center sm:text-left transition-all duration-300 active:scale-[0.98]',
                         data.educationLevel === 'tk'
@@ -166,7 +169,10 @@ export default function Onboarding({ role }: OnboardingProps) {
                     {/* SD Option */}
                     <button
                       type="button"
-                      onClick={() => setData('educationLevel', 'sd')}
+                      onClick={() => {
+                        setData('educationLevel', 'sd')
+                        setData('institutionType', null)
+                      }}
                       className={cn(
                         'group relative flex flex-col items-center sm:items-start p-6 rounded-3xl border-2 text-center sm:text-left transition-all duration-300 active:scale-[0.98]',
                         data.educationLevel === 'sd'
@@ -210,7 +216,7 @@ export default function Onboarding({ role }: OnboardingProps) {
                         </label>
                         <select
                           id="institutionType"
-                          value={data.institutionType}
+                          value={data.institutionType || 'tk'}
                           onChange={(e) =>
                             setData('institutionType', e.target.value as 'tk' | 'ra')
                           }
