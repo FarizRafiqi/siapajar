@@ -9,7 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { teachingModulePrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateTeachingModuleData = {
   classId: number
@@ -18,6 +18,8 @@ export type GenerateTeachingModuleData = {
   phase: string
   learningModel?: string
   learningApproach?: string
+  duration?: string
+  additionalNotes?: string
   learningSequenceId?: number
 }
 
@@ -111,55 +113,73 @@ export class TeachingModuleService {
     }
 
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    let content: Record<string, any>
+    const description = `Modul Ajar: ${data.subject} - ${data.topic}`
     try {
-      const prompt = teachingModulePrompt({
-        subject: data.subject,
-        topic: data.topic,
-        phase: data.phase,
-        learningModel: data.learningModel,
-        learningApproach: data.learningApproach,
-      })
-      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      content = normalizeStringArraySections(raw, [
-        'kompetensiDasar',
-        'tujuanPembelajaran',
-        'kegiatan',
-        'penilaian',
-        'sumberBelajar',
-      ])
-      content.curriculum = curriculum
-      content.modelPembelajaran = data.learningModel || 'Problem Based Learning (PBL)'
-      if (data.learningApproach) {
-        content.pendekatanPembelajaran = data.learningApproach
-      }
+      return await creditService.withGenerationCredit(
+        user,
+        1,
+        description,
+        'teaching_module.generate',
+        async (reservationKey) => {
+          const prompt = teachingModulePrompt({
+            subject: data.subject,
+            topic: data.topic,
+            phase: data.phase,
+            learningModel: data.learningModel,
+            learningApproach: data.learningApproach,
+            duration: data.duration,
+            additionalNotes: data.additionalNotes,
+            educationLevel: user.educationLevel,
+            institutionType: user.institutionType,
+            curriculumVersion: user.curriculumVersion,
+          })
+          const raw = await callAiJsonForUser<Record<string, unknown>>(
+            user,
+            {
+              operation: 'teaching_module.generate',
+              systemPrompt: prompt.system,
+              userPrompt: prompt.user,
+            },
+            { reservationKey, amount: 1, description }
+          )
+          const content: Record<string, any> = normalizeStringArraySections(raw, [
+            'kompetensiDasar',
+            'tujuanPembelajaran',
+            'kegiatan',
+            'penilaian',
+            'sumberBelajar',
+          ])
+          content.curriculum = curriculum
+          content.modelPembelajaran = data.learningModel || 'Problem Based Learning (PBL)'
+          if (data.learningApproach) {
+            content.pendekatanPembelajaran = data.learningApproach
+          }
+
+          const teachingModule = await TeachingModule.create({
+            userId: user.id,
+            classId: data.classId,
+            title: `${data.subject} - ${data.topic}`,
+            subject: data.subject,
+            phase: data.phase,
+            content,
+            status: 'draft',
+          })
+          await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
+            status: 'draft',
+          })
+          return { status: 'created' as const, teachingModule }
+        }
+      )
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'generation_error' as const,
         message:
           error instanceof AiServiceError ? error.message : 'Gagal generate modul ajar. Coba lagi.',
       }
     }
-
-    const teachingModule = await TeachingModule.create({
-      userId: user.id,
-      classId: data.classId,
-      title: `${data.subject} - ${data.topic}`,
-      subject: data.subject,
-      phase: data.phase,
-      content,
-      status: 'draft',
-    })
-    await ensureDocumentWorkflow(user.id, 'teaching_module', teachingModule.id, {
-      status: 'draft',
-    })
-    await creditService.chargeGeneration(user, 1, `Modul Ajar: ${data.subject} - ${data.topic}`)
-
-    return { status: 'created', teachingModule }
   }
 }
 

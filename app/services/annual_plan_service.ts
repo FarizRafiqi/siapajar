@@ -9,7 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { annualPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateAnnualPlanData = {
   academicYearId: number
@@ -89,38 +89,56 @@ export class AnnualPlanService {
     }
 
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    let content: Record<string, any>
+    const description = `Program Tahunan: ${data.subject}`
     try {
-      const prompt = annualPlanPrompt({ subject: data.subject })
-      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      content = normalizeStringArraySections(raw, [
-        'kompetensi',
-        'alokasiWaktu',
-        'kegiatan',
-        'minggu',
-      ])
-      content.curriculum = curriculum
+      return await creditService.withGenerationCredit(
+        user,
+        1,
+        description,
+        'annual_plan.generate',
+        async (reservationKey) => {
+          const prompt = annualPlanPrompt({
+            subject: data.subject,
+            educationLevel: user.educationLevel,
+            institutionType: user.institutionType,
+            curriculumVersion: user.curriculumVersion,
+          })
+          const raw = await callAiJsonForUser<Record<string, unknown>>(
+            user,
+            {
+              operation: 'annual_plan.generate',
+              systemPrompt: prompt.system,
+              userPrompt: prompt.user,
+            },
+            { reservationKey, amount: 1, description }
+          )
+          const content: Record<string, any> = normalizeStringArraySections(raw, [
+            'kompetensi',
+            'alokasiWaktu',
+            'kegiatan',
+            'minggu',
+          ])
+          content.curriculum = curriculum
+
+          const annualPlan = await AnnualPlan.create({
+            userId: user.id,
+            academicYearId: data.academicYearId,
+            subject: data.subject,
+            content,
+          })
+          return { status: 'created' as const, annualPlan }
+        }
+      )
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'generation_error',
         message:
           error instanceof AiServiceError ? error.message : 'Gagal generate Protah. Coba lagi.',
       }
     }
-
-    const annualPlan = await AnnualPlan.create({
-      userId: user.id,
-      academicYearId: data.academicYearId,
-      subject: data.subject,
-      content,
-    })
-    await creditService.chargeGeneration(user, 1, `Program Tahunan: ${data.subject}`)
-
-    return { status: 'created', annualPlan }
   }
 }
 

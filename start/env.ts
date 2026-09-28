@@ -41,6 +41,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   QUEUE_DRIVER: Env.schema.enum(['redis', 'sync'] as const),
   AI_QUEUE_MAX_CONCURRENCY: Env.schema.number.optional(),
   AI_QUEUE_MAX_ATTEMPTS: Env.schema.number.optional(),
+  AI_QUEUE_RESULT_WAIT_TIMEOUT_MS: Env.schema.number.optional(),
 
   // AI Router (9router.com)
   ROUTER_API_KEY: Env.schema.string.optional(),
@@ -54,8 +55,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   CODEX_CLI_PATH: Env.schema.string.optional(),
   PDF_BROWSER_EXECUTABLE_PATH: Env.schema.string.optional(),
 
-  // Payment (Xendit & Mayar)
-  XENDIT_KEY: Env.schema.string.optional(),
+  // Payment (Mayar)
   MAYAR_API_KEY: Env.schema.string.optional(),
   MAYAR_WEBHOOK_TOKEN: Env.schema.string.optional(),
   MAYAR_BASE_URL: Env.schema.string.optional(),

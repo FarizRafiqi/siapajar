@@ -42,7 +42,7 @@ export default class PaudAssessmentsController {
     )
     if (!user) return ctx.response.unauthorized({ message: 'Unauthorized' })
 
-    const data = await paudAssessmentService.getStudentTimeline(ctx.params.id)
+    const data = await paudAssessmentService.getStudentTimeline(ctx.params.id, user.id)
     return ctx.response.ok({ status: 'success', data })
   }
 
@@ -59,6 +59,9 @@ export default class PaudAssessmentsController {
     const result = await paudAssessmentService.quickCapture(user, ctx.request)
     if (result.status === 'empty') {
       return ctx.response.badRequest({ message: 'Minimal 1 siswa wajib dipilih' })
+    }
+    if (result.status === 'invalid_context') {
+      return ctx.response.unprocessableEntity({ message: 'Kelas atau siswa tidak ditemukan' })
     }
 
     return ctx.response.created({
@@ -82,6 +85,14 @@ export default class PaudAssessmentsController {
 
     if (result.status === 'invalid_type') {
       return response.badRequest({ error: 'Jenis asesmen tidak valid' })
+    }
+
+    if (result.status === 'invalid_context') {
+      return response.notFound({ error: 'Kelas atau siswa tidak ditemukan' })
+    }
+
+    if (result.status === 'insufficient_credits') {
+      return response.paymentRequired({ error: 'Saldo kredit tidak mencukupi' })
     }
 
     return response.badRequest({ error: result.error })

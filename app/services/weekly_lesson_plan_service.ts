@@ -13,7 +13,7 @@ import { rpmKbcRaPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
 import { loadWeeklyPlanAssessments } from '#services/weekly_assessment_loader'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateWeeklyLessonPlanData = {
   classId: number
@@ -141,43 +141,69 @@ export class WeeklyLessonPlanService {
       .filter(Boolean)
 
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    let content: Record<string, any>
+    const description = `Modul Ajar RPPM: ${finalTheme}`
     try {
-      const prompt = rpmKbcRaPrompt({
-        theme: finalTheme,
-        subtheme: finalSubtheme || undefined,
-        semester: computedSemester,
-        weekNumber: computedWeek,
-        groupName: schoolClass.name,
-        schoolName: user.schoolName || undefined,
-        teacherName: user.fullName || undefined,
-        studentNames: studentNames.length > 0 ? studentNames : undefined,
-        dplSuggestions: (preset?.data?.dpl as string[]) || undefined,
-        kbcSuggestions: (preset?.data?.kbcValues as string[]) || undefined,
-        loosePartsSuggestions: (preset?.data?.loosePartsSuggestions as string[]) || undefined,
-        learningModel: data.learningModel,
-        curriculumContext: {
-          objectives: curriculum.objectives,
-        },
-      })
+      return await creditService.withGenerationCredit(
+        user,
+        1,
+        description,
+        'weekly_lesson_plan.generate',
+        async (reservationKey) => {
+          const prompt = rpmKbcRaPrompt({
+            theme: finalTheme,
+            subtheme: finalSubtheme || undefined,
+            semester: computedSemester,
+            weekNumber: computedWeek,
+            groupName: schoolClass.name,
+            schoolName: user.schoolName || undefined,
+            teacherName: user.fullName || undefined,
+            studentNames: studentNames.length > 0 ? studentNames : undefined,
+            dplSuggestions: (preset?.data?.dpl as string[]) || undefined,
+            kbcSuggestions: (preset?.data?.kbcValues as string[]) || undefined,
+            loosePartsSuggestions: (preset?.data?.loosePartsSuggestions as string[]) || undefined,
+            learningModel: data.learningModel,
+            curriculumContext: {
+              objectives: curriculum.objectives,
+            },
+          })
 
-      const raw = await callAiJsonForUser<Record<string, any>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
+          const raw = await callAiJsonForUser<Record<string, any>>(
+            user,
+            {
+              operation: 'weekly_lesson_plan.generate',
+              systemPrompt: prompt.system,
+              userPrompt: prompt.user,
+            },
+            { reservationKey, amount: 1, description }
+          )
 
-      content = normalizeRpmContent(raw, {
-        finalTheme,
-        finalSubtheme,
-        computedSemester,
-        computedWeek,
-        groupName: schoolClass.name,
-        preset,
-        curriculum,
-      })
-      content.modelPembelajaran = data.learningModel || 'Pembelajaran Berbasis Bermain'
+          const content = normalizeRpmContent(raw, {
+            finalTheme,
+            finalSubtheme,
+            computedSemester,
+            computedWeek,
+            groupName: schoolClass.name,
+            preset,
+            curriculum,
+          })
+          content.modelPembelajaran = data.learningModel || 'Pembelajaran Berbasis Bermain'
+
+          const weeklyLessonPlan = await WeeklyLessonPlan.create({
+            userId: user.id,
+            classId: data.classId,
+            theme: finalTheme,
+            weekStartDate: data.weekStartDate,
+            content,
+            status: 'draft',
+          })
+          await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: 'draft' })
+          return { status: 'created' as const, weeklyLessonPlan }
+        }
+      )
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'generation_error' as const,
         message:
@@ -186,19 +212,6 @@ export class WeeklyLessonPlanService {
             : 'Gagal generate Modul Ajar (RPM). Coba lagi.',
       }
     }
-
-    const weeklyLessonPlan = await WeeklyLessonPlan.create({
-      userId: user.id,
-      classId: data.classId,
-      theme: finalTheme,
-      weekStartDate: data.weekStartDate,
-      content,
-      status: 'draft',
-    })
-    await ensureDocumentWorkflow(user.id, 'rppm', weeklyLessonPlan.id, { status: 'draft' })
-    await creditService.chargeGeneration(user, 1, `Modul Ajar RPPM: ${finalTheme}`)
-
-    return { status: 'created' as const, weeklyLessonPlan }
   }
 
   private normalizeContent(weeklyLessonPlan: WeeklyLessonPlan) {

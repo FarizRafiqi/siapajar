@@ -6,7 +6,7 @@ export default class AiJob extends BaseModel {
   @column({ isPrimary: true }) declare id: number
   @column({ columnName: 'job_key' }) declare jobKey: string
   @column({ columnName: 'user_id' }) declare userId: number
-  @column() declare combo: string
+  @column() declare operation: string
   @column() declare status: 'pending' | 'processing' | 'completed' | 'failed'
   @column() declare attempts: number
   @column({

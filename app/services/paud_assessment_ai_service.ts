@@ -1,4 +1,5 @@
 import type User from '#models/user'
+import type { AiJobBillingReservation } from '#repositories/ai_job_repository'
 import { callAiJsonForUser } from '#services/user_ai_service'
 
 /**
@@ -18,7 +19,8 @@ export class PaudAssessmentAiService {
       theme?: string
       context?: string
       observedBehaviorNotes: string
-    }
+    },
+    billingReservation?: AiJobBillingReservation
   ) {
     const prompt =
       `Anda adalah Asisten Pakar Kurikulum Merdeka PAUD / Raudhatul Athfal (RA).\n` +
@@ -44,12 +46,16 @@ export class PaudAssessmentAiService {
       observedEvent?: string
       achievementAnalysis?: string
       toon?: string
-    }>(user, {
-      combo: 'siapajar-docgen',
-      systemPrompt:
-        'Anda adalah asisten AI ahli Kurikulum Merdeka PAUD/RA. Gunakan format TOON hemat token.',
-      userPrompt: prompt,
-    })
+    }>(
+      user,
+      {
+        operation: 'paud_assessment.analyze_anecdotal_note',
+        systemPrompt:
+          'Anda adalah asisten AI ahli Kurikulum Merdeka PAUD/RA. Gunakan format TOON hemat token.',
+        userPrompt: prompt,
+      },
+      billingReservation
+    )
 
     return parseToonAnecdote(rawResponse)
   }
@@ -66,7 +72,8 @@ export class PaudAssessmentAiService {
       learningObjective?: string
       targetIndicators?: string[]
       roughNotes?: string
-    }
+    },
+    billingReservation?: AiJobBillingReservation
   ) {
     const prompt =
       `Anda adalah Pakar Penilaian PAUD / RA.\n` +
@@ -92,11 +99,16 @@ export class PaudAssessmentAiService {
       items?: Array<{ indicator?: string; status?: string; event?: string }>
       generalNote?: string
       toon?: string
-    }>(user, {
-      combo: 'siapajar-docgen',
-      systemPrompt: 'Anda adalah pakar instrumen asesmen PAUD/RA. Gunakan format TOON hemat token.',
-      userPrompt: prompt,
-    })
+    }>(
+      user,
+      {
+        operation: 'paud_assessment.generate_instrument',
+        systemPrompt:
+          'Anda adalah pakar instrumen asesmen PAUD/RA. Gunakan format TOON hemat token.',
+        userPrompt: prompt,
+      },
+      billingReservation
+    )
 
     return parseToonChecklist(rawResponse)
   }
@@ -112,7 +124,8 @@ export class PaudAssessmentAiService {
       theme?: string
       workTitle: string
       childQuotesOrDescription?: string
-    }
+    },
+    billingReservation?: AiJobBillingReservation
   ) {
     const prompt =
       `Anda adalah Pakar Asesmen Dokumentasi Hasil Karya PAUD / RA.\n` +
@@ -138,11 +151,15 @@ export class PaudAssessmentAiService {
       description?: string
       analysis?: string
       toon?: string
-    }>(user, {
-      combo: 'siapajar-docgen',
-      systemPrompt: 'Anda adalah pakar asesmen hasil karya PAUD/RA. Gunakan format TOON.',
-      userPrompt: prompt,
-    })
+    }>(
+      user,
+      {
+        operation: 'paud_assessment.analyze_work_sample',
+        systemPrompt: 'Anda adalah pakar asesmen hasil karya PAUD/RA. Gunakan format TOON.',
+        userPrompt: prompt,
+      },
+      billingReservation
+    )
 
     return parseToonWorkSample(rawResponse)
   }
@@ -158,7 +175,8 @@ export class PaudAssessmentAiService {
       theme?: string
       activityTitle: string
       stageNotes?: string
-    }
+    },
+    billingReservation?: AiJobBillingReservation
   ) {
     const prompt =
       `Anda adalah Pakar Asesmen Foto Berseri PAUD / RA.\n` +
@@ -186,11 +204,15 @@ export class PaudAssessmentAiService {
       stages?: string[]
       analysis?: string
       toon?: string
-    }>(user, {
-      combo: 'siapajar-docgen',
-      systemPrompt: 'Anda adalah pakar asesmen foto berseri PAUD/RA. Gunakan format TOON.',
-      userPrompt: prompt,
-    })
+    }>(
+      user,
+      {
+        operation: 'paud_assessment.analyze_serial_photo',
+        systemPrompt: 'Anda adalah pakar asesmen foto berseri PAUD/RA. Gunakan format TOON.',
+        userPrompt: prompt,
+      },
+      billingReservation
+    )
 
     return parseToonPhotoSeries(rawResponse)
   }

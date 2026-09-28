@@ -10,7 +10,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { dailyLessonPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateDailyLessonPlanData = {
   classId: number
@@ -112,48 +112,69 @@ export class DailyLessonPlanService {
       if (!weeklyLessonPlan) return { status: 'missing_weekly_plan' }
     }
 
-    const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    let content: Record<string, any>
     try {
-      const prompt = dailyLessonPlanPrompt({
-        theme: data.theme,
-        date: data.date.toFormat('dd/MM/yyyy'),
-      })
-      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      const generated = normalizeStringArraySections(raw, [
-        'kegiatanPembuka',
-        'kegiatanInti',
-        'kegiatanPenutup',
-        'alatBahan',
-        'rencanaAsesmen',
-      ])
-      // Keep the teacher-selected theme authoritative over AI output.
-      content = { ...generated, tema: data.theme }
-      content.curriculum = curriculum
+      const dailyLessonPlan = await creditService.withGenerationCredit(
+        user,
+        1,
+        `RPPH: ${data.theme}`,
+        'daily_lesson_plan.generate',
+        async (reservationKey) => {
+          const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
+          const prompt = dailyLessonPlanPrompt({
+            theme: data.theme,
+            date: data.date.toFormat('dd/MM/yyyy'),
+          })
+          const raw = await callAiJsonForUser<Record<string, unknown>>(
+            user,
+            {
+              operation: 'daily_lesson_plan.generate',
+              systemPrompt: prompt.system,
+              userPrompt: prompt.user,
+            },
+            {
+              reservationKey,
+              amount: 1,
+              description: `RPPH: ${data.theme}`,
+            }
+          )
+          const generated = normalizeStringArraySections(raw, [
+            'kegiatanPembuka',
+            'kegiatanInti',
+            'kegiatanPenutup',
+            'alatBahan',
+            'rencanaAsesmen',
+          ])
+          // Keep the teacher-selected theme authoritative over AI output.
+          const content: Record<string, any> = {
+            ...generated,
+            tema: data.theme,
+            curriculum,
+          }
+
+          const created = await DailyLessonPlan.create({
+            userId: user.id,
+            classId: data.classId,
+            weeklyLessonPlanId: data.weeklyLessonPlanId ?? null,
+            date: data.date,
+            content,
+            status: 'draft',
+          })
+          await ensureDocumentWorkflow(user.id, 'rpph', created.id, { status: 'draft' })
+          return created
+        }
+      )
+
+      return { status: 'created' as const, dailyLessonPlan }
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'generation_error' as const,
         message:
           error instanceof AiServiceError ? error.message : 'Gagal generate RPPH. Coba lagi.',
       }
     }
-
-    const dailyLessonPlan = await DailyLessonPlan.create({
-      userId: user.id,
-      classId: data.classId,
-      weeklyLessonPlanId: data.weeklyLessonPlanId ?? null,
-      date: data.date,
-      content,
-      status: 'draft',
-    })
-    await ensureDocumentWorkflow(user.id, 'rpph', dailyLessonPlan.id, { status: 'draft' })
-    await creditService.chargeGeneration(user, 1, `RPPH: ${data.theme}`)
-
-    return { status: 'created' as const, dailyLessonPlan }
   }
 }
 

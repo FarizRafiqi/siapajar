@@ -1,6 +1,9 @@
+import { resolveEducationProfile } from '#services/education_profile'
+
 /**
- * Prompt terpisah per jenjang & resource — inti "TK penuh": SD dan TK
- * tidak boleh pakai template sama (Modul Ajar vs RPPH/RPPM).
+ * Prompt terpisah per resource. Profil jenjang disuntikkan sebagai konteks,
+ * bukan dijadikan cabang permanen TK-vs-SD, sehingga jenjang baru dapat
+ * memakai generator yang sama tanpa mengubah kontrak JSON.
  */
 
 interface AiPrompt {
@@ -14,18 +17,34 @@ export function teachingModulePrompt(params: {
   phase: string
   learningModel?: string
   learningApproach?: string
+  educationLevel?: string | null
+  institutionType?: string | null
+  curriculumVersion?: string | null
+  duration?: string
+  additionalNotes?: string
 }): AiPrompt {
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
+  const durationText = params.duration?.trim() ? ` Alokasi waktu: ${params.duration.trim()}.` : ''
+  const notesText = params.additionalNotes?.trim()
+    ? ` Catatan/tujuan khusus guru: ${params.additionalNotes.trim()}.`
+    : ''
+
   return {
     system:
-      'Kamu asisten guru SD Indonesia ahli Kurikulum Merdeka. Balas HANYA JSON valid tanpa teks lain, ' +
+      `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
       'dengan struktur persis: {"kompetensiDasar": string[], "tujuanPembelajaran": string[], ' +
       '"kegiatan": string[], "penilaian": string[], "sumberBelajar": string[], ' +
       '"modelPembelajaran": string, "pendekatanPembelajaran": string}. ' +
-      'Tiap array isi butir-butir singkat siap pakai guru, bahasa Indonesia.',
+      `Tiap array isi butir-butir singkat siap pakai guru ${profile.audience}, bahasa Indonesia. ` +
+      `Gunakan istilah dan tingkat perkembangan yang sesuai ${profile.audience}; jangan memaksakan contoh dari jenjang lain.`,
     user:
-      `Buatkan Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${params.subject}, topik "${params.topic}", Fase ${params.phase}. ` +
+      `Buatkan Modul Ajar ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject}, topik "${params.topic}", Fase ${params.phase}. ` +
       `Gunakan model pembelajaran ${params.learningModel || 'Problem Based Learning (PBL)'}. ` +
-      `${params.learningApproach ? `Terapkan juga pendekatan ${params.learningApproach}.` : ''}`,
+      `${params.learningApproach ? `Terapkan juga pendekatan ${params.learningApproach}.` : ''}${durationText}${notesText}`,
   }
 }
 
@@ -120,21 +139,43 @@ export function examPrompt(params: {
   }
 }
 
-export function annualPlanPrompt(params: { subject: string }): AiPrompt {
+export function annualPlanPrompt(params: {
+  subject: string
+  educationLevel?: string | null
+  institutionType?: string | null
+  curriculumVersion?: string | null
+}): AiPrompt {
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
   return {
     system:
-      'Kamu asisten guru SD Indonesia ahli Kurikulum Merdeka. Balas HANYA JSON valid tanpa teks lain, ' +
-      'dengan struktur persis: {"kompetensi": string[], "alokasiWaktu": string[], "kegiatan": string[], "minggu": string[]}.',
-    user: `Buatkan Program Tahunan (Protah) Kurikulum Merdeka untuk mata pelajaran ${params.subject} selama satu tahun ajaran.`,
+      `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
+      'dengan struktur persis: {"kompetensi": string[], "alokasiWaktu": string[], "kegiatan": string[], "minggu": string[]}. ' +
+      `Sesuaikan istilah, beban belajar, dan perkembangan peserta didik untuk ${profile.audience}; jangan memaksakan format jenjang lain.`,
+    user: `Buatkan Program Tahunan (Prota) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject} selama satu tahun ajaran.`,
   }
 }
 
-export function semesterPlanPrompt(params: { subject: string }): AiPrompt {
+export function semesterPlanPrompt(params: {
+  subject: string
+  educationLevel?: string | null
+  institutionType?: string | null
+  curriculumVersion?: string | null
+}): AiPrompt {
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
   return {
     system:
-      'Kamu asisten guru SD Indonesia ahli Kurikulum Merdeka. Balas HANYA JSON valid tanpa teks lain, ' +
-      'dengan struktur persis: {"minggu": string[], "kegiatan": string[], "target": string[], "materi": string[]}.',
-    user: `Buatkan Program Semester (Promes) Kurikulum Merdeka untuk mata pelajaran ${params.subject}.`,
+      `Kamu asisten guru ${profile.audience} Indonesia ahli ${profile.frameworkLabel}. Balas HANYA JSON valid tanpa teks lain, ` +
+      'dengan struktur persis: {"minggu": string[], "kegiatan": string[], "target": string[], "materi": string[]}. ' +
+      `Sesuaikan istilah, beban belajar, dan perkembangan peserta didik untuk ${profile.audience}; jangan memaksakan format jenjang lain.`,
+    user: `Buatkan Program Semester (Promes) ${profile.curriculumLabel} untuk ${profile.audience}, mata pelajaran ${params.subject}.`,
   }
 }
 
@@ -165,7 +206,7 @@ export function rpmKbcRaPrompt(params: {
   const teacher = params.teacherName || 'Guru Kelas'
   const studentsText = params.studentNames?.length
     ? `\nDaftar Siswa di Kelas:\n` + params.studentNames.map((s) => `- ${s}`).join('\n')
-    : '\nDaftar Siswa: Siswa A, Siswa B, Siswa C'
+    : '\nDaftar Siswa: belum dipilih oleh guru; jangan mengarang nama siswa.'
 
   const cpContextStr = params.curriculumContext?.cps?.length
     ? `\nData CP Acuan Guru:\n` +
@@ -320,22 +361,31 @@ export function lkpdPrompt(params: {
   subtheme?: string
   ageGroup?: string
   institutionType?: string
+  educationLevel?: string | null
+  curriculumVersion?: string | null
 }): AiPrompt {
-  const isRa = params.institutionType?.toUpperCase() === 'RA'
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
+  const isRa = profile.isReligiousEarlyChildhood
   const subthemeText = params.subtheme ? ` sub-tema "${params.subtheme}"` : ''
-  const instName = isRa ? 'RA (Raudhatul Athfal Kemenag)' : 'TK/PAUD Kemendikdasmen'
+  const instName = profile.audience
   const islamInstruction = isRa ? 'Sertakan unsur pembiasaan Islam (Doa/Surah/Hadits).' : ''
-  const groupName = params.ageGroup || 'Kelompok B'
+  const groupName = params.ageGroup || (profile.isEarlyChildhood ? 'Kelompok B' : profile.audience)
 
   return {
     system:
-      `Kamu asisten guru ${instName} ahli Kurikulum Merdeka Fase Fondasi. ` +
+      `Kamu asisten guru ${instName} ahli ${profile.frameworkLabel}. ` +
       'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
       '{"title": string, "tujuanPembelajaran": string[], "petunjukBelajar": string, "stimulusCerita": string, ' +
       '"aktivitasMotorik": string[], "aktivitasKognitifBahasa": string[], "aktivitasSeniMewarnai": string[], "refleksiEmosi": string[]}. ' +
       `${islamInstruction} ` +
-      'Aktivitas disesuaikan ramah anak TK/RA (menebalkan, mencocokkan, melingkari, menggambar).',
-    user: `Buatkan Lembar Kerja Peserta Didik (LKPD / Lembar Aktivitas Anak) untuk tema "${params.theme}"${subthemeText} untuk kelompok ${groupName}.`,
+      (profile.isEarlyChildhood
+        ? 'Aktivitas disesuaikan ramah anak TK/RA (menebalkan, mencocokkan, melingkari, menggambar).'
+        : `Aktivitas disesuaikan dengan tingkat perkembangan ${profile.audience}; gunakan instruksi dan tingkat kesulitan yang relevan, bukan format PAUD.`),
+    user: `Buatkan Lembar Kerja Peserta Didik (LKPD / Lembar Aktivitas) ${profile.curriculumLabel} untuk ${profile.audience}, tema "${params.theme}"${subthemeText} untuk ${groupName}.`,
   }
 }
 
@@ -344,21 +394,27 @@ export function mediaModulePrompt(params: {
   theme: string
   subtheme?: string
   institutionType?: string
+  educationLevel?: string | null
+  curriculumVersion?: string | null
 }): AiPrompt {
-  const isRa = params.institutionType?.toUpperCase() === 'RA'
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
   const subthemeText = params.subtheme ? ` sub-tema "${params.subtheme}"` : ''
-  const instName = isRa ? 'RA (Raudhatul Athfal)' : 'TK/PAUD'
+  const instName = profile.audience
 
   return {
     system:
-      `Kamu pembuat Media Ajar visual (presentation-creator) anak ${instName} Kurikulum Merdeka. ` +
+      `Kamu pembuat Media Ajar visual (presentation-creator) untuk ${instName} ${profile.curriculumLabel}. ` +
       'Gunakan kerangka GACTF (Goal, Audience, Content, Tone, Format). ' +
       'Balas HANYA JSON valid tanpa teks lain, dengan struktur persis: ' +
       '{"slides": [{"slideNumber": number, "slideType": "title"|"agenda"|"concept_story"|"loose_parts"|"summary", "title": string, "visualDescription": string, "imagePrompt": string, "teacherNotes": string, "keyQuestion": string}], ' +
       '"loosePartsGuide": {"materials": string[], "activities": string[], "safetyNotes": string}}. ' +
       'Buatkan 5 slide presentasi visual anak (Slide 1: Title, 2: Agenda, 3: Concept Story, 4: Loose Parts, 5: Summary). ' +
-      'imagePrompt WAJIB berformat Nano Banana Line-Art: "Simple, cute, high-contrast black-and-white vector line art illustration for kids, [subject], transparent white background, no text, no watermark, no logo, clean lines".',
-    user: `Buatkan outline Media Ajar visual dan panduan Loose Parts untuk tema "${params.theme}"${subthemeText}.`,
+      `imagePrompt WAJIB berformat Nano Banana Line-Art yang sesuai usia ${instName}: "Simple, cute, high-contrast black-and-white vector line art illustration for learners, [subject], transparent white background, no text, no watermark, no logo, clean lines".`,
+    user: `Buatkan outline Media Ajar visual dan panduan aktivitas untuk ${instName}, tema "${params.theme}"${subthemeText}.`,
   }
 }
 
@@ -367,15 +423,22 @@ export function katrolPrompt(params: {
   subject: string
   topic: string
   kktp: number
-  scores: Array<{ name: string; originalScore: number }>
-  method?: 'linear' | 'sqrt' | 'bonus'
+  scores: Array<{ originalScore: number; adjustedScore?: number; status?: string }>
+  method?: 'linear' | 'sqrt' | 'average' | 'constant'
+  targetMin?: number
+  targetMax?: number
+  passingGrade?: number
 }): AiPrompt {
   return {
     system:
       'Kamu konsultan asesmen Kurikulum Merdeka Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
-      '{"remedialAnalysis": string, "students": [{"name": string, "originalScore": number, "adjustedScore": number, "status": "Tuntas"|"Perlu Bimbingan", "remedialNotes": string}], "remedialActivities": string[], "enrichmentActivities": string[]}. ' +
-      'Berikan kalkulasi katrol nilai yang adil, manusiawi, dan saran tindak lanjut diagnostik bagi siswa yang belum mencapai KKTP.',
-    user: `Analisis dan hitung katrol nilai untuk mata pelajaran ${params.subject}, topik "${params.topic}", dengan batas KKTP ${params.kktp} menggunakan metode ${params.method || 'linear'}. Data siswa: ${JSON.stringify(params.scores)}`,
+      '{"supervisionJustification": string, "remedialActivities": string[], "enrichmentActivities": string[]}. ' +
+      'Jangan mengubah, menambah, atau menghitung ulang nilai siswa. Berikan narasi justifikasi akademik yang transparan dan saran tindak lanjut diagnostik berdasarkan ringkasan hasil yang diberikan aplikasi.',
+    user:
+      `Susun narasi justifikasi dan tindak lanjut untuk mata pelajaran ${params.subject}, topik "${params.topic}", ` +
+      `dengan KKTP ${params.passingGrade ?? params.kktp}, metode ${params.method || 'linear'}, ` +
+      `target rentang ${params.targetMin ?? 75}-${params.targetMax ?? 95}. ` +
+      `Aplikasi sudah menghitung nilai secara deterministik; jangan mengarang nama/nilai baru. Ringkasan data: ${JSON.stringify(params.scores)}`,
   }
 }
 
@@ -387,13 +450,29 @@ export function jurnalPrompt(params: {
   grade: string
   attendanceSummary?: string
   lessonNotes?: string
+  educationLevel?: string | null
+  institutionType?: string | null
+  curriculumVersion?: string | null
 }): AiPrompt {
+  const profile = resolveEducationProfile(
+    params.educationLevel,
+    params.institutionType,
+    params.curriculumVersion
+  )
+  const attendanceText = params.attendanceSummary?.trim()
+    ? ` Ringkasan kehadiran: ${params.attendanceSummary.trim()}.`
+    : ' Tidak ada ringkasan kehadiran yang diberikan; jangan mengarang jumlah atau status kehadiran.'
+  const notesText = params.lessonNotes?.trim()
+    ? ` Catatan tambahan guru: ${params.lessonNotes.trim()}.`
+    : ' Tidak ada catatan tambahan dari guru; jangan mengarang kejadian spesifik.'
+
   return {
     system:
-      'Kamu asisten administrasi guru profesional Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
+      `Kamu asisten administrasi guru ${profile.audience} profesional Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ` +
       '{"tanggal": string, "mataPelajaran": string, "materi": string, "tujuanTercapai": string[], "kendalaPembelajaran": string[], "refleksiGuru": string, "tindakLanjut": string, "catatanKarakterSiswa": string}. ' +
-      'Bahasa Indonesia baku, formal, dan mencerminkan prinsip refleksi pedagogis Kurikulum Merdeka.',
-    user: `Buatkan Jurnal Mengajar dan Refleksi Guru untuk kelas ${params.grade}, mata pelajaran ${params.subject}, topik "${params.topic}" pada tanggal ${params.date}. Catatan tambahan: ${params.lessonNotes || 'Pembelajaran berjalan lancar, beberapa siswa aktif bertanya.'}`,
+      `Bahasa Indonesia baku, formal, dan mencerminkan prinsip refleksi pedagogis ${profile.curriculumLabel}. ` +
+      `Sesuaikan kedalaman refleksi dan contoh kegiatan dengan ${profile.audience}; jangan mengarang data siswa.`,
+    user: `Buatkan Jurnal Mengajar dan Refleksi Guru untuk ${profile.audience}, kelas ${params.grade}, mata pelajaran ${params.subject}, topik "${params.topic}" pada tanggal ${params.date}.${attendanceText}${notesText}`,
   }
 }
 
@@ -403,16 +482,25 @@ export function kokurikulerPrompt(params: {
   topic: string
   phase: string
   targetLevel: string
+  targetDuration?: string
   dimensions?: string[]
+  institutionType?: string
+  educationLevel?: string
 }): AiPrompt {
   const dims = params.dimensions?.join(', ') || 'Bergotong Royong, Kreatif, Bernalar Kritis'
+  const profile = resolveEducationProfile(params.educationLevel, params.institutionType)
+  const isRa = profile.isReligiousEarlyChildhood
+  const isPaud = profile.isEarlyChildhood || params.phase.toLowerCase() === 'fondasi'
+  const framework = isRa ? 'P5 dan P2RA' : isPaud ? 'P5 Fase Fondasi' : 'P5'
+  const audience = isRa ? 'RA (Raudhatul Athfal)' : isPaud ? 'PAUD/TK' : profile.audience
   return {
     system:
-      'Kamu fasilitator Projek Penguatan Profil Pelajar Pancasila (P5) Kurikulum Merdeka Indonesia. Balas HANYA JSON valid tanpa teks lain dengan struktur: ' +
-      '{"judulProjek": string, "tema": string, "fase": string, "alokasiWaktu": string, "dimensiElemen": [{"dimensi": string, "elemen": string, "subElemen": string, "targetCapaian": string}], ' +
+      `Kamu fasilitator ${framework} Kurikulum Merdeka Indonesia untuk ${audience}. Balas HANYA JSON valid tanpa teks lain dengan struktur: ` +
+      '{"judulProjek": string, "tema": string, "fase": string, "alokasiWaktu": string, "projectSummary": string, "assessmentRubric": string, "dimensiElemen": [{"dimensi": string, "elemen": string, "subElemen": string, "targetCapaian": string}], ' +
       '"tahapanProjek": [{"tahap": "Pengenalan"|"Kontekstualisasi"|"Aksi"|"Refleksi"|"Tindak Lanjut", "namaAktivitas": string, "deskripsi": string, "durasi": string}], ' +
       '"asesmen": {"formatif": string[], "sumatif": string, "rubrik": string[]}, "lembarRefleksiSiswa": string[]}. ' +
-      'Format lengkap, aplikatif, dan siap didownload/dicetak guru.',
-    user: `Buatkan Modul Projek P5 untuk Fase ${params.phase} (${params.targetLevel}) dengan Tema "${params.theme}", Topik "${params.topic}", Dimensi: ${dims}.`,
+      `Format lengkap, aplikatif, dan siap didownload/dicetak guru. Sesuaikan aktivitas dengan ${audience}; jangan memaksakan istilah SD pada PAUD/RA. ` +
+      'Sertakan projectSummary yang merangkum tujuan dan konteks projek serta assessmentRubric sebagai ringkasan rubrik.',
+    user: `Buatkan Modul Projek ${framework} untuk Fase ${params.phase} (${params.targetLevel}) dengan Tema "${params.theme}", Topik "${params.topic}", Dimensi: ${dims}.${params.targetDuration ? ` Alokasi waktu yang diinginkan: ${params.targetDuration}.` : ''}`,
   }
 }

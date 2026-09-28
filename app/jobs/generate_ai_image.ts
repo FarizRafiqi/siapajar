@@ -4,9 +4,14 @@ import AiJob from '#models/ai_job'
 import User from '#models/user'
 import { generateConfiguredImage } from '#services/ai_service'
 import { persistVisualAsset } from '#services/visual_asset_service'
-import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
+import {
+  commitUsageReservation,
+  releaseUsageReservation,
+  reserveUsage,
+} from '#services/entitlement_service'
 import { aiJobRepository } from '#repositories/ai_job_repository'
 import { aiSettingRepository } from '#repositories/ai_setting_repository'
+import { aiJobLifecycleService } from '#services/ai_job_lifecycle_service'
 
 export interface GenerateAiImagePayload {
   jobKey: string
@@ -23,14 +28,29 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
     removeOnFail: { age: '1d' },
   }
 
-  static async executeDirect(payload: GenerateAiImagePayload) {
+  static async executeDirect(
+    payload: GenerateAiImagePayload,
+    retryManaged = false,
+    signal?: AbortSignal
+  ) {
     const job = await AiJob.findByOrFail('job_key', payload.jobKey)
     if (job.status === 'completed') return
     const user = await User.findOrFail(payload.userId)
     const setting = await aiSettingRepository.current()
-    await aiJobRepository.markProcessing(job)
+    if (job.status === 'failed') {
+      await releaseUsageReservation(payload.jobKey)
+      await aiJobRepository.resetFailed(job)
+    }
+    const reserved = await reserveUsage(user, 'ai_image_generation_monthly', payload.jobKey, 1, {
+      operation: 'visual_asset.image.generate',
+    })
+    const claimed = await aiJobRepository.claimProcessing(job)
+    if (!claimed) {
+      if (reserved) await releaseUsageReservation(payload.jobKey)
+      return
+    }
     try {
-      const dataUrl = await generateConfiguredImage(payload.prompt)
+      const dataUrl = await generateConfiguredImage(payload.prompt, signal)
       const asset = await persistVisualAsset({
         user,
         source: 'image_model',
@@ -48,17 +68,19 @@ export default class GenerateAiImage extends Job<GenerateAiImagePayload> {
       }
       await aiJobRepository.markCompleted(job, result)
       await commitUsageReservation(payload.jobKey)
+      await aiJobLifecycleService.markCompleted(job)
     } catch (error) {
-      await aiJobRepository.markFailed(
-        job,
-        error instanceof Error ? error.message : 'AI image job failed'
-      )
-      await releaseUsageReservation(payload.jobKey)
+      if (retryManaged) await aiJobLifecycleService.markRetrying(payload.jobKey, error)
+      else await aiJobLifecycleService.markFailed(payload.jobKey, error)
       throw error
     }
   }
 
   async execute() {
-    return GenerateAiImage.executeDirect(this.payload)
+    return GenerateAiImage.executeDirect(this.payload, true, this.signal)
+  }
+
+  async failed(error: Error) {
+    await aiJobLifecycleService.markFailed(this.payload.jobKey, error)
   }
 }

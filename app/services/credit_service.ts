@@ -1,6 +1,8 @@
 import User from '#models/user'
 import Package from '#models/package'
-import CreditTransaction from '#models/credit_transaction'
+import type CreditTransaction from '#models/credit_transaction'
+import { randomUUID } from 'node:crypto'
+import { AiJobStillProcessingError } from '#services/ai_queue_errors'
 import {
   creditRepository,
   type CreditBalanceSyncOptions,
@@ -9,6 +11,10 @@ import {
 } from '#repositories/credit_repository'
 
 const TESTING_PACKAGE_NAME = 'internal_testing_unlimited'
+
+export class InsufficientCreditsError extends Error {
+  readonly code = 'INSUFFICIENT_CREDITS'
+}
 
 export class CreditService {
   constructor(private readonly repository: CreditRepository = creditRepository) {}
@@ -101,7 +107,7 @@ export class CreditService {
     }
 
     if (!result.transaction) {
-      throw new Error(
+      throw new InsufficientCreditsError(
         `Saldo kredit tidak mencukupi. Anda memiliki ${result.currentBalance} kredit, dibutuhkan ${amount} kredit.`
       )
     }
@@ -126,24 +132,93 @@ export class CreditService {
     return this.repository.addCredits(userId, amount, type, description, metadata)
   }
 
+  async refundGeneration(
+    userId: number,
+    amount: number,
+    reservationKey: string,
+    description: string
+  ): Promise<CreditTransaction | null> {
+    if (amount <= 0 || !reservationKey) return null
+    return this.repository.refundUsageOnce(userId, amount, reservationKey, description)
+  }
+
+  async attachAiJobToGeneration(input: { userId: number; reservationKey: string; jobKey: string }) {
+    return this.repository.attachAiJobToGeneration(input)
+  }
+
+  async completeGenerationAiJob(input: {
+    userId: number
+    reservationKey: string
+    jobKey: string
+    amount: number
+    description: string
+  }) {
+    return this.repository.completeGenerationAiJob(input)
+  }
+
+  async completeGenerationReservation(userId: number, reservationKey: string) {
+    return this.repository.settleGenerationReservation({ userId, reservationKey })
+  }
+
+  async requestGenerationRefund(
+    userId: number,
+    amount: number,
+    reservationKey: string,
+    description: string
+  ) {
+    if (amount <= 0 || !reservationKey) return null
+    return this.repository.requestGenerationRefund({
+      userId,
+      amount,
+      reservationKey,
+      description,
+    })
+  }
+
+  /**
+   * Debit the document credit immediately before expensive work and reverse
+   * it exactly once if AI/persistence fails. This closes the preflight race
+   * where two requests both pass a balance check and only one can debit after
+   * paying the provider.
+   */
+  async withGenerationCredit<T>(
+    user: User,
+    amount: number,
+    description: string,
+    operation: string,
+    work: (reservationKey: string) => Promise<T>
+  ): Promise<T> {
+    const reservationKey = `generation:${user.id}:${operation}:${randomUUID()}`
+    let charged = false
+    try {
+      await this.chargeGeneration(user, amount, description, { reservationKey, operation })
+      charged = true
+      const result = await work(reservationKey)
+      await this.repository.settleGenerationReservation({ userId: user.id, reservationKey })
+      return result
+    } catch (error) {
+      if (charged) {
+        await this.repository.requestGenerationRefund({
+          userId: user.id,
+          amount,
+          reservationKey,
+          description: `Pengembalian kredit: ${description}`,
+        })
+        if (error instanceof AiJobStillProcessingError) {
+          // The job owns settlement after the waiter times out. Its durable
+          // terminal hook refunds only after every linked AI job has stopped.
+          throw error
+        }
+      }
+      throw error
+    }
+  }
+
   /**
    * Memberikan bonus registrasi awal (10 kredit gratis) untuk user baru
    */
   async grantSignupBonusIfEligible(userId: number): Promise<void> {
-    const existingBonus = await CreditTransaction.query()
-      .where('userId', userId)
-      .where('type', 'signup_bonus')
-      .first()
-
-    if (!existingBonus) {
-      await this.addCredits(
-        userId,
-        10,
-        'signup_bonus',
-        'Bonus 10 Kredit Gratis Selamat Datang di SiapAjar',
-        { initial: true }
-      )
-    }
+    await this.repository.addSignupBonusIfEligible(userId)
   }
 }
 

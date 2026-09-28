@@ -29,6 +29,14 @@ export default class MediaModulesController {
       return response.redirect().back()
     }
 
+    if (result.status === 'insufficient_credits') {
+      session.flash(
+        'error',
+        'Saldo kredit tidak mencukupi. Silakan top-up kredit untuk melanjutkan.'
+      )
+      return response.redirect().back()
+    }
+
     if (result.status === 'generation_error') {
       session.flash('error', result.message)
       return response.redirect().back()

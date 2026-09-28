@@ -249,7 +249,7 @@ export function registerDocumentTools(server: McpServer) {
         const curriculum = await getCurriculumContext(user.id, args.learning_sequence_id)
         const prompt = annualPlanPrompt({ subject: args.subject })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.annual_plan.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -555,7 +555,7 @@ export function registerDocumentTools(server: McpServer) {
         const curriculum = await getCurriculumContext(user.id, args.learning_sequence_id)
         const prompt = semesterPlanPrompt({ subject: args.subject })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.semester_plan.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -820,7 +820,7 @@ export function registerDocumentTools(server: McpServer) {
         const curriculum = await getCurriculumContext(user.id, args.learning_sequence_id)
         const prompt = weeklyLessonPlanPrompt({ theme: args.theme })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.weekly_lesson_plan.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -1087,7 +1087,7 @@ export function registerDocumentTools(server: McpServer) {
         const curriculum = await getCurriculumContext(user.id, args.learning_sequence_id)
         const prompt = dailyLessonPlanPrompt({ theme: args.theme, date: dateStr })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.daily_lesson_plan.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -1403,7 +1403,7 @@ export function registerDocumentTools(server: McpServer) {
           phase: args.phase,
         })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.teaching_module.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -1638,7 +1638,7 @@ export function registerDocumentTools(server: McpServer) {
           institutionType: user.institutionType ?? 'tk',
         })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.paud_assessment.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })
@@ -1873,7 +1873,7 @@ export function registerDocumentTools(server: McpServer) {
           institutionType: user.institutionType ?? 'tk',
         })
         const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.presentation.generate',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })

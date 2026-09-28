@@ -4,9 +4,14 @@ import AiJob from '#models/ai_job'
 import User from '#models/user'
 import { generateConfiguredSvg } from '#services/ai_service'
 import { persistVisualAsset } from '#services/visual_asset_service'
-import { commitUsageReservation, releaseUsageReservation } from '#services/entitlement_service'
+import {
+  commitUsageReservation,
+  releaseUsageReservation,
+  reserveUsage,
+} from '#services/entitlement_service'
 import { aiJobRepository } from '#repositories/ai_job_repository'
 import { aiSettingRepository } from '#repositories/ai_setting_repository'
+import { aiJobLifecycleService } from '#services/ai_job_lifecycle_service'
 
 export interface GenerateAiSvgPayload {
   jobKey: string
@@ -30,9 +35,20 @@ export default class GenerateAiSvg extends Job<GenerateAiSvgPayload> {
     if (job.status === 'completed') return
     const user = await User.findOrFail(this.payload.userId)
     const setting = await aiSettingRepository.current()
-    await aiJobRepository.markProcessing(job)
+    if (job.status === 'failed') {
+      await releaseUsageReservation(this.payload.jobKey)
+      await aiJobRepository.resetFailed(job)
+    }
+    const reserved = await reserveUsage(user, 'ai_svg_generation_monthly', this.payload.jobKey, 1, {
+      operation: 'visual_asset.svg.generate',
+    })
+    const claimed = await aiJobRepository.claimProcessing(job)
+    if (!claimed) {
+      if (reserved) await releaseUsageReservation(this.payload.jobKey)
+      return
+    }
     try {
-      const generated = await generateConfiguredSvg(this.payload.prompt)
+      const generated = await generateConfiguredSvg(this.payload.prompt, this.signal)
       const asset = await persistVisualAsset({
         user,
         source: 'svg_llm',
@@ -52,13 +68,14 @@ export default class GenerateAiSvg extends Job<GenerateAiSvgPayload> {
       }
       await aiJobRepository.markCompleted(job, result)
       await commitUsageReservation(this.payload.jobKey)
+      await aiJobLifecycleService.markCompleted(job)
     } catch (error) {
-      await aiJobRepository.markFailed(
-        job,
-        error instanceof Error ? error.message : 'AI SVG job failed'
-      )
-      await releaseUsageReservation(this.payload.jobKey)
+      await aiJobLifecycleService.markRetrying(this.payload.jobKey, error)
       throw error
     }
+  }
+
+  async failed(error: Error) {
+    await aiJobLifecycleService.markFailed(this.payload.jobKey, error)
   }
 }

@@ -2,11 +2,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import string from '@adonisjs/core/helpers/string'
 import { randomUUID } from 'node:crypto'
-import { mkdir, rm, unlink } from 'node:fs/promises'
+import { copyFile, mkdir, rm, unlink } from 'node:fs/promises'
 import { DateTime } from 'luxon'
-import User from '#models/user'
-import SchoolClass from '#models/school_class'
-import Student from '#models/student'
+import type User from '#models/user'
 import { paudAssessmentRepository } from '#repositories/paud_assessment_repository'
 import type {
   PaudAssessmentBundleFilters,
@@ -23,6 +21,8 @@ import {
 import { paudAssessmentAiService } from '#services/paud_assessment_ai_service'
 import { parseAssessmentContent } from '#services/paud_assessment_export_service'
 import { exportFilename } from '#services/export_file_service'
+import { apiTokenService } from '#services/api_token_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 const ATTACHMENT_EXTENSIONS: Record<string, string> = {
   jpg: 'image/jpeg',
@@ -46,11 +46,15 @@ export type PaudAssessmentCreateResult =
   | { status: 'created'; assessmentId: number; typeLabel: string }
 
 export type QuickCaptureResult =
-  { status: 'empty' } | { status: 'created'; assessmentIds: string[] }
+  | { status: 'empty' }
+  | { status: 'invalid_context' }
+  | { status: 'created'; assessmentIds: string[] }
 
 export type GenerateAiResult =
   | { status: 'success'; result: unknown }
   | { status: 'invalid_type' }
+  | { status: 'invalid_context' }
+  | { status: 'insufficient_credits' }
   | { status: 'error'; error: string }
 
 export type PaudAssessmentExportResult = {
@@ -63,12 +67,7 @@ export class PaudAssessmentService {
 
   async resolveUser(authorizationHeader: string | undefined, fallbackUser: User | null) {
     if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
-      const token = authorizationHeader.substring(7)
-      try {
-        const decoded = Buffer.from(token, 'base64').toString('utf-8')
-        const [userId] = decoded.split(':')
-        if (userId) return User.find(userId)
-      } catch {}
+      return apiTokenService.verify(authorizationHeader.substring(7).trim())
     }
 
     return fallbackUser
@@ -85,7 +84,7 @@ export class PaudAssessmentService {
         ...assessment.toJSON(),
         attachments: assessment.attachments.map((attachment) => ({
           ...attachment.toJSON(),
-          url: `/storage/assessments/${attachment.storedName}`,
+          url: `/paud-assessments/${assessment.id}/attachments/${attachment.id}`,
         })),
       }))
     }
@@ -104,8 +103,8 @@ export class PaudAssessmentService {
     }
   }
 
-  async getStudentTimeline(studentId: string | number) {
-    const assessments = await this.repository.findTimeline(studentId)
+  async getStudentTimeline(studentId: string | number, userId: number) {
+    const assessments = await this.repository.findTimeline(studentId, userId)
 
     return assessments.map((assessment) => {
       const weekNum = Number(assessment.content?.weekNumber) || 2
@@ -147,6 +146,28 @@ export class PaudAssessmentService {
 
     if (parsedStudentIds.length === 0) return { status: 'empty' }
 
+    const normalizedClassId = Number(classId)
+    const normalizedStudentIds = Array.from(
+      new Set(parsedStudentIds.map((studentId: unknown) => Number(studentId)))
+    ).filter((studentId) => Number.isInteger(studentId) && studentId > 0)
+    if (
+      !Number.isInteger(normalizedClassId) ||
+      normalizedClassId <= 0 ||
+      normalizedStudentIds.length === 0
+    ) {
+      return { status: 'invalid_context' }
+    }
+
+    const schoolClass = await this.repository.findOwnedClass(normalizedClassId, user.id)
+    const students = await this.repository.findOwnedStudentsInClass(
+      normalizedStudentIds,
+      normalizedClassId,
+      user.id
+    )
+    if (!schoolClass || students.length !== normalizedStudentIds.length) {
+      return { status: 'invalid_context' }
+    }
+
     const typeMapping: Record<string, PaudAssessmentType> = {
       CATATAN_ANEKDOT: 'anecdotal_note',
       HASIL_KARYA: 'work_sample',
@@ -173,30 +194,52 @@ export class PaudAssessmentService {
           mimeType: string
         }
       | undefined
+    let attachmentSourcePath: string | undefined
 
-    if (photoFile && photoFile.isValid) {
+    if (photoFile && photoFile.isValid && photoFile.tmpPath) {
       const storedName = `${randomUUID()}.${photoFile.extname}`
-      const uploadDirectory = app.makePath('storage/uploads/assessments')
-      await mkdir(uploadDirectory, { recursive: true })
-      await photoFile.move(uploadDirectory, { name: storedName })
       attachment = {
         originalName: photoFile.clientName || 'Foto Asesmen',
         storedName,
         size: photoFile.size || 0,
         mimeType: photoFile.type || 'image/jpeg',
       }
+      // Keep the upload in Adonis' temporary file until assessment ids exist;
+      // the repository stores one attachment row per student.
+      attachmentSourcePath = photoFile.tmpPath
     }
 
     const assessments = await this.repository.createQuickCapture({
       userId: user.id,
-      classId: Number(classId) || 1,
-      studentIds: parsedStudentIds.map((studentId: unknown) => Number(studentId)),
+      classId: normalizedClassId,
+      studentIds: normalizedStudentIds,
       type: resolvedType,
       activity: activity || 'Kegiatan Pembelajaran',
       teacherNote: notes || '',
       date: assessmentDate,
       attachment,
     })
+
+    if (attachment && attachmentSourcePath) {
+      const copiedPaths: string[] = []
+      try {
+        for (const assessment of assessments) {
+          const directory = app.makePath(`public/uploads/assessments/${user.id}/${assessment.id}`)
+          await mkdir(directory, { recursive: true })
+          const destination = `${directory}/${attachment.storedName}`
+          await copyFile(attachmentSourcePath, destination)
+          copiedPaths.push(destination)
+        }
+      } catch (error) {
+        await Promise.all(copiedPaths.map((filePath) => unlink(filePath).catch(() => {})))
+        await Promise.all(
+          assessments.map((assessment) =>
+            this.repository.deleteWithAttachments(assessment.id, user.id).catch(() => null)
+          )
+        )
+        throw error
+      }
+    }
 
     return {
       status: 'created',
@@ -206,65 +249,140 @@ export class PaudAssessmentService {
 
   async generateAi(user: User, data: Record<string, any>): Promise<GenerateAiResult> {
     let studentName = ''
-    if (data.studentId) {
-      const student = await Student.find(data.studentId)
-      studentName = student?.fullName || ''
+    let className = ''
+    const classId = data.classId ? Number(data.classId) : undefined
+    const studentId = data.studentId ? Number(data.studentId) : undefined
+
+    if (classId !== undefined) {
+      const schoolClass = await this.repository.findOwnedClass(classId, user.id)
+      if (!schoolClass) return { status: 'invalid_context' }
+      className = schoolClass.name ? `Kelompok ${schoolClass.name}` : ''
     }
 
-    let className = ''
-    if (data.classId) {
-      const schoolClass = await SchoolClass.find(data.classId)
-      className = schoolClass?.name ? `Kelompok ${schoolClass.name}` : ''
+    if (studentId !== undefined) {
+      const student = await this.repository.findOwnedStudent(studentId, user.id, classId)
+      if (!student) return { status: 'invalid_context' }
+      studentName = student.fullName || ''
+    }
+
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      return { status: 'insufficient_credits' }
     }
 
     try {
       if (data.type === 'anecdotal_note') {
-        const result = await paudAssessmentAiService.generateAnecdotal(user, {
-          studentName,
-          className,
-          theme: data.theme,
-          context: data.context,
-          observedBehaviorNotes: data.observedBehaviorNotes || 'Anak aktif berinteraksi',
-        })
+        const result = await creditService.withGenerationCredit(
+          user,
+          1,
+          'Draft AI Asesmen PAUD: Catatan Anekdot',
+          'paud_assessment.analyze_anecdotal_note',
+          async (reservationKey) =>
+            paudAssessmentAiService.generateAnecdotal(
+              user,
+              {
+                studentName,
+                className,
+                theme: data.theme,
+                context: data.context,
+                observedBehaviorNotes: data.observedBehaviorNotes || 'Anak aktif berinteraksi',
+              },
+              {
+                reservationKey,
+                amount: 1,
+                description: 'Draft AI Asesmen PAUD: Catatan Anekdot',
+              }
+            )
+        )
         return { status: 'success', result }
       }
 
       if (data.type === 'checklist') {
-        const result = await paudAssessmentAiService.generateChecklist(user, {
-          studentName,
-          className,
-          theme: data.theme,
-          learningObjective: data.learningObjective,
-          targetIndicators: data.targetIndicators,
-          roughNotes: data.roughNotes,
-        })
+        const result = await creditService.withGenerationCredit(
+          user,
+          1,
+          'Draft AI Asesmen PAUD: Ceklis IKTP',
+          'paud_assessment.generate_instrument',
+          async (reservationKey) =>
+            paudAssessmentAiService.generateChecklist(
+              user,
+              {
+                studentName,
+                className,
+                theme: data.theme,
+                learningObjective: data.learningObjective,
+                targetIndicators: data.targetIndicators,
+                roughNotes: data.roughNotes,
+              },
+              {
+                reservationKey,
+                amount: 1,
+                description: 'Draft AI Asesmen PAUD: Ceklis IKTP',
+              }
+            )
+        )
         return { status: 'success', result }
       }
 
       if (data.type === 'work_sample') {
-        const result = await paudAssessmentAiService.generateWorkSample(user, {
-          studentName,
-          className,
-          theme: data.theme,
-          workTitle: data.workTitle || 'Karya Anak',
-          childQuotesOrDescription: data.childQuotesOrDescription,
-        })
+        const result = await creditService.withGenerationCredit(
+          user,
+          1,
+          'Draft AI Asesmen PAUD: Hasil Karya',
+          'paud_assessment.analyze_work_sample',
+          async (reservationKey) =>
+            paudAssessmentAiService.generateWorkSample(
+              user,
+              {
+                studentName,
+                className,
+                theme: data.theme,
+                workTitle: data.workTitle || 'Karya Anak',
+                childQuotesOrDescription: data.childQuotesOrDescription,
+              },
+              {
+                reservationKey,
+                amount: 1,
+                description: 'Draft AI Asesmen PAUD: Hasil Karya',
+              }
+            )
+        )
         return { status: 'success', result }
       }
 
       if (data.type === 'photo_series') {
-        const result = await paudAssessmentAiService.generatePhotoSeries(user, {
-          studentName,
-          className,
-          theme: data.theme,
-          activityTitle: data.activityTitle || 'Kegiatan Eksplorasi',
-          stageNotes: data.stageNotes,
-        })
+        const result = await creditService.withGenerationCredit(
+          user,
+          1,
+          'Draft AI Asesmen PAUD: Foto Berseri',
+          'paud_assessment.analyze_serial_photo',
+          async (reservationKey) =>
+            paudAssessmentAiService.generatePhotoSeries(
+              user,
+              {
+                studentName,
+                className,
+                theme: data.theme,
+                activityTitle: data.activityTitle || 'Kegiatan Eksplorasi',
+                stageNotes: data.stageNotes,
+              },
+              {
+                reservationKey,
+                amount: 1,
+                description: 'Draft AI Asesmen PAUD: Foto Berseri',
+              }
+            )
+        )
         return { status: 'success', result }
       }
 
       return { status: 'invalid_type' }
     } catch (error) {
+      if (
+        error instanceof InsufficientCreditsError ||
+        (error instanceof Error && /saldo kredit|kredit tidak mencukupi/i.test(error.message))
+      ) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'error',
         error: error instanceof Error ? error.message : 'Gagal menghasilkan analisis AI',

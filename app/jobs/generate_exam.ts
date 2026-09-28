@@ -1,6 +1,10 @@
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import { generateExam, type ExamGenerationOptions } from '#services/exam_generation_service'
+import {
+  failExamGeneration,
+  generateExam,
+  type ExamGenerationOptions,
+} from '#services/exam_generation_service'
 
 export default class GenerateExam extends Job<ExamGenerationOptions> {
   static options: JobOptions = {
@@ -12,6 +16,10 @@ export default class GenerateExam extends Job<ExamGenerationOptions> {
   }
 
   async execute() {
-    await generateExam(this.payload)
+    await generateExam(this.payload, this.signal)
+  }
+
+  async failed(error: Error) {
+    await failExamGeneration(this.payload, error)
   }
 }

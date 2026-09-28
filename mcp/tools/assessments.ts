@@ -1068,7 +1068,7 @@ export function registerAssessmentTools(server: McpServer) {
           questionCount: args.total_questions ?? 10,
         })
         const content = await callAiJsonForUser<Record<string, unknown>>(user, {
-          combo: 'siapajar-docgen',
+          operation: 'mcp.exam.generate_questions',
           systemPrompt: prompt.system,
           userPrompt: prompt.user,
         })

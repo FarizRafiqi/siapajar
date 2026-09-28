@@ -37,11 +37,19 @@ export class EntitlementService {
   ) {}
 
   async assertEntitled(user: User, featureKey: string, amount = 1) {
-    if (user.role === 'admin' || !user.packageId) return
+    if (user.role === 'admin') return
+    if (!user.packageId) {
+      throw new EntitlementError('Paket aktif belum ditetapkan untuk akun Anda')
+    }
 
     const entitlement = await this.entitlements.findForFeature(user.packageId, featureKey)
-    // Package lama tetap kompatibel sampai admin mengisi entitlement secara eksplisit.
-    if (!entitlement) return
+    // Fail closed when a package is missing a feature row. A missing row must
+    // never silently grant an unlimited feature after a catalog migration.
+    if (!entitlement) {
+      throw new EntitlementError(
+        `Fitur ${getFeatureLabel(featureKey)} belum tersedia pada paket Anda`
+      )
+    }
     if (!entitlement.isEnabled) {
       throw new EntitlementError(
         `Fitur ${getFeatureLabel(featureKey)} tidak tersedia pada paket Anda`
@@ -76,6 +84,9 @@ export class EntitlementService {
     quantity = 1,
     metadata: Record<string, unknown> = {}
   ) {
+    if (user.role !== 'admin' && !user.packageId) {
+      throw new EntitlementError('Paket aktif belum ditetapkan untuk akun Anda')
+    }
     const periodStart = DateTime.now().startOf('month').toISODate()!
 
     return this.usageEvents.reserveUsage(
@@ -90,7 +101,11 @@ export class EntitlementService {
         metadata,
       },
       ({ entitlement, used }) => {
-        if (!entitlement) return
+        if (!entitlement) {
+          throw new EntitlementError(
+            `Fitur ${getFeatureLabel(featureKey)} belum tersedia pada paket Anda`
+          )
+        }
         if (!entitlement.is_enabled) {
           throw new EntitlementError(
             `Fitur ${getFeatureLabel(featureKey)} tidak tersedia pada paket Anda`

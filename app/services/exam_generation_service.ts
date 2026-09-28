@@ -7,6 +7,9 @@ import { getCurriculumContext } from '#services/curriculum_context_service'
 import { EntitlementError } from '#services/entitlement_service'
 import { fitPaudQuestionSet } from '#services/exam_worksheet_layout_service'
 import { examRepository } from '#repositories/exam_repository'
+import { creditService } from '#services/credit_service'
+import { resolveEducationProfile } from '#services/education_profile'
+import { AiJobStillProcessingError } from '#services/ai_queue_errors'
 
 export type ExamGenerationStage =
   'queued' | 'researching' | 'generating_questions' | 'generating_images' | 'completed' | 'failed'
@@ -397,18 +400,34 @@ function collectVisualRequests(questions: Record<string, any>[], isRa: boolean):
   return requests
 }
 
-export async function generateExam(options: ExamGenerationOptions) {
+export async function generateExam(options: ExamGenerationOptions, waitSignal?: AbortSignal) {
   const exam = await examRepository.findForGeneration(options.examId)
   const user = await examRepository.findUserForGeneration(options.userId)
+  const reservationKey = `exam:${exam.id}`
+  let generationCharged = false
   try {
+    // Charge immediately before the expensive worker work. The ledger row is
+    // locked atomically, so concurrent jobs cannot both spend the same balance.
+    if (!(await creditService.hasEnoughGenerationCredits(user, 1))) {
+      throw new Error('INSUFFICIENT_CREDITS')
+    }
+    await creditService.chargeGeneration(
+      user,
+      1,
+      `Bank Soal: ${options.subject} - ${options.topic}`,
+      { reservationKey }
+    )
+    generationCharged = true
+
     await saveProgress(exam, 'researching', {
       current: 0,
       total: 0,
       message: 'Meriset kurikulum dan menyusun struktur soal...',
     })
     const curriculum = await getCurriculumContext(options.userId, options.learningSequenceId)
-    const isPaud = user.isTk || user.institutionType === 'ra'
-    const isRa = user.institutionType === 'ra'
+    const educationProfile = resolveEducationProfile(user.educationLevel, user.institutionType)
+    const isPaud = educationProfile.isEarlyChildhood
+    const isRa = educationProfile.isReligiousEarlyChildhood
     const paudMaxItemsPerSection = Math.max(1, Math.min(options.questionCount, 5))
     const prompt = examPrompt({
       subject: options.subject,
@@ -427,9 +446,15 @@ export async function generateExam(options: ExamGenerationOptions) {
     })
     const result = await aiQueueService.enqueueAiJson<{ questions: Record<string, any>[] }>({
       userId: options.userId,
-      combo: 'siapajar-soal',
+      operation: 'exam.generate_questions',
       systemPrompt: prompt.system,
       userPrompt: prompt.user,
+      billingReservation: {
+        reservationKey,
+        amount: 1,
+        description: `Bank Soal: ${options.subject} - ${options.topic}`,
+      },
+      waitSignal,
     })
     await saveProgress(exam, 'generating_questions', {
       current: 1,
@@ -476,6 +501,7 @@ export async function generateExam(options: ExamGenerationOptions) {
             questionId: visualRequest.questionId,
             item: visualRequest.item || null,
           },
+          waitSignal,
         })
         visualRequest.target.imageUrl = visual?.url || ''
         visualRequest.target.assetId = visual?.assetId || null
@@ -515,8 +541,27 @@ export async function generateExam(options: ExamGenerationOptions) {
         : 'Naskah soal selesai dibuat.',
       errors,
     })
+    await creditService.completeGenerationReservation(options.userId, reservationKey)
     return exam
   } catch (error) {
+    if (error instanceof AiJobStillProcessingError) {
+      const previous = progressFromExam(exam)
+      await saveProgress(exam, previous.stage, {
+        current: previous.current,
+        total: previous.total,
+        message: error.message,
+        errors: previous.errors,
+      })
+      throw error
+    }
+    if (generationCharged) {
+      await creditService.requestGenerationRefund(
+        options.userId,
+        1,
+        reservationKey,
+        `Refund pembuatan Bank Soal: ${options.subject} - ${options.topic}`
+      )
+    }
     const message = safeErrorMessage(error, 'Gagal membuat naskah soal. Coba lagi.')
     const previous = progressFromExam(exam)
     await saveProgress(exam, 'failed', {
@@ -527,4 +572,27 @@ export async function generateExam(options: ExamGenerationOptions) {
     })
     throw error
   }
+}
+
+/** Final queue hook: close the parent exam state and request a deferred refund.
+ * Any linked AI child still in flight keeps the refund pending until terminal.
+ */
+export async function failExamGeneration(options: ExamGenerationOptions, error: unknown) {
+  const exam = await examRepository.findForGeneration(options.examId)
+  const previous = progressFromExam(exam)
+  if (previous.stage === 'completed') return
+
+  await creditService.requestGenerationRefund(
+    options.userId,
+    1,
+    `exam:${exam.id}`,
+    `Refund pembuatan Bank Soal: ${options.subject} - ${options.topic}`
+  )
+  const message = safeErrorMessage(error, 'Gagal membuat naskah soal. Coba lagi.')
+  await saveProgress(exam, 'failed', {
+    current: previous.current,
+    total: previous.total,
+    message: 'Pembuatan naskah berhenti karena terjadi kesalahan.',
+    errors: [...previous.errors, { stage: previous.stage, message }],
+  })
 }

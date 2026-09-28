@@ -70,9 +70,10 @@ export class PaudAssessmentRepository {
     return { assessments, classes, curriculumObjectives }
   }
 
-  async findTimeline(studentId: string | number) {
+  async findTimeline(studentId: string | number, userId: number) {
     return PaudAssessment.query()
       .where('student_id', studentId)
+      .where('user_id', userId)
       .preload('learningObjective')
       .preload('attachments', (query) => query.orderBy('display_order'))
       .orderBy('date', 'desc')
@@ -111,6 +112,21 @@ export class PaudAssessmentRepository {
 
   async findStudentInClass(studentId: string | number, classId: string | number) {
     return Student.query().where('id', studentId).where('class_id', classId).first()
+  }
+
+  async findOwnedStudent(studentId: string | number, userId: number, classId?: string | number) {
+    const query = Student.query()
+      .where('id', studentId)
+      .whereHas('schoolClass', (classQuery) => classQuery.where('user_id', userId))
+    if (classId !== undefined && classId !== null) query.where('class_id', classId)
+    return query.first()
+  }
+
+  async findOwnedStudentsInClass(studentIds: number[], classId: string | number, userId: number) {
+    return Student.query()
+      .whereIn('id', studentIds)
+      .where('class_id', classId)
+      .whereHas('schoolClass', (classQuery) => classQuery.where('user_id', userId))
   }
 
   async findAvailableLearningObjective(objectiveId: string | number, userId: number) {
@@ -186,16 +202,18 @@ export class PaudAssessmentRepository {
       })
 
       if (data.attachment) {
-        await AssessmentAttachment.create({
+        const attachment = await AssessmentAttachment.create({
           assessmentId: assessment.id,
           userId: data.userId,
           originalName: data.attachment.originalName,
           storedName: data.attachment.storedName,
-          url: `/storage/assessments/${data.attachment.storedName}`,
+          url: '',
           size: data.attachment.size,
           mimeType: data.attachment.mimeType,
           displayOrder: 1,
         })
+        attachment.url = `/paud-assessments/${assessment.id}/attachments/${attachment.id}`
+        await attachment.save()
       }
 
       assessments.push(assessment)

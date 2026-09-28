@@ -9,7 +9,7 @@ import { AiServiceError, normalizeStringArraySections } from '#services/ai_servi
 import { semesterPlanPrompt } from '#services/ai_prompts'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { callAiJsonForUser } from '#services/user_ai_service'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateSemesterPlanData = {
   classId: number
@@ -93,34 +93,57 @@ export class SemesterPlanService {
     }
 
     const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    const prompt = semesterPlanPrompt({ subject: data.subject })
-    let content: Record<string, any>
+    const description = `Program Semester: ${data.subject}`
     try {
-      const raw = await callAiJsonForUser<Record<string, unknown>>(user, {
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      content = normalizeStringArraySections(raw, ['minggu', 'kegiatan', 'target', 'materi'])
+      return await creditService.withGenerationCredit(
+        user,
+        1,
+        description,
+        'semester_plan.generate',
+        async (reservationKey) => {
+          const prompt = semesterPlanPrompt({
+            subject: data.subject,
+            educationLevel: user.educationLevel,
+            institutionType: user.institutionType,
+            curriculumVersion: user.curriculumVersion,
+          })
+          const raw = await callAiJsonForUser<Record<string, unknown>>(
+            user,
+            {
+              operation: 'semester_plan.generate',
+              systemPrompt: prompt.system,
+              userPrompt: prompt.user,
+            },
+            { reservationKey, amount: 1, description }
+          )
+          const content: Record<string, any> = normalizeStringArraySections(raw, [
+            'minggu',
+            'kegiatan',
+            'target',
+            'materi',
+          ])
+          content.curriculum = curriculum
+
+          const semesterPlan = await SemesterPlan.create({
+            userId: user.id,
+            classId: data.classId,
+            semesterId: data.semesterId,
+            subject: data.subject,
+            content,
+          })
+          return { status: 'created' as const, semesterPlan }
+        }
+      )
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' as const }
+      }
       return {
         status: 'generation_error' as const,
         message:
           error instanceof AiServiceError ? error.message : 'Gagal generate Promes. Coba lagi.',
       }
     }
-    content.curriculum = curriculum
-
-    const semesterPlan = await SemesterPlan.create({
-      userId: user.id,
-      classId: data.classId,
-      semesterId: data.semesterId,
-      subject: data.subject,
-      content,
-    })
-    await creditService.chargeGeneration(user, 1, `Program Semester: ${data.subject}`)
-
-    return { status: 'created' as const, semesterPlan }
   }
 }
 

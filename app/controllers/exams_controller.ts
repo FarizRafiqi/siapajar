@@ -181,6 +181,15 @@ export default class ExamsController {
       return response.redirect().back()
     }
 
+    if (result.status === 'insufficient_credits') {
+      const message = 'Saldo kredit tidak mencukupi. Silakan top-up kredit untuk melanjutkan.'
+      if (request.header('accept')?.includes('application/json')) {
+        return response.paymentRequired({ message })
+      }
+      session.flash('error', message)
+      return response.redirect().back()
+    }
+
     if (result.status === 'queue_unavailable') {
       const message = 'Antrean pembuatan soal tidak tersedia. Coba lagi.'
       if (request.header('accept')?.includes('application/json')) {

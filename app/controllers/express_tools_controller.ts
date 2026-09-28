@@ -1,6 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { expressToolsService } from '#services/express_tools_service'
 import { creditService } from '#services/credit_service'
+import { generateProtaPromesValidator } from '#validators/generate'
+import { generateExamValidator } from '#validators/generate'
+import { generateReportNarrativesValidator } from '#validators/generate'
+import { examService } from '#services/exam_service'
+import { reportCardService } from '#services/report_card_service'
 
 export default class ExpressToolsController {
   /**
@@ -30,6 +35,27 @@ export default class ExpressToolsController {
     return inertia.render('dashboard/tools/soal', data)
   }
 
+  async generateSoal({ request, response, session, auth }: HttpContext) {
+    const data = await request.validateUsing(generateExamValidator)
+    const result = await examService.generate(auth.user!, data)
+
+    if (result.status === 'missing_class') {
+      session.flash('error', 'Kelas tidak ditemukan')
+      return response.redirect().back()
+    }
+    if (result.status === 'insufficient_credits') {
+      session.flash('error', 'Saldo kredit Anda habis. Silakan top-up kredit.')
+      return response.redirect().back()
+    }
+    if (result.status === 'queue_unavailable') {
+      session.flash('error', 'Antrean AI belum tersedia. Coba lagi setelah worker aktif.')
+      return response.redirect().back()
+    }
+
+    session.flash('success', 'Paket soal masuk antrean dan akan siap ditinjau.')
+    return response.redirect().toRoute('exams.show', { id: result.exam.id })
+  }
+
   /**
    * Prota & Promes Unified Express View
    */
@@ -39,6 +65,30 @@ export default class ExpressToolsController {
     return inertia.render('dashboard/tools/prota-promes', data)
   }
 
+  async generateProtaPromes({ request, response, session, auth }: HttpContext) {
+    const data = await request.validateUsing(generateProtaPromesValidator)
+    const result = await expressToolsService.generateProtaPromes(auth.user!, data)
+
+    if (result.status === 'invalid_input' || result.status === 'missing_reference') {
+      session.flash('error', result.message)
+      return response.redirect().back()
+    }
+    if (result.status === 'insufficient_credits') {
+      session.flash(
+        'error',
+        'Saldo kredit Anda tidak mencukupi (butuh 2 kredit). Silakan top-up kredit.'
+      )
+      return response.redirect().back()
+    }
+    if (result.status === 'generation_error') {
+      session.flash('error', result.message)
+      return response.redirect().back()
+    }
+
+    session.flash('success', 'Prota dan Promes berhasil digenerate.')
+    return response.redirect().toRoute('express.protaPromes')
+  }
+
   /**
    * Rapor Narasi Deskripsi Kurikulum Merdeka Express View
    */
@@ -46,6 +96,21 @@ export default class ExpressToolsController {
     const data = await expressToolsService.getRaporData(auth.user!)
 
     return inertia.render('dashboard/tools/rapor', data)
+  }
+
+  async generateRapor({ request, response, session, auth }: HttpContext) {
+    const { classId, semesterId } = await request.validateUsing(generateReportNarrativesValidator)
+    const result = await reportCardService.generateNarratives(auth.user!.id, classId, semesterId)
+    if (result.status === 'context_not_found') {
+      session.flash('error', 'Kelas atau semester tidak ditemukan')
+      return response.redirect().back()
+    }
+
+    session.flash(
+      'success',
+      `Pembuatan draft narasi dimulai (job ${result.jobId}). Tinjau dan edit sebelum menyetujui.`
+    )
+    return response.redirect().back()
   }
 
   /**
@@ -63,7 +128,17 @@ export default class ExpressToolsController {
   async generateKatrol({ request, response, auth }: HttpContext) {
     const result = await expressToolsService.generateKatrol(
       auth.user!,
-      request.only(['subject', 'topic', 'kktp', 'scores', 'method', 'rawInput'])
+      request.only([
+        'subject',
+        'topic',
+        'kktp',
+        'passingGrade',
+        'targetMin',
+        'targetMax',
+        'scores',
+        'method',
+        'rawInput',
+      ])
     )
 
     if (result.status === 'invalid_input') {
@@ -102,7 +177,17 @@ export default class ExpressToolsController {
   async generateJurnal({ request, response, auth }: HttpContext) {
     const result = await expressToolsService.generateJurnal(
       auth.user!,
-      request.only(['subject', 'topic', 'date', 'grade', 'lessonNotes'])
+      request.only([
+        'subject',
+        'topic',
+        'date',
+        'grade',
+        'schoolClass',
+        'attendanceNotes',
+        'attendanceSummary',
+        'lessonNotes',
+        'teacherNotes',
+      ])
     )
 
     if (result.status === 'invalid_input' || result.status === 'error') {
@@ -133,7 +218,9 @@ export default class ExpressToolsController {
 
     return inertia.render('dashboard/tools/kokurikuler', {
       ...data,
-      isTk: auth.user!.educationLevel === 'tk',
+      isTk: auth.user!.isTk,
+      educationLevel: auth.user!.educationLevel,
+      institutionType: auth.user!.institutionType,
     })
   }
 

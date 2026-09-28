@@ -127,6 +127,35 @@ class CodexAppServerClient {
     this.pending.clear()
   }
 
+  private async close() {
+    const child = this.process
+    if (!child) return
+
+    this.process = null
+    this.initialized = false
+    this.readline?.close()
+    this.readline = null
+    this.failAll(new CodexServiceError('Sesi Codex telah ditutup.'))
+
+    if (child.exitCode !== null || child.signalCode !== null) return
+
+    const exited = new Promise<void>((resolve) => child.once('exit', () => resolve()))
+    child.kill('SIGTERM')
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    await Promise.race([
+      exited,
+      new Promise<void>((resolve) => {
+        timeout = setTimeout(resolve, 1_000)
+      }),
+    ])
+    if (timeout) clearTimeout(timeout)
+
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill('SIGKILL')
+      await Promise.race([exited, new Promise<void>((resolve) => setTimeout(resolve, 1_000))])
+    }
+  }
+
   async startChatGptLogin() {
     const result = (await this.request('account/login/start', { type: 'chatgpt' })) as {
       authUrl?: string
@@ -153,169 +182,271 @@ class CodexAppServerClient {
       .filter((model): model is string => Boolean(model))
   }
 
-  async generate(systemPrompt: string, userPrompt: string, model?: string | null) {
-    await this.ensureStarted()
-    const threadResult = (await this.requestRaw('thread/start', {
-      model: model || undefined,
-      approvalPolicy: 'never',
-      sandbox: 'read-only',
-      ephemeral: true,
-    })) as { thread?: { id?: string } }
-    const threadId = threadResult.thread?.id
-    if (!threadId) throw new CodexServiceError('Codex tidak membuat thread baru.')
+  async generate(
+    systemPrompt: string,
+    userPrompt: string,
+    model?: string | null,
+    signal?: AbortSignal
+  ) {
+    try {
+      await this.ensureStarted()
+      if (signal?.aborted) throw createAbortError(signal)
+      const threadResult = (await this.requestRaw('thread/start', {
+        model: model || undefined,
+        approvalPolicy: 'never',
+        sandbox: 'read-only',
+        ephemeral: true,
+      })) as { thread?: { id?: string } }
+      const threadId = threadResult.thread?.id
+      if (!threadId) throw new CodexServiceError('Codex tidak membuat thread baru.')
+      if (signal?.aborted) throw createAbortError(signal)
 
-    let responseText = ''
-    let activeTurnId: string | undefined
-    const completed = new Promise<void>((resolve, reject) => {
-      let isDone = false
-      const finish = (callback: () => void) => {
-        if (isDone) return
-        isDone = true
-        this.notificationHandlers.delete(handler)
-        callback()
-      }
-
-      const handler = (message: JsonRpcMessage) => {
-        const params = message.params || {}
-        if (
-          message.method === 'turn/started' &&
-          isMessageForThread(params, threadId) &&
-          typeof params.turn?.id === 'string'
-        ) {
-          activeTurnId = params.turn.id
+      let responseText = ''
+      let activeTurnId: string | undefined
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      let cancellationError: Error | null = null
+      let interruptSent = false
+      let cancelTurn: (() => void) | undefined
+      let cleanupTurn: (() => void) | undefined
+      const completed = new Promise<void>((resolve, reject) => {
+        let isDone = false
+        const finish = (callback: () => void) => {
+          if (isDone) return
+          isDone = true
+          if (timeout) clearTimeout(timeout)
+          signal?.removeEventListener('abort', onAbort)
+          this.notificationHandlers.delete(handler)
+          callback()
         }
 
-        const isMatchingTurn = isMessageForThread(params, threadId, activeTurnId)
-        if (!isMatchingTurn) return
-
-        if (message.method === 'turn/completed') {
-          if (params.turn?.status === 'failed') {
-            const err = extractTurnErrorMessage(params.turn?.error?.message)
-            finish(() => reject(new CodexServiceError(err)))
-          } else {
-            finish(resolve)
-          }
-          return
+        const onAbort = () => {
+          cancellationError ??= createAbortError(signal)
+          cancelTurn?.()
         }
 
-        if (
-          message.method === 'item/completed' ||
-          message.method === 'item/agentMessage/completed'
-        ) {
-          const text = extractItemText(params.item)
-          if (text) responseText = text
-          return
-        }
-
-        if (message.method === 'item/agentMessage/delta' || message.method === 'item/delta') {
-          responseText += extractDeltaText(params.delta)
-        }
-      }
-
-      this.notificationHandlers.add(handler)
-      setTimeout(() => {
-        finish(() =>
-          reject(
-            new CodexServiceError(
-              'Codex tidak menyelesaikan generate dalam waktu wajar (timeout 4 menit).'
-            )
+        cancelTurn = () => {
+          if (!activeTurnId || interruptSent || isDone) return
+          interruptSent = true
+          void this.requestRaw('turn/interrupt', { threadId, turnId: activeTurnId }).then(
+            () => finish(() => reject(cancellationError || createAbortError(signal))),
+            () => {
+              void this.close().finally(() =>
+                finish(() => reject(cancellationError || createAbortError(signal)))
+              )
+            }
           )
-        )
-      }, 240_000)
-    })
+        }
 
-    const turnResult = (await this.requestRaw('turn/start', {
-      threadId,
-      model: model || undefined,
-      approvalPolicy: 'never',
-      input: [{ type: 'text', text: `${systemPrompt}\n\n${userPrompt}` }],
-    })) as { turn?: { id?: string } }
-    activeTurnId = turnResult.turn?.id
-    if (!activeTurnId) throw new CodexServiceError('Codex tidak memulai turn.')
-    await completed
-    if (!responseText.trim()) throw new CodexServiceError('Codex tidak mengembalikan konten.')
-    return responseText
+        const handler = (message: JsonRpcMessage) => {
+          const params = message.params || {}
+          if (
+            message.method === 'turn/started' &&
+            isMessageForThread(params, threadId) &&
+            typeof params.turn?.id === 'string'
+          ) {
+            activeTurnId = params.turn.id
+          }
+
+          const isMatchingTurn = isMessageForThread(params, threadId, activeTurnId)
+          if (!isMatchingTurn) return
+
+          if (message.method === 'turn/completed') {
+            if (cancellationError) {
+              finish(() => reject(cancellationError!))
+            } else if (params.turn?.status === 'failed') {
+              const err = extractTurnErrorMessage(params.turn?.error?.message)
+              finish(() => reject(new CodexServiceError(err)))
+            } else {
+              finish(resolve)
+            }
+            return
+          }
+
+          if (
+            message.method === 'item/completed' ||
+            message.method === 'item/agentMessage/completed'
+          ) {
+            const text = extractItemText(params.item)
+            if (text) responseText = text
+            return
+          }
+
+          if (message.method === 'item/agentMessage/delta' || message.method === 'item/delta') {
+            responseText += extractDeltaText(params.delta)
+          }
+        }
+
+        cleanupTurn = () => finish(resolve)
+        this.notificationHandlers.add(handler)
+        signal?.addEventListener('abort', onAbort, { once: true })
+        if (signal?.aborted) onAbort()
+        timeout = setTimeout(() => {
+          cancellationError ??= new CodexServiceError(
+            'Codex tidak menyelesaikan generate dalam waktu wajar (timeout 4 menit).'
+          )
+          cancelTurn?.()
+        }, 240_000)
+      })
+
+      let turnResult: { turn?: { id?: string } }
+      try {
+        turnResult = (await this.requestRaw('turn/start', {
+          threadId,
+          model: model || undefined,
+          approvalPolicy: 'never',
+          input: [{ type: 'text', text: `${systemPrompt}\n\n${userPrompt}` }],
+        })) as { turn?: { id?: string } }
+      } catch (error) {
+        cleanupTurn?.()
+        throw error
+      }
+      activeTurnId = turnResult.turn?.id
+      if (!activeTurnId) {
+        cleanupTurn?.()
+        throw new CodexServiceError('Codex tidak memulai turn.')
+      }
+      if (cancellationError) cancelTurn?.()
+      await completed
+      if (!responseText.trim()) throw new CodexServiceError('Codex tidak mengembalikan konten.')
+      return responseText
+    } finally {
+      await this.close()
+    }
   }
 
-  async generateImage(prompt: string, model?: string | null) {
-    await this.ensureStarted()
-    const threadResult = (await this.requestRaw('thread/start', {
-      model: model || undefined,
-      approvalPolicy: 'never',
-      sandbox: 'read-only',
-      ephemeral: true,
-    })) as { thread?: { id?: string } }
-    const threadId = threadResult.thread?.id
-    if (!threadId) throw new CodexServiceError('Codex tidak membuat thread gambar baru.')
+  async generateImage(prompt: string, model?: string | null, signal?: AbortSignal) {
+    try {
+      await this.ensureStarted()
+      if (signal?.aborted) throw createAbortError(signal)
+      const threadResult = (await this.requestRaw('thread/start', {
+        model: model || undefined,
+        approvalPolicy: 'never',
+        sandbox: 'read-only',
+        ephemeral: true,
+      })) as { thread?: { id?: string } }
+      const threadId = threadResult.thread?.id
+      if (!threadId) throw new CodexServiceError('Codex tidak membuat thread gambar baru.')
+      if (signal?.aborted) throw createAbortError(signal)
 
-    let imageResult: string | undefined
-    let activeTurnId: string | undefined
-    let timeout: ReturnType<typeof setTimeout> | undefined
-    const completed = new Promise<void>((resolve, reject) => {
-      const finish = (callback: () => void) => {
-        if (timeout) clearTimeout(timeout)
-        this.notificationHandlers.delete(handler)
-        callback()
-      }
-      const handler = (message: JsonRpcMessage) => {
-        const params = message.params || {}
-        if (
-          message.method === 'turn/started' &&
-          params.turn?.threadId === threadId &&
-          typeof params.turn?.id === 'string'
-        ) {
-          activeTurnId = params.turn.id
+      let imageResult: string | undefined
+      let activeTurnId: string | undefined
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      let cancellationError: Error | null = null
+      let interruptSent = false
+      let cancelTurn: (() => void) | undefined
+      let cleanupTurn: (() => void) | undefined
+      const completed = new Promise<void>((resolve, reject) => {
+        let isDone = false
+        const finish = (callback: () => void) => {
+          if (isDone) return
+          isDone = true
+          if (timeout) clearTimeout(timeout)
+          signal?.removeEventListener('abort', onAbort)
+          this.notificationHandlers.delete(handler)
+          callback()
         }
-        if (message.method === 'item/completed' && params.item?.type === 'image_generation_call') {
-          const result = params.item.result
-          if (typeof result === 'string' && result.trim()) imageResult = result
+
+        const onAbort = () => {
+          cancellationError ??= createAbortError(signal)
+          cancelTurn?.()
         }
-        if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
-          if (params.turn?.status === 'failed') {
-            finish(() =>
-              reject(
-                new CodexServiceError(
-                  params.turn?.error?.message || 'Codex gagal membuat ilustrasi.'
+
+        cancelTurn = () => {
+          if (!activeTurnId || interruptSent || isDone) return
+          interruptSent = true
+          void this.requestRaw('turn/interrupt', { threadId, turnId: activeTurnId }).then(
+            () => finish(() => reject(cancellationError || createAbortError(signal))),
+            () => {
+              void this.close().finally(() =>
+                finish(() => reject(cancellationError || createAbortError(signal)))
+              )
+            }
+          )
+        }
+
+        const handler = (message: JsonRpcMessage) => {
+          const params = message.params || {}
+          if (
+            message.method === 'turn/started' &&
+            params.turn?.threadId === threadId &&
+            typeof params.turn?.id === 'string'
+          ) {
+            activeTurnId = params.turn.id
+          }
+          if (
+            message.method === 'item/completed' &&
+            params.item?.type === 'image_generation_call'
+          ) {
+            const result = params.item.result
+            if (typeof result === 'string' && result.trim()) imageResult = result
+          }
+          if (message.method === 'turn/completed' && params.turn?.id === activeTurnId) {
+            if (cancellationError) {
+              finish(() => reject(cancellationError!))
+            } else if (params.turn?.status === 'failed') {
+              finish(() =>
+                reject(
+                  new CodexServiceError(
+                    params.turn?.error?.message || 'Codex gagal membuat ilustrasi.'
+                  )
                 )
               )
-            )
-          } else {
-            finish(resolve)
+            } else {
+              finish(resolve)
+            }
           }
         }
-      }
-      this.notificationHandlers.add(handler)
-      timeout = setTimeout(() => {
-        this.notificationHandlers.delete(handler)
-        reject(new CodexServiceError('Codex tidak menyelesaikan pembuatan ilustrasi.'))
-      }, 120_000)
-    })
 
-    const turnResult = (await this.requestRaw('turn/start', {
-      threadId,
-      model: model || undefined,
-      approvalPolicy: 'never',
-      input: [
-        {
-          type: 'text',
-          text: `Use GPT Image 2 image generation for this request. Return one generated image asset, no explanation: ${prompt}`,
-        },
-      ],
-    })) as { turn?: { id?: string } }
-    activeTurnId = turnResult.turn?.id
-    if (!activeTurnId) throw new CodexServiceError('Codex tidak memulai turn gambar.')
-    await completed
-    if (!imageResult) throw new CodexServiceError('Codex tidak mengembalikan asset gambar.')
-    return normalizeImageResult(imageResult)
+        cleanupTurn = () => finish(resolve)
+        this.notificationHandlers.add(handler)
+        signal?.addEventListener('abort', onAbort, { once: true })
+        if (signal?.aborted) onAbort()
+        timeout = setTimeout(() => {
+          cancellationError ??= new CodexServiceError(
+            'Codex tidak menyelesaikan pembuatan ilustrasi dalam waktu wajar.'
+          )
+          cancelTurn?.()
+        }, 120_000)
+      })
+
+      let turnResult: { turn?: { id?: string } }
+      try {
+        turnResult = (await this.requestRaw('turn/start', {
+          threadId,
+          model: model || undefined,
+          approvalPolicy: 'never',
+          input: [
+            {
+              type: 'text',
+              text: `Use GPT Image 2 image generation for this request. Return one generated image asset, no explanation: ${prompt}`,
+            },
+          ],
+        })) as { turn?: { id?: string } }
+      } catch (error) {
+        cleanupTurn?.()
+        throw error
+      }
+      activeTurnId = turnResult.turn?.id
+      if (!activeTurnId) {
+        cleanupTurn?.()
+        throw new CodexServiceError('Codex tidak memulai turn gambar.')
+      }
+      if (cancellationError) cancelTurn?.()
+      await completed
+      if (!imageResult) throw new CodexServiceError('Codex tidak mengembalikan asset gambar.')
+      return await normalizeImageResult(imageResult, signal)
+    } finally {
+      await this.close()
+    }
   }
 }
 
-async function normalizeImageResult(result: string) {
+async function normalizeImageResult(result: string, signal?: AbortSignal) {
   const value = result.trim()
   if (value.startsWith('data:image/')) return value
 
   if (/^https?:\/\//i.test(value)) {
-    const response = await fetch(value)
+    const response = await fetch(value, { signal })
     if (!response.ok)
       throw new CodexServiceError('Codex mengembalikan URL gambar yang tidak dapat diunduh.')
     const mime = response.headers.get('content-type')?.split(';')[0] || 'image/png'
@@ -390,11 +521,23 @@ export async function listCodexModels() {
   return client.models()
 }
 
-export function callCodex(systemPrompt: string, userPrompt: string, model?: string | null) {
+export function callCodex(
+  systemPrompt: string,
+  userPrompt: string,
+  model?: string | null,
+  signal?: AbortSignal
+) {
   const normalizedModel = model && /^gpt-5\.6/i.test(model) ? 'gpt-5.5' : model || 'gpt-5.5'
-  return client.generate(systemPrompt, userPrompt, normalizedModel)
+  return new CodexAppServerClient().generate(systemPrompt, userPrompt, normalizedModel, signal)
 }
 
-export function generateCodexImage(prompt: string, model?: string | null) {
-  return client.generateImage(prompt, model)
+export function generateCodexImage(prompt: string, model?: string | null, signal?: AbortSignal) {
+  return new CodexAppServerClient().generateImage(prompt, model, signal)
+}
+
+function createAbortError(signal?: AbortSignal): Error {
+  if (signal?.reason instanceof Error) return signal.reason
+  const error = new CodexServiceError('Generasi Codex dibatalkan.')
+  error.name = 'AbortError'
+  return error
 }

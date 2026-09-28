@@ -8,7 +8,7 @@ import { AiServiceError } from '#services/ai_service'
 import { aiQueueService } from '#services/ai_queue_service'
 import { getCurriculumContext } from '#services/curriculum_context_service'
 import { lkpdPrompt } from '#services/ai_prompts'
-import { creditService } from '#services/credit_service'
+import { creditService, InsufficientCreditsError } from '#services/credit_service'
 
 export type GenerateLkpdData = {
   classId: number
@@ -67,47 +67,68 @@ export class LkpdService {
       return { status: 'insufficient_credits' }
     }
 
-    const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
-    let content: Record<string, any>
     try {
-      const prompt = lkpdPrompt({
-        theme: data.theme,
-        subtheme: data.subtheme,
-        ageGroup: data.ageGroup || 'Kelompok B',
-        institutionType: user.educationLevel || 'tk',
-      })
+      const lkpd = await creditService.withGenerationCredit(
+        user,
+        1,
+        `LKPD: ${data.theme}`,
+        'lkpd.generate',
+        async (reservationKey) => {
+          const curriculum = await getCurriculumContext(user.id, data.learningSequenceId)
+          const prompt = lkpdPrompt({
+            theme: data.theme,
+            subtheme: data.subtheme,
+            ageGroup: data.ageGroup || 'Kelompok B',
+            institutionType:
+              user.institutionType || user.educationLevel || (user.isTk ? 'tk' : 'sd'),
+            educationLevel: user.educationLevel,
+            curriculumVersion: user.curriculumVersion,
+          })
 
-      content = await aiQueueService.enqueueAiJson<Record<string, any>>({
-        userId: user.id,
-        combo: 'siapajar-docgen',
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-      })
-      content.curriculum = curriculum
+          const content = await aiQueueService.enqueueAiJson<Record<string, any>>({
+            userId: user.id,
+            operation: 'lkpd.generate',
+            systemPrompt: prompt.system,
+            userPrompt: prompt.user,
+            billingReservation: {
+              reservationKey,
+              amount: 1,
+              description: `LKPD: ${data.theme}`,
+            },
+          })
+          content.curriculum = curriculum
+
+          const subTitle = data.subtheme ? ` - ${data.subtheme}` : ''
+          const title = content.title || `LKPD Tema: ${data.theme}${subTitle}`
+          return Lkpd.create({
+            userId: user.id,
+            classId: data.classId,
+            title,
+            theme: data.theme,
+            subtheme: data.subtheme || null,
+            ageGroup: data.ageGroup || 'Kelompok B (5-6 Tahun)',
+            institutionType: (
+              user.institutionType ||
+              user.educationLevel ||
+              (user.isTk ? 'tk' : 'sd')
+            ).toUpperCase(),
+            content,
+            status: 'draft',
+          })
+        }
+      )
+
+      return { status: 'created', lkpd }
     } catch (error) {
+      if (error instanceof InsufficientCreditsError) {
+        return { status: 'insufficient_credits' }
+      }
       return {
         status: 'generation_error' as const,
         message:
           error instanceof AiServiceError ? error.message : 'Gagal generate LKPD. Coba lagi.',
       }
     }
-
-    const subTitle = data.subtheme ? ` - ${data.subtheme}` : ''
-    const title = content.title || `LKPD Tema: ${data.theme}${subTitle}`
-    const lkpd = await Lkpd.create({
-      userId: user.id,
-      classId: data.classId,
-      title,
-      theme: data.theme,
-      subtheme: data.subtheme || null,
-      ageGroup: data.ageGroup || 'Kelompok B (5-6 Tahun)',
-      institutionType: user.educationLevel?.toUpperCase() || 'TK',
-      content,
-      status: 'draft',
-    })
-    await creditService.chargeGeneration(user, 1, `LKPD: ${data.theme}`)
-
-    return { status: 'created', lkpd }
   }
 }
 

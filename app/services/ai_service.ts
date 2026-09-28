@@ -1,21 +1,35 @@
 import env from '#start/env'
 import { callCodex, generateCodexImage } from '#services/codex_service'
 import { DateTime } from 'luxon'
+import { createHash } from 'node:crypto'
+import logger from '@adonisjs/core/services/logger'
 import { aiSettingRepository } from '#repositories/ai_setting_repository'
+import { AiServiceError } from '#services/ai_queue_errors'
 
-/** Error yang aman ditampilkan langsung ke guru — bukan stack trace. */
-export class AiServiceError extends Error {}
+export { AiServiceError } from '#services/ai_queue_errors'
 
 export interface CallAiJsonOptions {
-  /** Nama combo 9router — fallback kalau resolved.model belum diset. */
-  combo: string
+  /** Nama operasi bisnis yang sedang dikerjakan (bukan nama model/provider). */
+  operation: string
+  /**
+   * Nama combo/model bundle 9router. Hanya diisi saat provider 9router
+   * dipakai atau ketika menguji koneksi 9router; generator tidak memakai
+   * combo untuk menamai jenis dokumen.
+   */
+  routingCombo?: string
   systemPrompt: string
   userPrompt: string
   timeoutMs?: number
+  signal?: AbortSignal
   reasoningEffort?: 'none' | 'low' | 'medium' | 'high' | 'max' | 'xhigh'
 }
 
 export type AiGateway = 'command_code' | 'openrouter' | 'opencode_zen' | 'together'
+
+type ProviderResponse = {
+  text: string
+  usage?: Record<string, unknown>
+}
 
 interface ResolvedProvider {
   provider: '9router' | 'anthropic' | 'openai' | 'gemini'
@@ -34,6 +48,8 @@ interface ResolvedProvider {
 const GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-image'
 const MAX_INLINE_IMAGE_BYTES = 8 * 1024 * 1024
 const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg'])
+const PROMPT_CACHE_VERSION = 'v1'
+const ANTHROPIC_CACHE_MIN_CHARS = 4096
 
 const GATEWAY_DEFAULTS: Record<AiGateway, string> = {
   command_code: 'https://api.commandcode.ai/provider/v1',
@@ -85,9 +101,17 @@ async function resolveProvider(): Promise<ResolvedProvider> {
   }
 }
 
-export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+export async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+  signal?: AbortSignal
+) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  const abortFromParent = () => controller.abort(signal?.reason)
+  if (signal?.aborted) abortFromParent()
+  else signal?.addEventListener('abort', abortFromParent, { once: true })
   try {
     return await fetch(url, { ...init, signal: controller.signal })
   } catch (error) {
@@ -97,6 +121,7 @@ export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs
     throw new AiServiceError('Gagal terhubung ke layanan AI. Coba lagi.')
   } finally {
     clearTimeout(timeout)
+    signal?.removeEventListener('abort', abortFromParent)
   }
 }
 
@@ -111,13 +136,17 @@ function trimTrailingSlashes(url: string): string {
 async function call9router(
   resolved: ResolvedProvider,
   options: CallAiJsonOptions
-): Promise<string> {
+): Promise<ProviderResponse> {
   let baseUrl =
     resolved.baseUrl || env.get('ROUTER_API_URL') || 'http://localhost:20128/v1/chat/completions'
   // 9Router exposes OpenAI-compatible endpoint at /v1/chat/completions.
   // Ensure the URL always points to that path regardless of user input.
   if (!baseUrl.endsWith('/chat/completions')) {
     baseUrl = `${trimTrailingSlashes(baseUrl)}/chat/completions`
+  }
+  const model = resolved.model || options.routingCombo
+  if (!model) {
+    throw new AiServiceError('Pilih combo/model 9router di Konfigurasi AI terlebih dahulu.')
   }
 
   const response = await fetchWithTimeout(
@@ -129,17 +158,18 @@ async function call9router(
         ...(resolved.apiKey ? { Authorization: `Bearer ${resolved.apiKey}` } : {}),
       },
       body: JSON.stringify({
-        model: resolved.model || options.combo,
+        model,
         messages: [
-          { role: 'system', content: options.systemPrompt },
-          { role: 'user', content: options.userPrompt },
+          { role: 'system', content: normalizePromptPart(options.systemPrompt) },
+          { role: 'user', content: normalizePromptPart(options.userPrompt) },
         ],
         temperature: 0.3,
         max_tokens: 2000,
         response_format: { type: 'json_object' },
       }),
     },
-    options.timeoutMs ?? 45_000
+    options.timeoutMs ?? 45_000,
+    options.signal
   )
 
   if (!response.ok) {
@@ -148,10 +178,30 @@ async function call9router(
     )
   }
 
-  const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] }
+  const payload = (await response.json()) as {
+    choices?: { message?: { content?: string } }[]
+    usage?: Record<string, unknown>
+  }
   const text = payload?.choices?.[0]?.message?.content
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
-  return text
+  return { text, usage: payload.usage }
+}
+
+/**
+ * OpenAI routes identical prefixes to the same prompt-cache shard when a
+ * stable key is supplied. The key deliberately excludes user prompts: the
+ * shared, non-sensitive system prefix can be reused across accounts while
+ * school/student data remains in the dynamic suffix.
+ */
+function promptCacheKey(provider: string, model: string, operation: string) {
+  return createHash('sha256')
+    .update(`${PROMPT_CACHE_VERSION}:${provider}:${model}:${operation}`)
+    .digest('hex')
+    .slice(0, 64)
+}
+
+function normalizePromptPart(value: string) {
+  return value.replaceAll('\r\n', '\n').trim()
 }
 
 function completionUrl(baseUrl: string) {
@@ -175,7 +225,7 @@ function aggregatorLabel(gateway: AiGateway | null) {
 async function callAggregator(
   resolved: ResolvedProvider,
   options: CallAiJsonOptions
-): Promise<string> {
+): Promise<ProviderResponse> {
   if (!resolved.gateway) throw new AiServiceError('Aggregator AI belum dipilih.')
   if (!resolved.apiKey) {
     throw new AiServiceError(`API key ${aggregatorLabel(resolved.gateway)} belum diisi.`)
@@ -190,8 +240,8 @@ async function callAggregator(
   const body: Record<string, unknown> = {
     model,
     messages: [
-      { role: 'system', content: options.systemPrompt },
-      { role: 'user', content: options.userPrompt },
+      { role: 'system', content: normalizePromptPart(options.systemPrompt) },
+      { role: 'user', content: normalizePromptPart(options.userPrompt) },
     ],
     response_format: { type: 'json_object' },
   }
@@ -215,7 +265,8 @@ async function callAggregator(
       },
       body: JSON.stringify(body),
     },
-    options.timeoutMs ?? 90_000
+    options.timeoutMs ?? 90_000,
+    options.signal
   )
   if (!response.ok) {
     const responseText = await response.text().catch(() => '')
@@ -226,15 +277,19 @@ async function callAggregator(
   }
   const payload = (await response.json()) as {
     choices?: { message?: { content?: string | Array<{ text?: string }> } }[]
+    usage?: Record<string, unknown>
   }
   const content = payload.choices?.[0]?.message?.content
   const text = Array.isArray(content) ? content.map((part) => part.text || '').join('') : content
   if (!text)
     throw new AiServiceError(`${aggregatorLabel(resolved.gateway)} tidak mengembalikan konten.`)
-  return text
+  return { text, usage: payload.usage }
 }
 
-async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
+async function callOpenAi(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions
+): Promise<ProviderResponse> {
   if (!resolved.apiKey)
     throw new AiServiceError('API key OpenAI belum diisi. Atur di halaman Konfigurasi AI.')
 
@@ -245,10 +300,18 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
   const body: Record<string, any> = {
     model,
     messages: [
-      { role: 'system', content: options.systemPrompt },
-      { role: 'user', content: options.userPrompt },
+      { role: 'system', content: normalizePromptPart(options.systemPrompt) },
+      { role: 'user', content: normalizePromptPart(options.userPrompt) },
     ],
     response_format: { type: 'json_object' },
+  }
+
+  // Prompt caching is automatic on supported OpenAI models. A stable routing
+  // key makes the long system prefix reusable without putting private user
+  // context in the provider cache key. Unknown/legacy model IDs are left
+  // untouched because OpenAI-compatible gateways may reject this field.
+  if (/^(gpt-(?:4o|5)|o[1-4])/i.test(model)) {
+    body.prompt_cache_key = promptCacheKey('openai', model, options.operation)
   }
 
   if (reasoningEffort && reasoningEffort !== 'none') {
@@ -272,7 +335,8 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
       },
       body: JSON.stringify(body),
     },
-    options.timeoutMs ?? (isReasoningModel ? 90_000 : 45_000)
+    options.timeoutMs ?? (isReasoningModel ? 90_000 : 45_000),
+    options.signal
   )
 
   if (!response.ok) {
@@ -283,13 +347,19 @@ async function callOpenAi(resolved: ResolvedProvider, options: CallAiJsonOptions
     )
   }
 
-  const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] }
+  const payload = (await response.json()) as {
+    choices?: { message?: { content?: string } }[]
+    usage?: Record<string, unknown>
+  }
   const text = payload?.choices?.[0]?.message?.content
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
-  return text
+  return { text, usage: payload.usage }
 }
 
-async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions): Promise<string> {
+async function callGemini(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions
+): Promise<ProviderResponse> {
   let accessToken: string | null = null
   if (resolved.authMode === 'oauth') {
     accessToken = await refreshGeminiAccessToken(resolved)
@@ -320,9 +390,14 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
           : {}),
       },
       body: JSON.stringify({
+        // Keep system instructions as an invariant prefix and put account-
+        // specific context in the user turn. Gemini 2.5+ can apply implicit
+        // context caching to repeated prefixes; no user data is shared here.
+        systemInstruction: { parts: [{ text: normalizePromptPart(options.systemPrompt) }] },
         contents: [
           {
-            parts: [{ text: `${options.systemPrompt}\n\n${options.userPrompt}` }],
+            role: 'user',
+            parts: [{ text: normalizePromptPart(options.userPrompt) }],
           },
         ],
         generationConfig: {
@@ -331,7 +406,8 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
         },
       }),
     },
-    options.timeoutMs ?? 45_000
+    options.timeoutMs ?? 45_000,
+    options.signal
   )
 
   if (!response.ok) {
@@ -343,10 +419,11 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
 
   const payload = (await response.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[]
+    usageMetadata?: Record<string, unknown>
   }
   const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
-  return text
+  return { text, usage: payload.usageMetadata }
 }
 
 /**
@@ -357,7 +434,10 @@ async function callGemini(resolved: ResolvedProvider, options: CallAiJsonOptions
  * This deliberately does not expose credentials or persist provider response
  * metadata in the question payload.
  */
-export async function generateGeminiImage(prompt: string): Promise<string | null> {
+export async function generateGeminiImage(
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string | null> {
   const normalizedPrompt = prompt.trim()
   if (!normalizedPrompt) return null
 
@@ -397,7 +477,8 @@ export async function generateGeminiImage(prompt: string): Promise<string | null
         },
       }),
     },
-    90_000
+    90_000,
+    signal
   )
 
   if (!response.ok) {
@@ -432,10 +513,10 @@ export async function generateGeminiImage(prompt: string): Promise<string | null
   return `data:${imagePart.mimeType};base64,${imageBytes.toString('base64')}`
 }
 
-async function generateOpenAiImage(prompt: string): Promise<string> {
+async function generateOpenAiImage(prompt: string, signal?: AbortSignal): Promise<string> {
   const resolved = await resolveProvider()
   if (resolved.authMode === 'oauth') {
-    return generateCodexImage(prompt, resolved.model)
+    return generateCodexImage(prompt, resolved.model, signal)
   }
   if (!resolved.apiKey) {
     throw new AiServiceError('API key OpenAI belum diisi untuk membuat gambar.')
@@ -456,7 +537,8 @@ async function generateOpenAiImage(prompt: string): Promise<string> {
         quality: 'medium',
       }),
     },
-    120_000
+    120_000,
+    signal
   )
   if (!response.ok) {
     throw new AiServiceError(
@@ -473,7 +555,10 @@ async function generateOpenAiImage(prompt: string): Promise<string> {
   return `data:image/png;base64,${encoded}`
 }
 
-export async function generateConfiguredImage(prompt: string): Promise<string> {
+export async function generateConfiguredImage(
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string> {
   const resolved = await resolveProvider()
   if (resolved.gateway) {
     throw new AiServiceError(
@@ -481,18 +566,19 @@ export async function generateConfiguredImage(prompt: string): Promise<string> {
     )
   }
   if (resolved.provider === 'gemini') {
-    const image = await generateGeminiImage(prompt)
+    const image = await generateGeminiImage(prompt, signal)
     if (image) return image
   }
-  if (resolved.provider === 'openai') return generateOpenAiImage(prompt)
+  if (resolved.provider === 'openai') return generateOpenAiImage(prompt, signal)
   throw new AiServiceError('Provider AI aktif belum mendukung pembuatan gambar.')
 }
 
 export async function generateConfiguredSvg(
-  prompt: string
+  prompt: string,
+  signal?: AbortSignal
 ): Promise<{ svg: string; viewBox?: string }> {
   const result = await callAiJson<{ svg?: string; viewBox?: string }>({
-    combo: 'svg-illustration',
+    operation: 'visual_asset.svg.generate',
     systemPrompt: [
       'Kamu generator SVG untuk lembar kerja PAUD/RA/TK.',
       'Balas hanya JSON valid dengan bentuk {"svg":"...","viewBox":"0 0 512 512"}.',
@@ -504,6 +590,7 @@ export async function generateConfiguredSvg(
     userPrompt: prompt,
     reasoningEffort: 'max',
     timeoutMs: 90_000,
+    signal,
   })
   if (!result.svg || typeof result.svg !== 'string') {
     throw new AiServiceError('Model SVG tidak mengembalikan markup SVG.')
@@ -592,9 +679,25 @@ export async function listGeminiModelsForOAuth(): Promise<string[]> {
 async function callAnthropic(
   resolved: ResolvedProvider,
   options: CallAiJsonOptions
-): Promise<string> {
+): Promise<ProviderResponse> {
   if (!resolved.apiKey)
     throw new AiServiceError('API key Anthropic belum diisi. Atur di halaman Konfigurasi AI.')
+
+  const systemPrompt = normalizePromptPart(options.systemPrompt)
+  const system =
+    systemPrompt.length >= ANTHROPIC_CACHE_MIN_CHARS
+      ? [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' },
+          },
+          {
+            type: 'text',
+            text: 'Balas hanya JSON, tanpa markdown code fence, tanpa teks lain.',
+          },
+        ]
+      : `${systemPrompt}\n\nBalas hanya JSON, tanpa markdown code fence, tanpa teks lain.`
 
   const response = await fetchWithTimeout(
     'https://api.anthropic.com/v1/messages',
@@ -609,11 +712,12 @@ async function callAnthropic(
         model: resolved.model || 'claude-sonnet-5',
         max_tokens: 2000,
         temperature: 0.3,
-        system: `${options.systemPrompt}\n\nBalas hanya JSON, tanpa markdown code fence, tanpa teks lain.`,
-        messages: [{ role: 'user', content: options.userPrompt }],
+        system,
+        messages: [{ role: 'user', content: normalizePromptPart(options.userPrompt) }],
       }),
     },
-    options.timeoutMs ?? 45_000
+    options.timeoutMs ?? 45_000,
+    options.signal
   )
 
   if (!response.ok) {
@@ -622,10 +726,13 @@ async function callAnthropic(
     )
   }
 
-  const payload = (await response.json()) as { content?: { type: string; text?: string }[] }
+  const payload = (await response.json()) as {
+    content?: { type: string; text?: string }[]
+    usage?: Record<string, unknown>
+  }
   const text = payload?.content?.find((block) => block.type === 'text')?.text
   if (!text) throw new AiServiceError('Layanan AI tidak mengembalikan konten. Coba lagi.')
-  return text
+  return { text, usage: payload.usage }
 }
 
 async function fetch9RouterModels(
@@ -849,26 +956,36 @@ function stripJsonFence(text: string) {
 async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
   const resolved = await resolveProvider()
 
-  let text: string
+  let result: ProviderResponse
   switch (resolved.provider) {
     case 'openai':
-      text =
+      result =
         resolved.authMode === 'oauth'
-          ? await callCodex(options.systemPrompt, options.userPrompt, resolved.model)
+          ? {
+              text: await callCodex(
+                options.systemPrompt,
+                options.userPrompt,
+                resolved.model,
+                options.signal
+              ),
+            }
           : await callOpenAi(resolved, options)
       break
     case 'anthropic':
-      text = await callAnthropic(resolved, options)
+      result = await callAnthropic(resolved, options)
       break
     case 'gemini':
-      text = await callGemini(resolved, options)
+      result = await callGemini(resolved, options)
       break
     default:
-      text = resolved.gateway
+      result = resolved.gateway
         ? await callAggregator(resolved, options)
         : await call9router(resolved, options)
   }
 
+  recordPromptCacheUsage(resolved, options, result.usage)
+
+  const text = result.text
   const cleaned = stripJsonFence(text)
   try {
     return JSON.parse(cleaned) as T
@@ -878,6 +995,63 @@ async function requestOnce<T>(options: CallAiJsonOptions): Promise<T> {
     }
     throw new SyntaxError('AI response bukan JSON valid')
   }
+}
+
+function asFiniteNumber(value: unknown) {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) && number >= 0 ? number : null
+}
+
+/**
+ * Provider usage is deliberately reduced to cache counters before logging.
+ * Prompts and completions are never written to logs. This lets finance compare
+ * prompt-cache hit/write rates with provider invoices without leaking school or
+ * student data.
+ */
+function recordPromptCacheUsage(
+  resolved: ResolvedProvider,
+  options: CallAiJsonOptions,
+  usage?: Record<string, unknown>
+) {
+  if (!usage) return
+
+  const promptDetails =
+    usage.prompt_tokens_details && typeof usage.prompt_tokens_details === 'object'
+      ? (usage.prompt_tokens_details as Record<string, unknown>)
+      : {}
+  const cachedTokens =
+    asFiniteNumber(promptDetails.cached_tokens) ??
+    asFiniteNumber(usage.cached_tokens) ??
+    asFiniteNumber(usage.cachedContentTokenCount) ??
+    asFiniteNumber(usage.cached_content_token_count) ??
+    asFiniteNumber(usage.cache_read_input_tokens) ??
+    0
+  const cacheWriteTokens =
+    asFiniteNumber(usage.cache_creation_input_tokens) ??
+    asFiniteNumber(usage.cache_creation_tokens) ??
+    asFiniteNumber(usage.cache_write_input_tokens) ??
+    0
+  const inputTokens =
+    asFiniteNumber(usage.prompt_tokens) ??
+    asFiniteNumber(usage.promptTokenCount) ??
+    asFiniteNumber(usage.input_tokens) ??
+    asFiniteNumber(usage.inputTokenCount)
+
+  if (cachedTokens === 0 && cacheWriteTokens === 0 && inputTokens === null) return
+
+  logger.info(
+    {
+      event: 'ai.prompt_cache.usage',
+      provider: resolved.provider,
+      model: resolved.model,
+      operation: options.operation,
+      cachedTokens,
+      cacheWriteTokens,
+      inputTokens,
+      promptCacheHit: cachedTokens > 0,
+    },
+    'AI prompt cache usage'
+  )
 }
 
 /**
