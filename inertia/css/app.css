@@ -400,3 +400,13 @@ body {
 .badge-kawaii-sky {
   @apply inline-flex items-center justify-center text-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#70d6ff] dark:bg-[#70d6ff] text-neutral-950 border-2 border-black dark:border-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] shrink-0 whitespace-nowrap;
 }
+
+/* Landing: smooth anchor scroll, offset for fixed navbar */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+html {
+  scroll-padding-top: 5.5rem;
+}
