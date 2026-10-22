@@ -22,11 +22,11 @@ export function CtaSection() {
       </Marquee>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black shadow-[6px_6px_0px_#000000] p-8 sm:p-12 text-center space-y-6">
-          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white max-w-xl mx-auto leading-tight">
+          <h2 className="text-2xl sm:text-4xl font-bold text-neutral-950 dark:text-white max-w-xl mx-auto leading-tight">
             Siap Menghemat Waktu Administrasi Anda Hari Ini?
           </h2>
 
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 max-w-lg mx-auto font-medium">
+          <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-lg mx-auto font-medium">
             Bergabunglah dengan ribuan guru di seluruh Indonesia yang telah menyelesaikan dokumen
             modul ajar dan evaluasi lebih cepat dan mudah.
           </p>

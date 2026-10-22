@@ -8,7 +8,7 @@ export function FooterSection() {
         <div className="space-y-3 md:col-span-2">
           <div className="flex items-center gap-2.5">
             <img src="/images/logo.png" alt="SiapAjar Logo" className="w-8 h-8 object-contain" />
-            <span className="text-xl font-black tracking-tight text-white">SiapAjar</span>
+            <span className="text-xl font-bold tracking-tight text-white">SiapAjar</span>
           </div>
           <p className="text-xs text-neutral-400 font-medium max-w-sm leading-relaxed">
             Platform generator dokumen pembelajaran dan administrasi guru otomatis berbasis
@@ -21,7 +21,7 @@ export function FooterSection() {
         </div>
 
         <div className="space-y-3">
-          <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">
+          <h4 className="font-semibold text-xs uppercase tracking-wider text-emerald-400">
             Generator AI
           </h4>
           <ul className="space-y-2 text-xs text-neutral-400 font-medium">
@@ -49,7 +49,9 @@ export function FooterSection() {
         </div>
 
         <div className="space-y-3">
-          <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">Navigasi</h4>
+          <h4 className="font-semibold text-xs uppercase tracking-wider text-emerald-400">
+            Navigasi
+          </h4>
           <ul className="space-y-2 text-xs text-neutral-400 font-medium">
             <li>
               <Link href="/login" className="hover:text-white transition-colors">
@@ -75,7 +77,7 @@ export function FooterSection() {
         </div>
 
         <div className="space-y-3">
-          <h4 className="font-black text-xs uppercase tracking-wider text-emerald-400">
+          <h4 className="font-semibold text-xs uppercase tracking-wider text-emerald-400">
             Ikuti Kami
           </h4>
           <div className="flex flex-col gap-3 text-xs text-neutral-400 font-medium">
@@ -110,7 +112,7 @@ export function FooterSection() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500 font-medium">
+      <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 font-medium">
         <p>© {new Date().getFullYear()} SiapAjar. Hak Cipta Dilindungi.</p>
         <p>Membantu guru Indonesia lebih siap mengajar dan siap administrasi 🇮🇩</p>
       </div>

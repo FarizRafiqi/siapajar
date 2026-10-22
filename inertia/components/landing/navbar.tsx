@@ -35,7 +35,7 @@ export function Navbar() {
                 className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
               />
               <div>
-                <span className="text-2xl font-black text-neutral-950 dark:text-white tracking-tight">
+                <span className="text-2xl font-bold text-neutral-950 dark:text-white tracking-tight">
                   SiapAjar
                 </span>
               </div>
@@ -45,25 +45,25 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-6">
               <a
                 href="#tools"
-                className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
+                className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Generator AI
               </a>
               <a
                 href="#cara-kerja"
-                className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
+                className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Cara Kerja
               </a>
               <a
                 href="#pricing"
-                className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
+                className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Harga
               </a>
               <a
                 href="#faq"
-                className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
+                className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 transition-colors relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all after:duration-300 hover:after:w-full"
               >
                 FAQ
               </a>
@@ -72,7 +72,7 @@ export function Navbar() {
               {user ? (
                 <Link
                   href="/dashboard"
-                  className="btn-kawaii-primary text-xs font-black py-2.5 px-5"
+                  className="btn-kawaii-primary text-xs font-semibold py-2.5 px-5"
                 >
                   Buka Dashboard &rarr;
                 </Link>
@@ -80,13 +80,13 @@ export function Navbar() {
                 <div className="flex items-center gap-3">
                   <Link
                     href="/login"
-                    className="px-4 py-2 text-xs font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600 transition-colors"
+                    className="px-4 py-2 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-emerald-600 transition-colors"
                   >
                     Masuk
                   </Link>
                   <Link
                     href="/signup"
-                    className="btn-kawaii-primary text-xs font-black py-2.5 px-5"
+                    className="btn-kawaii-primary text-xs font-semibold py-2.5 px-5"
                   >
                     Daftar Gratis
                   </Link>
@@ -121,28 +121,28 @@ export function Navbar() {
               <a
                 href="#tools"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+                className="block px-3 py-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
               >
                 Generator AI
               </a>
               <a
                 href="#cara-kerja"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+                className="block px-3 py-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
               >
                 Cara Kerja
               </a>
               <a
                 href="#pricing"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+                className="block px-3 py-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
               >
                 Harga & Top Up
               </a>
               <a
                 href="#faq"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-black text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
+                className="block px-3 py-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-emerald-600"
               >
                 FAQ
               </a>

@@ -12,11 +12,11 @@ export function ToolsSection() {
     >
       <div className="max-w-6xl mx-auto space-y-12">
         <ScrollReveal className="text-center space-y-3">
-          <span className="badge-kawaii-emerald text-xs font-black">ALAT PRAKTIS</span>
-          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+          <span className="badge-kawaii-emerald text-xs font-semibold">ALAT PRAKTIS</span>
+          <h2 className="text-2xl sm:text-4xl font-bold text-neutral-950 dark:text-white">
             Semua Kebutuhan Guru Dalam Satu Tempat
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 font-medium max-w-xl mx-auto">
             Hemat waktu berharga Anda hingga 90% dan fokuskan energi pada interaksi mendalam bersama
             peserta didik.
           </p>
@@ -32,7 +32,7 @@ export function ToolsSection() {
                     <div className="flex items-center justify-between">
                       <div
                         className={cn(
-                          'w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000000]',
+                          'w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center',
                           tool.color
                         )}
                       >
@@ -41,7 +41,7 @@ export function ToolsSection() {
                       {tool.tag && (
                         <span
                           className={cn(
-                            'px-2.5 py-0.5 rounded-full border-2 border-black text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000]',
+                            'px-2.5 py-0.5 rounded-full border-2 border-black text-xs font-semibold uppercase tracking-wider',
                             tool.tagColor
                           )}
                         >
@@ -50,10 +50,10 @@ export function ToolsSection() {
                       )}
                     </div>
                     <div className="space-y-1.5">
-                      <h3 className="font-black text-lg text-neutral-950 dark:text-white">
+                      <h3 className="font-semibold text-lg text-neutral-950 dark:text-white">
                         {tool.title}
                       </h3>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">
                         {tool.desc}
                       </p>
                     </div>
@@ -62,7 +62,7 @@ export function ToolsSection() {
                   <div className="pt-6">
                     <Link
                       href={tool.href}
-                      className="text-xs font-black text-neutral-950 dark:text-white inline-flex items-center gap-1.5 hover:gap-2.5 transition-all group hover:text-emerald-600 dark:hover:text-emerald-400"
+                      className="text-xs font-semibold text-neutral-950 dark:text-white inline-flex items-center gap-1.5 hover:gap-2.5 transition-all group hover:text-emerald-600 dark:hover:text-emerald-400"
                     >
                       <span>Coba Generator</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

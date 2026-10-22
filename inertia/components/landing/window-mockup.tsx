@@ -53,7 +53,7 @@ function TypewriterHeading({ text, onComplete }: TypewriterHeadingProps) {
   }, [text, reduceMotion])
 
   return (
-    <h4 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white min-h-[1.75rem] flex items-center flex-wrap">
+    <h4 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white min-h-[1.75rem] flex items-center flex-wrap">
       <span>{displayText}</span>
       {isTyping && (
         <span className="inline-block w-1 h-4 sm:h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse rounded-xs" />
@@ -97,7 +97,7 @@ function AiLoadingState() {
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-2 text-xs font-black text-emerald-800 dark:text-emerald-200">
+      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
         <LoaderCircle
           className={`h-4 w-4 shrink-0 ${reduceMotion ? '' : 'animate-spin'}`}
           aria-hidden="true"
@@ -190,7 +190,7 @@ export function InteractiveWindowMockup() {
       <motion.div
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+        className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-semibold flex items-center gap-1.5"
       >
         <Zap className="w-4 h-4 text-amber-700" /> Selesai dalam 45 Detik!
       </motion.div>
@@ -198,7 +198,7 @@ export function InteractiveWindowMockup() {
       <motion.div
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5"
+        className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-semibold flex items-center gap-1.5"
       >
         <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Standar BSKAP & Kemenag
       </motion.div>
@@ -213,11 +213,11 @@ export function InteractiveWindowMockup() {
             <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 border border-black inline-block" />
           </div>
 
-          <div className="flex-1 max-w-xs bg-emerald-950/60 border border-emerald-700/60 rounded-xl px-3 py-1 text-[11px] font-mono text-emerald-200 truncate text-center">
+          <div className="flex-1 max-w-xs bg-emerald-950/60 border border-emerald-700/60 rounded-xl px-3 py-1 text-xs font-mono text-emerald-200 truncate text-center">
             {`app.siapajar.id/${activeToolPath}`}
           </div>
 
-          <div className="text-[10px] font-black text-neutral-950 px-2 py-0.5 bg-amber-300 rounded border border-black">
+          <div className="text-xs font-semibold text-neutral-950 px-2 py-0.5 bg-amber-300 rounded border border-black">
             DASHBOARD GURU
           </div>
         </div>
@@ -227,7 +227,7 @@ export function InteractiveWindowMockup() {
           {/* Mini Sidebar on Left */}
           <div className="col-span-4 sm:col-span-3 border-r-2 border-black bg-[#047857] dark:bg-[#064e3b] p-2.5 sm:p-3 flex flex-col justify-between">
             <div className="space-y-1.5">
-              <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200/90 px-2 py-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-200/90 px-2 py-1">
                 Alat Cepat
               </p>
               {tools.map((t) => {
@@ -241,7 +241,7 @@ export function InteractiveWindowMockup() {
                     className={cn(
                       'w-full text-left p-2 rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer',
                       isSelected
-                        ? 'bg-amber-300 font-black text-neutral-950 border-2 border-black shadow-[2px_2px_0px_#000000]'
+                        ? 'bg-amber-300 font-semibold text-neutral-950 border-2 border-black'
                         : 'font-semibold text-emerald-100/90 hover:bg-emerald-600 hover:text-white'
                     )}
                   >
@@ -259,7 +259,7 @@ export function InteractiveWindowMockup() {
 
             {/* Bottom Credits in Sidebar */}
             <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center">
-              <span className="text-[10px] font-black text-amber-300 block">3 Kredit Aktif</span>
+              <span className="text-xs font-semibold text-amber-300 block">3 Kredit Aktif</span>
               <span className="text-[9px] text-emerald-200 font-medium">Siap Digunakan</span>
             </div>
           </div>
@@ -277,10 +277,10 @@ export function InteractiveWindowMockup() {
                   className="space-y-3"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="badge-kawaii-emerald text-[11px] font-black">
+                    <span className="badge-kawaii-emerald text-xs font-semibold">
                       Fase Fondasi • TK B (5-6 Tahun) • 1 Pekan
                     </span>
-                    <span className="badge-kawaii-amber text-[10px] font-black">
+                    <span className="badge-kawaii-amber text-xs font-semibold">
                       ✓ Selesai Terarsip
                     </span>
                   </div>
@@ -303,7 +303,7 @@ export function InteractiveWindowMockup() {
                     aria-hidden={!isPreviewReady}
                     className="relative"
                   >
-                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300">
                       <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
                         <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
                         <span>
@@ -314,18 +314,18 @@ export function InteractiveWindowMockup() {
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
-                          <span className="font-black text-[10px] text-emerald-800 dark:text-emerald-300 block uppercase">
+                          <span className="font-semibold text-xs text-emerald-800 dark:text-emerald-300 block uppercase">
                             Kegiatan Inti
                           </span>
-                          <span className="text-[11px] font-medium">
+                          <span className="text-xs font-medium">
                             Eksplorasi Mencuci & Mengupas Wortel
                           </span>
                         </div>
                         <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
-                          <span className="font-black text-[10px] text-amber-800 dark:text-amber-300 block uppercase">
+                          <span className="font-semibold text-xs text-amber-800 dark:text-amber-300 block uppercase">
                             Asesmen Formatif
                           </span>
-                          <span className="text-[11px] font-medium">
+                          <span className="text-xs font-medium">
                             Catatan Anekdot & Rubrik Ceklis
                           </span>
                         </div>
@@ -345,10 +345,10 @@ export function InteractiveWindowMockup() {
                   className="space-y-3"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="badge-kawaii-purple text-[11px] font-black">
+                    <span className="badge-kawaii-purple text-xs font-semibold">
                       LKPD Tematik • Mode Siap Cetak
                     </span>
-                    <span className="badge-kawaii-amber text-[10px] font-black">
+                    <span className="badge-kawaii-amber text-xs font-semibold">
                       Format Standar A4
                     </span>
                   </div>
@@ -371,14 +371,14 @@ export function InteractiveWindowMockup() {
                     aria-hidden={!isPreviewReady}
                     className="relative"
                   >
-                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
                       <p className="font-bold text-neutral-900 dark:text-white">
                         Instruksi Mandiri Siswa:
                       </p>
-                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                      <p className="text-xs text-neutral-700 dark:text-neutral-300">
                         1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
                       </p>
-                      <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+                      <p className="text-xs text-neutral-700 dark:text-neutral-300">
                         2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
                       </p>
                     </div>
@@ -396,10 +396,10 @@ export function InteractiveWindowMockup() {
                   className="space-y-3"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="badge-kawaii-blue text-[11px] font-black">
+                    <span className="badge-kawaii-blue text-xs font-semibold">
                       Sumatif Tengah Semester • 10 Butir HOTS
                     </span>
-                    <span className="badge-kawaii-emerald text-[10px] font-black">
+                    <span className="badge-kawaii-emerald text-xs font-semibold">
                       Kunci & Rubrik Siap
                     </span>
                   </div>
@@ -422,12 +422,12 @@ export function InteractiveWindowMockup() {
                     aria-hidden={!isPreviewReady}
                     className="relative"
                   >
-                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2 shadow-[2px_2px_0px_#000000]">
+                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
                       <p className="font-bold text-neutral-900 dark:text-white">
                         1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
                         pita adalah...
                       </p>
-                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
                         <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
                           A. 325 cm
                         </span>
@@ -450,12 +450,10 @@ export function InteractiveWindowMockup() {
                   className="space-y-3"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="badge-kawaii-rose text-[11px] font-black">
+                    <span className="badge-kawaii-rose text-xs font-semibold">
                       Narasi Rapor Otomatis • Semester 1
                     </span>
-                    <span className="badge-kawaii-amber text-[10px] font-black">
-                      Bahasa Positif
-                    </span>
+                    <span className="badge-kawaii-amber text-xs font-semibold">Bahasa Positif</span>
                   </div>
                   <TypewriterHeading
                     text="RAPOR: Deskripsi Capaian Pembelajaran Siswa"
@@ -476,7 +474,7 @@ export function InteractiveWindowMockup() {
                     aria-hidden={!isPreviewReady}
                     className="relative"
                   >
-                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 shadow-[2px_2px_0px_#000000]">
+                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
                       &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
                       sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
                       pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
@@ -487,10 +485,12 @@ export function InteractiveWindowMockup() {
             </AnimatePresence>
 
             {/* Bottom Action Row inside Mockup */}
-            <div className="pt-2 mt-4 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 text-[11px]">
-              <span className="text-neutral-500 font-bold">✓ Siap salin & cetak Word/PDF</span>
+            <div className="pt-2 mt-4 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 text-xs">
+              <span className="text-neutral-700 dark:text-neutral-300 font-bold">
+                ✓ Siap salin & cetak Word/PDF
+              </span>
               <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-xl bg-emerald-300 text-neutral-950 border-2 border-black font-black text-[11px] flex items-center gap-1 shadow-[1px_1px_0px_#000000]">
+                <span className="px-3 py-1 rounded-xl bg-emerald-300 text-neutral-950 border-2 border-black font-semibold text-xs flex items-center gap-1">
                   <Printer className="w-3.5 h-3.5" /> Download .DOCX
                 </span>
               </div>

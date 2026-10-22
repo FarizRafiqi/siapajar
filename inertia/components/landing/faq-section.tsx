@@ -11,7 +11,7 @@ function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full p-5 text-left font-black text-sm sm:text-base text-neutral-900 dark:text-white flex items-center justify-between gap-4"
+        className="w-full p-5 text-left font-semibold text-sm sm:text-base text-neutral-900 dark:text-white flex items-center justify-between gap-4"
       >
         <span>{q}</span>
         <div
@@ -32,7 +32,7 @@ function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium border-t-2 border-neutral-100 dark:border-neutral-800 leading-relaxed">
+            <div className="px-5 pb-5 pt-1 text-sm text-neutral-700 dark:text-neutral-300 font-medium border-t-2 border-neutral-100 dark:border-neutral-800 leading-relaxed">
               {a}
             </div>
           </motion.div>
@@ -47,11 +47,11 @@ export function FaqSection() {
     <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-10">
         <ScrollReveal className="text-center space-y-3">
-          <span className="badge-kawaii-blue text-xs font-black">TANYA JAWAB</span>
-          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+          <span className="badge-kawaii-blue text-xs font-semibold">TANYA JAWAB</span>
+          <h2 className="text-2xl sm:text-4xl font-bold text-neutral-950 dark:text-white">
             Pertanyaan yang Sering Diajukan
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
             Semua informasi yang perlu Anda ketahui sebelum menggunakan SiapAjar.
           </p>
         </ScrollReveal>

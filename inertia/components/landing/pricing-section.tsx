@@ -13,11 +13,11 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
     >
       <div className="max-w-6xl mx-auto space-y-12">
         <ScrollReveal className="text-center space-y-3">
-          <span className="badge-kawaii-amber text-xs font-black">HARGA TERJANGKAU</span>
-          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white">
+          <span className="badge-kawaii-amber text-xs font-semibold">HARGA TERJANGKAU</span>
+          <h2 className="text-2xl sm:text-4xl font-bold text-neutral-950 dark:text-white">
             Pilihan Paket Tanpa Komitmen Ribet
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 font-medium max-w-xl mx-auto">
             Pilih paket sesuai kebutuhan mengajar Anda. Mulai dari gratis hingga akses lengkap
             sekolah.
           </p>
@@ -43,7 +43,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                     >
                       {isPopular && <PopularShine />}
                       {isPopular && (
-                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-xs font-semibold uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
                           Paling Populer
                         </div>
                       )}
@@ -52,7 +52,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                         <div>
                           <h3
                             className={cn(
-                              'font-black text-xl',
+                              'font-semibold text-xl',
                               isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
                             )}
                           >
@@ -64,7 +64,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                                 'text-xs mt-1 font-medium',
                                 isPopular
                                   ? 'text-emerald-200/90'
-                                  : 'text-neutral-500 dark:text-neutral-400'
+                                  : 'text-neutral-700 dark:text-neutral-300'
                               )}
                             >
                               {pkg.description}
@@ -75,7 +75,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                         <div className="py-2">
                           <span
                             className={cn(
-                              'text-3.5xl font-black',
+                              'text-3.5xl font-bold',
                               isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
                             )}
                           >
@@ -92,7 +92,9 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                             <span
                               className={cn(
                                 'text-xs font-bold ml-1',
-                                isPopular ? 'text-emerald-200' : 'text-neutral-500'
+                                isPopular
+                                  ? 'text-emerald-200'
+                                  : 'text-neutral-700 dark:text-neutral-300'
                               )}
                             >
                               {period}
@@ -126,7 +128,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                         <Link
                           href="/signup"
                           className={cn(
-                            'w-full text-center text-xs font-black py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
+                            'w-full text-center text-xs font-semibold py-3 block rounded-2xl border-2 border-black transition-all shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5',
                             isPopular
                               ? 'bg-amber-300 hover:bg-amber-400 text-neutral-950'
                               : 'bg-white hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white'
@@ -198,23 +200,23 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                     }`}
                   >
                     {tier.highlight && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-xs font-semibold uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
                         Paling Populer
                       </div>
                     )}
 
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-black text-lg text-neutral-950 dark:text-white">
+                        <h3 className="font-semibold text-lg text-neutral-950 dark:text-white">
                           {tier.title}
                         </h3>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-medium">
+                        <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-1 font-medium">
                           {tier.desc}
                         </p>
                       </div>
 
                       <div className="py-2">
-                        <span className="text-3xl font-black text-neutral-950 dark:text-white">
+                        <span className="text-3xl font-bold text-neutral-950 dark:text-white">
                           {tier.price}
                         </span>
                       </div>

@@ -15,7 +15,7 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-xs sm:text-sm font-black"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-sm font-semibold"
           >
             <Zap className="w-4 h-4 text-amber-700 shrink-0" />
             <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
@@ -69,18 +69,19 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 text-xs font-bold text-neutral-600 dark:text-neutral-400 pt-2"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 pt-2"
           >
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Gratis 3 Kredit
+              <Check className="w-4 h-4 text-emerald-600 font-semibold shrink-0" /> Gratis 3 Kredit
               untuk Guru Baru
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Sesuai Standar
+              <Check className="w-4 h-4 text-emerald-600 font-semibold shrink-0" /> Sesuai Standar
               BSKAP
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600 font-black shrink-0" /> Export Word & PDF
+              <Check className="w-4 h-4 text-emerald-600 font-semibold shrink-0" /> Export Word &
+              PDF
             </span>
           </motion.div>
         </div>
