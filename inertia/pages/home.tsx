@@ -3,6 +3,8 @@ import { Navbar } from '~/components/landing/navbar'
 import { HeroSection } from '~/components/landing/hero-section'
 import { ToolsSection } from '~/components/landing/tools-section'
 import { PricingSection } from '~/components/landing/pricing-section'
+import { HowItWorksSection } from '~/components/landing/how-it-works-section'
+import { FeaturesSection } from '~/components/landing/features-section'
 import { FaqSection } from '~/components/landing/faq-section'
 import { CtaSection } from '~/components/landing/cta-section'
 import { FooterSection } from '~/components/landing/footer-section'
@@ -26,6 +28,8 @@ export default function Home({ packages }: HomeProps) {
 
       <HeroSection />
       <ToolsSection />
+      <HowItWorksSection />
+      <FeaturesSection />
       <PricingSection packages={packages} />
       <FaqSection />
       <CtaSection />
