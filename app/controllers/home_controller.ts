@@ -3,7 +3,7 @@ import { packageService } from '#services/package_service'
 
 export default class HomeController {
   async index({ inertia }: HttpContext) {
-    return inertia.render('home', { packages: await packageService.listActiveForPublic() })
+    return inertia.render('home', { packages: await packageService.listForLandingPricing() })
   }
 
   async packages({ response }: HttpContext) {
