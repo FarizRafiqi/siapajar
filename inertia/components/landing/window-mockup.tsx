@@ -10,7 +10,7 @@ import {
   FileCode,
   LoaderCircle,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { Children, type ReactNode, useState, useEffect, useRef } from 'react'
 import { cn } from '~/lib/utils'
 
 interface TypewriterHeadingProps {
@@ -67,21 +67,39 @@ type PreviewPhase = 'typing' | 'loading' | 'ready'
 const AI_LOADING_DURATION_MS = 1800
 const AI_LOADING_DURATION_S = 1.7
 
+const SOFT_EASE = [0.16, 1, 0.3, 1] as const
+
+// Reveal lembut: wadah memudar, kartu naik tipis, lalu isinya muncul berurutan.
 const previewRevealVariants = {
-  hidden: {
-    opacity: 0,
-    y: 10,
-    scale: 0.998,
-    clipPath: 'inset(0 0 100% 0 round 1rem)',
-    filter: 'blur(1.5px)',
-  },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.45, ease: SOFT_EASE } },
+}
+const revealCardVariants = {
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    clipPath: 'inset(0 0 0% 0 round 1rem)',
-    filter: 'blur(0px)',
+    transition: { duration: 0.7, ease: SOFT_EASE, staggerChildren: 0.18, delayChildren: 0.15 },
   },
+}
+const revealItemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: SOFT_EASE } },
+}
+const instantVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0 } },
+}
+
+function RevealCard({ className, children }: Readonly<{ className: string; children: ReactNode }>) {
+  const reduceMotion = useReducedMotion()
+  return (
+    <m.div variants={reduceMotion ? instantVariants : revealCardVariants} className={className}>
+      {Children.map(children, (child) => (
+        <m.div variants={reduceMotion ? instantVariants : revealItemVariants}>{child}</m.div>
+      ))}
+    </m.div>
+  )
 }
 
 function AiLoadingState() {
@@ -89,44 +107,46 @@ function AiLoadingState() {
 
   return (
     <m.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl border-2 border-emerald-700/40 bg-emerald-50 p-3 dark:border-emerald-400/30 dark:bg-emerald-950/40"
+      exit={{ opacity: 0, y: -4 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: SOFT_EASE }}
+      className="self-start [grid-area:1/1]"
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-        <LoaderCircle
-          className={`h-4 w-4 shrink-0 ${reduceMotion ? '' : 'animate-spin'}`}
-          aria-hidden="true"
-        />
-        <span>AI sedang menyusun</span>
-        <span className="ml-auto flex gap-0.5" aria-hidden="true">
-          <span
-            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:0ms]'}`}
+      <div className="rounded-2xl border-2 border-emerald-700/40 bg-emerald-50 p-3 dark:border-emerald-400/30 dark:bg-emerald-950/40">
+        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+          <LoaderCircle
+            className={`h-4 w-4 shrink-0 ${reduceMotion ? '' : 'animate-spin'}`}
+            aria-hidden="true"
           />
-          <span
-            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:150ms]'}`}
+          <span>AI sedang menyusun</span>
+          <span className="ml-auto flex gap-0.5" aria-hidden="true">
+            <span
+              className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:0ms]'}`}
+            />
+            <span
+              className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:150ms]'}`}
+            />
+            <span
+              className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:300ms]'}`}
+            />
+          </span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full border border-emerald-700/30 bg-white/80 dark:border-emerald-300/30 dark:bg-emerald-950/70">
+          <m.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { duration: AI_LOADING_DURATION_S, ease: [0.45, 0, 0.25, 1] }
+            }
+            style={{ originX: 0 }}
+            className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
           />
-          <span
-            className={`h-1 w-1 rounded-full bg-emerald-600 ${reduceMotion ? '' : 'animate-pulse [animation-delay:300ms]'}`}
-          />
-        </span>
-      </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full border border-emerald-700/30 bg-white/80 dark:border-emerald-300/30 dark:bg-emerald-950/70">
-        <m.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={
-            reduceMotion
-              ? { duration: 0 }
-              : { duration: AI_LOADING_DURATION_S, ease: [0.22, 1, 0.36, 1] }
-          }
-          style={{ originX: 0 }}
-          className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
-        />
+        </div>
       </div>
     </m.div>
   )
@@ -288,50 +308,47 @@ export function InteractiveWindowMockup() {
                     text="MODUL AJAR: Tanaman Sayur Ciptaan Allah"
                     onComplete={handleTypingComplete}
                   />
-                  <AnimatePresence mode="wait" initial={false}>
-                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-modul" />}
-                  </AnimatePresence>
-                  <m.div
-                    initial={reduceMotion ? false : 'hidden'}
-                    animate={isPreviewReady ? 'visible' : 'hidden'}
-                    variants={previewRevealVariants}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
-                    }
-                    aria-hidden={!isPreviewReady}
-                    className="relative"
-                  >
-                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300">
-                      <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
-                        <span>
-                          <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
-                          sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu berkreasi
-                          cap sayur.
-                        </span>
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
-                          <span className="font-semibold text-xs text-emerald-800 dark:text-emerald-300 block uppercase">
-                            Kegiatan Inti
+                  <div className="grid">
+                    <AnimatePresence mode="wait" initial={false}>
+                      {previewPhase === 'loading' && <AiLoadingState key="ai-loading-modul" />}
+                    </AnimatePresence>
+                    <m.div
+                      initial={reduceMotion ? false : 'hidden'}
+                      animate={isPreviewReady ? 'visible' : 'hidden'}
+                      variants={reduceMotion ? instantVariants : previewRevealVariants}
+                      aria-hidden={!isPreviewReady}
+                      className="relative [grid-area:1/1]"
+                    >
+                      <RevealCard className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs space-y-2 text-neutral-700 dark:text-neutral-300">
+                        <p className="font-bold text-neutral-900 dark:text-white flex items-start gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                          <span>
+                            <strong>Tujuan Pembelajaran:</strong> Anak terbiasa bersyukur atas ragam
+                            sayuran, mengenal warna dan tekstur wortel & bayam, serta mampu
+                            berkreasi cap sayur.
                           </span>
-                          <span className="text-xs font-medium">
-                            Eksplorasi Mencuci & Mengupas Wortel
-                          </span>
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                          <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300">
+                            <span className="font-semibold text-xs text-emerald-800 dark:text-emerald-300 block uppercase">
+                              Kegiatan Inti
+                            </span>
+                            <span className="text-xs font-medium">
+                              Eksplorasi Mencuci & Mengupas Wortel
+                            </span>
+                          </div>
+                          <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
+                            <span className="font-semibold text-xs text-amber-800 dark:text-amber-300 block uppercase">
+                              Asesmen Formatif
+                            </span>
+                            <span className="text-xs font-medium">
+                              Catatan Anekdot & Rubrik Ceklis
+                            </span>
+                          </div>
                         </div>
-                        <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-300">
-                          <span className="font-semibold text-xs text-amber-800 dark:text-amber-300 block uppercase">
-                            Asesmen Formatif
-                          </span>
-                          <span className="text-xs font-medium">
-                            Catatan Anekdot & Rubrik Ceklis
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </m.div>
+                      </RevealCard>
+                    </m.div>
+                  </div>
                 </m.div>
               )}
 
@@ -356,33 +373,30 @@ export function InteractiveWindowMockup() {
                     text="LKPD: Menghitung & Mengelompokkan Buah"
                     onComplete={handleTypingComplete}
                   />
-                  <AnimatePresence mode="wait" initial={false}>
-                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-lkpd" />}
-                  </AnimatePresence>
-                  <m.div
-                    initial={reduceMotion ? false : 'hidden'}
-                    animate={isPreviewReady ? 'visible' : 'hidden'}
-                    variants={previewRevealVariants}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
-                    }
-                    aria-hidden={!isPreviewReady}
-                    className="relative"
-                  >
-                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
-                      <p className="font-bold text-neutral-900 dark:text-white">
-                        Instruksi Mandiri Siswa:
-                      </p>
-                      <p className="text-xs text-neutral-700 dark:text-neutral-300">
-                        1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
-                      </p>
-                      <p className="text-xs text-neutral-700 dark:text-neutral-300">
-                        2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
-                      </p>
-                    </div>
-                  </m.div>
+                  <div className="grid">
+                    <AnimatePresence mode="wait" initial={false}>
+                      {previewPhase === 'loading' && <AiLoadingState key="ai-loading-lkpd" />}
+                    </AnimatePresence>
+                    <m.div
+                      initial={reduceMotion ? false : 'hidden'}
+                      animate={isPreviewReady ? 'visible' : 'hidden'}
+                      variants={reduceMotion ? instantVariants : previewRevealVariants}
+                      aria-hidden={!isPreviewReady}
+                      className="relative [grid-area:1/1]"
+                    >
+                      <RevealCard className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
+                        <p className="font-bold text-neutral-900 dark:text-white">
+                          Instruksi Mandiri Siswa:
+                        </p>
+                        <p className="text-xs text-neutral-700 dark:text-neutral-300">
+                          1. Hubungkan gambar buah apel dengan angka 5 di sebelah kanan!
+                        </p>
+                        <p className="text-xs text-neutral-700 dark:text-neutral-300">
+                          2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
+                        </p>
+                      </RevealCard>
+                    </m.div>
+                  </div>
                 </m.div>
               )}
 
@@ -407,36 +421,33 @@ export function InteractiveWindowMockup() {
                     text="EVALUASI: Matematika & Pengukuran"
                     onComplete={handleTypingComplete}
                   />
-                  <AnimatePresence mode="wait" initial={false}>
-                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-soal" />}
-                  </AnimatePresence>
-                  <m.div
-                    initial={reduceMotion ? false : 'hidden'}
-                    animate={isPreviewReady ? 'visible' : 'hidden'}
-                    variants={previewRevealVariants}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
-                    }
-                    aria-hidden={!isPreviewReady}
-                    className="relative"
-                  >
-                    <div className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
-                      <p className="font-bold text-neutral-900 dark:text-white">
-                        1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
-                        pita adalah...
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
-                          A. 325 cm
-                        </span>
-                        <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
-                          B. 425 cm (Kunci: B)
-                        </span>
-                      </div>
-                    </div>
-                  </m.div>
+                  <div className="grid">
+                    <AnimatePresence mode="wait" initial={false}>
+                      {previewPhase === 'loading' && <AiLoadingState key="ai-loading-soal" />}
+                    </AnimatePresence>
+                    <m.div
+                      initial={reduceMotion ? false : 'hidden'}
+                      animate={isPreviewReady ? 'visible' : 'hidden'}
+                      variants={reduceMotion ? instantVariants : previewRevealVariants}
+                      aria-hidden={!isPreviewReady}
+                      className="relative [grid-area:1/1]"
+                    >
+                      <RevealCard className="bg-white dark:bg-neutral-950 p-3 rounded-2xl border-2 border-black text-xs space-y-2">
+                        <p className="font-bold text-neutral-900 dark:text-white">
+                          1. Panjang pita merah 2,5 meter dan pita biru 175 cm. Jumlah panjang kedua
+                          pita adalah...
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <span className="p-1.5 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200">
+                            A. 325 cm
+                          </span>
+                          <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-lg border border-emerald-500 font-bold text-emerald-800 dark:text-emerald-300">
+                            B. 425 cm (Kunci: B)
+                          </span>
+                        </div>
+                      </RevealCard>
+                    </m.div>
+                  </div>
                 </m.div>
               )}
 
@@ -459,27 +470,25 @@ export function InteractiveWindowMockup() {
                     text="RAPOR: Deskripsi Capaian Pembelajaran Siswa"
                     onComplete={handleTypingComplete}
                   />
-                  <AnimatePresence mode="wait" initial={false}>
-                    {previewPhase === 'loading' && <AiLoadingState key="ai-loading-rapor" />}
-                  </AnimatePresence>
-                  <m.div
-                    initial={reduceMotion ? false : 'hidden'}
-                    animate={isPreviewReady ? 'visible' : 'hidden'}
-                    variants={previewRevealVariants}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }
-                    }
-                    aria-hidden={!isPreviewReady}
-                    className="relative"
-                  >
-                    <div className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
-                      &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan dan
-                      sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
-                      pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
-                    </div>
-                  </m.div>
+                  <div className="grid">
+                    <AnimatePresence mode="wait" initial={false}>
+                      {previewPhase === 'loading' && <AiLoadingState key="ai-loading-rapor" />}
+                    </AnimatePresence>
+                    <m.div
+                      initial={reduceMotion ? false : 'hidden'}
+                      animate={isPreviewReady ? 'visible' : 'hidden'}
+                      variants={reduceMotion ? instantVariants : previewRevealVariants}
+                      aria-hidden={!isPreviewReady}
+                      className="relative [grid-area:1/1]"
+                    >
+                      <RevealCard className="bg-white dark:bg-neutral-950 p-3.5 rounded-2xl border-2 border-black text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
+                        &ldquo;Ananda menunjukkan antusiasme tinggi dalam mengenal konsep bilangan
+                        dan sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
+                        pengerjaan mandiri, ananda terus menunjukkan perkembangan yang
+                        positif.&rdquo;
+                      </RevealCard>
+                    </m.div>
+                  </div>
                 </m.div>
               )}
             </AnimatePresence>
