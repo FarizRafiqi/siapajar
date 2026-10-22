@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '~/lib/utils'
-import { ScrollReveal } from '~/components/landing/motion-primitives'
+import { ScrollReveal, Stagger, StaggerItem } from '~/components/landing/motion-primitives'
 import { expressTools } from '~/components/landing/data'
 
 export function ToolsSection() {
@@ -22,12 +22,12 @@ export function ToolsSection() {
           </p>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {expressTools.map((tool, index) => {
+        <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.07}>
+          {expressTools.map((tool) => {
             const Icon = tool.icon
             return (
-              <ScrollReveal key={tool.title} delay={index * 0.06} className="h-full">
-                <div className="h-full bg-[#FAF7F2] dark:bg-neutral-950 rounded-3xl border-2 border-black p-6 flex flex-col justify-between shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-1 transition-all relative">
+              <StaggerItem key={tool.title} className="h-full">
+                <div className="group h-full bg-[#FAF7F2] dark:bg-neutral-950 rounded-3xl border-2 border-black p-6 flex flex-col justify-between shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-1 transition-all relative">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div
@@ -36,7 +36,7 @@ export function ToolsSection() {
                           tool.color
                         )}
                       >
-                        <Icon className="w-6 h-6 shrink-0" />
+                        <Icon className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
                       </div>
                       {tool.tag && (
                         <span
@@ -69,10 +69,10 @@ export function ToolsSection() {
                     </Link>
                   </div>
                 </div>
-              </ScrollReveal>
+              </StaggerItem>
             )
           })}
-        </div>
+        </Stagger>
       </div>
     </section>
   )

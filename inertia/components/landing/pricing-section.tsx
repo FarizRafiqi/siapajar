@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { CheckCircle2, Zap } from 'lucide-react'
 import { cn } from '~/lib/utils'
-import { ScrollReveal } from '~/components/landing/motion-primitives'
+import { CountUp, ScrollReveal, Stagger, StaggerItem } from '~/components/landing/motion-primitives'
 import { formatPackagePrice, type PricingPackage } from '~/components/landing/data'
 
 export function PricingSection({ packages }: Readonly<{ packages: PricingPackage[] }>) {
@@ -22,13 +23,16 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
           </p>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <Stagger
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
+          stagger={0.08}
+        >
           {packages && packages.length > 0
-            ? packages.map((pkg, index) => {
+            ? packages.map((pkg) => {
                 const { price, period } = formatPackagePrice(pkg)
                 const isPopular = pkg.isHighlighted
                 return (
-                  <ScrollReveal key={pkg.id} delay={index * 0.08} className="h-full">
+                  <StaggerItem key={pkg.id} className="h-full">
                     <div
                       className={cn(
                         'h-full rounded-3xl border-2 border-black p-6 sm:p-7 flex flex-col justify-between relative transition-all',
@@ -37,6 +41,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                           : 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-[4px_4px_0px_#000000]'
                       )}
                     >
+                      {isPopular && <PopularShine />}
                       {isPopular && (
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-300 text-neutral-950 border-2 border-black text-center text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000000] whitespace-nowrap">
                           Paling Populer
@@ -74,7 +79,14 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                               isPopular ? 'text-white' : 'text-neutral-950 dark:text-white'
                             )}
                           >
-                            {price}
+                            {pkg.priceMonthly > 0 ? (
+                              <>
+                                Rp
+                                <CountUp to={pkg.priceMonthly} />
+                              </>
+                            ) : (
+                              price
+                            )}
                           </span>
                           {period && (
                             <span
@@ -124,7 +136,7 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                         </Link>
                       </div>
                     </div>
-                  </ScrollReveal>
+                  </StaggerItem>
                 )
               })
             : // Default Pricing Cards Fallback
@@ -176,8 +188,8 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                   ],
                   highlight: false,
                 },
-              ].map((tier, index) => (
-                <ScrollReveal key={tier.title} delay={index * 0.08} className="h-full">
+              ].map((tier) => (
+                <StaggerItem key={tier.title} className="h-full">
                   <div
                     className={`h-full bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black p-6 flex flex-col justify-between relative transition-all ${
                       tier.highlight
@@ -231,10 +243,29 @@ export function PricingSection({ packages }: Readonly<{ packages: PricingPackage
                       </Link>
                     </div>
                   </div>
-                </ScrollReveal>
+                </StaggerItem>
               ))}
-        </div>
+        </Stagger>
       </div>
     </section>
+  )
+}
+
+/** Kilau diagonal yang menyapu kartu paket populer. */
+function PopularShine() {
+  const reduceMotion = useReducedMotion()
+  if (reduceMotion) return null
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.35rem]"
+    >
+      <motion.div
+        className="absolute -inset-y-4 w-16 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+        initial={{ x: '-150%' }}
+        animate={{ x: ['-150%', '900%'] }}
+        transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 3.5, ease: 'easeInOut' }}
+      />
+    </div>
   )
 }

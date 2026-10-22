@@ -1,10 +1,25 @@
 import { Link } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
-import { ScrollReveal } from '~/components/landing/motion-primitives'
+import { Marquee, ScrollReveal } from '~/components/landing/motion-primitives'
+import { expressTools } from '~/components/landing/data'
 
 export function CtaSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-amber-300 dark:bg-emerald-950 border-t-2 border-black">
+      <Marquee
+        className="-mx-4 mb-10 border-y-2 sm:-mx-6 lg:-mx-8 border-black bg-white/70 py-3 dark:bg-neutral-900/70"
+        duration={40}
+      >
+        {expressTools.map((tool) => (
+          <span
+            key={tool.title}
+            className="flex items-center gap-10 whitespace-nowrap text-sm font-semibold text-neutral-900 dark:text-neutral-100"
+          >
+            {tool.title}
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+        ))}
+      </Marquee>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 rounded-3xl border-2 border-black shadow-[6px_6px_0px_#000000] p-8 sm:p-12 text-center space-y-6">
           <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white max-w-xl mx-auto leading-tight">
