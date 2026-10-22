@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react'
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { m, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { ScrollProgress } from '~/components/landing/motion-primitives'
@@ -112,7 +112,7 @@ export function Navbar() {
         {/* Mobile Dropdown */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -174,7 +174,7 @@ export function Navbar() {
                   </>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </nav>

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { FileOutput, GraduationCap, ShieldCheck, Workflow } from 'lucide-react'
 import { ScrollReveal, Stagger, StaggerItem } from '~/components/landing/motion-primitives'
 
@@ -12,7 +12,7 @@ function CurriculumChain() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {chain.map((node, i) => (
-        <motion.div
+        <m.div
           key={node}
           className="flex items-center gap-2"
           initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
@@ -24,7 +24,7 @@ function CurriculumChain() {
             {node}
           </span>
           {i < chain.length - 1 && <span className="text-neutral-900 dark:text-white">→</span>}
-        </motion.div>
+        </m.div>
       ))}
     </div>
   )

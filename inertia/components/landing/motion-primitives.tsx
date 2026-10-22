@@ -1,6 +1,6 @@
 import {
   animate,
-  motion,
+  m,
   useInView,
   useMotionValue,
   useReducedMotion,
@@ -20,7 +20,7 @@ export function ScrollReveal({ children, className, delay = 0 }: ScrollRevealPro
   const reduceMotion = useReducedMotion()
 
   return (
-    <motion.div
+    <m.div
       initial={reduceMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.16, margin: '0px 0px -40px' }}
@@ -30,7 +30,7 @@ export function ScrollReveal({ children, className, delay = 0 }: ScrollRevealPro
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -46,7 +46,7 @@ interface WordRevealProps {
 /** Headline yang muncul kata per kata (stagger). */
 export function WordReveal({ text, className, delay = 0, as = 'h1' }: WordRevealProps) {
   const reduceMotion = useReducedMotion()
-  const Tag = motion[as]
+  const Tag = m[as]
   const words = text.split(' ')
 
   return (
@@ -63,13 +63,13 @@ export function WordReveal({ text, className, delay = 0, as = 'h1' }: WordReveal
           aria-hidden="true"
           className="inline-block overflow-hidden pb-1 align-bottom"
         >
-          <motion.span
+          <m.span
             className="inline-block"
             variants={{ hidden: { y: '110%', opacity: 0 }, visible: { y: '0%', opacity: 1 } }}
             transition={{ duration: 0.55, ease: EASE_OUT }}
           >
             {word}
-          </motion.span>
+          </m.span>
           {i < words.length - 1 ? ' ' : ''}
         </span>
       ))}
@@ -87,7 +87,7 @@ interface StaggerProps {
 export function Stagger({ children, className, stagger = 0.08 }: StaggerProps) {
   const reduceMotion = useReducedMotion()
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={reduceMotion ? false : 'hidden'}
       whileInView="visible"
@@ -95,7 +95,7 @@ export function Stagger({ children, className, stagger = 0.08 }: StaggerProps) {
       transition={{ staggerChildren: stagger }}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -104,13 +104,13 @@ export function StaggerItem({
   className,
 }: Readonly<{ children: ReactNode; className?: string }>) {
   return (
-    <motion.div
+    <m.div
       className={className}
       variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } }}
       transition={{ duration: 0.55, ease: EASE_OUT }}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -135,7 +135,7 @@ export function TiltCard({
   if (reduceMotion) return <div className={className}>{children}</div>
 
   return (
-    <motion.div
+    <m.div
       className={className}
       style={{ rotateX, rotateY, transformPerspective: 1000 }}
       onPointerMove={(e) => {
@@ -150,7 +150,7 @@ export function TiltCard({
       }}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -167,7 +167,7 @@ export function Magnetic({
   if (reduceMotion) return <div className={className}>{children}</div>
 
   return (
-    <motion.div
+    <m.div
       className={className}
       style={{ x, y }}
       onPointerMove={(e) => {
@@ -182,7 +182,7 @@ export function Magnetic({
       }}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -191,7 +191,7 @@ export function ScrollProgress() {
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 24, restDelta: 0.001 })
   return (
-    <motion.div
+    <m.div
       aria-hidden="true"
       style={{ scaleX, transformOrigin: '0% 50%' }}
       className="fixed top-0 left-0 right-0 z-[60] h-1 bg-emerald-500"
@@ -208,14 +208,14 @@ export function Marquee({
   const reduceMotion = useReducedMotion()
   return (
     <div className={`overflow-hidden ${className ?? ''}`} aria-hidden="true">
-      <motion.div
+      <m.div
         className="flex w-max gap-10"
         animate={reduceMotion ? undefined : { x: ['0%', '-50%'] }}
         transition={{ duration, ease: 'linear', repeat: Infinity }}
       >
         <div className="flex shrink-0 items-center gap-10">{children}</div>
         <div className="flex shrink-0 items-center gap-10">{children}</div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

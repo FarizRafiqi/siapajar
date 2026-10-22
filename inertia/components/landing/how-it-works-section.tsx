@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
+import { m, useReducedMotion, useScroll, useSpring } from 'framer-motion'
 import { Download, MousePointerClick, Sparkles } from 'lucide-react'
 import { useRef } from 'react'
 import { Stagger, StaggerItem, ScrollReveal } from '~/components/landing/motion-primitives'
@@ -53,11 +53,11 @@ export function HowItWorksSection() {
             aria-hidden="true"
             className="absolute left-7 top-7 bottom-7 w-1 rounded-full bg-neutral-200 dark:bg-neutral-800 md:left-[16.66%] md:right-[16.66%] md:bottom-auto md:h-1 md:w-auto"
           >
-            <motion.div
+            <m.div
               style={{ scaleY: line, transformOrigin: 'top' }}
               className="h-full w-full rounded-full bg-emerald-500 md:hidden"
             />
-            <motion.div
+            <m.div
               style={{ scaleX: line, transformOrigin: 'left' }}
               className="hidden h-full w-full rounded-full bg-emerald-500 md:block"
             />

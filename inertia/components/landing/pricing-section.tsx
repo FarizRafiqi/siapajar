@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { CheckCircle2, Zap } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { CountUp, ScrollReveal, Stagger, StaggerItem } from '~/components/landing/motion-primitives'
@@ -262,7 +262,7 @@ function PopularShine() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.35rem]"
     >
-      <motion.div
+      <m.div
         className="absolute -inset-y-4 w-16 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent"
         initial={{ x: '-150%' }}
         animate={{ x: ['-150%', '900%'] }}

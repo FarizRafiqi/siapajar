@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   BookOpen,
   Layers,
@@ -88,7 +88,7 @@ function AiLoadingState() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
@@ -116,7 +116,7 @@ function AiLoadingState() {
         </span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full border border-emerald-700/30 bg-white/80 dark:border-emerald-300/30 dark:bg-emerald-950/70">
-        <motion.div
+        <m.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={
@@ -128,7 +128,7 @@ function AiLoadingState() {
           className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300"
         />
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -187,21 +187,21 @@ export function InteractiveWindowMockup() {
   return (
     <div className="relative mx-auto w-full max-w-3xl">
       {/* Decorative floating badges */}
-      <motion.div
+      <m.div
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-6 -right-2 sm:-right-4 z-20 badge-kawaii-amber shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-semibold flex items-center gap-1.5"
       >
         <Zap className="w-4 h-4 text-amber-700" /> Selesai dalam 45 Detik!
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
         className="absolute -bottom-5 -left-2 sm:-left-4 z-20 badge-kawaii-emerald shadow-[3px_3px_0px_#000000] text-xs px-3.5 py-1.5 font-semibold flex items-center gap-1.5"
       >
         <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Standar BSKAP & Kemenag
-      </motion.div>
+      </m.div>
 
       {/* Main Window Frame */}
       <div className="rounded-3xl border-2 border-black bg-white dark:bg-neutral-900 shadow-[8px_8px_0px_#000000] overflow-hidden">
@@ -268,7 +268,7 @@ export function InteractiveWindowMockup() {
           <div className="col-span-8 sm:col-span-9 p-4 sm:p-6 bg-[#FAF7F2] dark:bg-neutral-900 text-left flex flex-col justify-between overflow-hidden">
             <AnimatePresence mode="wait">
               {activeTool === 'modul' && (
-                <motion.div
+                <m.div
                   key="modul"
                   initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -291,7 +291,7 @@ export function InteractiveWindowMockup() {
                   <AnimatePresence mode="wait" initial={false}>
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-modul" />}
                   </AnimatePresence>
-                  <motion.div
+                  <m.div
                     initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
@@ -331,12 +331,12 @@ export function InteractiveWindowMockup() {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </m.div>
+                </m.div>
               )}
 
               {activeTool === 'lkpd' && (
-                <motion.div
+                <m.div
                   key="lkpd"
                   initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -359,7 +359,7 @@ export function InteractiveWindowMockup() {
                   <AnimatePresence mode="wait" initial={false}>
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-lkpd" />}
                   </AnimatePresence>
-                  <motion.div
+                  <m.div
                     initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
@@ -382,12 +382,12 @@ export function InteractiveWindowMockup() {
                         2. Warnai buah jeruk dengan warna oranye yang rapi dan bersih.
                       </p>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </m.div>
+                </m.div>
               )}
 
               {activeTool === 'soal' && (
-                <motion.div
+                <m.div
                   key="soal"
                   initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -410,7 +410,7 @@ export function InteractiveWindowMockup() {
                   <AnimatePresence mode="wait" initial={false}>
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-soal" />}
                   </AnimatePresence>
-                  <motion.div
+                  <m.div
                     initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
@@ -436,12 +436,12 @@ export function InteractiveWindowMockup() {
                         </span>
                       </div>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </m.div>
+                </m.div>
               )}
 
               {activeTool === 'rapor' && (
-                <motion.div
+                <m.div
                   key="rapor"
                   initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -462,7 +462,7 @@ export function InteractiveWindowMockup() {
                   <AnimatePresence mode="wait" initial={false}>
                     {previewPhase === 'loading' && <AiLoadingState key="ai-loading-rapor" />}
                   </AnimatePresence>
-                  <motion.div
+                  <m.div
                     initial={reduceMotion ? false : 'hidden'}
                     animate={isPreviewReady ? 'visible' : 'hidden'}
                     variants={previewRevealVariants}
@@ -479,8 +479,8 @@ export function InteractiveWindowMockup() {
                       sangat terampil saat kegiatan eksperimen kelompok. Dalam hal ketelitian
                       pengerjaan mandiri, ananda terus menunjukkan perkembangan yang positif.&rdquo;
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </m.div>
+                </m.div>
               )}
             </AnimatePresence>
 

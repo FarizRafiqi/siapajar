@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { BookOpen, ArrowRight, Zap, Check } from 'lucide-react'
 import { Magnetic, TiltCard, WordReveal } from '~/components/landing/motion-primitives'
 import { InteractiveWindowMockup } from '~/components/landing/window-mockup'
@@ -12,14 +12,14 @@ export function HeroSection() {
         {/* Left Column: Headline, Subtitle, CTAs & Badges */}
         <div className="lg:col-span-6 xl:col-span-6 text-center lg:text-left space-y-6">
           {/* Top Announcement Badge */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-200 text-neutral-950 border-2 border-black shadow-[3px_3px_0px_#000000] text-sm font-semibold"
           >
             <Zap className="w-4 h-4 text-amber-700 shrink-0" />
             <span>Platform Administrasi Guru AI • Bonus 3 Kredit</span>
-          </motion.div>
+          </m.div>
 
           {/* Main Hero Headline */}
           <WordReveal
@@ -29,7 +29,7 @@ export function HeroSection() {
           />
 
           {/* Subtitle */}
-          <motion.p
+          <m.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -37,10 +37,10 @@ export function HeroSection() {
           >
             Susun Modul Ajar, Soal Evaluasi HOTS, LKPD, Jurnal Harian, Prota-Promes, dan Narasi
             Rapor Kurikulum Merdeka secara otomatis. Tanpa ribet, siap print & supervisi.
-          </motion.p>
+          </m.p>
 
           {/* CTA Buttons */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -62,10 +62,10 @@ export function HeroSection() {
               <BookOpen className="w-4 h-4" />
               <span>Eksplorasi Fitur</span>
             </a>
-          </motion.div>
+          </m.div>
 
           {/* Trust Value Badges */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -83,11 +83,11 @@ export function HeroSection() {
               <Check className="w-4 h-4 text-emerald-600 font-semibold shrink-0" /> Export Word &
               PDF
             </span>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Right Column: Interactive Kawaii Window Mockup */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -96,7 +96,7 @@ export function HeroSection() {
           <TiltCard className="flex w-full justify-center">
             <InteractiveWindowMockup />
           </TiltCard>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )
@@ -120,18 +120,18 @@ function HeroBackdrop() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 opacity-[0.12] dark:opacity-[0.08] [background-image:radial-gradient(#000_1.2px,transparent_1.2px)] dark:[background-image:radial-gradient(#fff_1.2px,transparent_1.2px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
-      <motion.div style={{ y: slow }} className="absolute -top-24 -left-24">
-        <motion.div
+      <m.div style={{ y: slow }} className="absolute -top-24 -left-24">
+        <m.div
           animate={drift(18)}
           className="h-72 w-72 rounded-full bg-emerald-300/50 blur-3xl dark:bg-emerald-600/25"
         />
-      </motion.div>
-      <motion.div style={{ y: fast }} className="absolute top-1/3 -right-24">
-        <motion.div
+      </m.div>
+      <m.div style={{ y: fast }} className="absolute top-1/3 -right-24">
+        <m.div
           animate={drift(22)}
           className="h-80 w-80 rounded-full bg-amber-300/50 blur-3xl dark:bg-amber-500/20"
         />
-      </motion.div>
+      </m.div>
     </div>
   )
 }

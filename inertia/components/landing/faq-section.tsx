@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { ScrollReveal } from '~/components/landing/motion-primitives'
@@ -24,7 +24,7 @@ function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
       </button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             key="answer"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -35,7 +35,7 @@ function FaqItem({ q, a }: Readonly<{ q: string; a: string }>) {
             <div className="px-5 pb-5 pt-1 text-sm text-neutral-700 dark:text-neutral-300 font-medium border-t-2 border-neutral-100 dark:border-neutral-800 leading-relaxed">
               {a}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,4 +1,6 @@
 import { Head } from '@inertiajs/react'
+import { LazyMotion, domAnimation } from 'framer-motion'
+import { SmoothScroll } from '~/components/landing/smooth-scroll'
 import { Navbar } from '~/components/landing/navbar'
 import { HeroSection } from '~/components/landing/hero-section'
 import { ToolsSection } from '~/components/landing/tools-section'
@@ -17,23 +19,26 @@ interface HomeProps {
 export default function Home({ packages }: HomeProps) {
   return (
     <div className="min-h-screen bg-[#fafaf9] dark:bg-neutral-950 text-neutral-900 dark:text-white antialiased font-sans selection:bg-emerald-300 selection:text-neutral-950">
-      <Head title="SiapAjar — Generator Modul Ajar & Administrasi Guru AI Terlengkap">
-        <meta
-          name="description"
-          content="Generator Modul Ajar, Soal Evaluasi, LKPD, Prota-Promes, Jurnal Mengajar, dan Narasi Rapor Kurikulum Merdeka otomatis dalam 3 menit. Coba gratis sekarang!"
-        />
-      </Head>
+      <LazyMotion features={domAnimation}>
+        <SmoothScroll />
+        <Head title="SiapAjar — Generator Modul Ajar & Administrasi Guru AI Terlengkap">
+          <meta
+            name="description"
+            content="Generator Modul Ajar, Soal Evaluasi, LKPD, Prota-Promes, Jurnal Mengajar, dan Narasi Rapor Kurikulum Merdeka otomatis dalam 3 menit. Coba gratis sekarang!"
+          />
+        </Head>
 
-      <Navbar />
+        <Navbar />
 
-      <HeroSection />
-      <ToolsSection />
-      <HowItWorksSection />
-      <FeaturesSection />
-      <PricingSection packages={packages} />
-      <FaqSection />
-      <CtaSection />
-      <FooterSection />
+        <HeroSection />
+        <ToolsSection />
+        <HowItWorksSection />
+        <FeaturesSection />
+        <PricingSection packages={packages} />
+        <FaqSection />
+        <CtaSection />
+        <FooterSection />
+      </LazyMotion>
     </div>
   )
 }

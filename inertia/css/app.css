@@ -410,3 +410,15 @@ body {
 html {
   scroll-padding-top: 5.5rem;
 }
+
+/* Lenis mengambil alih smooth scroll; matikan versi native agar tidak bentrok */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
